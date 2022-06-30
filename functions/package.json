@@ -1,0 +1,18 @@
+{
+  "name": "functions",
+  "version": "0.0.1",
+  "description": "Backend for Green Grow ERP software",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "functions",
+    "backend",
+    "api",
+    "auth",
+    "json"
+  ],
+  "author": "Q-soft",
+  "license": "ISC"
+}
