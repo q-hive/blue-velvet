@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "name": "functions",
   "version": "0.0.1",
   "description": "Backend for Green Grow ERP software",
@@ -14,5 +15,11 @@
     "json"
   ],
   "author": "Q-soft",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.1",
+    "mongodb": "^4.7.0",
+    "mongoose": "^6.4.1",
+    "nodemon": "^2.0.18"
+  }
 }
