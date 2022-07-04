@@ -6,41 +6,55 @@ import history from './history.js'
 import { AuthContext } from './contexts/AuthContext'
 
 //*Componentes
-import { Login } from './CoreComponents/Login.'
+import { Login } from './CoreComponents/Login'
 import { PrivateRoutes } from './CoreComponents/PrivateRoutes'
+
+const ContainerManagerComponent = () => {
+    return (
+        <div>
+            Vista del ADMINISTRADOR
+        </div>
+    )
+}
+const ContainerEmployeeComponent = () => {
+    return (
+        <div>
+            Vista del empleado
+        </div>
+    )
+}
 
 export const App = () => {
     const privateRoutes = [
         {
-            path:"/container",
-            component:<div>Vista del contenedor</div>
+            path:"/:uid/admin",
+            component:<ContainerManagerComponent/>
         },
         {
-            path:"/employee",
-            component:<div>Vista del empleado</div>
+            path:"/:uid/employee",
+            component:<ContainerEmployeeComponent/>
         },
     ]
     
   return (
     <AuthContext>
-        //* import from react-router-dom when imstalled
-        <Router history={history}>
+      <Router history={history}>
             <Routes>
                 <Route path="/" element={<Login/>}></Route>
                 
-                //* Mapea objetos que contienen la ruta y el coponente y devuelve un componente ruta cuyo elemento es el componente private route, el cual su hijo es el componente privado
                 {privateRoutes.map((val, idx) => {
                     return (
-                       <Route
-                            key={idx}
-                            path={val.path}
-                            element={
-                                <>
-                                    <PrivateRoutes>
+                        <Route
+                        key={idx}
+                        path={val.path}
+                        element={
+                            <>
+                                <PrivateRoutes>
                                     {val.component}
-                                    </PrivateRoutes>
-                                </>
-                            }
+                                </PrivateRoutes>
+                            
+                            </>
+                        }
                         >
                         </Route> 
                     )
