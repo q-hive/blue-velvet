@@ -3,6 +3,8 @@ import http from 'http'
 import cors from 'cors'
 import fileUpload from 'express-fileupload'
 
+import { adminRoutes } from './network/routes.js'
+
 var port = normalizePort(9999 || process.env.PORT)
 
 const app = express()
@@ -24,7 +26,7 @@ app.use(cors({
 }));
 
 
-app.use("/admin")
+adminRoutes(app)
 
 
 

@@ -1,7 +1,7 @@
 const { initializeApp } = require('firebase-admin/app');
-import getAuth from 'firebase-admin/auth';
+const { getAuth } = require('firebase-admin/auth');
 const app = initializeApp()
 
-const auth = getAuth(app);
+const auth = getAuth(app)
 
 export default auth

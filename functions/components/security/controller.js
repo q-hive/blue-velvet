@@ -1,6 +1,6 @@
-import auth from '../../firebase'
+import auth from '../../firebase.js'
 
-import error from '../../network/response'
+import { error } from '../../network/response.js'
 export const isAuthenticated = (req, res, next) => {
     /* 
      * Verifica que el request contenga un ID Token.

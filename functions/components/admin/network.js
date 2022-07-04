@@ -10,7 +10,7 @@ router.post('/create', (req, res) => {
         success(req, res, 201, "Employee has been created successfully", req.body)
     })
     .catch(err => {
-        error(req, res, 400, "Error creating employee", err
+        error(req, res, 400, "Error creating employee", err)
     })   
 })
 
