@@ -68,7 +68,7 @@ export const Login = () => {
             setLoading(false)
             setUser(credential)
             //*rol must be in custom claim
-            navigate(`${credential.user.uid}/employee`)
+            navigate(`${credential.user.uid}/admin`)
         })
         .catch((err) => {
             //*err.code
