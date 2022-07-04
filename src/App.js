@@ -1,6 +1,6 @@
 import React from 'react'
 //*Router
-import {Router, Routes, Route} from 'react-router-dom'
+import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 import history from './history.js'
 //*Contexts
 import { AuthContext } from './contexts/AuthContext'
@@ -28,22 +28,21 @@ export const App = () => {
             <Routes>
                 <Route path="/" element={<Login/>}></Route>
                 
-                //*Mapea objetos que contienen la ruta y el coponente y devuelve un componente ruta cuyo elemento es el componente private route, el cual su hijo es el componente privado
+                //* Mapea objetos que contienen la ruta y el coponente y devuelve un componente ruta cuyo elemento es el componente private route, el cual su hijo es el componente privado
                 {privateRoutes.map((val, idx) => {
                     return (
                        <Route
-                       key={idx}
-                       path={val.path}
-                       element={
-                        <>
-                             <PrivateRoutes>
-                               {val.component}
-                            </PrivateRoutes>
-                        </>
-                       }
-                       >
-
-                       </Route> 
+                            key={idx}
+                            path={val.path}
+                            element={
+                                <>
+                                    <PrivateRoutes>
+                                    {val.component}
+                                    </PrivateRoutes>
+                                </>
+                            }
+                        >
+                        </Route> 
                     )
                 })}
                 
