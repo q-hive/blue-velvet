@@ -1,5 +1,5 @@
-const { initializeApp } = require('firebase-admin/app');
-const { getAuth } = require('firebase-admin/auth');
+import { initializeApp } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
 const app = initializeApp()
 
 const auth = getAuth(app)
