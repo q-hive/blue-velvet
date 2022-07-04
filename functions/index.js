@@ -1,10 +1,32 @@
-import express from 'express';
-const app = express()
+import express from 'express'
+import http from 'http'
+import cors from 'cors'
+import fileUpload from 'express-fileupload'
 
 var port = normalizePort(9999 || process.env.PORT)
+
+const app = express()
+
 app.set('port', port)
 
-import http from 'http'
+app.use(express.json())
+app.use(fileUpload())
+
+
+/*
+ *  CORS Implementation
+ */
+const originsList = ["http://localhost:3000"]
+ 
+app.use(cors({
+    origin: originsList[0],
+    credentials: true
+}));
+
+
+app.use("/admin")
+
+
 
 const server = http.createServer(app)
 
