@@ -1,0 +1,44 @@
+{
+    "api": {
+        "v1": {
+            "admin": {},
+            "employee": {},
+            "container": {},
+            "production": {}
+
+        }
+    },
+    "authenticate": {
+        "login": {
+            "method": "POST",
+            "payload": {
+                "username": "String",
+                "password": "String"
+            },
+            "response": {
+                "success": {
+                    "code":     200,
+                    "method":   "Authentication success",
+                    "payload": {
+                        "token": "String",
+                        "user": {
+                            "id":       "String",
+                            "name":     "String",
+                            "email":    "String",
+                            "image":    "String",
+                            "role":     "String"
+                        }
+                    }
+                }, 
+                "fail": [
+                    {
+                        "code":     401,
+                        "method":   "Unauthenticated",
+                        "payload": {
+                            "error": "String"
+                    }
+                ]
+            }
+        }
+    }
+}
