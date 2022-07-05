@@ -63,62 +63,70 @@ export const Login = () => {
 
         setLoading(true)
 
-        signInWithEmailAndPassword(auth, loginData.email, loginData.password)
-        .then((credential) => {
-            setLoading(false)
-            setUser(credential)
-            //*rol must be in custom claim
-            navigate(`${credential.user.uid}/admin`)
-        })
-        .catch((err) => {
-            //*err.code
-            //*err.mesage
-            setLoading(false)
-            switch(err.code){
-                case "auth/invalid-email":
-                    setAlert({
-                        ...alert,
-                        open:false,
-                        status:'error',
-                        slide:true,
-                        slideMessage:'Invalid Email, please correct it.'
+        //*TODO REFACTOR LOGIN
+        //*Send credentials to backend
+        //*Await response
+        //*Response sets logic for ----> redirect to admin or redirect to employee screen
+        //*If admin show compontent for passphrase input
+        //*If passphrase succeed then redirect to admin
+        //*If not, cancel and notify cockpit
+
+        // signInWithEmailAndPassword(auth, loginData.email, loginData.password)
+        // .then((credential) => {
+        //     setLoading(false)
+        //     setUser(credential)
+        //     //*rol must be in custom claim
+        //     navigate(`${credential.user.uid}/admin`)
+        // })
+        // .catch((err) => {
+        //     //*err.code
+        //     //*err.mesage
+        //     setLoading(false)
+        //     switch(err.code){
+        //         case "auth/invalid-email":
+        //             setAlert({
+        //                 ...alert,
+        //                 open:false,
+        //                 status:'error',
+        //                 slide:true,
+        //                 slideMessage:'Invalid Email, please correct it.'
                         
-                    })
-                    break;
-                case "auth/user-disabled":
-                    setAlert({
-                        ...alert,
-                        open:false,
-                        status:'error',
-                        slide:true,
-                        slideMessage:'Your account is not longer valid.'
+        //             })
+        //             break;
+        //         case "auth/user-disabled":
+        //             setAlert({
+        //                 ...alert,
+        //                 open:false,
+        //                 status:'error',
+        //                 slide:true,
+        //                 slideMessage:'Your account is not longer valid.'
                         
-                    })
-                    break;
-                case "auth/user-not-found":
-                    setAlert({
-                        ...alert,
-                        open:false,
-                        status:'error',
-                        slide:true,
-                        slideMessage:'Invalid credentials, please try again.'
+        //             })
+        //             break;
+        //         case "auth/user-not-found":
+        //             setAlert({
+        //                 ...alert,
+        //                 open:false,
+        //                 status:'error',
+        //                 slide:true,
+        //                 slideMessage:'Invalid credentials, please try again.'
                         
-                    })
-                    break;
-                case "auth/wrong-password":
-                    setAlert({
-                        ...alert,
-                        open:false,
-                        status:'error',
-                        slide:true,
-                        slideMessage:'Invalid credentials, please try again.'
+        //             })
+        //             break;
+        //         case "auth/wrong-password":
+        //             setAlert({
+        //                 ...alert,
+        //                 open:false,
+        //                 status:'error',
+        //                 slide:true,
+        //                 slideMessage:'Invalid credentials, please try again.'
                         
-                    })
-                    break;
-                default:
-                    break;
-            }
-        })
+        //             })
+        //             break;
+        //         default:
+        //             break;
+        //     }
+        // })
 
     }
 
