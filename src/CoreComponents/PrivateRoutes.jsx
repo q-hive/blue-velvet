@@ -1,17 +1,21 @@
 import React from 'react'
-import useAuthContext from '../contextHooks/useAuthContext'
+import useAuth from '../contextHooks/useAuthContext'
 
-export const PrivateRoutes = ({children}) => {
-    const {user} = useAuthContext()
-    
+export const PrivateRoutes = (props) => {
+    const {user} = useAuth()
+
     if(!user) {
         return (
             <div>
-                NO EXISTE USUARIO
+                NO EXISTE USUARIO, no deberias estar aqui
             </div>
         )
     }
+
+    console.log(props)
+
+
   return (
-    {children}
+    <>{props.children}</>
   )
 }
