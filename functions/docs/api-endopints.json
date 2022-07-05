@@ -1,0 +1,11 @@
+{
+    "api": {
+        "v1": {
+            "admin": {},
+            "employee": {},
+            "container": {},
+            "production": {}
+
+        }
+    }
+}
