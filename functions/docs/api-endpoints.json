@@ -1,0 +1,187 @@
+{
+    "api": {
+        "v1": {
+            "admin": {},
+            "employee": {},
+            "container": {},
+            "production": {}
+
+        }
+    },
+    "auth": {
+        "login": {
+            "desc": "Ruta de login para cuentas  no admin",
+            "method": "POST",
+            "payload": {
+                "email":    "String",
+                "password": "String"
+            },
+            "response": {
+                "success": {
+                    "code":     200,
+                    "method":   "Authentication success",
+                    "payload": {
+                        "token": "String",                                                                                                      
+                        "user": {
+                            "id":       "String",
+                            "name":     "String",
+                            "email":    "String",
+                            "image":    "String",
+                            "role":     "String"
+                        }
+                    }
+                }, 
+                "fail": [
+                    {
+                        "code":     401,
+                        "method":   "Unauthorized",
+                        "payload": {
+                            "error":    "Object",
+                            "message":  "String",
+                            "date":     "Date"
+                        }
+                    },
+                    {
+                        "code":     403,
+                        "method":   "Forbidden",
+                        "payload": {
+                            "error":    "Object",
+                            "message":  "String",
+                            "date":     "Date"
+                        }
+                    }
+                ]
+            }
+        },
+        "login/admin": {
+
+        },
+        "logout": {
+
+        },
+        "refresh": {
+
+        },
+        "register": {
+            "admin": {
+                "desc":     "Admin account generation for given organization and containers",
+                "method":   "POST",
+                "payload": {
+                    "email":        "String",
+                    "password":     "String",
+                    "passphrase":   "String",
+                    "name":         "String",
+                    "lname":        "String",
+                    "organization": "ObjectId",
+                    "container":    "[ObjectId]",
+                    "address": {
+                        "stNumber":   "String",
+                        "street":     "String",
+                        "zip":        "String",
+                        "city":       "String",
+                        "state":      "String",
+                        "country":    "String",
+                        "references": "String"
+                    }
+                },
+                "response": {
+                    "success": {
+                        "code":     201,
+                        "method":   "Admin user creation success",
+                        "payload": {
+                            "token":        "String",
+                            "passphrase":   "String",                                                                                                      
+                            "user": {
+                                "id":       "String",
+                                "name":     "String",
+                                "email":    "String",
+                                "image":    "String",
+                                "role":     "String"
+                            }
+                        }
+                    }, 
+                    "fail": [
+                        {
+                            "code":     401,
+                            "method":   "Unauthorized",
+                            "payload": {
+                                "error":    "Object",
+                                "message":  "String",
+                                "date":     "Date"
+                            }
+                        },
+                        {
+                            "code":     403,
+                            "method":   "Forbidden",
+                            "payload": {
+                                "error":    "Object",
+                                "message":  "String",
+                                "date":     "Date"
+                            }
+                        }
+                    ]
+                }  
+            },
+            "employee": {
+                "desc":     "Employee account generation for given organization",
+                "method":   "POST",
+                "payload": {
+                    "email":        "String",
+                    "password":     "String",
+                    "name":         "String",
+                    "lname":        "String",
+                    "organization": "ObjectId",
+                    "containers":    "[ObjectId]",
+                    "salary":       "Number",
+                    "address": {
+                        "stNumber":   "String",
+                        "street":     "String",
+                        "zip":        "String",
+                        "city":       "String",
+                        "state":      "String",
+                        "country":    "String",
+                        "references": "String"
+                    }
+                },
+                "response": {
+                    "success": {
+                        "code":     201,
+                        "method":   "Admin user creation success",
+                        "payload": {
+                            "token":        "String",
+                            "passphrase":   "String",                                                                                                      
+                            "user": {
+                                "id":       "String",
+                                "name":     "String",
+                                "email":    "String",
+                                "image":    "String",
+                                "role":     "String"
+                            }
+                        }
+                    }, 
+                    "fail": [
+                        {
+                            "code":     401,
+                            "method":   "Unauthorized",
+                            "payload": {
+                                "error":    "Object",
+                                "message":  "String",
+                                "date":     "Date"
+                            }
+                        },
+                        {
+                            "code":     403,
+                            "method":   "Forbidden",
+                            "payload": {
+                                "error":    "Object",
+                                "message":  "String",
+                                "date":     "Date"
+                            }
+                        }
+                    ]
+                } 
+            }
+        }
+
+    }
+}
