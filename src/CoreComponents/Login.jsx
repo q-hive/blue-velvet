@@ -20,6 +20,7 @@ import LoginIcon from '@mui/icons-material/Login';
 
 //*Iamges
 import LoginImage from '../assets/images/login.jpeg'
+import api from '../axios.js'
 
 
 const auth = getAuth()
@@ -71,6 +72,42 @@ export const Login = () => {
         //*If passphrase succeed then redirect to admin
         //*If not, cancel and notify cockpit
 
+        api.post('/auth/login', loginData)
+        .then(response => {
+            setLoading(false)
+            console.log(response)
+            if(response.data.data.user.rol){
+                setUser(response.data.data.user)
+                //*TODO NAVIGATE TO USER ADMINI PASSPHRASE IF ADMIN
+                navigate(`${response.data.data.user.uid}/${response.data.data.user.rol}`)
+                return
+            }
+            setAlert({
+                open:true,
+                status:"error",
+                message:"alejate alv"
+            })
+            
+            
+        })
+        .catch((err) => {
+            console.log(err)
+            console.log(err.response)
+            setLoading(false)
+            switch(err.response.status){
+                case 400:
+                    setAlert({
+                        ...alert,
+                        status:"error",
+                        slide:true,
+                        slideMessage:"The data you entered is invalid, please verify the format."
+                    })
+                    break;
+                default:
+                    break;
+            }
+        })
+        
         // signInWithEmailAndPassword(auth, loginData.email, loginData.password)
         // .then((credential) => {
         //     setLoading(false)

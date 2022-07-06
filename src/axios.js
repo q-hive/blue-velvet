@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const hosts = ['localhost:9999']
+const hosts = ['http://localhost:9999']
 
 
 const api = axios.create({

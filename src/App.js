@@ -13,6 +13,7 @@ const ContainerManagerComponent = () => {
     return (
         <div>
             Vista del ADMINISTRADOR
+            PONER LA PASSPHRASE
         </div>
     )
 }

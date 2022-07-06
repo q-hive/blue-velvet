@@ -1,4 +1,4 @@
-import auth from '../../firebase.js'
+import auth from '../../firebaseAdmin.js'
 
 import { error } from '../../network/response.js'
 export const isAuthenticated = (req, res, next) => {

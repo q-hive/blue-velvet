@@ -1,7 +1,19 @@
-import { initializeApp } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
-const app = initializeApp()
+import { initializeApp } from "@firebase/app";
+import {getAuth} from 'firebase/auth'
 
-const auth = getAuth(app)
+const config = {
+        apiKey: "AIzaSyBnWcbZ9KgNZWbyC-B9VTmQwAvMWjI4gpM",
+        authDomain: "greengrow-116bd.firebaseapp.com",
+        projectId: "greengrow-116bd",
+        storageBucket: "greengrow-116bd.appspot.com",
+        messagingSenderId: "597946461875",
+        appId: "1:597946461875:web:83cb86e46328d9671d4ac6"
+}
+
+
+const firebaseApp = initializeApp(config)
+
+const auth = getAuth()
+
 
 export default auth
