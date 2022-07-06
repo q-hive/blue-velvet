@@ -2,6 +2,7 @@ import express from 'express'
 import http from 'http'
 import cors from 'cors'
 import fileUpload from 'express-fileupload'
+import morgan from 'morgan'
 
 import { adminRoutes } from './network/routes.js'
 
@@ -14,6 +15,7 @@ app.set('port', port)
 app.use(express.json())
 app.use(fileUpload())
 
+app.use(morgan('combined'))
 
 /*
  *  CORS Implementation
