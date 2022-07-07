@@ -107,64 +107,6 @@ export const Login = () => {
                     break;
             }
         })
-        
-        // signInWithEmailAndPassword(auth, loginData.email, loginData.password)
-        // .then((credential) => {
-        //     setLoading(false)
-        //     setUser(credential)
-        //     //*rol must be in custom claim
-        //     navigate(`${credential.user.uid}/admin`)
-        // })
-        // .catch((err) => {
-        //     //*err.code
-        //     //*err.mesage
-        //     setLoading(false)
-        //     switch(err.code){
-        //         case "auth/invalid-email":
-        //             setAlert({
-        //                 ...alert,
-        //                 open:false,
-        //                 status:'error',
-        //                 slide:true,
-        //                 slideMessage:'Invalid Email, please correct it.'
-                        
-        //             })
-        //             break;
-        //         case "auth/user-disabled":
-        //             setAlert({
-        //                 ...alert,
-        //                 open:false,
-        //                 status:'error',
-        //                 slide:true,
-        //                 slideMessage:'Your account is not longer valid.'
-                        
-        //             })
-        //             break;
-        //         case "auth/user-not-found":
-        //             setAlert({
-        //                 ...alert,
-        //                 open:false,
-        //                 status:'error',
-        //                 slide:true,
-        //                 slideMessage:'Invalid credentials, please try again.'
-                        
-        //             })
-        //             break;
-        //         case "auth/wrong-password":
-        //             setAlert({
-        //                 ...alert,
-        //                 open:false,
-        //                 status:'error',
-        //                 slide:true,
-        //                 slideMessage:'Invalid credentials, please try again.'
-                        
-        //             })
-        //             break;
-        //         default:
-        //             break;
-        //     }
-        // })
-
     }
 
     const handleLoginData = (e) => {
