@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
+//*? Name of task must be in model
 const task = new Schema({
     id:             ObjectId,
     assigned:       [ObjectId],
