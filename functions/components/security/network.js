@@ -17,7 +17,6 @@ authRouter.post('/login', (req, res) => {
         return
     }
 
-    console.log(isEmailValid(req.body.email) && req.body.password !== "")
     if(isEmailValid(req.body.email) && req.body.password !== ""){
         signInWithEmailAndPassword(auth, req.body.email, req.body.password)
         .then(credential => {

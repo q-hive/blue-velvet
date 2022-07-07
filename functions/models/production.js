@@ -14,6 +14,7 @@ const production = new Schema({
     products: [
         {
             id:         ObjectId,
+            //*PCT = % of a specefic product
             pct:        Number,
             name:       String,
             prodCost:   Number,

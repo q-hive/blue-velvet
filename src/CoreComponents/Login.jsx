@@ -8,10 +8,6 @@ import { Box } from '@mui/system'
 import { Button, TextField, Fade, CircularProgress, Collapse, Alert, AlertTitle, Snackbar, Tab, Typography } from '@mui/material'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
 
-//*Firebase
-import {getAuth, signInWithEmailAndPassword } from 'firebase/auth'
-import '../firebaseInit.js'
-
 //*Auth context
 import useAuth from '../contextHooks/useAuthContext.js'
 
@@ -22,8 +18,6 @@ import LoginIcon from '@mui/icons-material/Login';
 import LoginImage from '../assets/images/login.jpeg'
 import api from '../axios.js'
 
-
-const auth = getAuth()
 
 export const Login = () => {
     const [alert, setAlert] = useState({
@@ -65,12 +59,12 @@ export const Login = () => {
         setLoading(true)
 
         //*TODO REFACTOR LOGIN
-        //*Send credentials to backend
-        //*Await response
-        //*Response sets logic for ----> redirect to admin or redirect to employee screen
+        //*DONE Send credentials to backend
+        //*DONE Await response
+        //*DONE Response sets logic for ----> redirect to admin or redirect to employee screen
         //*If admin show compontent for passphrase input
         //*If passphrase succeed then redirect to admin
-        //*If not, cancel and notify cockpit
+        //*If not, cancel and notify SUPERADMIN
 
         api.post('/auth/login', loginData)
         .then(response => {

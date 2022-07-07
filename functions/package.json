@@ -25,6 +25,7 @@
     "firebase-admin": "^11.0.0",
     "mongodb": "^4.7.0",
     "mongoose": "^6.4.2",
+    "morgan": "^1.10.0",
     "nodemon": "^2.0.18"
   }
 }

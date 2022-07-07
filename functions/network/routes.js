@@ -1,6 +1,10 @@
+//*Routers
 import adminRouter from '../components/admin/network.js'
-import {isAuthenticated, isAuthorized } from '../components/security/controller.js'
 import authRouter from '../components/security/network.js'
+import productsRouter from '../components/products/network.js'
+
+//*Middlewares
+import {isAuthenticated, isAuthorized } from '../components/security/controller.js'
 
 //*Api for request
 const api = '/api/v1'
@@ -11,6 +15,11 @@ const authPath = `/auth`
 export const adminRoutes = (app) => {
     const authorized = ["admin"]
     app.use(`${api}/admin`, isAuthenticated, isAuthorized(authorized), adminRouter)
+}
+
+export const productsRoutes = (app) => {
+    const authorized = ["admin"]
+    app.use(`${api}/products`, productsRouter)
 }
 
 export const authRoutes = (app) => {
