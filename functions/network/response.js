@@ -19,14 +19,6 @@ export const processing = (req, res, code, message, status, data) => {
 
 export const error = (req,res,code,message, error) => {
     console.log(error)
-    if(code === 500){
-        res.status(code).send({
-            "success":  false,
-            "error":    "Operación fallida",
-            "message":  "Error interno"
-        })
-        return
-    }
     
     res.status(code).send({
         "success":  false,
