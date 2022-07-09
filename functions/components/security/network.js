@@ -22,21 +22,7 @@ authRouter.post('/login', (req, res) => {
         .then(credential => {
             adminAuth.verifyIdToken(credential._tokenResponse.idToken)
             .then(user => {
-                //*Comment if is production
-                if(user.rol === undefined){
-                    adminAuth.setCustomUserClaims(user.uid, {
-                        rol:"admin"
-                    })
-                    .then(x => {
-                        success(req, res, 200, "Authentication succeed", {user:x})        
-                        return
-                    })
-                    .catch(err => {
-                        error(req, res, 500, "Internal error, try again",err)
-                    })
-                    return
-                }
-
+                // TODO: Obtain token and send depending on response
                 success(req, res, 200, "Authentication succeed", {user:user})
             })
             .catch(err => {
