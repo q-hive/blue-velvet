@@ -72,7 +72,7 @@
         "refresh": {
 
         },
-        "register": {
+        "create": {
             "admin": {
                 "desc":     "Admin account generation for given organization and containers",
                 "method":   "POST",
@@ -83,6 +83,8 @@
                     "name":         "String",
                     "lname":        "String",
                     "organization": "ObjectId",
+                    "phone":        "String",
+                    "image":        "String",
                     "container":    "[ObjectId]",
                     "address": {
                         "stNumber":   "String",
@@ -142,6 +144,8 @@
                     "lname":        "String",
                     "organization": "ObjectId",
                     "containers":    "[ObjectId]",
+                    "phone":        "String",
+                    "image":        "String",
                     "salary":       "Number",
                     "address": {
                         "stNumber":   "String",

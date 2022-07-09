@@ -7,7 +7,7 @@ import history from './history.js'
 import { AuthContext } from './contexts/AuthContext'
 
 //*Componentes
-import { Login } from './CoreComponents/Login'
+import { Login } from './CoreComponents/Login/Login'
 import { PrivateRoutes } from './CoreComponents/PrivateRoutes'
 import { AppRoutes } from './routes.js'
 

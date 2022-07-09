@@ -45,7 +45,7 @@ export const isAuthenticated = (req, res, next) => {
     });
 }
 
-export const isAuthorized = (authorized, pass=undefined) => {
+export const isAuthorized = (authorized) => {
     //*El usuario ya está autenticado aparentemente
 
     return (req, res, next) => {
