@@ -17,20 +17,30 @@
                 "password": "String"
             },
             "response": {
-                "success": {
-                    "code":     200,
-                    "method":   "Authentication success",
-                    "payload": {
-                        "token": "String",                                                                                                      
-                        "user": {
-                            "id":       "String",
-                            "name":     "String",
-                            "email":    "String",
-                            "image":    "String",
-                            "role":     "String"
+                "success": [
+                    {
+                        "code":     200,
+                        "method":   "Authentication success",
+                        "payload": {
+                            "isAdmin": false,
+                            "token": "String",                                                                                                      
+                            "user": {
+                                "id":       "String",
+                                "name":     "String",
+                                "email":    "String",
+                                "image":    "String",
+                                "role":     "String"
+                            }
+                        }
+                    },
+                    {
+                        "code":     200,
+                        "method":   "Admin passphrase required",
+                        "payload": {
+                            "isAdmin": true
                         }
                     }
-                }, 
+                ], 
                 "fail": [
                     {
                         "code":     401,
