@@ -4,7 +4,7 @@ import authRouter from '../components/security/network.js'
 import productsRouter from '../components/products/network.js'
 
 //*Middlewares
-import {isAuthenticated, isAuthorized } from '../components/security/controller.js'
+import { isAuthenticated, isAuthorized } from '../components/security/controller.js'
 
 //*Api for request
 const api = '/api/v1'
