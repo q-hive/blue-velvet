@@ -1,3 +1,5 @@
+import express from 'express'
+
 //Import Mongoose
 import {config} from 'dotenv'
 config()
@@ -7,7 +9,10 @@ const URI = process.env.MONGODB_URI;
 //Config Object to Avoid Deprecation Warnings
 const configMongo = {useNewUrlParser:true, useUnifiedTopology:true};
 
-mongoose.connect(URI, configMongo);
+mongoose.connect(URI, configMongo, () => {
+    console.log("")
+});
+
 
 //Store Connection Object
 const db = mongoose.connection;
@@ -17,8 +22,9 @@ db.on("open", () => {
     console.log(`You are connected to Mongo`);
 })
 .on("error", (err) => {
-    console.log("No se ha podido conectar a la instancia de mongo")
+    console.log("It is no possible to connect to mongo due to an error")
     console.log(err);
+    mongoose.connection.close()
 })
 .on("close", () => {
     console.log(`You are no longer connected to Mongo`);

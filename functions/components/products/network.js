@@ -1,8 +1,9 @@
 import express from 'express'
 import {error, success} from '../../network/response.js'
+import { hasQueryString } from '../../utils/hasQuery.js'
 
 //*Controllers
-import {isValidProductObject} from './controller.js'
+import {isValidProductObject, relateOrdersAndTasks} from './controller.js'
 
 //*Store
 import {
@@ -19,11 +20,22 @@ router.get('/', (req, res) => {
     //* ["?tasks (this returns all the products and the tasks related to it) "]
     //* ["?orders (this returns all the products and the orders related to it) "]
     //* ["?orders&tasks (this returns all the products and the orders related to them)"]
-    
-    //*Orders allways are going to be '' in this route
-    //*tasks allways are going to be '' in this route
+
     const validQueries = ["orders", "tasks"]
-    console.log(req.query)  
+
+    //*This is true if request has some of the valid queries
+    if(hasQueryString(req,validQueries)){
+        //* If are all the valid queries we use the relateOrdersAndTasks 
+        //* controller if not, use a normal filter in store controller
+        const areAll = validQueries.every(key => Object.keys(req.query).includes(key))
+        if(areAll){
+            relateOrdersAndTasks()
+            console.log("Data requested")
+            success(req, res, 200, "Request succeded")
+        }
+        return
+    }
+
     getAllProducts()
     .then(data => {
         success(req, res, 200, "Request succeded", data)

@@ -1,4 +1,5 @@
 import product from '../../models/product.js'
+import { getAllProducts } from './store.js'
 
 const hasEveryKey = (valid, current) => {
      //*Verificar que el objeto tenga todas las llaves del modelo
@@ -18,4 +19,20 @@ export const isValidProductObject = (json) => {
         }
         //*Si tiene todos los campos, validar que el formato del valor del campo sea correcto
         return true
+}
+
+export const relateOrdersAndTasks = () => {
+    //*ASK FOR PRODUCTS ARRAY
+    getAllProducts()
+    .then((data) => {
+        console.log(data)
+        return
+    })
+    .catch(err => {
+        console.log(err)
+        return
+    })
+    //* ITERATE ARRAY AND SEARCH IN ORDERS BY PRODUCT ID
+    //? ARE TASKS REALLY RELATED TO THE PRODUCTS?  
+    //* AND SEARCH IN TASKS BY PRODUCTS
 }
