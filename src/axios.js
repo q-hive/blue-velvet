@@ -11,4 +11,9 @@ const api = axios.create({
     withCredentials:true
 })
 
-export default api
+const updateToken = (token) => {
+    api.defaults.headers.common["Authorization"] = `Bearer ${token}`    
+}
+
+
+export default { api, updateToken }
