@@ -32,6 +32,7 @@
     "@mui/icons-material": "^5.8.4",
     "@mui/lab": "^5.0.0-alpha.88",
     "@mui/material": "^5.8.6",
+    "@mui/x-data-grid": "^5.13.0",
     "axios": "^0.27.2",
     "firebase": "^9.8.4",
     "react": "^18.2.0",

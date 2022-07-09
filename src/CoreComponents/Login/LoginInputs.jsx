@@ -61,6 +61,7 @@ export const LoginInputs = ({
                 onAfterOpen={() => setAdminLogin(true)}
                 contentLabel="Please enter your secret passphrase"
             >
+                { openPassphrase && 
                 <TextValidator
                     label="Passphrase"
                     variant="outlined" 
@@ -71,7 +72,7 @@ export const LoginInputs = ({
                     value={passphrase}
                     validators={['required']}
                     errorMessages={['Passphrase is required']}
-                />
+                />}
                 <Button 
                 sx={{background:"#0E0C8F", color:"white"}} 
                 endIcon={<LoginIcon/>} 

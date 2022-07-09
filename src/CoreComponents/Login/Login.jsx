@@ -77,8 +77,7 @@ export const Login = () => {
 
             if (response.data.isAdmin) {
                 // * Load passphrase modal
-                setOpenPassphrase                
-
+                setOpenPassphrase(true)                
             } else {
                 // * It's employee
                 if (response.data.data.user.role == 'employee'){
