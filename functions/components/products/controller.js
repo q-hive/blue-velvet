@@ -1,4 +1,6 @@
 import product from '../../models/product.js'
+import { getOrdersByProd } from '../orders/store.js'
+import { getTaskByProdId } from '../tasks/store.js'
 import { getAllProducts } from './store.js'
 
 const hasEveryKey = (valid, current) => {
@@ -21,18 +23,29 @@ export const isValidProductObject = (json) => {
         return true
 }
 
-export const relateOrdersAndTasks = () => {
+export const relateOrdersAndTasks = async () => {
     //*ASK FOR PRODUCTS ARRAY
-    getAllProducts()
-    .then((data) => {
-        console.log(data)
-        return
-    })
-    .catch(err => {
-        console.log(err)
-        return
-    })
-    //* ITERATE ARRAY AND SEARCH IN ORDERS BY PRODUCT ID
+    const products = await getAllProducts()
+    if(products.length>0) {
+        //* ITERATE ARRAY
+        const tasksByProducts = products.map(async (prod) => {
+            //* AND SEARCH IN TASKS BY PRODUCTS
+            const tasks = await getTaskByProdId(prod._id)
+            //*SEARCH IN ORDERS BY PRODUCT ID
+            const orders = await getOrdersByProd(prod._id)
+            prod.tasks = [...tasks]
+            prod.orders = [...orders]
+            return prod
+        })
+        return Promise.all(tasksByProducts)
+        .then((data) => {
+            return data
+        })
+        .catch((err) => {
+            Promise.reject(err)
+        })
+    }
+
+    return products
     //? ARE TASKS REALLY RELATED TO THE PRODUCTS?  
-    //* AND SEARCH IN TASKS BY PRODUCTS
 }

@@ -9,10 +9,9 @@ const URI = process.env.MONGODB_URI;
 //Config Object to Avoid Deprecation Warnings
 const configMongo = {useNewUrlParser:true, useUnifiedTopology:true};
 
-mongoose.connect(URI, configMongo, () => {
-    console.log("")
+mongoose.connect(URI, configMongo, ()=> {
+    
 });
-
 
 //Store Connection Object
 const db = mongoose.connection;
@@ -29,5 +28,7 @@ db.on("open", () => {
 .on("close", () => {
     console.log(`You are no longer connected to Mongo`);
 });
+
+
 
 export {mongoose}

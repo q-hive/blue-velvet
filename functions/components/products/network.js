@@ -30,8 +30,12 @@ router.get('/', (req, res) => {
         const areAll = validQueries.every(key => Object.keys(req.query).includes(key))
         if(areAll){
             relateOrdersAndTasks()
-            console.log("Data requested")
-            success(req, res, 200, "Request succeded")
+            .then(relatedProds => {
+                success(req, res, 200, "Products related with orders and tasks obtained", relatedProds)
+            })
+            .catch(err => {
+                error(req, res, 500, "Error obteniendo ordenes y tareas a traves de los productos", err)
+            })
         }
         return
     }
