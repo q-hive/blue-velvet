@@ -15,7 +15,7 @@ const productsColumns = [
         headerName:"Microgreen"
     },
     {
-        field:"cost",
+        field:"performance",
         headerClassName:"header-products-table",
         headerAlign:"center",
         headerName:"Performance"

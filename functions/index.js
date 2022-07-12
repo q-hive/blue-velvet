@@ -4,7 +4,7 @@ import cors from 'cors'
 import fileUpload from 'express-fileupload'
 
 import { useMorgan } from './logs/morgan.js';
-import { adminRoutes, productsRoutes } from './network/routes.js'
+import { adminRoutes, ordersRoutes, productsRoutes } from './network/routes.js'
 import { authRoutes } from './network/routes.js'
 
 
@@ -35,6 +35,7 @@ app.use(cors({
 authRoutes(app)
 adminRoutes(app)
 productsRoutes(app)
+ordersRoutes(app)
 
 
 
@@ -61,6 +62,8 @@ function normalizePort(num){
 }
 
 function onError(err){
+    console.log('Error en el server')
+    
     if(error.syscall !== 'listen'){
         throw err
     }
