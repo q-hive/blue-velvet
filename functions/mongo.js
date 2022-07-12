@@ -24,4 +24,4 @@ db.on("open", () => {
     console.log(`You are no longer connected to Mongo`);
 });
 
-export {mongoose}
+export { mongoose }

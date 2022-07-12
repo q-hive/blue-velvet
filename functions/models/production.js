@@ -8,14 +8,13 @@ const production = new Schema({
     start:          Date,
     end:            Date,
     updated:        Date,
+    surplus:        Number,
     orders:         [ObjectId],
     tasks:          [ObjectId],
     activeTasks:    [ObjectId],
     products: [
         {
             id:         ObjectId,
-            //*PCT = % of a specefic product
-            pct:        Number,
             name:       String,
             prodCost:   Number,
         }
