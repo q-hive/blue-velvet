@@ -21,6 +21,11 @@ const task = new Schema({
         end:        Date,
         estimated:  Date
     }],
+},
+{
+    query: {
+        
+    }
 })
 
 export default task

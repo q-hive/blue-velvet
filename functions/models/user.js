@@ -12,6 +12,7 @@ const User = new Schema({
     salary:     Number, // * In case of EMPLOYEE
     containers: [ObjectId],
     customers:  [ObjectId], // * In case of ADMIN
+    phone:      String,
     address: {
         stNumber:   String,
         street:     String,

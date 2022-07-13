@@ -19,6 +19,11 @@ const production = new Schema({
             prodCost:   Number,
         }
     ],
+},
+{
+    query: {
+        
+    }
 })
 
 export default production

@@ -8,6 +8,13 @@ const invoice = Schema({
     order:      ObjectId,
     cost:       Number,
     status:     String
+},
+{
+    query: {
+        byStatus(status) {
+            return this.where({ status: status })
+        }
+    }
 })
 
 export default invoice

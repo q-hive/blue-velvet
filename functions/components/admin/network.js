@@ -1,6 +1,6 @@
 import express from 'express'
 import { error, success } from '../../network/response.js'
-import { newEmployee } from './store.js'  
+import { newEmployee, newAdminAccount } from './store.js'  
 
 const router = express.Router()
 

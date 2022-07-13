@@ -17,6 +17,13 @@ const organization = new Schema({
         country:    String,
         references: String
     },
+},
+{
+    query: {
+        byName(name) {
+            return this.where({name: new RegExp(name, 'i')})
+        }
+    }
 })
 
 export default organization

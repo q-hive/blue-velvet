@@ -16,11 +16,22 @@ authRouter.post('/login', (req, res) => {
 
     if(isEmailValid(req.body.email) && req.body.password !== ""){
         signInWithEmailAndPassword(auth, req.body.email, req.body.password)
-        .then(credential => {
-            adminAuth.verifyIdToken(credential._tokenResponse.idToken)
-            .then(user => {
-                // TODO: Obtain token and send depending on response
-                success(req, res, 200, "Authentication succeed", {user:user, credential: credential})
+        .then(user => {
+            adminAuth.verifyIdToken(user._tokenResponse.idToken)
+            .then(claims => {
+                // * Generate containers
+                success(req, res, 200, "Authentication succeed", 
+                    claims.role === 'admin'
+                    ? { isAdmin: true }   
+                    : {
+                        isAdmin: false,
+                        user: {
+                            ...user,
+                            role: claims.role
+                        }, 
+                        token: user._tokenResponse.idToken
+                    }    
+                )
             })
             .catch(err => {
                 error(req, res, 500, "Internal error, try again", err)

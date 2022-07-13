@@ -13,6 +13,16 @@ const product = new Schema({
         night:          Number, // * In hours
         seedingRate:    Number,  
     }
+},
+{
+    query: {
+        byName(name) {
+            return this.where({ name: new RegExp(name, 'i') })
+        },
+        byDesc(desc) {
+            return this.where({ desc: new RegExp(desc, 'i') })
+        }
+    }
 })
 
 export default product

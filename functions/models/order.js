@@ -13,6 +13,11 @@ const order = new Schema({
     containers: [ObjectId],
     production: [ObjectId],
     products:   [ObjectId],
+},
+{
+    byType(type) {
+        return this.where({ type: type })
+    }
 })
 
 export default order

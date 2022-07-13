@@ -18,6 +18,16 @@ const customer = new Schema({
         country:    String,
         references: String
     },
+},
+{
+    query: {
+        byName(name) {
+            return this.where({ name: new RegExp(name, "i")})
+        },
+        byBusinessName(bName) {
+            return this.where({ businessName: new RegExp(bName, "i")})
+        }
+    }
 })
 
 export default customer
