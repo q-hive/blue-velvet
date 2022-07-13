@@ -1,3 +1,11 @@
+import path from "path";
+import { readFileSync } from "fs";
+
+import { generate } from '../passphrase/generator.js'
+
+const sourcePath = path.resolve(process.cwd(), "components/passphrase/files/(1) The Hunger Games.txt");
+const source = readFileSync(sourcePath);
+
 export async function hashPassphrase(passphrase) {
     // * This function will return the hashed passphrase through a SHA-256
     // * 1 - encode as UTF-8
@@ -14,7 +22,10 @@ export async function hashPassphrase(passphrase) {
     return hashHex;
 }
 
-export async function genPassphrase() {
-    // TODO: Program the passphrase generation algorithm
-    return "passphrase"
+export async function genPassphrase(length) {
+    return generate({
+        wordsCount: length,
+        sampleSize: 3,
+        source,
+    });
 }

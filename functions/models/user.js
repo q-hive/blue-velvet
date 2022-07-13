@@ -1,4 +1,3 @@
-import { query } from 'express';
 import mongoose from 'mongoose';
 const { Schema  } = mongoose;
 const { ObjectId } = mongoose.Types

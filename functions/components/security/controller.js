@@ -71,3 +71,10 @@ export const isAuthorized = (authorized) => {
         }
     }
 }
+
+export const isValidIp = (req, res, next) => {
+    // * 1 - Obtain valid IP addresses from Mongo
+
+    // * 2 - Return for valid IP
+    next()
+}

@@ -1,6 +1,7 @@
-import { adminAuth } from '../../firebaseAdmin.js'
-import User from '../../models/user'
-import { hashPassphrase, genPassphrase } from './helper'
+import mongoose from 'mongoose'
+import adminAuth from '../../firebaseAdmin.js'
+import User from '../../models/user.js'
+import { hashPassphrase, genPassphrase } from './helper.js'
 
 export function newEmployee(data) {
     return new Promise((resolve, reject) => {
@@ -29,8 +30,9 @@ export function newAdminAccount(data) {
 
                 let passphrase = hashPassphrase(data.passphrase || genPassphrase())
 
-                // TODO: Register metadata on mongodb
-                let mongoUser = new User({
+                let userModel = new mongoose.model('users', User)
+                
+                let userData = {
                     email:      data.email,
                     name:       data.name,
                     lname:      data.lname,
@@ -39,16 +41,25 @@ export function newAdminAccount(data) {
                     containers: data.containers,
                     customers:  data.customers,
                     address:    data.address
+                }
+
+                let mongoUser = new userModel(userData)
+
+                mongoUser.save((e) => {
+                    console.error()
+                    reject(e)
                 })
-                
-                await mongoUser.save()
+
+                resolve(userData)
             })
             .catch((error) => {
                 console.log(`Error assigning new admin role on ${userRecord.email}:`, error)
+                reject(error)
             })
         })
         .catch((error) => {
             console.log('Error creating new admin user on firebaseAtuh:', error)
+            reject(error)
         })
     })
 }

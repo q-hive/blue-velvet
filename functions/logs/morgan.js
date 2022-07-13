@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 export const useMorgan = (app) => {
     const __filename = fileURLToPath(import.meta.url)
     const __dirname = path.dirname(__filename)
-    const __logname = path.join(__dirname, 'logs', 'access.log')
+    const __logname = path.join(__dirname, '', 'access.log')
     
     // * Create file if log doesn't exists
     if (!fs.existsSync(__logname)) {
