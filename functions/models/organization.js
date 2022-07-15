@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
-const organization = new Schema({ 
+const Organization = new Schema({ 
     _id: ObjectId,
     name: String,
     owner: ObjectId,
@@ -26,4 +26,4 @@ const organization = new Schema({
     }
 })
 
-export default organization
+export default Organization

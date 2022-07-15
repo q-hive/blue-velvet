@@ -6,7 +6,12 @@ export const newOrganization = (orgData) => {
         let orgModel = new mongoose.model('organizations', Organization)
 
         let orgMapped = {
-
+            name: orgData.name,
+            owner: orgData.owner,
+            employees: [],
+            containers: [],
+            address: orgData.address
+            
         }
 
         let orgDoc = orgModel(orgMapped)

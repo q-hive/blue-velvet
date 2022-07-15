@@ -1,8 +1,6 @@
 import mongoose from '../../mongo.js'
 import adminAuth from '../../firebaseAdmin.js'
 import User from '../../models/user.js'
-import Container from '../../models/container.js'
-import Organization from '../../models/organization.js'
 import { hashPassphrase, genPassphrase } from './helper.js'
 import { newContainer } from '../container/store.js°'
 
@@ -20,7 +18,7 @@ export function newEmployee(data) {
         })
         .then((userRecord) => {
             console.log('Successfully created new user on firebase:', userRecord.uid);
-            // * Update role to admin in custom claims
+            // * Update role to employee in custom claims
             adminAuth.setCustomUserClaims(userRecord.uid, { role: "employee" })
             .then(() => {
 
@@ -28,22 +26,10 @@ export function newEmployee(data) {
                 //      * It's impoertant to do this step first to avoid 
                 //      * any inconsistency and provide proper ObjectIds
 
-                let orgModel = new mongoose.model('organizations', Organization)
-
-                newOrganization(orgData)
-                .then(_id => {
-                    
-                })
+                
 
 
                 let userModel = new mongoose.model('users', User)
-                
-                // * Obtain container ids 
-
-                let containerIds = data.containers === undefined 
-                                || data.containers === [] 
-                                || data.containers === {} 
-                    ? Container.byOrganization()
 
                 let userData = {
                     email:      data.email,
@@ -52,6 +38,7 @@ export function newEmployee(data) {
                     role:       "employee",
                     containers: containersIds,
                     customers:  data.customers,
+                    organizations: orgId,
                     address:    data.address
                 }
 
@@ -86,6 +73,18 @@ export function newAdminAccount(data) {
             // * Update role to admin in custom claims
             adminAuth.setCustomUserClaims(userRecord.uid, {role: "admin"})
             .then(() => {
+
+                let orgData = {
+                    name: data.organization.name,
+                    owner: orgData.owner,
+                    address: orgData.address
+                    
+                }
+
+                newOrganization(orgData)
+                .then(_id => {
+                    
+                })
 
                 let containerIds = []
 
