@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
-const container = new Schema({
+const Container = new Schema({
     id:             ObjectId,
     name:           String,
     admin:          ObjectId,
@@ -43,4 +43,4 @@ const container = new Schema({
     }
 })
 
-export default container
+export default Container
