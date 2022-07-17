@@ -20,6 +20,7 @@ authRouter.post('/login', (req, res) => {
     if(isEmailValid(req.body.email) && req.body.password !== ""){
         signInWithEmailAndPassword(auth, req.body.email, req.body.password)
         .then(credential => {
+            console.log(credential)
             adminAuth.verifyIdToken(credential._tokenResponse.idToken)
             .then(user => {
                 //*Comment if is production
@@ -32,7 +33,7 @@ authRouter.post('/login', (req, res) => {
                         return
                     })
                     .catch(err => {
-                        error(req, res, 500, "Internal error, try again",err)
+                        error(req, res, 500, "Error setting claims",err)
                     })
                     return
                 }
@@ -40,12 +41,12 @@ authRouter.post('/login', (req, res) => {
                 success(req, res, 200, "Authentication succeed", {user:user})
             })
             .catch(err => {
-                error(req, res, 500, "Internal error, try again", err)
+                error(req, res, 500, "Error verifying ID Token", err)
             })
             return
         })
         .catch(err => {
-            error(req, res, 500, "Internal error, try again", err)            
+            error(req, res, 500, "Error signing in", err)            
             return
         })
         return

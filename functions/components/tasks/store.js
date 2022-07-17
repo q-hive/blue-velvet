@@ -1,9 +1,28 @@
 import {mongoose} from '../../mongo.js'
+import task from '../../models/task.js'
+import { ObjectId } from 'mongodb'
+
+export const createTask = (obj) => {
+    return new Promise((resolve, reject) => {
+        obj._id = new ObjectId()
+        
+        const taskModel = new mongoose.model('task', task)
+
+        const taskDoc = new taskModel(obj)
+
+        taskDoc.save((err) => {
+            if(err) {
+                reject(err)
+            }
+            resolve()
+        })
+    })
+}
 
 export const getTaskByProdId = (id) => {
     return new Promise((resolve, reject) => {
         mongoose.connection.collection('tasks')
-        .find({product:id})
+        .find({product:[id]})
         .toArray((err, data) => {
             if(err){
                 reject(err)

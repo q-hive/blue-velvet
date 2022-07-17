@@ -4,7 +4,7 @@ import cors from 'cors'
 import fileUpload from 'express-fileupload'
 import morgan from 'morgan'
 
-import { adminRoutes, ordersRoutes, productsRoutes } from './network/routes.js'
+import { adminRoutes, ordersRoutes, productsRoutes, taskRoutes } from './network/routes.js'
 import { authRoutes } from './network/routes.js'
 
 var port = normalizePort(9999 || process.env.PORT)
@@ -33,6 +33,7 @@ authRoutes(app)
 adminRoutes(app)
 productsRoutes(app)
 ordersRoutes(app)
+taskRoutes(app)
 
 
 

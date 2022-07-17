@@ -4,7 +4,6 @@ const { ObjectId } = mongoose.Types
 
 const production = new Schema({
     _id:            ObjectId,
-    mixing:         Boolean,
     start:          Date,
     end:            Date,
     updated:        Date,
@@ -20,6 +19,10 @@ const production = new Schema({
             prodCost:   Number,
         }
     ],
+    overProduction:{
+        quant:Number, //*Number of trays
+        products:[ObjectId]
+    }
 })
 
 export default production
