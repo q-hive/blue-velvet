@@ -4,7 +4,6 @@ const { ObjectId } = mongoose.Types
 
 const production = new Schema({
     _id:            ObjectId,
-    mixing:         Boolean,
     start:          Date,
     end:            Date,
     updated:        Date,
@@ -17,6 +16,7 @@ const production = new Schema({
             id:         ObjectId,
             name:       String,
             prodCost:   Number,
+            surplus:    Number, // * In tray numbers
         }
     ],
 },

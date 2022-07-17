@@ -7,7 +7,12 @@ const product = new Schema({
     name:   String,
     image:  String,
     desc:   String,
-    cost:   Number, // * Cost per tray
+    cost:   Number, // * Cost per tray,
+    mix:{
+        isMix:Boolean,
+        name:String,
+        products:[ObjectId]
+    },
     parameters: {
         day:            Number, // * In hours
         night:          Number, // * In hours

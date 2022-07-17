@@ -4,7 +4,7 @@ const { ObjectId } = mongoose.Types
 
 //*? Name of task must be in model
 const task = new Schema({
-    id:             ObjectId,
+    _id:             ObjectId,
     assigned:       [ObjectId],
     currentStep:    Number,
     completed:      Boolean,

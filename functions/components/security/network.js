@@ -34,12 +34,12 @@ authRouter.post('/login', (req, res) => {
                 )
             })
             .catch(err => {
-                error(req, res, 500, "Internal error, try again", err)
+                error(req, res, 500, "Error verifying ID Token", err)
             })
             return
         })
         .catch(err => {
-            error(req, res, 500, "Internal error, try again", err)            
+            error(req, res, 500, "Error signing in", err)            
             return
         })
         return
