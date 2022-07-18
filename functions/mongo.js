@@ -1,15 +1,15 @@
-import express from 'express'
-
-//Import Mongoose
-import {config} from 'dotenv'
-config()
+// * Import Mongoose
+import { config } from 'dotenv'
 import mongoose from "mongoose";
-//Set URI
+
+config()
+// * Set URI
 const URI = process.env.MONGODB_URI;
-//Config Object to Avoid Deprecation Warnings
-const configMongo = {useNewUrlParser:true, useUnifiedTopology:true};
+// * Config Object to Avoid Deprecation Warnings
+const configMongo = { useNewUrlParser: true, useUnifiedTopology: true };
 
 mongoose.connect(URI, configMongo, ()=> {
+    console.log('Connected to MongoDB');
 });
 
 //Store Connection Object

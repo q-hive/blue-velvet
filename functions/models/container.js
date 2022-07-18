@@ -3,12 +3,10 @@ const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
 const Container = new Schema({
-    id:             ObjectId,
     name:           String,
     admin:          ObjectId,
     organization:   ObjectId,
     capacity:       Number, // * Measured in trays
-    organization:   ObjectId,
     employees:      [ObjectId],
     prodLines:      [ObjectId],
     address: {

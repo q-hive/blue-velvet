@@ -5,6 +5,11 @@ export const isAuthenticated = (req, res, next) => {
     /* 
      * Verifica que el request contenga un ID Token.
     */
+
+    
+    // TODO: REMOVE AFTER TEST
+    return next()
+
     if (!(req.headers.authorization && req.headers.user)) {
         error(req, res, 401, "No tienes autorización")
         return
@@ -46,9 +51,11 @@ export const isAuthenticated = (req, res, next) => {
 }
 
 export const isAuthorized = (authorized) => {
-    //*El usuario ya está autenticado aparentemente
-
+    //*Se asume que el usuario ya esta autencitc
+    
     return (req, res, next) => {
+        // TODO: REMOVE AFTER TEST
+        return next()
         //*Desestructuramos el rol y su id de usuario de locals
         const {rol, uid} = res.locals
         //*Comprobamos que realmente exista un rol y un UID válidos

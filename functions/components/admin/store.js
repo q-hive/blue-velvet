@@ -1,8 +1,9 @@
-import mongoose from '../../mongo.js'
+import { mongoose } from '../../mongo.js'
 import adminAuth from '../../firebaseAdmin.js'
 import User from '../../models/user.js'
 import { hashPassphrase, genPassphrase } from './helper.js'
-import { newContainer } from '../container/store.js°'
+import { newContainer, getContainers } from '../container/store.js'
+import { newOrganization } from '../organization/store.js'
 
 export function newEmployee(data) {
     return new Promise((resolve, reject) => {
@@ -21,35 +22,38 @@ export function newEmployee(data) {
             // * Update role to employee in custom claims
             adminAuth.setCustomUserClaims(userRecord.uid, { role: "employee" })
             .then(() => {
-
-                // * Register organization
-                //      * It's impoertant to do this step first to avoid 
-                //      * any inconsistency and provide proper ObjectIds
-
-                
-
-
-                let userModel = new mongoose.model('users', User)
-
-                let userData = {
-                    email:      data.email,
-                    name:       data.name,
-                    lname:      data.lname,
-                    role:       "employee",
-                    containers: containersIds,
-                    customers:  data.customers,
-                    organizations: orgId,
-                    address:    data.address
-                }
-
-                let mongoUser = new userModel(userData)
-
-                mongoUser.save((e) => {
-                    console.error()
-                    reject(e)
+                getContainers({ 
+                    organization:   data.organization,
+                    admin:          data.admin
                 })
+                .then(containersIds => {
+                    let userModel = new mongoose.model('users', User)
 
-                resolve(userData)
+                    let userData = {
+                        email:          data.email,
+                        name:           data.name,
+                        lname:          data.lname,
+                        role:           "employee",
+                        containers:     containersIds,
+                        customers:      data.customers,
+                        admin:          data.admin,
+                        organization:   data.organization,
+                        address:        data.address,
+                        salary:         data.salary || 0,
+                        phone:          data.phone
+                    }
+
+                    let mongoUser = new userModel(userData)
+
+                    mongoUser.save((e) => {
+                        console.error()
+                        reject(e)
+                    })
+
+                    resolve(userData)
+                })
+                
+                
             })
         })
 
@@ -74,6 +78,14 @@ export function newAdminAccount(data) {
             adminAuth.setCustomUserClaims(userRecord.uid, {role: "admin"})
             .then(() => {
 
+                // * Register organization
+                //      * It's impoertant to do this step first to avoid 
+                //      * any inconsistency and provide proper ObjectIds
+                newOrganization(data.organization)
+                .then(org => {
+
+                })
+
                 let orgData = {
                     name: data.organization.name,
                     owner: orgData.owner,
@@ -82,7 +94,7 @@ export function newAdminAccount(data) {
                 }
 
                 newOrganization(orgData)
-                .then(_id => {
+                .then(_id => {admin 
                     
                 })
 

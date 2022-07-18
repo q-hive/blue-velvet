@@ -1,7 +1,7 @@
 const OPERATION_FAILED = 'OPERATION.FAILED'
 
 export const success = (req, res, code, message, data=null) => {
-    res.status(code).send({
+    return res.status(code).send({
         "success":  true,
         "error":    false,
         "message":  message,
@@ -10,7 +10,7 @@ export const success = (req, res, code, message, data=null) => {
 }
 
 export const processing = (req, res, code, message, status, data) => {
-    res.status(code).send({
+    return res.status(code).send({
         "success":  true,
         "error":    false,
         "message":  message,
@@ -21,7 +21,7 @@ export const processing = (req, res, code, message, status, data) => {
 
 export const error = (req,res,code,message, error) => {
     console.log(error)
-    res.status(code).send({
+    return res.status(code).send({
         "success":  false,
         "error":    OPERATION_FAILED,
         "message":  message

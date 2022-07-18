@@ -3,7 +3,6 @@ const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
 const production = new Schema({
-    _id:            ObjectId,
     start:          Date,
     end:            Date,
     updated:        Date,

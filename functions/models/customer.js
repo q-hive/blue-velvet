@@ -3,7 +3,6 @@ const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
 const customer = new Schema({
-    _id:                ObjectId,
     name:               String,
     businessName:       String,
     image:              String,

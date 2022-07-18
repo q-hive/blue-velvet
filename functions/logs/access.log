@@ -1,2 +1,11 @@
 [2022-07-12T11:28:36+08:00] "GET /auth/login" 404 149 - 3.382 ms
 [2022-07-12T11:28:42+08:00] "POST /auth/login" 500 82 - 181.663 ms
+[2022-07-18T08:55:34+08:00] "POST /api/v1/organization/new" 404 163 - 3.216 ms
+[2022-07-18T08:56:20+08:00] "POST /api/v1/organizations/new" 404 164 - 0.914 ms
+[2022-07-18T08:57:54+08:00] "POST /api/v1/organizations/new" 404 164 - 3.402 ms
+[2022-07-18T08:58:47+08:00] "POST /api/v1/organizations/new" 404 164 - 3.379 ms
+[2022-07-18T08:59:05+08:00] "POST /api/v1/organizations/new" 404 164 - 0.763 ms
+[2022-07-18T08:59:57+08:00] "POST /api/v1/organizations/new" 400 93 - 35.661 ms
+[2022-07-18T09:00:21+08:00] "POST /api/v1/organizations/new" 500 76 - 12.626 ms
+[2022-07-18T09:01:17+08:00] "POST /api/v1/organizations/new" 500 76 - 7.852 ms
+[2022-07-18T09:01:25+08:00] "POST /api/v1/organizations/new" 500 76 - 80.296 ms

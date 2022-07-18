@@ -3,12 +3,12 @@ const { Schema  } = mongoose;
 const { ObjectId } = mongoose.Types
 
 const User = new Schema({
-    id:         ObjectId,
+    uid:        String,
     email:      String,
     name:       String,
     lname:      String,
-    role:       String,
-    passphrase: String,
+    role:       String, 
+    passphrase: String,     // * In case of ADMIN
     salary:     Number,     // * In case of EMPLOYEE
     containers: [ObjectId],
     customers:  [ObjectId], // * In case of ADMIN

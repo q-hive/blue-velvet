@@ -4,7 +4,7 @@ import cors from 'cors'
 import fileUpload from 'express-fileupload'
 
 import { useMorgan } from './logs/morgan.js';
-import { adminRoutes, ordersRoutes, productsRoutes, taskRoutes } from './network/routes.js'
+import { adminRoutes, ordersRoutes, organizationRoutes, productsRoutes, taskRoutes } from './network/routes.js'
 import { authRoutes } from './network/routes.js'
 
 
@@ -31,11 +31,11 @@ app.use(cors({
     credentials: true
 }));
 
-
 authRoutes(app)
-adminRoutes(app)
+organizationRoutes(app)
 productsRoutes(app)
 ordersRoutes(app)
+adminRoutes(app)
 taskRoutes(app)
 
 

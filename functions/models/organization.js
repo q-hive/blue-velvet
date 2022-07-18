@@ -3,7 +3,6 @@ const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
 const Organization = new Schema({ 
-    _id: ObjectId,
     name: String,
     owner: ObjectId,
     employees: [ObjectId],
@@ -22,6 +21,9 @@ const Organization = new Schema({
     query: {
         byName(name) {
             return this.where({name: new RegExp(name, 'i')})
+        },
+        byOwner(owner) {
+            return this.where({ owner: owner })
         }
     }
 })
