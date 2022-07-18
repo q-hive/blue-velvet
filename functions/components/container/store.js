@@ -22,7 +22,7 @@ export const newContainer = (contData) => {
             location:       contData.location
         }
 
-        let containerDoc = containerModel(containerMapped)
+        let containerDoc = new containerModel(containerMapped)
 
         containerDoc.save((e, cont) => {
             if (e) reject(e)
@@ -74,5 +74,5 @@ export const updateContainer = (id, edit) => {
 }
 
 export const updateContainers = (ids, edit) => {
-    return contModel.updateMany({ _id: { $in: ids } }, edit, { multi: true })
+    return contModel.updateMany({ _id: { $in: ids }}, edit, { multi: true })
 }

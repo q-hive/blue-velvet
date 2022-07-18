@@ -34,6 +34,7 @@ export function newEmployee(data) {
                     let userModel = new mongoose.model('users', User)
 
                     let userData = {
+                        uid:            userRecord.uid,  
                         email:          data.email,
                         name:           data.name,
                         lname:          data.lname,
@@ -127,7 +128,6 @@ export function newAdminAccount(data) {
                         })
 
                         // * Register all containers with correct owner
-                        var containerIds = []
                         Promise.all(data.containers.map(contData => newContainer({
                             ...contData,
                             admin:          user._id,
