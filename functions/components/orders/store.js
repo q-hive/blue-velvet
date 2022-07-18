@@ -21,9 +21,7 @@ export const createNewOrder = (obj) => {
         const orderDoc = new orderModel(obj)
 
         orderDoc.save((err) => {
-            if(err){
-                reject(err)
-            }
+            if(err) reject(err)
 
             resolve("New order saved")
         })
@@ -33,6 +31,7 @@ export const createNewOrder = (obj) => {
 
 export const getOrdersByProd = (id) => {
     return new Promise((resolve, reject) => {
+        // TODO: Corregir query
         ordersCollection
         .find({products:[id]})
         .toArray((err, data) => {

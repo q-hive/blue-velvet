@@ -5,6 +5,7 @@ import productsRouter from '../components/products/network.js'
 import ordersRouter from '../components/orders/network.js'
 import tasksRouter from '../components/tasks/network.js'
 import organizationRouter from '../components/organization/network.js'
+import passphraseRouter from '../components/passphrase/network.js'
 
 
 //*Middlewares
@@ -43,5 +44,9 @@ export const organizationRoutes = (app) => {
 }
 
 export const authRoutes = (app) => {
-    app.use(authPath, authRouter)
+    app.use(`${authPath}`, authRouter)
+}
+
+export const passphraseRoutes = (app) => {
+    app.use(`${apiV1}/passphrase`, passphraseRouter)
 }

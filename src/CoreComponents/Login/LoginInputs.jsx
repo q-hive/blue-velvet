@@ -19,8 +19,8 @@ export const LoginInputs = ({
     let { email, password, passphrase} = loginData
 
     return (
-        <ValidatorForm
-            onSubmit={adminLogin ? handleAdminSignIn : handleSignIn}
+        <div><ValidatorForm
+            onSubmit={handleSignIn}
             onError={errors => console.log(errors)}
             sx={{
                 display:"flex",
@@ -56,6 +56,15 @@ export const LoginInputs = ({
             >
                 {loading ? "Loading..." : "Login"}
             </Button>
+        </ValidatorForm>
+        <ValidatorForm
+            onSubmit={handleAdminSignIn}
+            onError={errors => console.log(errors)}
+            sx={{
+                display:"flex",
+                flexDirection:"column"
+            }}
+        >
             <Modal
                 isOpen={openPassphrase}
                 onAfterOpen={() => setAdminLogin(true)}
@@ -74,14 +83,13 @@ export const LoginInputs = ({
                     errorMessages={['Passphrase is required']}
                 />}
                 <Button 
-                sx={{background:"#0E0C8F", color:"white"}} 
-                endIcon={<LoginIcon/>} 
-                type="submit"
-            >
-                {loading ? "Loading..." : "Send passphrase"}
-            </Button>
-            </Modal>
-            
-        </ValidatorForm>
+                    sx={{background:"#0E0C8F", color:"white"}} 
+                    endIcon={<LoginIcon/>} 
+                    type="submit"
+                >
+                    {loading ? "Loading..." : "Send passphrase"}
+                </Button>
+            </Modal> 
+        </ValidatorForm></div>
     );
 }

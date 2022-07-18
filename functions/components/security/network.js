@@ -1,6 +1,7 @@
 import express from 'express'
 import {error, success} from '../../network/response.js'
 import { isEmailValid, validateBodyNotEmpty } from './secureHelpers.js'
+import userCreationRouter from '../admin/network.js'
 
 //*Simple firebase
 import auth from '../../firebase.js'
@@ -61,6 +62,7 @@ authRouter.post('/logout', (req, res) => {
 authRouter.post('/refresh', (req, res) => {
     validateBodyNotEmpty(req, res)
 })
-//TODO REGISTER EMPLOYEE
+
+authRouter.use('/create', userCreationRouter)
 
 export default authRouter

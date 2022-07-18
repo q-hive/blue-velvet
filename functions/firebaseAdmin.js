@@ -1,17 +1,14 @@
-import { initializeApp, applicationDefault } from 'firebase-admin/app';
+// * Import Mongoose
+import { config } from 'dotenv'
+config()
+
 import { getAuth } from 'firebase-admin/auth';
+import admin from 'firebase-admin'
+import fs from 'fs'
+var serviceAccount = JSON.parse(fs.readFileSync(process.env.PATH_TO_GOOGLE_CREDETNTIALS, 'utf8'));
 
-const config = {
-    apiKey: "AIzaSyBnWcbZ9KgNZWbyC-B9VTmQwAvMWjI4gpM",
-    authDomain: "greengrow-116bd.firebaseapp.com",
-    projectId: "greengrow-116bd",
-    storageBucket: "greengrow-116bd.appspot.com",
-    messagingSenderId: "597946461875",
-    appId: "1:597946461875:web:83cb86e46328d9671d4ac6"
-}
-
-const app = initializeApp({
-    credential:applicationDefault()
+const app = admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
 })
 
 const adminAuth = getAuth(app)

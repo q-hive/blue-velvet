@@ -1,6 +1,8 @@
 import { mongoose } from '../../mongo.js'
 import Organization from '../../models/organization.js'
 
+const orgModel = new mongoose.model('organizations', Organization)
+
 export const newOrganization = (orgData) => {
     return new Promise((resolve, reject) => {
         let orgModel = new mongoose.model('organizations', Organization)
@@ -16,17 +18,16 @@ export const newOrganization = (orgData) => {
 
         let orgDoc = orgModel(orgMapped)
 
-        orgDoc.save((e, cont) => {
+        orgDoc.save((e, org) => {
             if (e) {
                 reject(e)
             }
-            resolve(cont)
+            resolve(org)
         })
     })
 }
 
 export const getOrganizations = (filters) => {
-    let orgModel = new mongoose.model('organizations', Organization)
     
     // * Apply filters if requested
     if (filters.name != undefined && filters.name != null) {
@@ -40,8 +41,10 @@ export const getOrganizations = (filters) => {
     return orgModel.find({})
 }
 
-export const getOrganizationById = (id) => {
-    let orgModel = new mongoose.model('organizations', Organization)
-    
-    return orgModel.find({ _id: ObjectId(id) })
+export const getOrganizationById = (id) => { 
+    return orgModel.findById(id)
+}
+
+export const updateOrganization = (id, edit) => {
+    return orgModel.update(id, edit)
 }

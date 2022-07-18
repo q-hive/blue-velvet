@@ -3,7 +3,7 @@ import adminAuth from '../../firebaseAdmin.js'
 import User from '../../models/user.js'
 import { hashPassphrase, genPassphrase } from './helper.js'
 import { newContainer, getContainers } from '../container/store.js'
-import { newOrganization } from '../organization/store.js'
+import { newOrganization, updateOrganization } from '../organization/store.js'
 
 export function newEmployee(data) {
     return new Promise((resolve, reject) => {
@@ -26,7 +26,9 @@ export function newEmployee(data) {
                     organization:   data.organization,
                     admin:          data.admin
                 })
-                .then(containersIds => {
+                .then(containers => {
+                    let containerIds = containers.map(cont => cont._id)                    
+                    
                     let userModel = new mongoose.model('users', User)
 
                     let userData = {
@@ -34,7 +36,7 @@ export function newEmployee(data) {
                         name:           data.name,
                         lname:          data.lname,
                         role:           "employee",
-                        containers:     containersIds,
+                        containers:     containerIds,
                         customers:      data.customers,
                         admin:          data.admin,
                         organization:   data.organization,
@@ -45,12 +47,21 @@ export function newEmployee(data) {
 
                     let mongoUser = new userModel(userData)
 
-                    mongoUser.save((e) => {
-                        console.error()
-                        reject(e)
-                    })
+                    mongoUser.save((e, user) => {
+                        if (e) reject(e)
+                        
+                        // * Update containers field
+                        updateContainers(containerIds, {
+                            $push: { employees: user._id }
+                        })
 
-                    resolve(userData)
+                        // * Update organization field
+                        updateOrganization(data.organization, {
+                            $push: { employees: user._id }
+                        })
+
+                        resolve(userData)    
+                    })
                 })
                 
                 
@@ -75,60 +86,63 @@ export function newAdminAccount(data) {
         .then((userRecord) => {
             console.log('Successfully created new user on firebase:', userRecord.uid);
             // * Update role to admin in custom claims
-            adminAuth.setCustomUserClaims(userRecord.uid, {role: "admin"})
+            adminAuth.setCustomUserClaims(userRecord.uid, { role: "admin" })
             .then(() => {
 
                 // * Register organization
                 //      * It's impoertant to do this step first to avoid 
                 //      * any inconsistency and provide proper ObjectIds
+                console.log("Role successfully set to: admin")
                 newOrganization(data.organization)
                 .then(org => {
 
-                })
 
-                let orgData = {
-                    name: data.organization.name,
-                    owner: orgData.owner,
-                    address: orgData.address
+                    // * Save user on MongoDB
+                    let hashedPassphrase = hashPassphrase(data.passphrase != undefined ? data.passphrase : genPassphrase(3))
+                    let userModel = new mongoose.model('users', User)
                     
-                }
+                    let userData = {
+                        uid:            userRecord.uid,
+                        email:          data.email,
+                        name:           data.name,
+                        lname:          data.lname,
+                        role:           "admin",
+                        passphrase:     hashedPassphrase,
+                        organization:   org._id,
+                        containers:     [],
+                        customers:      data.customers,
+                        address:        data.address
+                    }
+    
+                    let mongoUser = new userModel(userData)
+    
+                    mongoUser.save((e, user) => {
+                        if (e) reject(e)
+                        console.log("error", e)
+                        // * Update the owner field in organization
+                        updateOrganization(org._id, {
+                            $set: { admin: user._id }
+                        })
 
-                newOrganization(orgData)
-                .then(_id => {admin 
-                    
-                })
-
-                let containerIds = []
-
-                data.containers.forEach(cont => {
-                    newContainer(cont)
-                    .then(contId => {
-                        containerIds.push(contId)
+                        // * Register all containers with correct owner
+                        var containerIds = []
+                        Promise.all(data.containers.map(contData => newContainer({
+                            ...contData,
+                            admin:          user._id,
+                            organization:   org._id
+                        })))
+                        .then(containerIds => {
+                            resolve({
+                                ...userData,
+                                containers: containerIds.map(contRes => contRes._id)
+                            })
+                        })
                     })
                 })
-                
-                let passphrase = hashPassphrase(data.passphrase || genPassphrase())
-                let userModel = new mongoose.model('users', User)
-                
-                let userData = {
-                    email:      data.email,
-                    name:       data.name,
-                    lname:      data.lname,
-                    role:       "admin",
-                    passphrase: passphrase,
-                    containers: containerIds,
-                    customers:  data.customers,
-                    address:    data.address
-                }
-
-                let mongoUser = new userModel(userData)
-
-                mongoUser.save((e) => {
-                    console.error()
-                    reject(e)
+                .catch((error) => {
+                    console.log(`Error creating new organization :`, error)
+                    reject(error)
                 })
-
-                resolve(userData)
             })
             .catch((error) => {
                 console.log(`Error assigning new admin role on ${userRecord.email}:`, error)
@@ -140,4 +154,10 @@ export function newAdminAccount(data) {
             reject(error)
         })
     })
+}
+
+export function updateUser(id, edit) {
+    let userModel = mongoose.model('users', User)
+
+    return userModel.update(id, edit)    
 }

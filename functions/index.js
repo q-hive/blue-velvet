@@ -4,7 +4,10 @@ import cors from 'cors'
 import fileUpload from 'express-fileupload'
 
 import { useMorgan } from './logs/morgan.js';
-import { adminRoutes, ordersRoutes, organizationRoutes, productsRoutes, taskRoutes } from './network/routes.js'
+import { 
+    adminRoutes, ordersRoutes, organizationRoutes, 
+    productsRoutes, taskRoutes, passphraseRoutes 
+} from './network/routes.js'
 import { authRoutes } from './network/routes.js'
 
 
@@ -37,8 +40,7 @@ productsRoutes(app)
 ordersRoutes(app)
 adminRoutes(app)
 taskRoutes(app)
-
-
+passphraseRoutes(app)
 
 const server = http.createServer(app)
 

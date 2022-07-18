@@ -80,16 +80,19 @@ export const Login = () => {
                 setOpenPassphrase(true)                
             } else {
                 // * It's employee
-                if (response.data.data.user.role == 'employee'){
+                let { role } = response.data.data.user
+                
+                if (role == 'employee' || role == 'admin') {
                     
                     const { token, user } = response.data
 
                     updateToken(token)
                     setUser(user)
-                    navigate(`${user.uid}/${user.rol}`)
+                    navigate(`${user.uid}/${user.role}`)
                     
                     return
                 }
+                
                 // * Unrecognized role
                 setAlert({
                     open:       true,

@@ -98,8 +98,6 @@
                     "image":        "String",
                     "containers":    [{
                         "name": "String",
-                        "admin": "ObjectId",
-                        "organization": "ObjectId",
                         "capacitry": "Number",
                         "employees": [],
                         "address": {
