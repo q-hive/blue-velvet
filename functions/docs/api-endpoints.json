@@ -64,7 +64,58 @@
             }
         },
         "login/admin": {
-           
+            "desc": "Ruta de login para cuentas admin",
+            "method": "POST",
+            "payload": {
+                "email":        "String",
+                "password":     "String",
+                "passphrase":   "String"
+            },
+            "response": {
+                "success": [
+                    {
+                        "code":     200,
+                        "method":   "Authentication success",
+                        "payload": {
+                            "token": "String",                                                                                                      
+                            "user": {
+                                "id":       "String",
+                                "name":     "String",
+                                "email":    "String",
+                                "image":    "String",
+                                "role":     "String"
+                            }
+                        }
+                    },
+                    {
+                        "code":     200,
+                        "method":   "Admin passphrase required",
+                        "payload": {
+                            "isAdmin": true
+                        }
+                    }
+                ], 
+                "fail": [
+                    {
+                        "code":     401,
+                        "method":   "Unauthorized",
+                        "payload": {
+                            "error":    "Object",
+                            "message":  "String",
+                            "date":     "Date"
+                        }
+                    },
+                    {
+                        "code":     403,
+                        "method":   "Forbidden",
+                        "payload": {
+                            "error":    "Object",
+                            "message":  "String",
+                            "date":     "Date"
+                        }
+                    }
+                ]
+            }
         },
         "logout": {
 

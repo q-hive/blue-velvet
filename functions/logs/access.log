@@ -45,3 +45,10 @@
 [2022-07-18T11:47:57+08:00] "POST /auth/create/admin" 201 362 - 1250.643 ms
 [2022-07-18T11:55:09+08:00] "POST /auth/create/admin" 201 362 - 1310.088 ms
 [2022-07-18T12:00:16+08:00] "POST /auth/create/admin" 201 1139 - 1323.089 ms
+[2022-07-18T12:01:59+08:00] "POST /auth/create/admin" 201 415 - 1449.077 ms
+[2022-07-18T12:14:07+08:00] "POST /auth/login/admin" 400 72 - 14.508 ms
+[2022-07-18T12:14:20+08:00] "POST /auth/login/admin" 400 72 - 13.757 ms
+[2022-07-18T12:15:00+08:00] "POST /auth/login/admin" 400 72 - 13.454 ms
+[2022-07-18T12:16:32+08:00] "POST /auth/login/admin" 400 72 - 14.571 ms
+[2022-07-18T12:16:58+08:00] "POST /auth/login/admin" 400 72 - 18.566 ms
+[2022-07-18T12:21:30+08:00] "POST /auth/create/admin" 201 415 - 1388.624 ms

@@ -5,6 +5,8 @@ import { hashPassphrase, genPassphrase } from './helper.js'
 import { newContainer, getContainers } from '../container/store.js'
 import { newOrganization, updateOrganization } from '../organization/store.js'
 
+var userModel = mongoose.model('users', User)
+
 export function newEmployee(data) {
     return new Promise((resolve, reject) => {
         // * Create account on firebase
@@ -157,7 +159,10 @@ export function newAdminAccount(data) {
 }
 
 export function updateUser(id, edit) {
-    let userModel = mongoose.model('users', User)
 
     return userModel.update(id, edit)    
+}
+
+export function getUserByFirebaseId(uid) {
+    return userModel.findOne({ uid: uid })
 }

@@ -2,6 +2,7 @@ import express from 'express'
 import {error, success} from '../../network/response.js'
 import { isEmailValid, validateBodyNotEmpty } from './secureHelpers.js'
 import userCreationRouter from '../admin/network.js'
+import { getUserByFirebaseId } from '../admin/store.js'
 
 //*Simple firebase
 import auth from '../../firebase.js'
@@ -9,6 +10,7 @@ import { signInWithEmailAndPassword } from 'firebase/auth'
 
 //*FIREBASE ADMIN
 import adminAuth from '../../firebaseAdmin.js'
+import { hashPassphrase } from '../admin/helper.js'
 
 const authRouter = express.Router()
 
@@ -52,6 +54,43 @@ authRouter.post('/login', (req, res) => {
 
 authRouter.post('/login/admin', (req, res) => {
     validateBodyNotEmpty(req, res)
+
+    if(isEmailValid(req.body.email) && req.body.password !== ""){
+        signInWithEmailAndPassword(auth, req.body.email, req.body.password)
+        .then(user => {
+            adminAuth.verifyIdToken(user._tokenResponse.idToken)
+            .then(claims => {
+                // * Generate containers
+                if (claims.role === 'admin') {
+                    // TODO: Fix the obtain of user by UID
+                    getUserByFirebaseId(user.uid)
+                    .then(data => {
+                        console.log(data)
+                        if (data.passphrase == hashPassphrase(req.body.passphrase)) 
+                            success(req, res, 200, "Successfully logged as admin", {
+                                token: user._tokenResponse.idToken,                                                                                                      
+                                user: {
+                                    id:       data._id,
+                                    role:   claims.role,
+                                   ...user
+                                }
+                            })
+                    })
+                    return 
+                }
+                return error(req, res, 403, "Forbidden: Not admin", { "error": "Not admin role"})
+            })
+            .catch(err => {
+                return error(req, res, 500, "Error verifying ID Token", err)
+            }) 
+        })
+        .catch(err => {
+            return error(req, res, 500, "Error signing in", err)              
+        })
+        return 
+    }
+
+    return error(req, res, 400, "Invalid request", new Error("Any successful validation"))
 })
 
 //*TODO CRRETE LOGOUT
