@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
+//**NETHERLANDS FOR BETA VERSION */
+//*TODO UPDATE MODEL FROM TEMPLATE
 const invoice = Schema({
     customer:   ObjectId,
     order:      ObjectId,

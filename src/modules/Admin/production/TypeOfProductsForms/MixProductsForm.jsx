@@ -3,7 +3,6 @@ import React from 'react'
 
 export const MixProductsForm = () => {
     const strains = ["Raddish", "Tomatoe", "Khalua"]
-    
   return (
     <div style={{paddingLeft:"10vw", paddingRight:"10vw"}}>
         <Box sx={{display:"flex", width:"100%", justifyContent:"space-between",justifyItems:"center", alignItems:"center"}}>

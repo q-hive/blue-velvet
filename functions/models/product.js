@@ -8,14 +8,16 @@ const product = new Schema({
     image:  String,
     desc:   String,
     cost:   Number, // * Cost per tray,
+    seedId: String, //* ID of quality of the seeds - track the seeds origin - metadata,
+    status: String, //* Under production, ordered, stopped
     mix:{
         isMix:Boolean,
         name:String,
         products:[ObjectId]
     },
     parameters: {
-        day:            Number, // * In hours
-        night:          Number, // * In hours
+        day:            Number, // * In days check email
+        night:          Number, // * In days check email
         seedingRate:    Number,  
     }
 },

@@ -62,7 +62,6 @@ export const Login = () => {
         e.preventDefault()
 
         setLoading(true)
-
         //*TODO REFACTOR LOGIN
         //*DONE Send credentials to backend
         //*DONE Await response
@@ -71,11 +70,11 @@ export const Login = () => {
         //*If passphrase succeed then redirect to admin
         //*If not, cancel and notify SUPERADMIN
             // TODO: Como se noficvia al superadmin
-        api.post('/auth/login', loginData)
+        api.api.post('/auth/login', loginData)
         .then(response => {
             console.log(response)
 
-            if (response.data.isAdmin) {
+            if (response.data.data.isAdmin) {
                 // * Load passphrase modal
                 setOpenPassphrase(true)                
             } else {
@@ -96,7 +95,7 @@ export const Login = () => {
                 // * Unrecognized role
                 setAlert({
                     open:       true,
-                    status:     "Error",
+                    status:     "error",
                     message:    "Unrecognized role - Access blocked"
                 })
             } 
@@ -113,6 +112,12 @@ export const Login = () => {
                     })
                     break;
                 default:
+                    setAlert({
+                        ...alert,
+                        status:"error",
+                        slide:true,
+                        slideMessage:"Something went wrong, please try again."
+                    })
                     break;
             }
         })
@@ -143,7 +148,7 @@ export const Login = () => {
             // * Unrecognized role
             setAlert({
                 open:       true,
-                status:     "Error",
+                status:     "error",
                 message:    "Unrecognized role - Access blocked"
             })
         })

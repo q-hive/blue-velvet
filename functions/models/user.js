@@ -9,7 +9,7 @@ const User = new Schema({
     lname:      String,
     role:       String, 
     passphrase: String,     // * In case of ADMIN
-    salary:     Number,     // * In case of EMPLOYEE
+    salary:     Number,     // * In case of EMPLOYEE in money per Hours of work
     containers: [ObjectId],
     customers:  [ObjectId], // * In case of ADMIN
     phone:      String,

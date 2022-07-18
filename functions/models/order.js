@@ -6,9 +6,11 @@ const order = new Schema({
     customer:   ObjectId,
     owner:      ObjectId,
     date:       Date,
-    type:       String,
+    type:       String, //REPETEAD ORDERS HAVE A START AND END DATE
     packages:   Number,
     price:      Number,
+    start:      Date,
+    end:        Date,
     containers: [ObjectId],
     production: [ObjectId],
     products:   [ObjectId],
