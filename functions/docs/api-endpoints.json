@@ -82,7 +82,7 @@
                                 "id":       "String",
                                 "name":     "String",
                                 "email":    "String",
-                                "image":    "String",
+                                "photo":    "String",
                                 "role":     "String"
                             }
                         }

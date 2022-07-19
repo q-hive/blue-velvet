@@ -55,26 +55,27 @@ authRouter.post('/login', (req, res) => {
 authRouter.post('/login/admin', (req, res) => {
     validateBodyNotEmpty(req, res)
 
-    if(isEmailValid(req.body.email) && req.body.password !== ""){
+    if(isEmailValid(req.body.email) && req.body.password !== "") {
         signInWithEmailAndPassword(auth, req.body.email, req.body.password)
         .then(user => {
             adminAuth.verifyIdToken(user._tokenResponse.idToken)
             .then(claims => {
                 // * Generate containers
                 if (claims.role === 'admin') {
-                    // TODO: Fix the obtain of user by UID
-                    getUserByFirebaseId(user.uid)
+                    getUserByFirebaseId(user.user.uid)
                     .then(data => {
-                        console.log(data)
                         if (data.passphrase == hashPassphrase(req.body.passphrase)) 
-                            success(req, res, 200, "Successfully logged as admin", {
-                                token: user._tokenResponse.idToken,                                                                                                      
+                            success(req, res, 200, "Successfully logged as admin", {                                                                                                  
                                 user: {
-                                    id:       data._id,
+                                    id:     data._id,
                                     role:   claims.role,
-                                   ...user
-                                }
+                                    uid:    user.user.uid,
+                                    email:  user.user.email,
+                                    photo:  user.user.photoURL
+                                },
+                                token: user._tokenResponse.idToken
                             })
+                        else error(req, res, 403, "Forbidden: Wrong passphrase", { "error": "Wrong passphrase"})
                     })
                     return 
                 }
