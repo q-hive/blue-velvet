@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 const { Schema  } = mongoose;
 const { ObjectId } = mongoose.Types
 
-const taskDetails = new Schema({
+const TaskDetails = new Schema({
     title:          String,
     description:    String,
     steps:          [String],   
@@ -13,4 +13,4 @@ const taskDetails = new Schema({
     }
 })
 
-export default taskDetails
+export default TaskDetails

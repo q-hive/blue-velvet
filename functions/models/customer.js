@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
-const customer = new Schema({
+const Customer = new Schema({
     name:               String,
     businessName:       String,
     image:              String,
@@ -29,4 +29,4 @@ const customer = new Schema({
     }
 })
 
-export default customer
+export default Customer

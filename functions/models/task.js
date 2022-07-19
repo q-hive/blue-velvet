@@ -2,8 +2,7 @@ import mongoose from 'mongoose';
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
-//*? Name of task must be in model
-const task = new Schema({
+const Task = new Schema({
     assigned:       [ObjectId],
     currentStep:    Number,
     completed:      Boolean,
@@ -33,4 +32,4 @@ const task = new Schema({
     }
 })
 
-export default task
+export default Task

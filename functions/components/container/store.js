@@ -66,10 +66,12 @@ export const getContainerById = (id) => {
     return contModel.findById(ObjectId(id))
 }
 
-export const updateContainer = (id, edit) => { 
-    return contModel.update(id, edit)
+export const updateContainer = async (id, edit) => { 
+    let cont = await contModel.findOneAndUpdate({ _id: id }, edit, { new: true })
+    return cont
 }
 
-export const updateContainers = (ids, edit) => {
-    return contModel.updateMany({ _id: { $in: ids }}, edit, { multi: true })
+export const updateContainers = async (ids, edit) => {
+    let cont = await contModel.updateMany({ _id: { $in: ids }}, edit, { multi: true, new: true })
+    return cont
 }

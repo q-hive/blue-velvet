@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
-const order = new Schema({
+const Order = new Schema({
     customer:   ObjectId,
     admin:      ObjectId,
     date:       Date,
@@ -30,4 +30,4 @@ const order = new Schema({
     }
 })
 
-export default order
+export default Order

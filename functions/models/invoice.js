@@ -4,7 +4,7 @@ const { ObjectId } = mongoose.Types
 
 //**NETHERLANDS FOR BETA VERSION */
 //*TODO UPDATE MODEL FROM TEMPLATE
-const invoice = Schema({
+const Invoice = Schema({
     customer:   ObjectId,
     order:      ObjectId,
     cost:       Number,
@@ -18,4 +18,4 @@ const invoice = Schema({
     }
 })
 
-export default invoice
+export default Invoice

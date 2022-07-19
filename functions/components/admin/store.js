@@ -2,7 +2,7 @@ import { mongoose } from '../../mongo.js'
 import adminAuth from '../../firebaseAdmin.js'
 import User from '../../models/user.js'
 import { hashPassphrase, genPassphrase } from './helper.js'
-import { newContainer, getContainers } from '../container/store.js'
+import { newContainer, getContainers, updateContainers } from '../container/store.js'
 import { newOrganization, updateOrganization } from '../organization/store.js'
 
 var userModel = mongoose.model('users', User)
@@ -13,7 +13,6 @@ export function newEmployee(data) {
         adminAuth.createUser({
             email: data.email,
             emailVerified: false,
-            phoneNumber: data.phone,
             password: data.password,
             displayName: data.name + " " + data.lname,
             photoURL: data.image,
@@ -25,11 +24,12 @@ export function newEmployee(data) {
             adminAuth.setCustomUserClaims(userRecord.uid, { role: "employee" })
             .then(() => {
                 getContainers({ 
-                    organization:   data.organization,
-                    admin:          data.admin
+                    organization:   data.organization
                 })
                 .then(containers => {
-                    let containerIds = containers.map(cont => cont._id)                    
+                    let containerIds = containers.map(cont => cont._id)
+                    console.log(containers[0])
+                    let admin = containers[0].admin
                     
                     let userModel = new mongoose.model('users', User)
 
@@ -41,7 +41,7 @@ export function newEmployee(data) {
                         role:           "employee",
                         containers:     containerIds,
                         customers:      data.customers,
-                        admin:          data.admin,
+                        admin:          admin,
                         organization:   data.organization,
                         address:        data.address,
                         salary:         data.salary || 0,
@@ -53,22 +53,27 @@ export function newEmployee(data) {
                     mongoUser.save((e, user) => {
                         if (e) reject(e)
                         
-                        // * Update containers field
-                        updateContainers(containerIds, {
-                            $push: { employees: user._id }
-                        })
-
-                        // * Update organization field
-                        updateOrganization(data.organization, {
-                            $push: { employees: user._id }
-                        })
-
-                        resolve(userData)    
+                        Promise.all([
+                            // * Update containers field
+                            updateContainers(containerIds, {
+                                $push: { employees: user._id }
+                            }),
+                            // * Update organization field
+                            updateOrganization(data.organization, {
+                                $push: { employees: user._id }
+                            })
+                        ]).then(() => resolve(userData))    
                     })
-                })
-                
-                
+                })          
             })
+            .catch(err => {
+                console.log('Error assigning employee role on user at firebaseAtuh:', err)
+                reject(err)
+            })
+        })
+        .catch(err => {
+            console.log('Error creating new admin user on firebaseAtuh:', err)
+            reject(err)
         })
 
     })
@@ -80,7 +85,6 @@ export function newAdminAccount(data) {
         adminAuth.createUser({
             email: data.email,
             emailVerified: false,
-            phoneNumber: data.phone,
             password: data.password,
             displayName: data.name + " " + data.lname,
             photoURL: data.image,
@@ -91,15 +95,12 @@ export function newAdminAccount(data) {
             // * Update role to admin in custom claims
             adminAuth.setCustomUserClaims(userRecord.uid, { role: "admin" })
             .then(() => {
-
                 // * Register organization
                 //      * It's impoertant to do this step first to avoid 
                 //      * any inconsistency and provide proper ObjectIds
                 console.log("Role successfully set to: admin")
                 newOrganization(data.organization)
                 .then(org => {
-
-
                     // * Save user on MongoDB
                     let hashedPassphrase = hashPassphrase(data.passphrase != undefined ? data.passphrase : genPassphrase(3))
                     let userModel = new mongoose.model('users', User)
@@ -112,8 +113,10 @@ export function newAdminAccount(data) {
                         role:           "admin",
                         passphrase:     hashedPassphrase,
                         organization:   org._id,
+                        image:          data.image,
+                        phone:          data.phone,
                         containers:     [],
-                        customers:      data.customers,
+                        customers:      [],
                         address:        data.address
                     }
     
@@ -127,8 +130,6 @@ export function newAdminAccount(data) {
                             $set: { admin: user._id }
                         })
                         .then(upOrg => {
-                            console.log("Organization Admin updated!")
-                            console.log(upOrg)
                             // * Register all containers with correct admin
                             Promise.all(data.containers.map(contData => newContainer({
                                 ...contData,
@@ -136,15 +137,13 @@ export function newAdminAccount(data) {
                                 organization:   upOrg._id
                             })))
                             .then(containerIds => {
+                                delete userData.passphrase
                                 resolve({
                                     ...userData,
                                     containers: containerIds.map(contRes => contRes._id)
                                 })
                             })
                         })
-
-
-                        
                     })
                 })
                 .catch((error) => {
@@ -173,3 +172,32 @@ export async function getUserByFirebaseId(uid) {
     let user = await userModel.findOne({ uid: uid })
     return user
 }
+
+export async function getUserById(id) {
+    let user = await userModel.findOneById(id)
+    return user
+}
+
+export async function getEmployeesByAdmin(admin) {
+
+}
+
+export async function deleteEmployee(id) {
+
+    // * Obtain user info
+    let user = await getUserById(id)
+
+    // * Delete employee record from organization
+    let org = await updateOrganization(user.organization, { $pull: { employees: user._id } })
+    // * Delete employee record from containers
+    let cont = await updateContainers(user.containers, { $pull: { employees: user._id } })
+    // TODO: Delete employee record from tasks
+    //   * 1 - Obtain related tasks
+    //   * 2 - Update related task
+
+
+}
+
+export async function deleteAdmin(id, options) {}
+
+export async function deleteOrganization(id, options) {}

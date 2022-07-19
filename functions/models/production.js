@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
-const production = new Schema({
+const Production = new Schema({
     start:          Date,
     end:            Date,
     updated:        Date,
@@ -25,4 +25,4 @@ const production = new Schema({
     }
 })
 
-export default production
+export default Production

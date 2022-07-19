@@ -8,12 +8,22 @@ const User = new Schema({
     name:           String,
     lname:          String,
     role:           String, 
-    organization:   ObjectId,
-    passphrase:     String,     // * In case of ADMIN
-    salary:         Number,     // * In case of EMPLOYEE in money per Hours of work
-    containers:     [ObjectId],
-    customers:      [ObjectId], // * In case of ADMIN
     phone:          String,
+    image:          String,
+    organization:   ObjectId,
+    containers:     [ObjectId],
+    passphrase:     { // * In case of ADMIN
+        type:       String,
+        required:   false
+    },     
+    customers:      { // * In case of ADMIN
+        type:       [ObjectId],
+        required:   false
+    },
+    salary:         {  // * In case of EMPLOYEE in money per Hours of work
+        type:       Number,
+        required:   false
+    },   
     address: {
         stNumber:   String,
         street:     String,

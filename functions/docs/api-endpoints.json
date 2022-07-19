@@ -25,7 +25,7 @@
                             "isAdmin": false,
                             "token": "String",                                                                                                      
                             "user": {
-                                "id":       "String",
+                                "_id":       "String",
                                 "name":     "String",
                                 "email":    "String",
                                 "image":    "String",
@@ -79,11 +79,19 @@
                         "payload": {
                             "token": "String",                                                                                                      
                             "user": {
-                                "id":       "String",
-                                "name":     "String",
-                                "email":    "String",
-                                "photo":    "String",
-                                "role":     "String"
+                                "_id":          "ObjectId",
+                                "uid":          "String",
+                                "name":         "String",
+                                "lname":        "String",
+                                "email":        "String",
+                                "photo":        "String",
+                                "role":         "String",
+                                "organization": "ObjectId",
+                                "image":        "String",
+                                "phone":        "String",
+                                "containers":   "[ObjectId]",
+                                "customers":    "[ObjectId]",
+                                "address": "ADDRESS.ARCHITECTURE"
                             }
                         }
                     },

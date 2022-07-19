@@ -22,19 +22,16 @@ authRouter.post('/login', (req, res) => {
         .then(user => {
             adminAuth.verifyIdToken(user._tokenResponse.idToken)
             .then(claims => {
-                // * Generate containers
-                success(req, res, 200, "Authentication succeed", 
-                    claims.role === 'admin'
-                    ? { isAdmin: true }   
-                    : {
-                        isAdmin: false,
-                        user: {
-                            ...user,
-                            role: claims.role
-                        }, 
-                        token: user._tokenResponse.idToken
-                    }    
-                )
+                if (claims.role === 'admin') {
+                    return success(req, res, 200, "Authentication succeed", { isAdmin: true })
+                }
+                getUserByFirebaseId(user.user.uid)
+                .then(data => success(req, res, 200, "Authentication success", 
+                { 
+                    isAdmin: false,
+                    user: data, 
+                    token: user._tokenResponse.idToken
+                }))
             })
             .catch(err => {
                 error(req, res, 500, "Error verifying ID Token", err)
