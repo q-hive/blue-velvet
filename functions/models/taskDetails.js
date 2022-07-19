@@ -5,7 +5,12 @@ const { ObjectId } = mongoose.Types
 const taskDetails = new Schema({
     title:          String,
     description:    String,
-    tools:          [String]
+    steps:          [String],   
+    tools:          [String],
+    admin: {
+        type:       ObjectId,
+        required:   false
+    }
 })
 
-export default  taskDetails
+export default taskDetails

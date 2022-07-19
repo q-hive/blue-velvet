@@ -27,17 +27,14 @@ export const newContainer = (contData) => {
         containerDoc.save((e, cont) => {
             if (e) reject(e)
 
-            // * Update organization field
-            updateOrganization(contData.organization, {
-                $púsh: { containers: cont._id } 
-            })
-
-            // * Update user field
-            updateUser(contData.admin, {
-                $púsh: { containers: cont._id }
-            })
-            
-            resolve(cont)
+            Promise.all([
+                updateOrganization(contData.organization, {
+                    $push: { containers: cont._id } 
+                }),
+                updateUser(contData.admin, {
+                    $push: { containers: cont._id }
+                })
+            ]).then(() => resolve(cont))
         })
     })    
 }

@@ -122,23 +122,29 @@ export function newAdminAccount(data) {
                     mongoUser.save((e, user) => {
                         if (e) reject(e)
                         console.log("error", e)
-                        // * Update the owner field in organization
+                        // * Update the admin field in organization
                         updateOrganization(org._id, {
                             $set: { admin: user._id }
                         })
-
-                        // * Register all containers with correct owner
-                        Promise.all(data.containers.map(contData => newContainer({
-                            ...contData,
-                            admin:          user._id,
-                            organization:   org._id
-                        })))
-                        .then(containerIds => {
-                            resolve({
-                                ...userData,
-                                containers: containerIds.map(contRes => contRes._id)
+                        .then(upOrg => {
+                            console.log("Organization Admin updated!")
+                            console.log(upOrg)
+                            // * Register all containers with correct admin
+                            Promise.all(data.containers.map(contData => newContainer({
+                                ...contData,
+                                admin:          user._id,
+                                organization:   upOrg._id
+                            })))
+                            .then(containerIds => {
+                                resolve({
+                                    ...userData,
+                                    containers: containerIds.map(contRes => contRes._id)
+                                })
                             })
                         })
+
+
+                        
                     })
                 })
                 .catch((error) => {
@@ -158,11 +164,12 @@ export function newAdminAccount(data) {
     })
 }
 
-export function updateUser(id, edit) {
-
-    return userModel.update(id, edit)    
+export async function updateUser(id, edit) {
+    let user = await userModel.findOneAndUpdate({ _id: id }, edit, { new: true })
+    return user   
 }
 
-export function getUserByFirebaseId(uid) {
-    return userModel.findOne({ uid: uid })
+export async function getUserByFirebaseId(uid) {
+    let user = await userModel.findOne({ uid: uid })
+    return user
 }

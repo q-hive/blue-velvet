@@ -9,7 +9,7 @@ export const newOrganization = (orgData) => {
 
         let orgMapped = {
             name: orgData.name,
-            owner: orgData.owner,
+            admin: orgData.admin,
             employees: [],
             containers: [],
             address: orgData.address
@@ -34,8 +34,8 @@ export const getOrganizations = (filters) => {
         contModel = contModel.byName(filters.name)
     }
 
-    if (filters.owner != undefined && filters.owner != null) {
-        contModel = contModel.byOwner(filters.owner)
+    if (filters.admin != undefined && filters.admin != null) {
+        contModel = contModel.byAdmin(filters.admin)
     }
 
     return orgModel.find({})
@@ -45,6 +45,7 @@ export const getOrganizationById = (id) => {
     return orgModel.findById(id)
 }
 
-export const updateOrganization = (id, edit) => {
-    return orgModel.update(id, edit)
+export const updateOrganization = async (id, edit) => {
+    let org = await orgModel.findOneAndUpdate({ _id: id }, edit, { new: true })
+    return org
 }

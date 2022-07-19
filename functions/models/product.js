@@ -3,14 +3,12 @@ const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
 const product = new Schema({
-    _id:    ObjectId,
     name:   String,
     image:  String,
     desc:   String,
     cost:   Number, // * Cost per tray,
-    seedId: String, //* ID of quality of the seeds - track the seeds origin - metadata,
-    status: String, //* Under production, ordered, stopped
-    mix:{
+    seedId: String, // * ID of quality of the seeds - track the seeds origin - metadata,
+    mix: {
         isMix:Boolean,
         name:String,
         products:[ObjectId]

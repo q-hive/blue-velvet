@@ -9,16 +9,22 @@ const task = new Schema({
     completed:      Boolean,
     created:        Date,
     updated:        Date,
-    production:     ObjectId,
-    description:    String,
-    product:        [ObjectId],
+    orders: {  // * IN CASE OF PRODUCTION TASKS         {
+        type:       [ObjectId],
+        required:   false
+    },
+    details:        ObjectId,
+    product: {  // * IN CASE OF PRODUCTION TASKS         {
+        type:       [ObjectId],
+        required:   false
+    },
     steps: [{
         step:       Number,
         assigned:   [ObjectId],
         status:     String,
         start:      Date,
         end:        Date,
-        estimated:  Date
+        estimated:  Number // * Measured in hours
     }],
 },
 {

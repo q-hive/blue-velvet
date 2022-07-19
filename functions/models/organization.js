@@ -4,7 +4,7 @@ const { ObjectId } = mongoose.Types
 
 const Organization = new Schema({ 
     name: String,
-    owner: ObjectId,
+    admin: ObjectId,
     employees: [ObjectId],
     containers: [ObjectId],
     address: {
@@ -22,8 +22,8 @@ const Organization = new Schema({
         byName(name) {
             return this.where({name: new RegExp(name, 'i')})
         },
-        byOwner(owner) {
-            return this.where({ owner: owner })
+        byAdmin(admin) {
+            return this.where({ admin: admin })
         }
     }
 })

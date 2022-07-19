@@ -3,16 +3,17 @@ const { Schema  } = mongoose;
 const { ObjectId } = mongoose.Types
 
 const User = new Schema({
-    uid:        String,
-    email:      String,
-    name:       String,
-    lname:      String,
-    role:       String, 
-    passphrase: String,     // * In case of ADMIN
-    salary:     Number,     // * In case of EMPLOYEE in money per Hours of work
-    containers: [ObjectId],
-    customers:  [ObjectId], // * In case of ADMIN
-    phone:      String,
+    uid:            String,
+    email:          String,
+    name:           String,
+    lname:          String,
+    role:           String, 
+    organization:   ObjectId,
+    passphrase:     String,     // * In case of ADMIN
+    salary:         Number,     // * In case of EMPLOYEE in money per Hours of work
+    containers:     [ObjectId],
+    customers:      [ObjectId], // * In case of ADMIN
+    phone:          String,
     address: {
         stNumber:   String,
         street:     String,

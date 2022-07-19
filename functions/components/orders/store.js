@@ -6,9 +6,10 @@ const ordersCollection = mongoose.connection.collection('orders')
 
 export const createNewOrder = (obj) => {
     return new Promise((resolve, reject) => {
+        // TODO: CHRIS ORDERS
         obj._id = new ObjectId()
         obj.customer = new ObjectId()
-        obj.owner = new ObjectId()
+        obj.admin = new ObjectId()
         obj.date = new Date()
         obj.containers = [new ObjectId()]
         obj.production = [new ObjectId()]
