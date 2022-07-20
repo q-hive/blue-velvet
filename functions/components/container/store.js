@@ -8,7 +8,6 @@ const contModel = mongoose.model('containers', Container)
 
 export const newContainer = (contData) => {
     return new Promise((resolve, reject) => {
-        let containerModel = new mongoose.model('containers', Container)
 
         let containerMapped = {
             name:           contData.name,
@@ -22,7 +21,7 @@ export const newContainer = (contData) => {
             location:       contData.location
         }
 
-        let containerDoc = new containerModel(containerMapped)
+        let containerDoc = new contModel(containerMapped)
 
         containerDoc.save((e, cont) => {
             if (e) reject(e)

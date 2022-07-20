@@ -5,8 +5,6 @@ const { ObjectId } = mongoose.Types
 const Order = new Schema({
     customer:   ObjectId,
     admin:      ObjectId,
-    date:       Date,
-    updated:    Date,
     type:       String, // REPETEAD ORDERS HAVE A START AND END DATE
     packages:   Number,
     price:      Number,
@@ -25,9 +23,12 @@ const Order = new Schema({
     }],
 },
 {
-    byType(type) {
-        return this.where({ type: type })
+    query: {
+        byType(type) {
+            return this.where({ type: type })
+        }
     }
+    timestamps: true
 })
 
 export default Order

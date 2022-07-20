@@ -1,23 +1,22 @@
 import {mongoose} from '../../mongo.js'
-import order from '../../models/order.js'
+import Order from '../../models/order.js'
 import { ObjectId } from 'mongodb'
 
-const ordersCollection = mongoose.connection.collection('orders')
+const orderModel = mongoose.model('orders', Order)
 
-export const createNewOrder = (obj) => {
+export const createNewOrder = (order) => {
     return new Promise((resolve, reject) => {
         // TODO: CHRIS ORDERS
-        obj._id = new ObjectId()
-        obj.customer = new ObjectId()
-        obj.admin = new ObjectId()
-        obj.date = new Date()
-        obj.containers = [new ObjectId()]
-        obj.production = [new ObjectId()]
-
-                
-        obj.products = [new ObjectId("62c798da7de115dbf70e600f")]
-        
-        const orderModel = new mongoose.model('order', order)
+        let orderMapped = {
+            customer: order.customer,
+            admin: order.admin,
+            type: order.type,
+            packages: order.packages,
+            price: order.price,
+            containers: order.containers,
+            production: order.production,
+            produts: order.products
+        }
         
         const orderDoc = new orderModel(obj)
 
