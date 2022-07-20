@@ -2,3 +2,5 @@ node_modules
 sdk
 /functions/log/access.*
 /functions/.env
+
+access.*
