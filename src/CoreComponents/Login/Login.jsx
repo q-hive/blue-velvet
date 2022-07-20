@@ -34,7 +34,8 @@ export const Login = () => {
     const [openPassphrase, setOpenPassphrase] = useState(false)
     const [loginData, setLoginData] = useState({
         email:'',
-        password:''
+        password:'',
+        passphrase:''
     })
     const [alert, setAlert] = useState({
         open:false,
@@ -62,18 +63,8 @@ export const Login = () => {
         e.preventDefault()
 
         setLoading(true)
-        //*TODO REFACTOR LOGIN
-        //*DONE Send credentials to backend
-        //*DONE Await response
-        //*DONE Response sets logic for ----> redirect to admin or redirect to employee screen
-        //*If admin show modal for passphrase input
-        //*If passphrase succeed then redirect to admin
-        //*If not, cancel and notify SUPERADMIN
-            // TODO: Como se noficvia al superadmin
         api.api.post('/auth/login', loginData)
         .then(response => {
-            console.log(response)
-
             if (response.data.data.isAdmin) {
                 // * Load passphrase modal
                 setOpenPassphrase(true)                
@@ -85,8 +76,8 @@ export const Login = () => {
                     
                     const { token, user } = response.data
 
-                    updateToken(token)
-                    setUser(user)
+                    // updateToken(token)
+                    setUser(user)   
                     navigate(`${user.uid}/${user.role}`)
                     
                     return
@@ -131,17 +122,17 @@ export const Login = () => {
 
         setLoading(true)
 
-        api.post('/auth/login/admin', loginData)
+        api.api.post('/auth/login/admin', loginData)
         .then(response => {
             console.log(response)
 
-            if (response.data.data.user.role == 'employee'){
+            if (response.data.data.user.role == 'admin'){
                     
-                const { token, user } = response.data
-
-                updateToken(token)
+                const { token, user } = response.data.data
+                
+                // updateToken(token)
                 setUser(user)
-                navigate(`${user.uid}/${user.rol}`)
+                navigate(`${user.uid}/${user.role}`)
                 
                 return
             }
@@ -177,6 +168,10 @@ export const Login = () => {
             ...loginData,
             [e.target.id]:e.target.value
         })
+    }
+
+    const closePassModal = () => {
+        setOpenPassphrase(false)
     }
     
   return (
@@ -235,6 +230,7 @@ export const Login = () => {
                                     handleSignIn={handleSignIn}
                                     handleAdminSignIn={handleAdminSignIn}
                                     handleLoginData={handleLoginData}
+                                    closePassModal={closePassModal}
                                     loginData={loginData}
                                     loading={loading}
                                     openPassphrase={openPassphrase}

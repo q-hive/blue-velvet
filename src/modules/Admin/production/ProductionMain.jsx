@@ -8,8 +8,9 @@ import Add from '@mui/icons-material/Add'
 
 //*network
 import api from '../../../axios'
-import { ProductionLinesColumns, productsColumns } from '../../../utils/TableStates'
+import { productsColumns } from '../../../utils/TableStates'
 import { useNavigate } from 'react-router-dom'
+import { UserDialog } from '../../../CoreComponents/UserFeedback/Dialog'
 
 export const ProductionMain = () => {
     const [columnsState, setColumnsState] = useState(productsColumns)
@@ -23,10 +24,6 @@ export const ProductionMain = () => {
 
     const navigate = useNavigate()
 
-    const handleUpdateTable = () => {
-        setColumnsState(ProductionLinesColumns)
-    }
-
     const handleNewProduct = () => {
         setDialog({
             ...dialog,
@@ -35,13 +32,13 @@ export const ProductionMain = () => {
             actions:[ {
                 label:"Yes",
                 execute:() => {
-                    navigate("/falseuid/admin/production/newProduct?mix=true")
+                    navigate("newProduct?mix=true")
                 }
                 },
                 {
                     label:"No",
                     execute: () => {
-                        navigate("/falseuid/admin/production/newProduct")
+                        navigate("newProduct")
                     }
                 }
             ]
@@ -62,7 +59,7 @@ export const ProductionMain = () => {
         const requests = async () => {
             //*API SHOULD ACCEPT PARAMETERS IN ORDER TO GET THE MERGED DATA FROM ORDERS AND TASKS
             //*TODO API SHOULD REQUEST FOR PRODUCTION LINES
-            const productsRequest = await api.get('/api/v1/products/?orders&&tasks')
+            const productsRequest = await api.api.get('/api/v1/products/?orders&&tasks')
             productsRequest.data.products = true
             return [productsRequest.data]
         }
@@ -90,7 +87,14 @@ export const ProductionMain = () => {
         }
     }>
 
-        <Dialog open={dialog.open} onClose={handleCloseDialog}>
+        <UserDialog
+        setDialog={setDialog}
+        open={dialog.open}
+        title={dialog.title} 
+        content={dialog.message} 
+        actions={dialog.actions}
+        />
+        {/* <Dialog open={dialog.open} onClose={handleCloseDialog}>
             <DialogTitle>
                 {dialog.title}
             </DialogTitle>
@@ -106,16 +110,13 @@ export const ProductionMain = () => {
                     return <Button key={index} onClick={value.execute}>{value.label}</Button>
                 })}
             </DialogActions>
-        </Dialog>
+        </Dialog> */}
 
         
         <Typography variant="h4">
             Production management (products)
         </Typography>
-        <Box sx={{display:"flex", justifyContent:"space-between"}}>
-            <Button variant='text' sx={{color:"#0E0C8F"}} onClick={handleUpdateTable}>
-                See production lines
-            </Button>
+        <Box sx={{display:"flex", justifyContent:"flex-end"}}>
             <Button startIcon={<Add/>} onClick={handleNewProduct} sx={{color:"white", backgroundColor:"#0E0C8F"}}>
                 Add new product
             </Button>

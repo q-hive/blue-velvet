@@ -11,14 +11,14 @@ const hasEveryKey = (valid, current) => {
 export const isValidProductObject = (json) => {
         const validKeys = Object.keys(product.obj)
         validKeys.shift()
-        //*Si el objeto tienes la cantidad de llaves que el modelo sin contar el _id, siguiente validacion
-        if(!(Object.keys(json).length === Object.keys(product.obj).length-1)){
-           return false
-        }
+        // //*Si el objeto tienes la cantidad de llaves que el modelo sin contar el _id, siguiente validacion
+        // if(!(Object.keys(json).length === Object.keys(product.obj).length-1)){
+        //    return false
+        // }
 
-        if(!hasEveryKey(validKeys, json)) {
-            return false
-        }
+        // if(!hasEveryKey(validKeys, json)) {
+        //     return false
+        // }
         //*Si tiene todos los campos, validar que el formato del valor del campo sea correcto
         return true
 }

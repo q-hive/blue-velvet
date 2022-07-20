@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { ValidatorForm, TextValidator} from 'react-material-ui-form-validator'
-import Modal from 'react-modal'
-import { Button } from '@mui/material'
+import { Box, Button, Modal, TextField } from '@mui/material'
 
 import LoginIcon from '@mui/icons-material/Login';
 
@@ -12,6 +11,7 @@ export const LoginInputs = ({
     loginData, 
     loading,
     openPassphrase,
+    closePassModal
 }) => {
 
     const [adminLogin, setAdminLogin] = useState(false)
@@ -19,7 +19,8 @@ export const LoginInputs = ({
     let { email, password, passphrase} = loginData
 
     return (
-        <div><ValidatorForm
+        <div>
+            <ValidatorForm
             onSubmit={handleSignIn}
             onError={errors => console.log(errors)}
             sx={{
@@ -34,7 +35,7 @@ export const LoginInputs = ({
                 id="email" 
                 value={email}
                 validators={['required']}
-                errorMessages={['Passphrase is required']}
+                errorMessages={['Email is required']}
                 onChange={handleLoginData}
             />
             <TextValidator 
@@ -44,7 +45,7 @@ export const LoginInputs = ({
                 id="password" 
                 value={password}
                 validators={['required']}
-                errorMessages={['Passphrase is required']}
+                errorMessages={['Password is required']}
                 disabled={loading}
                 onChange={handleLoginData}
             />
@@ -57,15 +58,34 @@ export const LoginInputs = ({
                 {loading ? "Loading..." : "Login"}
             </Button>
         </ValidatorForm>
-        <ValidatorForm
-            onSubmit={handleAdminSignIn}
-            onError={errors => console.log(errors)}
-            sx={{
-                display:"flex",
-                flexDirection:"column"
-            }}
-        >
+        {
             <Modal
+            open={openPassphrase}
+            onClose={closePassModal}
+            >   
+                <Box component="form" onSubmit={handleAdminSignIn}>
+                    <TextField
+                    label="Passphrase"
+                    variant="outlined" 
+                    name="passphrase"
+                    id="passphrase" 
+                    disabled={loading}
+                    onChange={handleLoginData}
+                    required
+                    />
+                    <Button 
+                        sx={{background:"#0E0C8F", color:"white"}} 
+                        endIcon={<LoginIcon/>} 
+                        type="submit"
+                    >
+                        {loading ? "Loading..." : "Send passphrase"}
+                    </Button>   
+                </Box>
+            </Modal>
+            
+        }
+            
+            {/* <Modal
                 isOpen={openPassphrase}
                 onAfterOpen={() => setAdminLogin(true)}
                 contentLabel="Please enter your secret passphrase"
@@ -89,7 +109,7 @@ export const LoginInputs = ({
                 >
                     {loading ? "Loading..." : "Send passphrase"}
                 </Button>
-            </Modal> 
-        </ValidatorForm></div>
+            </Modal>  */}
+       </div>
     );
 }
