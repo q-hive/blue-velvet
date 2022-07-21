@@ -213,9 +213,9 @@ export const MixProductsForm = () => {
         }>
             <Autocomplete
             options={strains}
-            id="p5"
+            id="a1"
             renderInput={(params) => {
-                return <TextField label="Strain" {...params}/>
+                return <TextField label="Amount %" {...params}/>
             }}
             getOptionLabel={(option) => {
                 return option.name
@@ -224,9 +224,9 @@ export const MixProductsForm = () => {
             />
             <Autocomplete
             options={strains}
-            id="p6"
+            id="a2"
             renderInput={(params) => {
-                return <TextField label="Strain" {...params}/>
+                return <TextField label="Amount %" {...params}/>
             }}
             getOptionLabel={(option) => {
                 return option.name
@@ -235,9 +235,9 @@ export const MixProductsForm = () => {
             />
             <Autocomplete
             options={strains}
-            id="p7"
+            id="a3"
             renderInput={(params) => {
-                return <TextField label="Strain" {...params}/>
+                return <TextField label="Amount %" {...params}/>
             }}
             getOptionLabel={(option) => {
                 return option.name
@@ -246,9 +246,9 @@ export const MixProductsForm = () => {
             />
             <Autocomplete
             options={strains}
-            id="p8"
+            id="a4"
             renderInput={(params) => {
-                return <TextField label="Strain" {...params}/>
+                return <TextField label="Amount %" {...params}/>
             }}
             getOptionLabel={(option) => {
                 return option.name

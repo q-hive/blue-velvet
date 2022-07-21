@@ -12,7 +12,7 @@ const Product = new Schema({
         type:String,
         required:false
     }, //* Description
-    cost:   Number, // * Cost per tray,
+    price:   Number, // * Cost per tray,
     seedId: {
         type:String,
         required:false
