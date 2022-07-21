@@ -16,7 +16,6 @@ export const getProductionForOrder = async (products, organization, filter) => {
         let prodLines = await getProduction([
             started:        filter.started,
             organization:   organization
-            
         ])
 
         if (prodLines.length === 0) {
