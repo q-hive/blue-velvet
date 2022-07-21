@@ -1,6 +1,5 @@
 node_modules
 sdk
-functions/logs/access.*
+/functions/logs/access.log
 /functions/.env
-
-access.*
+.env

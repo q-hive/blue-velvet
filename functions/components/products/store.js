@@ -21,6 +21,20 @@ export const insertNewProduct = (object) => {
     
 }
 
+export const insertManyProducts = (array) => {
+    return new Promise((resolve, reject) => {
+        const productModel = new mongoose.model('products', product)
+
+        productModel.insertMany(array)
+        .then(() => {
+            resolve("Many products inserted")
+        })
+        .catch(err => {
+            reject(err)
+        })
+    })
+}
+
 export const getAllProducts = () => {
     return new Promise((resolve, reject) => {
         const productsCollection = mongoose.connection.collection('products')

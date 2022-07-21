@@ -6,7 +6,7 @@ import {
     DialogActions, Button
 } from "@mui/material"
 
-export const UserDialog = ({setDialog,open,title, content, actions}) => {
+export const UserDialog = ({dialog,setDialog,open,title, content, actions}) => {
     const handleClose = () => {
         setDialog({
             ...dialog,

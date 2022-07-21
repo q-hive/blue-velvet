@@ -1,6 +1,8 @@
 import axios from 'axios'
 
-const hosts = ['http://localhost:9999/api/v1']
+const hosts = ['http://localhost:9999']
+
+const apiVersion = '/api/v1'
 
 
 const api = axios.create({
@@ -16,4 +18,4 @@ const updateToken = (token) => {
 }
 
 
-export default { api, updateToken }
+export default { api, updateToken, apiVersion }

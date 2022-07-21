@@ -59,7 +59,7 @@ export const ProductionMain = () => {
         const requests = async () => {
             //*API SHOULD ACCEPT PARAMETERS IN ORDER TO GET THE MERGED DATA FROM ORDERS AND TASKS
             //*TODO API SHOULD REQUEST FOR PRODUCTION LINES
-            const productsRequest = await api.api.get('/api/v1/products/?orders&&tasks')
+            const productsRequest = await api.api.get(`${api.apiVersion}/products/?orders&&tasks`)
             productsRequest.data.products = true
             return [productsRequest.data]
         }

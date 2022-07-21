@@ -8,7 +8,8 @@ import {isValidProductObject, relateOrdersAndTasks} from './controller.js'
 //*Store
 import {
     insertNewProduct,
-    getAllProducts
+    getAllProducts,
+    insertManyProducts
 } from './store.js'
 
 const router = express.Router()
@@ -58,6 +59,19 @@ router.get('/:id', (req, res) => {
 })
 
 router.post('/', (req, res) => {
+    if(Array.isArray(req.body)){
+        
+        insertManyProducts(req.body)
+        .then(message => {
+            success(req, res,201, message)
+        })
+        .catch(err => {
+            error(req, res, 500, "Error agregando productos a la base de datos", err)
+        })
+        
+        return
+    }
+    
     if(isValidProductObject(req.body)){
         //*insert to db
         insertNewProduct(req.body)

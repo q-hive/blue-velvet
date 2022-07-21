@@ -1,27 +1,38 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 //*COMPONENTS FROM MUI
 import { Autocomplete, Box, Button, TextField } from '@mui/material'
 
 //*NETWORK AND API
 import api from '../../../../axios'
-
+import { useNavigate } from 'react-router-dom'
+import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog'
+import useAuth from '../../../../contextHooks/useAuthContext'
 
 export const MixProductsForm = () => {
     //*TODO STRAINS MUST COME FROM MICROGREENS
-    const strains = ["Raddish", "Tomatoe", "Khalua"]
+    const [strains, setStrains] = useState([])
     const [mix, setMix] = useState({
         products:[],
         name:"",
         label:"",
         cost:0
     })
+    const [dialog, setDialog] = useState({
+        open:false,
+        title:"",
+        message:"",
+        actions:[]
+    })
 
+    const {user} = useAuth()
+    const navigate = useNavigate()
+    
     const handleChangeAutoCompletes = (e,v,r) => {
         //*event, value, reason
         switch(r){
             case "selectOption":
-                mix.products.push(v)
+                mix.products.push(v._id)
                 break;
             case "clear":
                 console.log(e)
@@ -32,7 +43,6 @@ export const MixProductsForm = () => {
     }
 
     const handleChangeName = (e) => {
-        console.log(e)
         setMix({
             ...mix,
             name:e.target.value
@@ -52,7 +62,6 @@ export const MixProductsForm = () => {
     }
     
     const handleSendMixData = () => {
-        console.log(mix)
         const model = {
             name:   mix.name,
             cost:   mix.cost, // * Cost per tray,
@@ -62,16 +71,101 @@ export const MixProductsForm = () => {
                 products:mix.products
             },
         }
-        api.api.post('/products/', model)
+        api.api.post(`${api.apiVersion}/products/`, model)
+        .then(response => {
+            setDialog({
+                open:true,
+                title:"Mix created succesfuly",
+                message:"The mix was added to the DB, what you would like to do?",
+                actions:[
+                    {
+                        label:"Create another",
+                        execute: () => {
+                            window.location.reload()
+                        }
+                    },
+                    {
+                        label:"End",
+                        execute:() => {
+                            navigate('/')
+                        }
+                    }
+                ]
+            })
+        })
+        .catch(err => {
+            console.log(err.response)
+            setDialog({
+                open:true,
+                title:"Error adding new product",
+                message:"There was an error sending the data, please try again",
+                actions:[
+                    {
+                        label:"Try again",
+                        execute: () => {
+                            window.location.reload()
+                        }
+                    },
+                    {
+                        label:"Cancel",
+                        execute:() => {
+                            navigate('/')
+                        }
+                    }
+                ]
+            })
+        })
     }
+
+    useEffect(() => {
+        api.api.get(`${api.apiVersion}/products/`)
+        .then((response) => {
+            setStrains(response.data.data)
+        })
+        .catch(err => {
+            console.log(err)
+            setDialog({
+                ...dialog,
+                open:true,
+                title:"Error obtaining products",
+                message:"Please try reloading the page",
+                actions:[
+                    {
+                        label:"Retry",
+                        execute:() => {
+                            window.location.reload()
+                        }
+                    },
+                    {
+                        label:"Cancel",
+                        execute:() => {
+                            navigate(`${user.uid}/${user.role}`)
+                        }
+                    }
+                ]
+            })
+        }) 
+    },[])
   return (
     <div style={{paddingLeft:"10vw", paddingRight:"10vw"}}>
+        <UserDialog
+        dialog={dialog}
+        setDialog={setDialog}
+        open={dialog.open}
+        title={dialog.title} 
+        content={dialog.message}
+        actions={dialog.actions}
+        />
+        
         <Box sx={{display:"flex", width:"100%", justifyContent:"space-between",justifyItems:"center", alignItems:"center"}}>
             <Autocomplete
             options={strains}
             id="p1"
             renderInput={(params) => {
                 return <TextField label="Strain" {...params}/>
+            }}
+            getOptionLabel={(option) => {
+                return option.name
             }}
             onChange={handleChangeAutoCompletes}
             />
@@ -81,6 +175,9 @@ export const MixProductsForm = () => {
             renderInput={(params) => {
                 return <TextField label="Strain" {...params}/>
             }}
+            getOptionLabel={(option) => {
+                return option.name
+            }}
             onChange={handleChangeAutoCompletes}
             />
             <Autocomplete
@@ -89,6 +186,9 @@ export const MixProductsForm = () => {
             renderInput={(params) => {
                 return <TextField label="Strain" {...params}/>
             }}
+            getOptionLabel={(option) => {
+                return option.name
+            }}
             onChange={handleChangeAutoCompletes}
             />
             <Autocomplete
@@ -96,6 +196,9 @@ export const MixProductsForm = () => {
             id="p4"
             renderInput={(params) => {
                 return <TextField label="Strain" {...params}/>
+            }}
+            getOptionLabel={(option) => {
+                return option.name
             }}
             onChange={handleChangeAutoCompletes}
             />
@@ -114,6 +217,9 @@ export const MixProductsForm = () => {
             renderInput={(params) => {
                 return <TextField label="Strain" {...params}/>
             }}
+            getOptionLabel={(option) => {
+                return option.name
+            }}
             onChange={handleChangeAutoCompletes}
             />
             <Autocomplete
@@ -121,6 +227,9 @@ export const MixProductsForm = () => {
             id="p6"
             renderInput={(params) => {
                 return <TextField label="Strain" {...params}/>
+            }}
+            getOptionLabel={(option) => {
+                return option.name
             }}
             onChange={handleChangeAutoCompletes}
             />
@@ -130,6 +239,9 @@ export const MixProductsForm = () => {
             renderInput={(params) => {
                 return <TextField label="Strain" {...params}/>
             }}
+            getOptionLabel={(option) => {
+                return option.name
+            }}
             onChange={handleChangeAutoCompletes}
             />
             <Autocomplete
@@ -137,6 +249,9 @@ export const MixProductsForm = () => {
             id="p8"
             renderInput={(params) => {
                 return <TextField label="Strain" {...params}/>
+            }}
+            getOptionLabel={(option) => {
+                return option.name
             }}
             onChange={handleChangeAutoCompletes}
             />
