@@ -97,13 +97,13 @@ export const ProductionMain = () => {
   return (
     <body>
         <Box>
-                <UserDialog
-                setDialog={setDialog}
-                open={dialog.open}
-                title={dialog.title} 
-                content={dialog.message} 
-                actions={dialog.actions}
-                />
+            <UserDialog
+            setDialog={setDialog}
+            open={dialog.open}
+            title={dialog.title} 
+            content={dialog.message} 
+            actions={dialog.actions}
+            />
             <Container sx={{padding:"5%"}}>
                 <Box sx={
                     
@@ -123,11 +123,6 @@ export const ProductionMain = () => {
                         Production management (products)
                     </Typography>
                     <Box sx={{display:"flex", justifyContent:"flex-end"}}>
-                        <Button startIcon={<Add/>} onClick={handleNewProduct} sx={{color:"white", backgroundColor:"#0E0C8F"}}>
-                            Add new product
-                        </Button>
-
-                        
                         <Typography variant="h4" textAlign={"center"} margin={theme.margin.mainHeader}>
                             Production management (products)
                         </Typography>
@@ -135,14 +130,6 @@ export const ProductionMain = () => {
                                 display:"flex", 
                                 justifyContent:{xs:"center",sm:"space-between"}
                                 }}>
-                            <Button 
-                                variant='text' 
-                                color="primary" 
-                                onClick={handleUpdateTable} 
-                                sx={{display:() => theme.mobile.hidden}}  
-                            >
-                                See production lines
-                            </Button>
                             <Button variant="contained" startIcon={<Add/>} onClick={handleNewProduct} color="primary"  >
                                 Add new product
                             </Button>
