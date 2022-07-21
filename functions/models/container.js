@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from '../../mongo.js';
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
@@ -7,8 +7,10 @@ const Container = new Schema({
     admin:          ObjectId,
     organization:   ObjectId,
     capacity:       Number, // * Measured in trays
+    available:      Number, // * Also in trays
     employees:      [ObjectId],
-    prodLines:      [ObjectId],
+    production:     [ObjectId],
+    orders:         [ObjectId],
     address: {
         stNumber:   String,
         street:     String,
@@ -30,7 +32,7 @@ const Container = new Schema({
 {
     query: {
         byName(name) {
-            return this.where({ name: new RegExp(name, "i")})
+            return this.where({ name: new RegExp(name, "i") })
         },
         byAdmin(admin) {
             return this.where({ admin: admin })

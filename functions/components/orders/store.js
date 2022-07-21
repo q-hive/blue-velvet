@@ -1,12 +1,22 @@
-import {mongoose} from '../../mongo.js'
+import { mongoose } from '../../mongo.js'
 import Order from '../../models/order.js'
-import { ObjectId } from 'mongodb'
+import { getProductionForOrder } from '../production/store.js'
 
 const orderModel = mongoose.model('orders', Order)
 
 export const createNewOrder = (order) => {
     return new Promise((resolve, reject) => {
         // TODO: CHRIS ORDERS
+
+        // * 1- Check for suitable production lines
+        // * 2- If production line is available to fulfill order, 
+        // *        assign order and perform updates
+        let prod = await getProductionForOrder(order.products, order.organization, {
+            started: new Date(),
+            
+        })
+        // * Save products on production
+        
         let orderMapped = {
             customer: order.customer,
             admin: order.admin,
@@ -14,14 +24,18 @@ export const createNewOrder = (order) => {
             packages: order.packages,
             price: order.price,
             containers: order.containers,
-            production: order.production,
+            production: prod,
             produts: order.products
         }
         
-        const orderDoc = new orderModel(obj)
+        const orderDoc = new orderModel(orderMapped)
 
-        orderDoc.save((err) => {
+        orderDoc.save((err, ord) => {
             if(err) reject(err)
+
+            updateProduction(prod, {
+                $push: { orders: ord._id }
+            })
 
             resolve("New order saved")
         })

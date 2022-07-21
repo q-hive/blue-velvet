@@ -3,14 +3,14 @@ const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
 const Product = new Schema({
-    name:   String,
+    name:           String,
     image:  {
-        type:String,
-        required:false
+        type:       String,
+        required:   false
     }, //*BASE 64 PARSED PHOTO
     desc:   {
-        type:String,
-        required:false
+        type:       String,
+        required:   false
     }, //* Description
     cost:   Number, // * Cost per tray,
     seedId: {
@@ -18,7 +18,7 @@ const Product = new Schema({
         required:false
     }, // * ID of quality of the seeds - track the seeds origin - metadata,
     mix: {
-        type:{
+        type: {
             isMix:Boolean,
             name:String,
             products:[ObjectId]

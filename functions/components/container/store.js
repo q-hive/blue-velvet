@@ -15,7 +15,8 @@ export const newContainer = (contData) => {
             organization:   contData.organization,
             capacity:       contData.capacity, // * Measured in trays
             employees:      contData.employees || [],
-            prodLines:      [],
+            production:     [],
+            orders:         [],
             address:        contData.address,
             products:       [],
             location:       contData.location
@@ -44,6 +45,7 @@ export const getContainers = (filters) => {
      * Get all containers for the given filters if present
      ?   organization
      ?   admin
+     ?   sort
      */
 
     let contModelFiltered = contModel 

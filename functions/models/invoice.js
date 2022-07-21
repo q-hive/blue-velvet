@@ -14,6 +14,12 @@ const Invoice = Schema({
     query: {
         byStatus(status) {
             return this.where({ status: status })
+        },
+        byCustomer(customer) {
+            return this.where({ customer: customer })
+        },
+        byOrder(order) {
+            return this.where({ order: order })
         }
     }
 })

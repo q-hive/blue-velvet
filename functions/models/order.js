@@ -13,9 +13,13 @@ const Order = new Schema({
     containers: [ObjectId],
     production: [ObjectId],
     products:   [{
-        _id: ObjectId,
+        _id:    ObjectId,
         status: String,
-        seedId: String,
+        trays:  Number,
+        seedId: {
+            type:       String,
+            required:   false
+        },
         batch: {
             type:       String,
             required:   false,
@@ -23,12 +27,12 @@ const Order = new Schema({
     }],
 },
 {
+    timestamps: true,
     query: {
         byType(type) {
             return this.where({ type: type })
         }
     }
-    timestamps: true
 })
 
 export default Order
