@@ -177,7 +177,7 @@ export const Login = () => {
                                             disabled={loading}
                                             onChange={handleLoginData}
                                         />
-                                        <Button sx={{background:"#0E0C8F", color:"white"}} endIcon={<LoginIcon/>} type="submit">{loading ? "Loading..." : "Login"}</Button>
+                                        <Button variant='contained' color='primary' endIcon={<LoginIcon/>} type="submit">{loading ? "Loading..." : "Login"}</Button>
                                     </Box>
                                 </div>
                                 {

@@ -14,7 +14,9 @@ import { AppRoutes } from './routes.js'
 export const App = () => {
     
   return (
+    
     <AuthContext>
+        
       <Router history={history}>
             <Routes>
                 <Route path="/" element={<Login/>}></Route>
@@ -39,6 +41,7 @@ export const App = () => {
                 
             </Routes>
         </Router>
+        
     </AuthContext>
   )
 }
