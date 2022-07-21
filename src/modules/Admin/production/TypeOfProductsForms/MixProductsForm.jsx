@@ -266,7 +266,7 @@ export const MixProductsForm = () => {
             }
         }>
             <TextField onChange={handleChangeName} id="name" label="Mix name"/>
-            {/* //*TODO SET Component for adding photo - NO CONNECTION TO DB THIS IS HANDLED BY OTHER TEAMMATE */}
+            {/* //*TODO SET Component for adding photo (LUIS H) - NO CONNECTION TO DB THIS IS HANDLED BY OTHER TEAMMATE */}
             <TextField onChange={handleChangeLabel} id="label" label="Mix label"/>
         </Box>
         <Box sx={
