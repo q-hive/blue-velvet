@@ -266,6 +266,7 @@ export const MixProductsForm = () => {
             }
         }>
             <TextField onChange={handleChangeName} id="name" label="Mix name"/>
+            {/* //*TODO SET Component for adding photo - NO CONNECTION TO DB THIS IS HANDLED BY OTHER TEAMMATE */}
             <TextField onChange={handleChangeLabel} id="label" label="Mix label"/>
         </Box>
         <Box sx={
@@ -277,7 +278,7 @@ export const MixProductsForm = () => {
                 marginTop:"5vh"
             }
         }>
-            <TextField onChange={handleChangeCost} id="cost" type="number" label="Cost"/>
+            <TextField onChange={handleChangeCost} id="cost" type="number" label="Price"/>
         </Box>
 
         <Box sx={

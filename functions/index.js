@@ -11,7 +11,7 @@ import {
 import { authRoutes } from './network/routes.js'
 
 
-var port = normalizePort(9999 || process.env.PORT)
+var port = normalizePort(8000 || process.env.PORT)
 
 const app = express()
 
@@ -27,7 +27,7 @@ useMorgan(app);
 /*
  *  CORS Implementation
  */
-const originsList = ["http://localhost:3000"]
+const originsList = ["http://localhost:3001"]
  
 app.use(cors({
     origin: originsList[0],
@@ -67,7 +67,7 @@ function normalizePort(num){
 function onError(err){
     console.log('Error en el server')
     
-    if(error.syscall !== 'listen'){
+    if(err.syscall !== 'listen'){
         throw err
     }
 

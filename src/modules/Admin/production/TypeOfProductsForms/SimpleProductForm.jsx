@@ -27,8 +27,9 @@ export const SimpleProductForm = () => {
                 <TextField label="Product label"/>
                 <TextField label="Seeding"/>
                 <TextField label="Harvest"/>
-                <TextField label="Cost"/>
+                <TextField label="Price"/>
                 <TextField label="Email / route"/>
+                <TextField label="SeedID"/>
             </>
 
         }
