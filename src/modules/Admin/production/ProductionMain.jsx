@@ -36,6 +36,10 @@ export const ProductionMain = () => {
         setColumnsState(productsColumnsMobile)
     }
 
+    const handleUpdateTable = () => {
+        //*This functions is going to dissapear is no longer needed
+    }
+
     const handleNewProduct = () => {
         setDialog({
             ...dialog,
@@ -93,73 +97,74 @@ export const ProductionMain = () => {
   return (
     <body>
         <Box>
+                <UserDialog
+                setDialog={setDialog}
+                open={dialog.open}
+                title={dialog.title} 
+                content={dialog.message} 
+                actions={dialog.actions}
+                />
             <Container sx={{padding:"5%"}}>
-            <Box sx={
-                
-                {
-                    width:"100%", 
-                    height:"80vh",
-                    "& .header-products-table":{
-                        backgroundColor:BV_THEME.palette.primary.main,
-                        color:"white"
+                <Box sx={
+                    
+                    {
+                        width:"100%", 
+                        height:"80vh",
+                        "& .header-products-table":{
+                            backgroundColor:BV_THEME.palette.primary.main,
+                            color:"white"
+                        }
                     }
-                }
-            }>
+                }>
 
-            <UserDialog
-            setDialog={setDialog}
-            open={dialog.open}
-            title={dialog.title} 
-            content={dialog.message} 
-            actions={dialog.actions}
-            />
 
-        
-            <Typography variant="h4">
-                Production management (products)
-            </Typography>
-            <Box sx={{display:"flex", justifyContent:"flex-end"}}>
-                <Button startIcon={<Add/>} onClick={handleNewProduct} sx={{color:"white", backgroundColor:"#0E0C8F"}}>
-                    Add new product
-                </Button>
+            
+                    <Typography variant="h4">
+                        Production management (products)
+                    </Typography>
+                    <Box sx={{display:"flex", justifyContent:"flex-end"}}>
+                        <Button startIcon={<Add/>} onClick={handleNewProduct} sx={{color:"white", backgroundColor:"#0E0C8F"}}>
+                            Add new product
+                        </Button>
 
-                
-                <Typography variant="h4" textAlign={"center"} margin={theme.margin.mainHeader}>
-                    Production management (products)
-                </Typography>
-                <Box sx={{
-                        display:"flex", 
-                        justifyContent:{xs:"center",sm:"space-between"}
-                        }}>
-                    <Button 
-                        variant='text' 
-                        color="primary" 
-                        onClick={handleUpdateTable} 
-                        sx={{display:() => theme.mobile.hidden}}  
-                    >
-                        See production lines
-                    </Button>
-                    <Button variant="contained" startIcon={<Add/>} onClick={handleNewProduct} color="primary"  >
-                        Add new product
-                    </Button>
+                        
+                        <Typography variant="h4" textAlign={"center"} margin={theme.margin.mainHeader}>
+                            Production management (products)
+                        </Typography>
+                        <Box sx={{
+                                display:"flex", 
+                                justifyContent:{xs:"center",sm:"space-between"}
+                                }}>
+                            <Button 
+                                variant='text' 
+                                color="primary" 
+                                onClick={handleUpdateTable} 
+                                sx={{display:() => theme.mobile.hidden}}  
+                            >
+                                See production lines
+                            </Button>
+                            <Button variant="contained" startIcon={<Add/>} onClick={handleNewProduct} color="primary"  >
+                                Add new product
+                            </Button>
+                        </Box>
+                        <DataGrid
+                        columns={columnsState}
+                        rows={rows}
+                        getRowId={(row) => {
+                            return row._id
+                        }}
+                        sx={{marginY:"2vh", display:() => theme.mobile.hidden}}
+                        />
+                        <DataGrid
+                        columns={productsColumnsMobile}
+                        rows={rows}
+                        getRowId={(row) => {
+                            return row._id
+                        }}
+                        sx={{marginY:"2vh", display:() => theme.mobile.only}}
+                        />
+                    </Box>
                 </Box>
-                <DataGrid
-                columns={columnsState}
-                rows={rows}
-                getRowId={(row) => {
-                    return row._id
-                }}
-                sx={{marginY:"2vh", display:() => theme.mobile.hidden}}
-                />
-                <DataGrid
-                columns={productsColumnsMobile}
-                rows={rows}
-                getRowId={(row) => {
-                    return row._id
-                }}
-                sx={{marginY:"2vh", display:() => theme.mobile.only}}
-                />
-            </Box>
             </Container>
         </Box>
     </body>
