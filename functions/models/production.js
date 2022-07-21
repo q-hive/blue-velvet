@@ -4,7 +4,6 @@ const { ObjectId } = mongoose.Types
 
 const Production = new Schema({
     end:            Date,
-    updated:        Date,
     orders:         [ObjectId],
     tasks:          [ObjectId],
     activeTasks:    [ObjectId],
@@ -17,7 +16,8 @@ const Production = new Schema({
 },
 {
     timestamps: {
-        createdAt: "start"
+        createdAt: "start",
+        updatedAt: "updated"
     },
     query: {
         
