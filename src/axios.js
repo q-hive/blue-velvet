@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const hosts = ['http://localhost:8000']
+const hosts = ['http://localhost:9999']
 
 const apiVersion = '/api/v1'
 

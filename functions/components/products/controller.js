@@ -9,6 +9,8 @@ const hasEveryKey = (valid, current) => {
      //*iterate valid object if some key isnt included reject
      //*If a value is and object then iterate the object in valid and compare keys of nested object in current 
     //* if al keys are included, validate the data types (mongoose does it automatically)
+    console.log(valid)
+    console.log(current)
     if(Object.keys(valid).every(key => Object.keys(current).includes(key))){
         console.log("Has all keys")
         for (const key of Object.keys(valid)) {
@@ -26,11 +28,12 @@ const hasEveryKey = (valid, current) => {
 export const isValidProductObject = (json) => {
         const productModel = {
             "name":"", 
-            "cost":"",
+            "price":"",
             "parameters":{
                 "day":"",
                 "night":"",
-                "seedingRate":""
+                "seedingRate":"",
+                "harvestRate":"" 
             }
         }
         return hasEveryKey(productModel, json)

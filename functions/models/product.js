@@ -21,7 +21,13 @@ const Product = new Schema({
         type:{
             isMix:Boolean,
             name:String,
-            products:[ObjectId]
+            products:[{
+                id:{
+                    type:ObjectId,
+                    required:true
+                },
+                amount: Number
+            }]
         },
         required:false
     },
@@ -29,7 +35,8 @@ const Product = new Schema({
         type: {
             day:            Number, // * In days check email
             night:          Number, // * In days check email
-            seedingRate:    Number,  
+            seedingRate:    Number,
+            harvestRate:    Number  
         },
         required:false
     }

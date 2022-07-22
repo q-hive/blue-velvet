@@ -40,7 +40,8 @@ export const LoginInputs = ({
             />
             <TextValidator 
                 label="Password"
-                variant="outlined" 
+                variant="outlined"
+                type="password"
                 name="pass"
                 id="password" 
                 value={password}

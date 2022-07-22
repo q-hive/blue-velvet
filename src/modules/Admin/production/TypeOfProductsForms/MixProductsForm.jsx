@@ -32,7 +32,14 @@ export const MixProductsForm = () => {
         //*event, value, reason
         switch(r){
             case "selectOption":
-                mix.products.push(v._id)
+                const place = mix.products.length + 1
+
+                mix.products.push({
+                    id:v._id,
+                    place:place
+                })
+
+                console.log(mix)
                 break;
             case "clear":
                 console.log(e)
@@ -42,6 +49,17 @@ export const MixProductsForm = () => {
         }
     }
 
+    const handleChangeAmounts = (e) => {
+        const value = e.target.value
+        const place = e.target.id.slice(1)
+        console.log(place)
+        mix.products.forEach((product) => { 
+            if(product.place === place){ 
+                product.amount = value
+            }
+        })
+    }
+    
     const handleChangeName = (e) => {
         setMix({
             ...mix,
@@ -62,59 +80,65 @@ export const MixProductsForm = () => {
     }
     
     const handleSendMixData = () => {
+        const mappedProducts = mix.products.map(product => {
+            return {id:product.id, amount:product.amount}
+        })
+        
         const model = {
             name:   mix.name,
             cost:   mix.cost, // * Cost per tray,
             mix: {
                 isMix:true,
                 name:mix.name,
-                products:mix.products
+                products:mappedProducts
             },
         }
-        api.api.post(`${api.apiVersion}/products/`, model)
-        .then(response => {
-            setDialog({
-                open:true,
-                title:"Mix created succesfuly",
-                message:"The mix was added to the DB, what you would like to do?",
-                actions:[
-                    {
-                        label:"Create another",
-                        execute: () => {
-                            window.location.reload()
-                        }
-                    },
-                    {
-                        label:"End",
-                        execute:() => {
-                            navigate('/')
-                        }
-                    }
-                ]
-            })
-        })
-        .catch(err => {
-            console.log(err.response)
-            setDialog({
-                open:true,
-                title:"Error adding new product",
-                message:"There was an error sending the data, please try again",
-                actions:[
-                    {
-                        label:"Try again",
-                        execute: () => {
-                            window.location.reload()
-                        }
-                    },
-                    {
-                        label:"Cancel",
-                        execute:() => {
-                            navigate('/')
-                        }
-                    }
-                ]
-            })
-        })
+
+        console.log(model)
+        // api.api.post(`${api.apiVersion}/products/`, model)
+        // .then(response => {
+        //     setDialog({
+        //         open:true,
+        //         title:"Mix created succesfuly",
+        //         message:"The mix was added to the DB, what you would like to do?",
+        //         actions:[
+        //             {
+        //                 label:"Create another",
+        //                 execute: () => {
+        //                     window.location.reload()
+        //                 }
+        //             },
+        //             {
+        //                 label:"End",
+        //                 execute:() => {
+        //                     navigate('/')
+        //                 }
+        //             }
+        //         ]
+        //     })
+        // })
+        // .catch(err => {
+        //     console.log(err.response)
+        //     setDialog({
+        //         open:true,
+        //         title:"Error adding new product",
+        //         message:"There was an error sending the data, please try again",
+        //         actions:[
+        //             {
+        //                 label:"Try again",
+        //                 execute: () => {
+        //                     window.location.reload()
+        //                 }
+        //             },
+        //             {
+        //                 label:"Cancel",
+        //                 execute:() => {
+        //                     navigate('/')
+        //                 }
+        //             }
+        //         ]
+        //     })
+        // })
     }
 
     useEffect(() => {
@@ -211,49 +235,29 @@ export const MixProductsForm = () => {
                 marginTop:"5vh"
             }
         }>
-            <Autocomplete
-            options={strains}
+            <TextField
             id="a1"
-            renderInput={(params) => {
-                return <TextField label="Amount %" {...params}/>
-            }}
-            getOptionLabel={(option) => {
-                return option.name
-            }}
-            onChange={handleChangeAutoCompletes}
+            type="number"
+            onChange={handleChangeAmounts}
+            label="Amount %"
             />
-            <Autocomplete
-            options={strains}
+            <TextField
             id="a2"
-            renderInput={(params) => {
-                return <TextField label="Amount %" {...params}/>
-            }}
-            getOptionLabel={(option) => {
-                return option.name
-            }}
-            onChange={handleChangeAutoCompletes}
+            type="number"
+            onChange={handleChangeAmounts}
+            label="Amount %"
             />
-            <Autocomplete
-            options={strains}
+            <TextField
             id="a3"
-            renderInput={(params) => {
-                return <TextField label="Amount %" {...params}/>
-            }}
-            getOptionLabel={(option) => {
-                return option.name
-            }}
-            onChange={handleChangeAutoCompletes}
+            type="number"
+            label="Amount %"
+            onChange={handleChangeAmounts}
             />
-            <Autocomplete
-            options={strains}
+            <TextField
             id="a4"
-            renderInput={(params) => {
-                return <TextField label="Amount %" {...params}/>
-            }}
-            getOptionLabel={(option) => {
-                return option.name
-            }}
-            onChange={handleChangeAutoCompletes}
+            onChange={handleChangeAmounts}
+            type="number"
+            label="Amount %"
             />
         </Box>
         <Box sx={
