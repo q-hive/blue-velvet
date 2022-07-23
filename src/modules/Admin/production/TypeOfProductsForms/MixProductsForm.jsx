@@ -14,6 +14,8 @@ import useAuth from '../../../../contextHooks/useAuthContext'
 import { grey } from '@mui/material/colors'
 import { MixName } from './MixName';
 
+const amounts = ["25","30","40","50","60","70","80","90"]
+
 export const MixProductsForm = () => {
     const theme = useTheme(BV_THEME);
     //*TODO STRAINS MUST COME FROM MICROGREENS
@@ -24,11 +26,39 @@ export const MixProductsForm = () => {
         label:"",
         cost:0
     })
+    const [showFinal, setShowFinal] = useState(false)
+
+    const [actualValue, setActualValue] = useState({
+        strain:"",
+        amount:null
+    })
+    
+
+   //*USER FEEDBACK STATES 
     const [dialog, setDialog] = useState({
         open:false,
         title:"",
         message:"",
         actions:[]
+    })
+
+    const [error, setError] = useState({
+        strain:{
+            failed:false,
+            message:""
+        },
+        amount:{
+            failed:false,
+            message:""
+        },
+        name:{
+            failed:false,
+            message:""
+        },
+        label:{
+            failed:false,
+            message:""
+        },
     })
 
     const {user} = useAuth()
@@ -38,33 +68,43 @@ export const MixProductsForm = () => {
         //*event, value, reason
         switch(r){
             case "selectOption":
-                const place = mix.products.length + 1
-
-                mix.products.push({
-                    id:v._id,
-                    place:place
-                })
-
-                console.log(mix)
-                break;
+                if(e.target.id.split('-')[0] === "strain"){
+                    setActualValue({
+                        ...actualValue,
+                        strain:v._id
+                    })
+                    break
+                } else if (e.target.id.split('-')[0] === "amount") {
+                    setActualValue({
+                        ...actualValue,
+                        amount:v
+                    })
+                    break;
+                }
             case "clear":
-                console.log(e)
+                console.log(e, v, r)
+                console.log(e.target.ownerDocument.id)
+                //*? HOW TO LISTEN WICH VALUE SHOULD BE DELETED FROM ACTUAL VALUE IF TJHE ID IS "" BECAUSE TJHE BUTTON IS APPART FROM INPUT
+                if(e.target.ownerDocument.id === "strain"){
+                    setActualValue({
+                        ...actualValue,
+                        strain:""
+                    })
+                    break
+                } else if (e.target.ownerDocument.id === "amount") {
+                    setActualValue({
+                        ...actualValue,
+                        amount:null
+                    })
+                    break;
+                }
+                
                 break;
             default:
                 break;
         }
     }
 
-    const handleChangeAmounts = (e) => {
-        const value = e.target.value
-        const place = e.target.id.slice(1)
-        console.log(place)
-        mix.products.forEach((product) => { 
-            if(product.place === place){ 
-                product.amount = value
-            }
-        })
-    }
     
     const handleChangeName = (e) => {
         setMix({
@@ -82,6 +122,46 @@ export const MixProductsForm = () => {
             ...mix,
             cost:e.target.value
         })
+        
+    }
+    
+    const handleAddToMixComb = () => {
+        if(!((actualValue.strain !== "") && (actualValue.amount !== null))){
+            //*TODO SHOW EMPTY INPUTS IN RED
+            console.log("There are some empty values, please provide the correct format.")
+            console.log(Object.entries(actualValue))
+            //*Entry array = entrArr
+            console.log(Object.entries(actualValue).map((entrArr, idx) => {
+                if(entrArr[1] === ("" || null)) {
+                    return entrArr[0]
+                }
+                
+            }))
+
+            
+            return
+        }
+        console.log("Combination completed")
+        console.log(actualValue)
+    }
+    
+    const handleSetMix = () => {
+        if(mix.products.length < 2){
+            setDialog({
+                ...dialog,
+                open:true,
+                title:"Invalid mix length",
+                message:"Please add another combination of strain and amount, in order to complete 100%",
+                actions: [
+                    {
+                        label:"Ok"
+                    }
+                ]
+            })
+            return
+        }
+        setShowFinal(true)
+        //*OK THE MIX HAVE THE RIGHT LENGTH, THE TOTAL OF AMOUNT IS 100% ? 
         
     }
     
@@ -179,9 +259,6 @@ export const MixProductsForm = () => {
     },[])
 
     
-    const handleSetMix =()=>{
-        
-    }
   return (
     <div style={{paddingLeft:"10vw", paddingRight:"10vw"}}>
         <UserDialog
@@ -206,26 +283,22 @@ export const MixProductsForm = () => {
             }>
                 <Autocomplete
                         options={strains}
-                        id="p1"
+                        id="strain"
                         renderInput={(params) => {
-                            return <TextField label="Strain" {...params}/>
+                            return <TextField helperText={error.strain.message} error={error.strain.failed} label="Strain" {...params}/>
                         }}
                         getOptionLabel={(option) => {
                             return option.name
                         }}
                         onChange={handleChangeAutoCompletes}
-                        
                         sx={theme.input.mobile.fullSize.desktop.halfSize}
                 />
 
                 <Autocomplete
-                        options={strains}
-                        id="a1"
+                        options={amounts}
+                        id="amount"
                         renderInput={(params) => {
-                            return <TextField label="Amount %" {...params}/>
-                        }}
-                        getOptionLabel={(option) => {
-                            return option.name
+                            return <TextField type="number" helperText={error.amount.message} error={error.amount.failed} label="Amount %" {...params}/>
                         }}
                         onChange={handleChangeAutoCompletes}
                         sx={theme.input.mobile.twoThirds.desktop.quarterSize}
@@ -244,7 +317,7 @@ export const MixProductsForm = () => {
                     alignItems:"center",
                 }
             }>
-                <Fab color="primary" aria-label="add" >
+                <Fab onClick={handleAddToMixComb} color="primary" aria-label="add" >
                     <AddIcon />
                 </Fab>
 
@@ -270,57 +343,52 @@ export const MixProductsForm = () => {
 
         </Box>
 
-
-            
-
-
-
-
-            
-
-
         </Box>
 
+        {
+            showFinal
+            ?
+            <div>
+                <Box sx={
+                        {
+                            display:"flex",
+                            width:"100%", 
+                            justifyContent:"center",
+                            marginTop:"5vh", 
+                            flexDirection:"column",
+                            alignItems:"center"
+                        }
+                    }>
+                        <TextField label="Mix Name" variant="outlined" sx={theme.input.mobile.fullSize.desktop.halfSize}>
+                            
+                        </TextField>
 
-        <div>
-        <Box sx={
-                {
-                    display:"flex",
-                    width:"100%", 
-                    justifyContent:"center",
-                    marginTop:"5vh", 
-                    flexDirection:"column",
-                    alignItems:"center"
-                }
-            }>
-                <TextField label="Mix Name" variant="outlined" sx={theme.input.mobile.fullSize.desktop.halfSize}>
+                </Box>
+                <Box sx={
+                    {
+                        display:"flex", 
+                        alignItems:"center", 
+                        justifyContent:"center",
+                        width:"100%",
+                        flexDirection:"column"
+
+                    }
+                }>
+
+                    <Fab color="primary" aria-label="add" sx={{marginY:"4%"}} >
+                            <CameraIcon />
+                    </Fab>
                     
-                </TextField>
+                    <Button variant="contained" size='large' >
+                        Save
+                    </Button>
 
-        </Box>
-        <Box sx={
-            {
-                display:"flex", 
-                alignItems:"center", 
-                justifyContent:"center",
-                width:"100%",
-                flexDirection:"column"
-
-            }
-        }>
-
-            <Fab color="primary" aria-label="add" sx={{marginY:"4%"}} >
-                    <CameraIcon />
-            </Fab>
-            
-            <Button variant="contained" size='large' >
-                Save
-            </Button>
-
-        </Box>
-
+                </Box>
+            </div>
+            :
+            null
+        }
         
-    </div>
 
     
         

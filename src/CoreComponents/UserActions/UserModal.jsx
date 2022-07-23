@@ -22,8 +22,8 @@ export const UserModal = ({modal, setModal, title, content, actions}) => {
                     actions.length > 0
                     ?
                     <>
-                        {actions.map((action) => {
-                            return <Button variant="contained" onClick={action.execute}>{action.label}</Button>
+                        {actions.map((action, idx) => {
+                            return <Button variant="contained" key={idx} onClick={action.execute}>{action.label}</Button>
                         })}
                     </>
                     :
