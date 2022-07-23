@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from 'react'
 
 //*COMPONENTS FROM MUI
-import { Autocomplete, Box, Button, TextField } from '@mui/material'
-
+import { Autocomplete, Box, Button, TextField, Typography, useTheme, Fab } from '@mui/material'
+import AddIcon from '@mui/icons-material/Add';
+import CameraIcon from '@mui/icons-material/AddPhotoAlternate';
+//*THEME
+import { BV_THEME } from '../../../../theme/BV-theme'
 //*NETWORK AND API
 import api from '../../../../axios'
 import { useNavigate } from 'react-router-dom'
 import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog'
 import useAuth from '../../../../contextHooks/useAuthContext'
+import { grey } from '@mui/material/colors'
+import { MixName } from './MixName';
 
 export const MixProductsForm = () => {
+    const theme = useTheme(BV_THEME);
     //*TODO STRAINS MUST COME FROM MICROGREENS
     const [strains, setStrains] = useState([])
     const [mix, setMix] = useState({
@@ -93,52 +99,53 @@ export const MixProductsForm = () => {
                 products:mappedProducts
             },
         }
-
-        console.log(model)
-        // api.api.post(`${api.apiVersion}/products/`, model)
-        // .then(response => {
-        //     setDialog({
-        //         open:true,
-        //         title:"Mix created succesfuly",
-        //         message:"The mix was added to the DB, what you would like to do?",
-        //         actions:[
-        //             {
-        //                 label:"Create another",
-        //                 execute: () => {
-        //                     window.location.reload()
-        //                 }
-        //             },
-        //             {
-        //                 label:"End",
-        //                 execute:() => {
-        //                     navigate('/')
-        //                 }
-        //             }
-        //         ]
-        //     })
-        // })
-        // .catch(err => {
-        //     console.log(err.response)
-        //     setDialog({
-        //         open:true,
-        //         title:"Error adding new product",
-        //         message:"There was an error sending the data, please try again",
-        //         actions:[
-        //             {
-        //                 label:"Try again",
-        //                 execute: () => {
-        //                     window.location.reload()
-        //                 }
-        //             },
-        //             {
-        //                 label:"Cancel",
-        //                 execute:() => {
-        //                     navigate('/')
-        //                 }
-        //             }
-        //         ]
-        //     })
-        // })
+        api.api.post(`${api.apiVersion}/products/`, model)
+        .then(response => {
+            setDialog({
+                open:true,
+                title:"Mix created succesfuly",
+                message:"The mix was added to the DB, what you would like to do?",
+                actions:[
+                    {
+                        label:"Create another",
+                        btn_color:"primary",
+                        execute: () => {
+                            window.location.reload()
+                        }
+                        
+                    },
+                    {
+                        label:"End",
+                        btn_color:"secondary",
+                        execute:() => {
+                            navigate('/')
+                        }
+                    }
+                ]
+            })
+        })
+        .catch(err => {
+            console.log(err.response)
+            setDialog({
+                open:true,
+                title:"Error adding new product",
+                message:"There was an error sending the data, please try again",
+                actions:[
+                    {
+                        label:"Try again",
+                        execute: () => {
+                            window.location.reload()
+                        }
+                    },
+                    {
+                        label:"Cancel",
+                        execute:() => {
+                            navigate('/')
+                        }
+                    }
+                ]
+            })
+        })
     }
 
     useEffect(() => {
@@ -170,6 +177,11 @@ export const MixProductsForm = () => {
             })
         }) 
     },[])
+
+    
+    const handleSetMix =()=>{
+        
+    }
   return (
     <div style={{paddingLeft:"10vw", paddingRight:"10vw"}}>
         <UserDialog
@@ -181,111 +193,68 @@ export const MixProductsForm = () => {
         actions={dialog.actions}
         />
         
-        <Box sx={{display:"flex", width:"100%", justifyContent:"space-between",justifyItems:"center", alignItems:"center"}}>
-            <Autocomplete
-            options={strains}
-            id="p1"
-            renderInput={(params) => {
-                return <TextField label="Strain" {...params}/>
-            }}
-            getOptionLabel={(option) => {
-                return option.name
-            }}
-            onChange={handleChangeAutoCompletes}
-            />
-            <Autocomplete
-            options={strains}
-            id="p2"
-            renderInput={(params) => {
-                return <TextField label="Strain" {...params}/>
-            }}
-            getOptionLabel={(option) => {
-                return option.name
-            }}
-            onChange={handleChangeAutoCompletes}
-            />
-            <Autocomplete
-            options={strains}
-            id="p3"
-            renderInput={(params) => {
-                return <TextField label="Strain" {...params}/>
-            }}
-            getOptionLabel={(option) => {
-                return option.name
-            }}
-            onChange={handleChangeAutoCompletes}
-            />
-            <Autocomplete
-            options={strains}
-            id="p4"
-            renderInput={(params) => {
-                return <TextField label="Strain" {...params}/>
-            }}
-            getOptionLabel={(option) => {
-                return option.name
-            }}
-            onChange={handleChangeAutoCompletes}
-            />
-        </Box>
-        <Box sx={
-            {
-                display:"flex",
-                width:"100%", 
-                justifyContent:"space-between",
-                marginTop:"5vh"
-            }
-        }>
-            <TextField
-            id="a1"
-            type="number"
-            onChange={handleChangeAmounts}
-            label="Amount %"
-            />
-            <TextField
-            id="a2"
-            type="number"
-            onChange={handleChangeAmounts}
-            label="Amount %"
-            />
-            <TextField
-            id="a3"
-            type="number"
-            label="Amount %"
-            onChange={handleChangeAmounts}
-            />
-            <TextField
-            id="a4"
-            onChange={handleChangeAmounts}
-            type="number"
-            label="Amount %"
-            />
-        </Box>
-        <Box sx={
-            {
-                display:"flex", 
-                width:"100%", 
-                justifyContent:"space-evenly",
-                alignItems:"center",
-                marginTop:"5vh"
-            }
-        }>
-            <TextField onChange={handleChangeName} id="name" label="Mix name"/>
-            {/* //*TODO SET Component for adding photo (LUIS H) - NO CONNECTION TO DB THIS IS HANDLED BY OTHER TEAMMATE */}
-            <TextField onChange={handleChangeLabel} id="label" label="Mix label"/>
-        </Box>
-        <Box sx={
-            {
-                display:"flex", 
-                width:"100%", 
-                justifyContent:"space-evenly",
-                alignItems:"center",
-                marginTop:"5vh"
-            }
-        }>
-            <TextField onChange={handleChangeCost} id="cost" type="number" label="Price"/>
-        </Box>
+        <Box sx={{display:"flex", width:"100%", justifyContent:"space-between",justifyItems:"center", alignItems:"center", flexDirection:"column"}}>
+            <Box sx={
+                {
+                    display:"flex",
+                    width:"100%", 
+                    justifyContent:"center",
+                    marginTop:"5vh", 
+                    flexDirection:"column",
+                    alignItems:"center"
+                }
+            }>
+                <Autocomplete
+                        options={strains}
+                        id="p1"
+                        renderInput={(params) => {
+                            return <TextField label="Strain" {...params}/>
+                        }}
+                        getOptionLabel={(option) => {
+                            return option.name
+                        }}
+                        onChange={handleChangeAutoCompletes}
+                        
+                        sx={theme.input.mobile.fullSize.desktop.halfSize}
+                />
 
-        <Box sx={
+                <Autocomplete
+                        options={strains}
+                        id="a1"
+                        renderInput={(params) => {
+                            return <TextField label="Amount %" {...params}/>
+                        }}
+                        getOptionLabel={(option) => {
+                            return option.name
+                        }}
+                        onChange={handleChangeAutoCompletes}
+                        sx={theme.input.mobile.twoThirds.desktop.quarterSize}
+                />
+                <Typography align='center' color={theme.textColor.lightGray}>Minimum Strains : 2</Typography>
+            </Box>
+
+
+            <Box sx={
+                {
+                    display:"flex",
+                    width:{xs:"66%", sm:"34%"}, 
+                    justifyContent:"space-evenly",
+                    marginTop:"5vh", 
+                    flexDirection:{xs:"row", sm:"column"},
+                    alignItems:"center",
+                }
+            }>
+                <Fab color="primary" aria-label="add" >
+                    <AddIcon />
+                </Fab>
+
+                <Typography margin={"4%"} color={theme.textColor.darkGray}>Mix Length : VAR</Typography>
+
+                
+
+            </Box>
+
+            <Box sx={
             {
                 display:"flex", 
                 alignItems:"center", 
@@ -295,10 +264,72 @@ export const MixProductsForm = () => {
 
             }
         }>
-            <Button variant="contained" onClick={handleSendMixData}>
-                Done
+            <Button variant="contained" size='large' onClick={handleSetMix}>
+                Set Mix
             </Button>
+
         </Box>
+
+
+            
+
+
+
+
+            
+
+
+        </Box>
+
+
+        <div>
+        <Box sx={
+                {
+                    display:"flex",
+                    width:"100%", 
+                    justifyContent:"center",
+                    marginTop:"5vh", 
+                    flexDirection:"column",
+                    alignItems:"center"
+                }
+            }>
+                <TextField label="Mix Name" variant="outlined" sx={theme.input.mobile.fullSize.desktop.halfSize}>
+                    
+                </TextField>
+
+        </Box>
+        <Box sx={
+            {
+                display:"flex", 
+                alignItems:"center", 
+                justifyContent:"center",
+                width:"100%",
+                flexDirection:"column"
+
+            }
+        }>
+
+            <Fab color="primary" aria-label="add" sx={{marginY:"4%"}} >
+                    <CameraIcon />
+            </Fab>
+            
+            <Button variant="contained" size='large' >
+                Save
+            </Button>
+
+        </Box>
+
+        
     </div>
+
+    
+        
+
+        
+    </div>
+    
+
+
+
   )
 }
