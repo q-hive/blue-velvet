@@ -1,5 +1,7 @@
+import {useState} from "react"
+
 import { Button } from "@mui/material"
-import { BV_THEME } from "../theme/BV-theme"
+import { UserModal } from "../CoreComponents/UserActions/UserModal"
 
 export const productsColumns = [
     {
@@ -61,7 +63,67 @@ export const productsColumns = [
         headerAlign:"center",
         headerName:"Actions",
         renderCell: (params) => {
-            return <Button variant='contained'> View actions </Button>
+            const [modal,setModal] = useState({
+                open:false,
+                title:"",
+                content:"",
+                actions:[]
+            })
+            
+            const handleModal = () => {
+                setModal({
+                    ...modal,
+                    open:true,
+                    title:"Select an action",
+                    actions: [
+                        {
+                            label:"Stop production",
+                            type:"normal",
+                            execute:() => {
+                                console.log("Stopping production of (selected product)")
+                            }
+                        },
+                        {
+                            label:"Edit product",
+                            type:"privileged",
+                            execute:() => {
+                                console.log("Redirect to the type of product screen with prefilled data")    
+                            }
+                        },
+                        {
+                            label:"Allocate task",
+                            type:"normal",
+                            execute:() => {
+                                console.log("Redirect to task allocation screen")    
+                            }
+                        },
+                        {
+                            label:"Delete",
+                            type:"dangerous",
+                            execute:() => {
+                                console.log("Are you sure you want to delete this product?")    
+                            }
+                        },
+                    ]
+                })
+
+            }
+            
+            return (
+                <>
+                    <UserModal
+                    modal={modal}
+                    setModal={setModal}
+                    title={modal.title}
+                    content={modal.content}
+                    actions={modal.actions}
+                    />    
+                
+                    <Button variant='contained' onClick={handleModal}> View actions </Button>    
+                
+                </>
+                
+            )
         },
         flex:1
     },

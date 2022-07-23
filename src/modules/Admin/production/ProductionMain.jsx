@@ -18,6 +18,7 @@ import { breakpoints } from '@mui/system'
 //*network AND API
 import api from '../../../axios'
 import { useNavigate } from 'react-router-dom'
+import { UserModal } from '../../../CoreComponents/UserActions/UserModal'
 
 export const ProductionMain = () => {
     const theme = useTheme(BV_THEME);
@@ -95,7 +96,7 @@ export const ProductionMain = () => {
     }, [])
 
   return (
-    <body>
+    <>
         <Box>
             <Container sx={{padding:"5%"}}>
             <Box sx={
@@ -119,8 +120,6 @@ export const ProductionMain = () => {
                 actions={dialog.actions}
                 />
                 
-                
-
 
                 <Typography variant="h4" textAlign={"center"} margin={theme.margin.mainHeader}>
                     Production management (products)
@@ -149,6 +148,7 @@ export const ProductionMain = () => {
                 }}
                 sx={{marginY:"2vh", display:() => theme.mobile.hidden}}
                 />
+
                 <DataGrid
                 columns={productsColumnsMobile}
                 rows={rows}
@@ -160,6 +160,6 @@ export const ProductionMain = () => {
             </Box>
             </Container>
         </Box>
-    </body>
+    </>
   )
 }
