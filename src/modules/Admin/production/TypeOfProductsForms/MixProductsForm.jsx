@@ -18,7 +18,8 @@ const amounts = ["25","30","40","50","60","70","80","90"]
 
 export const MixProductsForm = () => {
     const theme = useTheme(BV_THEME);
-    //*TODO STRAINS MUST COME FROM MICROGREENS
+    
+    //*DATA STATES
     const [strains, setStrains] = useState([])
     const [mix, setMix] = useState({
         products:[],
@@ -26,12 +27,15 @@ export const MixProductsForm = () => {
         label:"",
         cost:0
     })
-    const [showFinal, setShowFinal] = useState(false)
 
+    //*RENDER STATES
     const [actualValue, setActualValue] = useState({
         strain:"",
         amount:null
     })
+    const [showFinal, setShowFinal] = useState(false)
+    const [canAdd, setCanAdd] = useState(true)
+
     
 
    //*USER FEEDBACK STATES 
@@ -64,7 +68,7 @@ export const MixProductsForm = () => {
     const {user} = useAuth()
     const navigate = useNavigate()
     
-    const handleChangeAutoCompletes = (e,v,r) => {
+    const handleChangeStrain = (e,v,r) => {
         //*event, value, reason
         switch(r){
             case "selectOption":
@@ -73,78 +77,113 @@ export const MixProductsForm = () => {
                         ...actualValue,
                         strain:v._id
                     })
+
+                    if(error.strain.failed){
+                        setError({
+                            ...error,
+                            strain:{
+                                failed:false
+                            }
+                        })
+                    }
                     break
-                } else if (e.target.id.split('-')[0] === "amount") {
-                    setActualValue({
-                        ...actualValue,
-                        amount:v
-                    })
-                    break;
-                }
+                } 
             case "clear":
-                console.log(e, v, r)
-                console.log(e.target.ownerDocument.id)
-                //*? HOW TO LISTEN WICH VALUE SHOULD BE DELETED FROM ACTUAL VALUE IF TJHE ID IS "" BECAUSE TJHE BUTTON IS APPART FROM INPUT
-                if(e.target.ownerDocument.id === "strain"){
-                    setActualValue({
-                        ...actualValue,
-                        strain:""
-                    })
-                    break
-                } else if (e.target.ownerDocument.id === "amount") {
-                    setActualValue({
-                        ...actualValue,
-                        amount:null
-                    })
-                    break;
-                }
-                
+                setActualValue({
+                    ...actualValue,
+                    strain:""
+                })
                 break;
             default:
                 break;
         }
     }
 
-    
-    const handleChangeName = (e) => {
-        setMix({
-            ...mix,
-            name:e.target.value
+    const handleChangeAmount = (e) => {
+        setActualValue({
+            ...actualValue,
+            [e.target.id]:Number(e.target.value)
         })
-        
-    }
-    const handleChangeLabel = () => {
-        console.log("Updating label")
-    }
 
-    const handleChangeCost = (e) => {
-        setMix({
-            ...mix,
-            cost:e.target.value
-        })
-        
+        if(error.amount.failed){
+            setError({
+                ...error,
+                amount:{
+                    failed:false
+                }
+            })
+        }
     }
     
     const handleAddToMixComb = () => {
-        if(!((actualValue.strain !== "") && (actualValue.amount !== null))){
-            //*TODO SHOW EMPTY INPUTS IN RED
-            console.log("There are some empty values, please provide the correct format.")
-            console.log(Object.entries(actualValue))
-            //*Entry array = entrArr
-            console.log(Object.entries(actualValue).map((entrArr, idx) => {
-                if(entrArr[1] === ("" || null)) {
-                    return entrArr[0]
+        //*Entry array = entrArr
+        // const empty = Object.entries(actualValue).map((entrArr, idx) => {
+            //*This doesnt update both error states when they are empty
+            // if(entrArr[1] === "" || entrArr[1] === null) {
+            //     console.log(error[entrArr[0]])
+            //     setError({
+            //         ...error,
+            //         [entrArr[0]]:{
+            //             failed:true,
+            //             message:"Empty values are not accepted"
+            //         }
+            //     })
+            // }
+        // })
+        
+        if(actualValue.amount === null && actualValue.strain === ""){
+            setError(
+                {
+                    ...error,
+                    strain:{
+                        failed:true,
+                        message:"Empty values are not accepted"
+                    },
+                    amount:{
+                        failed:true,
+                        message:"Empty values are not accepted"
+                    },
                 }
-                
-            }))
-
-            
+            )
             return
         }
-        console.log("Combination completed")
-        console.log(actualValue)
+        
+        if(actualValue.strain === "" && actualValue.amount !== null){
+            setError(
+                {
+                    ...error,
+                    strain:{
+                        failed:true,
+                        message:"Empty values are not accepted"
+                    }, 
+                }
+            )
+            return
+        }
+
+        if(actualValue.strain !== "" && actualValue.amount === null){
+            setError(
+                {
+                    ...error,
+                    amount:{
+                        failed:true,
+                        message:"Empty values are not accepted"
+                    }, 
+                }
+            )
+            return
+        }
+
+
+        if(actualValue.strain !== "" && actualValue !== null){
+            setMix({
+                ...mix,
+                products:[...mix.products, actualValue]
+            })
+        }
+
     }
-    
+
     const handleSetMix = () => {
         if(mix.products.length < 2){
             setDialog({
@@ -258,6 +297,27 @@ export const MixProductsForm = () => {
         }) 
     },[])
 
+    useEffect(() => {
+        if(mix.products.length >1){
+            //*The limit sum of amounts should be 100%
+            const total = mix.products.reduce((prev, curr) => {
+                let prevObj
+                if(typeof prev === "object"){
+                    prevObj = prev.amount
+                } else {
+                    prevObj = prev
+                }
+                return curr.amount + prevObj
+            })
+            console.log(total)
+
+            if(total === 100){
+                //*Disable button
+                setCanAdd(false)
+            }
+        }
+    }, [mix])
+
     
   return (
     <div style={{paddingLeft:"10vw", paddingRight:"10vw"}}>
@@ -285,23 +345,22 @@ export const MixProductsForm = () => {
                         options={strains}
                         id="strain"
                         renderInput={(params) => {
-                            return <TextField helperText={error.strain.message} error={error.strain.failed} label="Strain" {...params}/>
+                            return <TextField helperText={error.strain.message} error={error.strain.failed} {...params} label="Strain"/>
                         }}
                         getOptionLabel={(option) => {
                             return option.name
                         }}
-                        onChange={handleChangeAutoCompletes}
+                        onChange={handleChangeStrain}
                         sx={theme.input.mobile.fullSize.desktop.halfSize}
                 />
 
-                <Autocomplete
-                        options={amounts}
-                        id="amount"
-                        renderInput={(params) => {
-                            return <TextField type="number" helperText={error.amount.message} error={error.amount.failed} label="Amount %" {...params}/>
-                        }}
-                        onChange={handleChangeAutoCompletes}
-                        sx={theme.input.mobile.twoThirds.desktop.quarterSize}
+                <TextField
+                    id="amount"
+                    label="Amount %"
+                    onChange={handleChangeAmount}
+                    sx={theme.input.mobile.twoThirds.desktop.quarterSize}
+                    error={error.amount.failed}
+                    helperText={error.amount.message}
                 />
                 <Typography align='center' color={theme.textColor.lightGray}>Minimum Strains : 2</Typography>
             </Box>
@@ -317,11 +376,11 @@ export const MixProductsForm = () => {
                     alignItems:"center",
                 }
             }>
-                <Fab onClick={handleAddToMixComb} color="primary" aria-label="add" >
+                <Fab onClick={handleAddToMixComb} disabled={!canAdd} color="primary" aria-label="add" >
                     <AddIcon />
                 </Fab>
 
-                <Typography margin={"4%"} color={theme.textColor.darkGray}>Mix Length : VAR</Typography>
+                <Typography margin={"4%"} color={theme.textColor.darkGray}>Mix Length : {mix.products.length}</Typography>
 
                 
 
@@ -360,6 +419,10 @@ export const MixProductsForm = () => {
                         }
                     }>
                         <TextField label="Mix Name" variant="outlined" sx={theme.input.mobile.fullSize.desktop.halfSize}>
+                            
+                        </TextField>
+
+                        <TextField label="Mix Price" variant="outlined" sx={theme.input.mobile.fullSize.desktop.halfSize}>
                             
                         </TextField>
 
