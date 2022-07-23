@@ -47,14 +47,14 @@ export const ProductionMain = () => {
             title:"Is a mix?",
             actions:[ {
                 label:"Yes",
-                c:"primary",
+                btn_color:"primary",
                 execute:() => {
                     navigate("newProduct?mix=true")
                 }
                 },
                 {
                     label:"No",
-                    c:"secondary",
+                    btn_color:"secondary",
                     execute: () => {
                         navigate("newProduct")
                     }
@@ -118,6 +118,8 @@ export const ProductionMain = () => {
                 content={dialog.message}
                 actions={dialog.actions}
                 />
+                
+                
 
 
                 <Typography variant="h4" textAlign={"center"} margin={theme.margin.mainHeader}>
