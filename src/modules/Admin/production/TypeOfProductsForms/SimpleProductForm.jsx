@@ -1,17 +1,20 @@
 import React, { useState } from 'react'
 //*MUI components
-import { Button, TextField } from '@mui/material'
+import { Button, TextField, Fab } from '@mui/material'
+import CameraIcon from '@mui/icons-material/AddPhotoAlternate';
 import { Box } from '@mui/system'
+
+//*THEME
+import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog.jsx'
 
 //*Network and API
 import api from '../../../../axios.js'
-import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog.jsx'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 export const SimpleProductForm = () => {
     const [productData, setProductData] = useState({
         name:"",
-        label:"",
+        label:null,
         price:0,
         seedId:"",
         day:0,
@@ -36,6 +39,13 @@ export const SimpleProductForm = () => {
         setProductData({
             ...productData,
             [e.target.id]:e.target.value
+        })
+    }
+
+    const handleChangeLabel = (e) => {
+        setProductData({
+            ...productData,
+            label:e.target.files[0]
         })
     }
     
@@ -82,7 +92,26 @@ export const SimpleProductForm = () => {
             })       
         })
         .catch(err => {
-            
+            setDialog({
+                ...dialog,
+                open:true,
+                title:"Error adding product",
+                message:"What do you want to do?",
+                actions:[
+                    {
+                        label:"Try again",
+                        execute: () => {
+                            window.location.reload()
+                        }
+                    },
+                    {
+                        label:"Cancel",
+                        execute: () => {
+                            navigate('production')
+                        }
+                    },
+                ]   
+            })
         })
     }
 
@@ -93,17 +122,20 @@ export const SimpleProductForm = () => {
             showTimes
             ?
             <>
-                <TextField type="number" label="Dark time" />
-                <TextField type="number" label="Light time" />
+                <TextField id="night" onChange={handleChangeProductData} type="number" label="Dark time" />
+                <TextField id="light" onChange={handleChangeProductData} type="number" label="Light time" />
             </>
             :
             <>
                 <TextField id="name" onChange={handleChangeProductData} label="Product name"/>
-                <TextField id="label" onChange={handleChangeProductData} label="Product label"/>
+                <Fab color="primary" component="label" id="label" aria-label="add" sx={{marginY:"4%"}} >
+                    <input  type="file" accept="image/*" onChange={handleChangeLabel} hidden />
+                    <CameraIcon />
+                </Fab>
                 <TextField id="seeding" type="number" onChange={handleChangeProductData} label="Seeding"/>
                 <TextField id="harvest" type="number" onChange={handleChangeProductData} label="Harvest"/>
                 <TextField id="price" onChange={handleChangeProductData} label="Price"/>
-                <TextField id="route" onChange={handleChangeProductData} label="Email / route"/>
+                <TextField id="provider" onChange={handleChangeProductData} label="Email / route"/>
                 <TextField id="seedId" onChange={handleChangeProductData} label="SeedID"/>
             </>
 

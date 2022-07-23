@@ -1,19 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react'
 
 //*COMPONENTS FROM MUI
-import { Autocomplete, Box, Button, TextField, Typography, useTheme, Fab, IconButton, Modal } from '@mui/material'
+import { 
+    Autocomplete, Box, Button, 
+    TextField, Typography, useTheme, 
+    Fab 
+} from '@mui/material'
 import AddIcon from '@mui/icons-material/Add';
 import CameraIcon from '@mui/icons-material/AddPhotoAlternate';
+
 //*THEME
 import { BV_THEME } from '../../../../theme/BV-theme'
+import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog'
 //*NETWORK AND API
 import api from '../../../../axios'
 import { useNavigate } from 'react-router-dom'
-import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog'
 import useAuth from '../../../../contextHooks/useAuthContext'
-import { grey } from '@mui/material/colors'
-import { MixName } from './MixName';
 
+//*Auth
 const amounts = ["25","30","40","50","60","70","80","90"]
 
 export const MixProductsForm = () => {
