@@ -87,7 +87,7 @@ export const productsColumns = [
                             label:"Stop production",
                             type:"normal",
                             execute:() => {
-                                console.log("Stopping production of (selected product)")
+                                // console.log(`${api}`)
                             }
                         },
                         {
