@@ -199,7 +199,7 @@ export const Login = () => {
             }}>
                 <img src={LoginImage} alt="login-image" style={{width:"100%", height:"auto"}}></img>
             </Box>
-            <Box sx={{width:"50%", backgroundColor:"white"}}>
+            <Box sx={{width:{xs:"100%", sm:"50%"}, backgroundColor:"white"}}>
                 <Box sx={{
                     height:"100%", width:"100%",
                     display:"flex", flexDirection:"column",

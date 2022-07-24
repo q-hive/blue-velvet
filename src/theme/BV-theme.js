@@ -20,7 +20,15 @@ export const BV_THEME = createTheme({
     },
 
     margin:{
-        mainHeader:{xs:"15%",sm:"10%",md:"8%"},
+        mainHeader:{xs:"15%",sm:"10%",md:"4%"},
+
+    },
+
+    button:{
+        table:{},
+        dialog:{marginY:"1%",padding:"10px", minWidth:{xs:"50%",sm:"45%"}},
+        standard:{marginY:"1%",padding:"10px", minWidth:{xs:"50%",sm:"45%"}},
+        dashboard:{marginY:"1%",padding:"10px", minWidth:{xs:"50%",sm:"20%"}}
 
     },
 
@@ -41,7 +49,7 @@ export const BV_THEME = createTheme({
                         halfSize:       { width:{xs:"98%",sm:"48%"},marginX:"1%",marginY:"2%",boxShadow:shadow},
                         fullSize:       { width:{xs:"98%",sm:"98%"},marginX:"1%",marginY:"2%"},
                         quarterSize:    { width:{xs:"98%",sm:"23%"},marginX:"1%",marginY:"2%"},
-                        thirdSize:      { width:{xs:"98%",sm:"33%"},marginX:"1%",marginY:"2%"},
+                        thirdSize:      { width:{xs:"98%",sm:"40%",md:"33%"},marginX:"1%",marginY:{xs:"2%",sm:"1%"},boxShadow:shadow},
                         twoThirdsSize:  { width:{xs:"98%",sm:"66%"},marginX:"1%",marginY:"2%"},
                     },
                 },

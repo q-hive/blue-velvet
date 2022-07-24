@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
 import { ValidatorForm, TextValidator} from 'react-material-ui-form-validator'
-import { Box, Button, Modal, TextField } from '@mui/material'
+import { Box, Button, Modal, TextField, useTheme } from '@mui/material'
 
 import LoginIcon from '@mui/icons-material/Login';
+import { BV_THEME } from '../../theme/BV-theme';
+
 
 export const LoginInputs = ({
     handleSignIn,
@@ -13,21 +15,26 @@ export const LoginInputs = ({
     openPassphrase,
     closePassModal
 }) => {
+    const theme = useTheme(BV_THEME)
 
     const [adminLogin, setAdminLogin] = useState(false)
 
     let { email, password, passphrase} = loginData
 
     return (
-        <div>
+        <div sx={{alignItems:"center"}}>
+            
             <ValidatorForm
             onSubmit={handleSignIn}
             onError={errors => console.log(errors)}
             sx={{
                 display:"flex",
-                flexDirection:"column"
+                flexDirection:"column",
+                alignItems:"center"
             }}
+            
         >
+            <Box display="flex" flexDirection="column" alignItems="center" width="100%">
             <TextValidator 
                 label="Email"
                 variant="outlined" 
@@ -37,6 +44,7 @@ export const LoginInputs = ({
                 validators={['required']}
                 errorMessages={['Email is required']}
                 onChange={handleLoginData}
+                sx={theme.input.mobile.fullSize.desktop.fullSize}
             />
             <TextValidator 
                 label="Password"
@@ -49,16 +57,20 @@ export const LoginInputs = ({
                 errorMessages={['Password is required']}
                 disabled={loading}
                 onChange={handleLoginData}
+                sx={theme.input.mobile.fullSize.desktop.fullSize}
             />
             
             <Button 
-                sx={{background:"#0E0C8F", color:"white"}} 
+                variant="contained"
+                size="large"
                 endIcon={<LoginIcon/>} 
                 type="submit"
             >
                 {loading ? "Loading..." : "Login"}
             </Button>
+            </Box>
         </ValidatorForm>
+        
         {
             <Modal
             open={openPassphrase}
