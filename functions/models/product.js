@@ -4,6 +4,7 @@ const { ObjectId } = mongoose.Types
 
 const Product = new Schema({
     name:   String,
+    container: ObjectId,
     image:  {
         type:String,
         required:false

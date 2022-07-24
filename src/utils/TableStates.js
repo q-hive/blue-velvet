@@ -3,6 +3,9 @@ import {useState} from "react"
 import { Button } from "@mui/material"
 import { UserModal } from "../CoreComponents/UserActions/UserModal"
 
+import api from '../axios'
+import useAuth from "../contextHooks/useAuthContext"
+
 export const productsColumns = [
     {
         field:"name",
@@ -76,6 +79,9 @@ export const productsColumns = [
                 content:"",
                 actions:[]
             })
+
+            const {user} = useAuth()
+            console.log(user)
             
             const handleModal = () => {
                 setModal({
@@ -87,7 +93,9 @@ export const productsColumns = [
                             label:"Stop production",
                             type:"normal",
                             execute:() => {
-                                // console.log(`${api}`)
+                                // api.api.patch(`${api.apiVersion}/prducts/stop/?id=${params}`)
+                                //.then(() => {})
+                                //.catch(err => {})
                             }
                         },
                         {

@@ -24,7 +24,7 @@ export const adminRoutes = (app) => {
 
 export const productsRoutes = (app) => {
     const authorized = ["admin"]
-    app.use(`${apiV1}/products`, isAuthenticated, isAuthorized(authorized), productsRouter)
+    app.use(`${apiV1}/products`, isAuthenticated, isAuthorized(authorized),productsRouter)
 }
 
 export const ordersRoutes = (app) => {

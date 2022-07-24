@@ -97,4 +97,14 @@ router.post('/', (req, res) => {
     error(req, res, 400, "The data received is invalid.",new Error("Invalid data"))
 })
 
+router.patch('/stop/?id', (req, res) => {
+    //*TODO VALIDATE IF REQU.QUERY IS RECEIVING AN ID
+    if(req.query.id !== undefined && req.query.id !== ""){
+        
+    }
+    //*TODO IF THERE IS AN ORDER RELATED TO A PRODUCT. NOTIFY CLIENT THAT MUST FIRST CANCEL THE ORDER
+    //*TODO TRIGGER TASKS RELATED TO A PRODUCT CANCELLATION
+    //*TODO WHEN AL THIS PROCESSES ARE COMPLETED, THEN UPDATE THE PRODUCT STATE
+})
+
 export default router
