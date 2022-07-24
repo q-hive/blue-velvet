@@ -1,7 +1,7 @@
 import React from 'react'
 
 //*MUI COMPONENTS
-import { Box, Button } from '@mui/material'
+import { Box, Button, useTheme } from '@mui/material'
 
 //*ROUTER
 import { navigate } from '../../../utils/router'
@@ -11,9 +11,12 @@ import useAuth from '../../../contextHooks/useAuthContext'
 
 //*Routing
 import { useNavigate } from "react-router-dom";
+import { BV_THEME } from '../../../theme/BV-theme';
 
 export const Dashboard = () => {
     const {user} = useAuth()
+
+    const theme = useTheme(BV_THEME)
 
     const navigate = useNavigate()
 
@@ -23,16 +26,16 @@ export const Dashboard = () => {
     
   return (
     <Box sx={{display:"flex", flexDirection:"column", width:"100vw", height:"100vh", alignItems:"center", justifyContent:"center"}}>
-        <Button sx={{marginY:"15px"}} id="employees" onClick={handleRedirect} variant='contained'>
+        <Button sx={theme.button.dashboard} id="employees" onClick={handleRedirect} variant='contained'>
             Employees
         </Button>
-        <Button sx={{marginY:"15px"}} id="production" onClick={handleRedirect} variant='contained'>
+        <Button sx={theme.button.dashboard} id="production" onClick={handleRedirect} variant='contained'>
             Production
         </Button>
-        <Button sx={{marginY:"15px"}} id="sales" onClick={handleRedirect} variant='contained'>
+        <Button sx={theme.button.dashboard} id="sales" onClick={handleRedirect} variant='contained'>
             Sales
         </Button>
-        <Button sx={{marginY:"15px"}} id="customer" onClick={handleRedirect} variant='contained'>
+        <Button sx={theme.button.dashboard} id="customer" onClick={handleRedirect} variant='contained'>
             Customer
         </Button>
     </Box>

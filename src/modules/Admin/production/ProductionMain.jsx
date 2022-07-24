@@ -98,7 +98,7 @@ export const ProductionMain = () => {
   return (
     <>
         <Box>
-            <Container sx={{padding:"5%"}}>
+            <Container sx={{padding:"2%"}}>
             <Box sx={
                 
                 {

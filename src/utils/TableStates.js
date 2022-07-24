@@ -8,6 +8,7 @@ export const productsColumns = [
         field:"name",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"Microgreen",
         minWidth:150,
         flex:1,
@@ -16,6 +17,7 @@ export const productsColumns = [
         field:"performance",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"Performance",
         flex:1,
 
@@ -24,6 +26,7 @@ export const productsColumns = [
         field:"tasks",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"Pending Tasks",
         width:150,
         flex:1
@@ -32,6 +35,7 @@ export const productsColumns = [
         field:"orders",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"Orders",
         width:150,
         renderCell:(params) => {
@@ -43,6 +47,7 @@ export const productsColumns = [
         field:"cost",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"Prod. Cost",
         width:150,
         flex:1
@@ -51,6 +56,7 @@ export const productsColumns = [
         field:"seedingRate",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"Seed charge",
         renderCell:(params) => {
             return 35
@@ -61,6 +67,7 @@ export const productsColumns = [
         field:"actions",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"Actions",
         renderCell: (params) => {
             const [modal,setModal] = useState({
@@ -119,7 +126,7 @@ export const productsColumns = [
                     actions={modal.actions}
                     />    
                 
-                    <Button variant='contained' onClick={handleModal}> View actions </Button>    
+                    <Button variant='contained' onClick={handleModal} > View actions </Button>    
                 
                 </>
                 
@@ -131,6 +138,7 @@ export const productsColumns = [
         field:"status",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"Status",
         renderCell:() => {
             return "In production"
@@ -144,6 +152,7 @@ export const productsColumnsMobile = [
         field:"name",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"Microgreen",
         minWidth:150,
         flex:1,
@@ -152,6 +161,7 @@ export const productsColumnsMobile = [
         field:"orders",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"Orders",
         width:150,
         renderCell:(params) => {
@@ -164,6 +174,7 @@ export const productsColumnsMobile = [
         field:"tasks",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"Options",
         width:150,
         flex:1
@@ -176,18 +187,21 @@ export const ProductionLinesColumns = [
         field:"start",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"Start date"
     },
     {
         field:"end",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"End Date"
     },
     {
         field:"updated",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"Updated",
         width:150
     },
@@ -195,6 +209,7 @@ export const ProductionLinesColumns = [
         field:"orders",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"Orders",
         width:150,
         renderCell:(params) => {
@@ -205,6 +220,7 @@ export const ProductionLinesColumns = [
         field:"Active",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"Active tasks",
         width:150
     },
@@ -212,6 +228,7 @@ export const ProductionLinesColumns = [
         field:"products",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"Products",
         renderCell:(params) => {
             return 35
