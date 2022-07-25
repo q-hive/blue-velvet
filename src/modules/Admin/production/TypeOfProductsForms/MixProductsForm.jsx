@@ -235,6 +235,7 @@ export const MixProductsForm = () => {
                 name:mix.name,
                 products:mix.products
             },
+            status:"stopped"
         }
         const hasLabel = mix.label !== null
         let label
@@ -261,7 +262,7 @@ export const MixProductsForm = () => {
                         label:"Create another",
                         btn_color:"primary",
                         execute: () => {
-                            window.location.reload()
+                            navigate(`/${user.uid}/${user.role}/production`)
                         }
                         
                     },
@@ -269,7 +270,7 @@ export const MixProductsForm = () => {
                         label:"End",
                         btn_color:"secondary",
                         execute:() => {
-                            navigate('/')
+                            navigate(`/${user.uid}/${user.role}/dashboard`)
                         }
                     }
                 ]

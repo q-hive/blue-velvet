@@ -79,7 +79,9 @@ export const ProductionMain = () => {
             //*API SHOULD ACCEPT PARAMETERS IN ORDER TO GET THE MERGED DATA FROM ORDERS AND TASKS
             //*TODO API SHOULD REQUEST FOR PRODUCTION LINES
             const productsRequest = await api.api.get(`${api.apiVersion}/products/?orders&&tasks`)
+            const allProducts = await api.api.get(`${api.apiVersion}/products/`)
             productsRequest.data.products = true
+            window.localStorage.setItem('products', JSON.stringify(allProducts.data))
             return [productsRequest.data]
         }
 
@@ -126,16 +128,16 @@ export const ProductionMain = () => {
                 </Typography>
                 <Box sx={{
                         display:"flex", 
-                        justifyContent:{xs:"center",sm:"space-between"}
+                        justifyContent:{xs:"center",sm:"flex-end"}
                         }}>
-                    <Button 
+                    {/* <Button 
                         variant='text' 
                         color="primary" 
                         onClick={handleUpdateTable} 
                         sx={{display:() => theme.mobile.hidden}}  
                     >
                         See production lines
-                    </Button>
+                    </Button> */}
                     <Button variant="contained" startIcon={<Add/>} onClick={handleNewProduct} color="primary"  >
                         Add new product
                     </Button>
@@ -155,6 +157,12 @@ export const ProductionMain = () => {
                 getRowId={(row) => {
                     return row._id
                 }}
+                onStateChange={(s,e,d) => {
+                    console.log(s)
+                    console.log(e)
+                    console.log(d)
+                }}
+                
                 sx={{marginY:"2vh", display:() => theme.mobile.only}}
                 />
             </Box>

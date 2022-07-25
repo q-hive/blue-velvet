@@ -26,7 +26,9 @@ const hasEveryKey = (valid, current) => {
 }
 
 export const isValidProductObject = (json) => {
-        const productModel = {
+        let productModel 
+    
+        productModel = {
             "name":"", 
             "price":"",
             "parameters":{
@@ -36,6 +38,19 @@ export const isValidProductObject = (json) => {
                 "harvestRate":"" 
             }
         }
+
+        if(json.mix.isMix){
+            productModel = {
+                "name":"", 
+                "price":"",
+                "mix":{
+                    "isMix":"",
+                    "name":"",
+                    "products":[],
+                }
+            }
+        }
+
         return hasEveryKey(productModel, json)
 }
 
