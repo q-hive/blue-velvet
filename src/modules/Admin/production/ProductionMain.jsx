@@ -1,18 +1,27 @@
 import React, {useEffect, useState} from 'react'
 
 //*MUI Components
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography } from '@mui/material'
+import { Box, Button, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography, useTheme } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
+//*THEME
+import {BV_THEME} from '../../../theme/BV-theme'
 //*ICONS
 import Add from '@mui/icons-material/Add'
 
-//*network
-import api from '../../../axios'
-import { productsColumns } from '../../../utils/TableStates'
-import { useNavigate } from 'react-router-dom'
+//*APP Components
 import { UserDialog } from '../../../CoreComponents/UserFeedback/Dialog'
 
+//*UTILS
+import { productsColumns, productsColumnsMobile } from '../../../utils/TableStates'
+import { breakpoints } from '@mui/system'
+
+//*network AND API
+import api from '../../../axios'
+import { useNavigate } from 'react-router-dom'
+import { UserModal } from '../../../CoreComponents/UserActions/UserModal'
+
 export const ProductionMain = () => {
+    const theme = useTheme(BV_THEME);
     const [columnsState, setColumnsState] = useState(productsColumns)
     const [rows, setRows] = useState([])
     const [dialog, setDialog] = useState({
@@ -24,6 +33,14 @@ export const ProductionMain = () => {
 
     const navigate = useNavigate()
 
+    const handleMobileTable = () => {
+        setColumnsState(productsColumnsMobile)
+    }
+
+    const handleUpdateTable = () => {
+        //*This functions is going to dissapear is no longer needed
+    }
+
     const handleNewProduct = () => {
         setDialog({
             ...dialog,
@@ -31,12 +48,14 @@ export const ProductionMain = () => {
             title:"Is a mix?",
             actions:[ {
                 label:"Yes",
+                btn_color:"primary",
                 execute:() => {
                     navigate("newProduct?mix=true")
                 }
                 },
                 {
                     label:"No",
+                    btn_color:"secondary",
                     execute: () => {
                         navigate("newProduct")
                     }
@@ -59,8 +78,10 @@ export const ProductionMain = () => {
         const requests = async () => {
             //*API SHOULD ACCEPT PARAMETERS IN ORDER TO GET THE MERGED DATA FROM ORDERS AND TASKS
             //*TODO API SHOULD REQUEST FOR PRODUCTION LINES
-            const productsRequest = await api.api.get('/api/v1/products/?orders&&tasks')
+            const productsRequest = await api.api.get(`${api.apiVersion}/products/?orders&&tasks`)
+            const allProducts = await api.api.get(`${api.apiVersion}/products/`)
             productsRequest.data.products = true
+            window.localStorage.setItem('products', JSON.stringify(allProducts.data))
             return [productsRequest.data]
         }
 
@@ -75,59 +96,78 @@ export const ProductionMain = () => {
             console.log(err)
         })
     }, [])
+
   return (
-    <Box sx={
-        {
-            width:"100%", 
-            height:"100vh",
-            "& .header-products-table":{
-                backgroundColor:"#0E0C8F",
-                color:"white"
-            }
-        }
-    }>
+    <>
+        <Box>
+            <Container sx={{padding:"2%"}}>
+            <Box sx={
+                
+                {
+                    width:"100%", 
+                    height:"80vh",
+                    "& .header-products-table":{
+                        backgroundColor:BV_THEME.palette.primary.main,
+                        color:"white"
+                    }
+                }
+            }>
 
-        <UserDialog
-        setDialog={setDialog}
-        open={dialog.open}
-        title={dialog.title} 
-        content={dialog.message} 
-        actions={dialog.actions}
-        />
-        {/* <Dialog open={dialog.open} onClose={handleCloseDialog}>
-            <DialogTitle>
-                {dialog.title}
-            </DialogTitle>
+                <UserDialog
+                setDialog={setDialog}
+                dialog={dialog}
+                open={dialog.open}
+                title={dialog.title}
+                content={dialog.message}
+                actions={dialog.actions}
+                />
+                
 
-            <DialogContent>
-                <DialogContentText>
-                    {dialog.message}
-                </DialogContentText>
-            </DialogContent>
+                <Typography variant="h4" textAlign={"center"} margin={theme.margin.mainHeader}>
+                    Production management (products)
+                </Typography>
+                <Box sx={{
+                        display:"flex", 
+                        justifyContent:{xs:"center",sm:"flex-end"}
+                        }}>
+                    {/* <Button 
+                        variant='text' 
+                        color="primary" 
+                        onClick={handleUpdateTable} 
+                        sx={{display:() => theme.mobile.hidden}}  
+                    >
+                        See production lines
+                    </Button> */}
+                    <Button variant="contained" startIcon={<Add/>} onClick={handleNewProduct} color="primary"  >
+                        Add new product
+                    </Button>
+                </Box>
+                <DataGrid
+                columns={columnsState}
+                rows={rows}
+                getRowId={(row) => {
+                    return row._id
+                }}
+                sx={{marginY:"2vh", display:() => theme.mobile.hidden}}
+                />
 
-            <DialogActions>
-                {dialog.actions.map((value, index) =>{
-                    return <Button key={index} onClick={value.execute}>{value.label}</Button>
-                })}
-            </DialogActions>
-        </Dialog> */}
-
-        
-        <Typography variant="h4">
-            Production management (products)
-        </Typography>
-        <Box sx={{display:"flex", justifyContent:"flex-end"}}>
-            <Button startIcon={<Add/>} onClick={handleNewProduct} sx={{color:"white", backgroundColor:"#0E0C8F"}}>
-                Add new product
-            </Button>
+                <DataGrid
+                columns={productsColumnsMobile}
+                rows={rows}
+                getRowId={(row) => {
+                    return row._id
+                }}
+                onStateChange={(s,e,d) => {
+                    console.log(s)
+                    console.log(e)
+                    console.log(d)
+                }}
+                
+                sx={{marginY:"2vh", display:() => theme.mobile.only}}
+                />
+            </Box>
+            </Container>
         </Box>
-        <DataGrid
-        columns={columnsState}
-        rows={rows}
-        getRowId={(row) => {
-            return row._id
-        }}
-        />
-    </Box>
+    </>
   )
 }

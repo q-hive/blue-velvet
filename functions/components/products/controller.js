@@ -5,22 +5,53 @@ import { getAllProducts } from './store.js'
 
 const hasEveryKey = (valid, current) => {
      //*Verificar que el objeto tenga todas las llaves del modelo
-     return valid.every(key => Object.keys(current).includes(key))
+
+     //*iterate valid object if some key isnt included reject
+     //*If a value is and object then iterate the object in valid and compare keys of nested object in current 
+    //* if al keys are included, validate the data types (mongoose does it automatically)
+    console.log(valid)
+    console.log(current)
+    if(Object.keys(valid).every(key => Object.keys(current).includes(key))){
+        console.log("Has all keys")
+        for (const key of Object.keys(valid)) {
+            if(typeof valid[key] === "object"){
+                console.log("Validating nested object")
+                return hasEveryKey(valid[key], current[key])
+            }
+        }
+        return true
+    } else {
+        return false
+    }
 }
 
 export const isValidProductObject = (json) => {
-        const validKeys = Object.keys(product.obj)
-        validKeys.shift()
-        // //*Si el objeto tienes la cantidad de llaves que el modelo sin contar el _id, siguiente validacion
-        // if(!(Object.keys(json).length === Object.keys(product.obj).length-1)){
-        //    return false
-        // }
+        let productModel 
+    
+        productModel = {
+            "name":"", 
+            "price":"",
+            "parameters":{
+                "day":"",
+                "night":"",
+                "seedingRate":"",
+                "harvestRate":"" 
+            }
+        }
 
-        // if(!hasEveryKey(validKeys, json)) {
-        //     return false
-        // }
-        //*Si tiene todos los campos, validar que el formato del valor del campo sea correcto
-        return true
+        if(json.mix.isMix){
+            productModel = {
+                "name":"", 
+                "price":"",
+                "mix":{
+                    "isMix":"",
+                    "name":"",
+                    "products":[],
+                }
+            }
+        }
+
+        return hasEveryKey(productModel, json)
 }
 
 export const relateOrdersAndTasks = async () => {

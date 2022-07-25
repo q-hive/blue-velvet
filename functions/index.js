@@ -3,6 +3,7 @@ import http from 'http'
 import cors from 'cors'
 import fileUpload from 'express-fileupload'
 
+
 import { useMorgan } from './logs/morgan.js';
 import { 
     adminRoutes, ordersRoutes, organizationRoutes, 
@@ -67,7 +68,7 @@ function normalizePort(num){
 function onError(err){
     console.log('Error en el server')
     
-    if(error.syscall !== 'listen'){
+    if(err.syscall !== 'listen'){
         throw err
     }
 

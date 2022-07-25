@@ -8,7 +8,10 @@ import {isValidProductObject, relateOrdersAndTasks} from './controller.js'
 //*Store
 import {
     insertNewProduct,
-    getAllProducts
+    getAllProducts,
+    insertManyProducts,
+    updateProduct,
+    deleteProduct
 } from './store.js'
 
 const router = express.Router()
@@ -58,6 +61,19 @@ router.get('/:id', (req, res) => {
 })
 
 router.post('/', (req, res) => {
+    if(Array.isArray(req.body)){
+        
+        insertManyProducts(req.body)
+        .then(message => {
+            success(req, res,201, message)
+        })
+        .catch(err => {
+            error(req, res, 500, "Error agregando productos a la base de datos", err)
+        })
+        
+        return
+    }
+    
     if(isValidProductObject(req.body)){
         //*insert to db
         insertNewProduct(req.body)
@@ -81,6 +97,39 @@ router.post('/', (req, res) => {
         return
     }
     error(req, res, 400, "The data received is invalid.",new Error("Invalid data"))
+})
+
+router.patch('/', (req, res) => {
+    //*TODO VALIDATE IF REQU.QUERY IS RECEIVING AN ID
+    if(req.query.id !== undefined && req.query.id !== ""){
+        const id = req.query.id
+        const field = req.query.field
+        const value = req.body.value
+        //*TODO IF THERE IS AN ORDER RELATED TO A PRODUCT. NOTIFY CLIENT THAT MUST FIRST CANCEL THE ORDER
+        //*TODO TRIGGER TASKS RELATED TO A PRODUCT CANCELLATION
+        //*TODO WHEN AL THIS PROCESSES ARE COMPLETED, THEN UPDATE THE PRODUCT STATE
+        //*TODO If a products is updated, then the container must be updated
+        
+        updateProduct({id, field, value})
+        .then((result) => {
+            success(req, res, 200, result)
+        })
+        .catch((err) => {
+            error(req, res, 500, "Error updating product", err)
+        })
+    }
+})
+
+router.delete('/', (req, res) => {
+    if(req.query.id !== undefined && req.query.id !== ""){
+        deleteProduct(req.query.id)
+        .then(() => {
+            success(req, res, 200, "Deleted")
+        })
+        .catch(err => {
+            error(req, res, 500, "Error deleting product", err)
+        })
+    }
 })
 
 export default router

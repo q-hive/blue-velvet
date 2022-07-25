@@ -6,7 +6,7 @@ import {
     DialogActions, Button
 } from "@mui/material"
 
-export const UserDialog = ({setDialog,open,title, content, actions}) => {
+export const UserDialog = ({dialog,setDialog,open,title, content, actions}) => {
     const handleClose = () => {
         setDialog({
             ...dialog,
@@ -32,7 +32,7 @@ export const UserDialog = ({setDialog,open,title, content, actions}) => {
             <DialogActions>
                 {actions.map((action, idx) => {
                     return (
-                        <Button key={idx} onClick={action.execute}>
+                        <Button variant="contained" key={idx} onClick={action.execute} color={action.btn_color}>
                             {action.label}
                         </Button>
                         

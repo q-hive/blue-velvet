@@ -7,12 +7,15 @@ const Production = new Schema({
     orders:         [ObjectId],
     tasks:          [ObjectId],
     activeTasks:    [ObjectId],
-    products: [{
-        _id:        ObjectId,
-        name:       String,
-        prodCost:   Number,
-        surplus:    Number, // * In tray numbers
-    }],
+    products: {
+        type: [{
+            _id:        ObjectId,
+            name:       String,
+            prodCost:   Number,
+            surplus:    Number, // * In tray numbers
+        }],
+        required: true
+    }
 },
 {
     timestamps: {
