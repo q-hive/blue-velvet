@@ -23,7 +23,7 @@ const Product = new Schema({
             isMix:Boolean,
             name:String,
             products:[{
-                id:{
+                strain:{
                     type:ObjectId,
                     required:true
                 },
@@ -40,7 +40,14 @@ const Product = new Schema({
             harvestRate:    Number  
         },
         required:false
-    }
+    },
+    status:   {
+        type:String,
+        required:true
+    },
+    provider:   {
+        type:String,
+    },
 },
 {
     query: {
