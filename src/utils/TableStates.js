@@ -1,7 +1,12 @@
 import {useState} from "react"
 
-import { Button } from "@mui/material"
+import { Button, CircularProgress } from "@mui/material"
 import { UserModal } from "../CoreComponents/UserActions/UserModal"
+
+import api from '../axios'
+import useAuth from "../contextHooks/useAuthContext"
+import { useNavigate } from "react-router-dom"
+import { UserDialog } from "../CoreComponents/UserFeedback/Dialog"
 
 export const productsColumns = [
     {
@@ -44,11 +49,11 @@ export const productsColumns = [
         flex:1
     },
     {
-        field:"cost",
+        field:"price",
         headerClassName:"header-products-table",
         headerAlign:"center",
         align:"center",
-        headerName:"Prod. Cost",
+        headerName:"Prod. price",
         width:150,
         flex:1
     },
@@ -76,6 +81,17 @@ export const productsColumns = [
                 content:"",
                 actions:[]
             })
+            const [dialog, setDialog] = useState({
+                open:false,
+                title:"",
+                message:"",
+                actions:[]
+            })
+
+            const [loading, setLoading] = useState(false)
+
+            const {user} = useAuth()
+            const navigate = useNavigate()
             
             const handleModal = () => {
                 setModal({
@@ -87,7 +103,53 @@ export const productsColumns = [
                             label:"Stop production",
                             type:"normal",
                             execute:() => {
-                                console.log("Stopping production of (selected product)")
+                                setLoading(true)
+                                setModal({
+                                    ...modal,
+                                    open:false
+                                })
+                                api.api.patch(`${api.apiVersion}/products/?id=${params.id}&field=status`,{value:"stopped"})
+                                .then((res) => {
+                                    setLoading(false)
+                                    setDialog({
+                                        ...dialog,
+                                        open:true,
+                                        title:"Production stopped",
+                                        message:"The production of the product you selected has been stopped.",
+                                        actions:[
+                                            {
+                                                label:"Ok",
+                                                execute:() => {
+                                                    params.api.forceUpdate()
+                                                    setDialog({
+                                                        ...dialog,
+                                                        open:false
+                                                    })
+                                                }
+                                            }
+                                        ]
+                                    })
+                                })
+                                .catch(err => {
+                                    setLoading(false)
+                                    setDialog({
+                                        ...dialog,
+                                        open:true,
+                                        title:"Product update failed",
+                                        message:"There was an error updating the product status.",
+                                        actions:[
+                                            {
+                                                label:"Ok",
+                                                execute:() => {
+                                                    setDialog({
+                                                        ...dialog,
+                                                        open:false
+                                                    })
+                                                }
+                                            }
+                                        ]
+                                    })
+                                })
                             }
                         },
                         {
@@ -95,6 +157,7 @@ export const productsColumns = [
                             type:"privileged",
                             execute:() => {
                                 console.log("Redirect to the type of product screen with prefilled data")    
+                                navigate(`/${user.uid}/${user.role}/production/editProduct/?id=${params.id}`)
                             }
                         },
                         {
@@ -108,7 +171,53 @@ export const productsColumns = [
                             label:"Delete",
                             type:"dangerous",
                             execute:() => {
-                                console.log("Are you sure you want to delete this product?")    
+                                console.log("Are you sure you want to delete this product?")
+                                setModal({
+                                    ...modal,
+                                    open:false
+                                })
+                                setDialog({
+                                    ...dialog,
+                                    open:true,
+                                    title:"Are you sure you want to delete this product?",
+                                    message:"The product, and the orders related to this product are going to be deleted.",
+                                    actions:[
+                                        {
+                                            label:"Yes",
+                                            execute:() => {
+                                                setDialog({
+                                                    ...dialog,
+                                                    open:false,
+                                                })
+                                                setLoading(true)
+                                                
+                                                api.api.delete(`${api.apiVersion}/products/?id=${params.id}`)
+                                                .then(() => {
+                                                    console.log(params)
+                                                })
+                                                .catch((err) => {
+                                                    setDialog({
+                                                        ...dialog,
+                                                        open:true,
+                                                        title:"Error deleting product",
+                                                        message:"",
+                                                        actions:[
+                                                            {
+                                                                label:"Ok",
+                                                                execute:() => {
+                                                                    setDialog({
+                                                                        ...dialog,
+                                                                        open:false
+                                                                    })
+                                                                }
+                                                            }
+                                                        ]
+                                                    })
+                                                })
+                                            }
+                                        }
+                                    ]
+                                })
                             }
                         },
                     ]
@@ -124,9 +233,18 @@ export const productsColumns = [
                     title={modal.title}
                     content={modal.content}
                     actions={modal.actions}
+                    />
+
+                    <UserDialog
+                    title={dialog.title}
+                    content={dialog.message}
+                    dialog={dialog}
+                    setDialog={setDialog}
+                    actions={dialog.actions}
+                    open={dialog.open}
                     />    
                 
-                    <Button variant='contained' onClick={handleModal} > View actions </Button>    
+                    <Button variant='contained' onClick={handleModal} disabled={loading} sx={{fontSize:"10px"}}> {loading ? 'Loading...' : 'view'} </Button>    
                 
                 </>
                 
@@ -140,9 +258,6 @@ export const productsColumns = [
         headerAlign:"center",
         align:"center",
         headerName:"Status",
-        renderCell:() => {
-            return "In production"
-        },
         flex:1
     },
 ]

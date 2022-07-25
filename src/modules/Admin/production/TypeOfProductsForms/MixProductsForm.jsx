@@ -1,19 +1,23 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 
 //*COMPONENTS FROM MUI
-import { Autocomplete, Box, Button, TextField, Typography, useTheme, Fab } from '@mui/material'
+import { 
+    Autocomplete, Box, Button, 
+    TextField, Typography, useTheme, 
+    Fab 
+} from '@mui/material'
 import AddIcon from '@mui/icons-material/Add';
 import CameraIcon from '@mui/icons-material/AddPhotoAlternate';
+
 //*THEME
 import { BV_THEME } from '../../../../theme/BV-theme'
+import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog'
 //*NETWORK AND API
 import api from '../../../../axios'
 import { useNavigate } from 'react-router-dom'
-import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog'
 import useAuth from '../../../../contextHooks/useAuthContext'
-import { grey } from '@mui/material/colors'
-import { MixName } from './MixName';
 
+//*Auth
 const amounts = ["25","30","40","50","60","70","80","90"]
 
 export const MixProductsForm = () => {
@@ -24,7 +28,7 @@ export const MixProductsForm = () => {
     const [mix, setMix] = useState({
         products:[],
         name:"",
-        label:"",
+        label:null,
         cost:0
     })
 
@@ -35,7 +39,7 @@ export const MixProductsForm = () => {
     })
     const [showFinal, setShowFinal] = useState(false)
     const [canAdd, setCanAdd] = useState(true)
-
+    const ref = useRef(null)
     
 
    //*USER FEEDBACK STATES 
@@ -176,12 +180,29 @@ export const MixProductsForm = () => {
 
 
         if(actualValue.strain !== "" && actualValue !== null){
+            ref.current.value = ""
             setMix({
                 ...mix,
                 products:[...mix.products, actualValue]
             })
+
         }
 
+    }
+
+    const handleChangeFinalData = (e) => {
+        setMix({
+            ...mix,
+            [e.target.id]:e.target.value            
+        })
+    }
+
+    const handleChangeLabel = (e) => {
+        console.log(e.target.files)
+        setMix({
+            ...mix,
+            label:e.target.files
+        })
     }
 
     const handleSetMix = () => {
@@ -205,19 +226,31 @@ export const MixProductsForm = () => {
     }
     
     const handleSendMixData = () => {
-        const mappedProducts = mix.products.map(product => {
-            return {id:product.id, amount:product.amount}
-        })
-        
+        console.log(mix)
         const model = {
             name:   mix.name,
-            cost:   mix.cost, // * Cost per tray,
+            price:   Number(mix.price), // * Cost per tray,
             mix: {
                 isMix:true,
                 name:mix.name,
-                products:mappedProducts
+                products:mix.products
             },
+            status:"stopped"
         }
+        const hasLabel = mix.label !== null
+        let label
+        if(hasLabel){
+            label = new FormData()
+
+            label.append(
+                "label",
+                mix.label[0],
+                mix.label[0].name
+            )
+
+            model.label = label
+        }
+        
         api.api.post(`${api.apiVersion}/products/`, model)
         .then(response => {
             setDialog({
@@ -229,7 +262,7 @@ export const MixProductsForm = () => {
                         label:"Create another",
                         btn_color:"primary",
                         execute: () => {
-                            window.location.reload()
+                            navigate(`/${user.uid}/${user.role}/production`)
                         }
                         
                     },
@@ -237,7 +270,7 @@ export const MixProductsForm = () => {
                         label:"End",
                         btn_color:"secondary",
                         execute:() => {
-                            navigate('/')
+                            navigate(`/${user.uid}/${user.role}/dashboard`)
                         }
                     }
                 ]
@@ -309,8 +342,6 @@ export const MixProductsForm = () => {
                 }
                 return curr.amount + prevObj
             })
-            console.log(total)
-
             if(total === 100){
                 //*Disable button
                 setCanAdd(false)
@@ -357,6 +388,7 @@ export const MixProductsForm = () => {
                 <TextField
                     id="amount"
                     label="Amount %"
+                    ref={ref}
                     onChange={handleChangeAmount}
                     sx={theme.input.mobile.twoThirds.desktop.quarterSize}
                     error={error.amount.failed}
@@ -396,7 +428,7 @@ export const MixProductsForm = () => {
 
             }
         }>
-            <Button variant="contained" size='large' onClick={handleSetMix}>
+            <Button variant="contained" size='large' disabled={showFinal} onClick={handleSetMix}>
                 Set Mix
             </Button>
 
@@ -418,11 +450,11 @@ export const MixProductsForm = () => {
                             alignItems:"center"
                         }
                     }>
-                        <TextField label="Mix Name" variant="outlined" sx={theme.input.mobile.fullSize.desktop.halfSize}>
+                        <TextField label="Mix Name" id="name" onChange={handleChangeFinalData} variant="outlined" sx={theme.input.mobile.fullSize.desktop.halfSize}>
                             
                         </TextField>
 
-                        <TextField label="Mix Price" variant="outlined" sx={theme.input.mobile.fullSize.desktop.halfSize}>
+                        <TextField label="Mix Price" id="price" onChange={handleChangeFinalData} variant="outlined" sx={theme.input.mobile.fullSize.desktop.halfSize}>
                             
                         </TextField>
 
@@ -438,12 +470,13 @@ export const MixProductsForm = () => {
                     }
                 }>
 
-                    <Fab color="primary" aria-label="add" sx={{marginY:"4%"}} >
-                            <CameraIcon />
-                    </Fab>
+                        <Fab color="primary" component="label" id="label" aria-label="add" sx={{marginY:"4%"}} >
+                                <input  type="file" accept="image/*" onChange={handleChangeLabel} hidden />
+                                <CameraIcon />
+                        </Fab>
                     
-                    <Button variant="contained" size='large' >
-                        Save
+                    <Button variant="contained" onClick={handleSendMixData} size='large' >
+                        Save product mix
                     </Button>
 
                 </Box>

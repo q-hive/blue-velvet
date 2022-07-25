@@ -26,6 +26,10 @@ export const AppRoutes  = [
         component:<NewProduct/>
     },
     {
+        path:"/:uid/admin/production/editProduct",
+        component:<NewProduct edit={true}/>
+    },
+    {
         path:"/:uid/employee",
         component:<ContainerEmployeeComponent/>
     },

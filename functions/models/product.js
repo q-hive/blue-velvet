@@ -4,6 +4,7 @@ const { ObjectId } = mongoose.Types
 
 const Product = new Schema({
     name:   String,
+    container: ObjectId,
     image:  {
         type:String,
         required:false
@@ -22,7 +23,7 @@ const Product = new Schema({
             isMix:Boolean,
             name:String,
             products:[{
-                id:{
+                strain:{
                     type:ObjectId,
                     required:true
                 },
@@ -39,7 +40,14 @@ const Product = new Schema({
             harvestRate:    Number  
         },
         required:false
-    }
+    },
+    status:   {
+        type:String,
+        required:true
+    },
+    provider:   {
+        type:String,
+    },
 },
 {
     query: {
