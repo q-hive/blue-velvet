@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from '../mongo.js';
 const { Schema  } = mongoose;
 const { ObjectId } = mongoose.Types
 
@@ -11,10 +11,9 @@ const User = new Schema({
     phone:          { type: String,     required: true  },
     image:          { type: String,     required: true  },
     organization:   { type: ObjectId,   required: true  },
-    passphrase:     { type: ObjectId,   required: false },
+    passphrase:     { type: ObjectId,   required: false }, // * role: ADMIN
     containers:     { type: [ObjectId], required: true  },
-    customers:      { type: [ObjectId], required: false },
-    salary:         { type: Number,     required: false },   
+    salary:         { type: Number,     required: false }, // * role: EMPLOYEE   
     address: {
         type: {
             stNumber:   String,

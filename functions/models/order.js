@@ -23,7 +23,10 @@ const Order = new Schema({
     },
 },
 {
-    timestamps: true,
+    timestamps: {
+        createdAt: "created",
+        updatedAt: "updated"
+    },
     query: {
         byType(type) {
             return this.where({ type: type })

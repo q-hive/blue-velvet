@@ -8,7 +8,10 @@ const Passphrase = new Schema({
     organization:   { type: ObjectId, required: true }
 },
 {
-    timestamps: true,
+    timestamps: {
+        createdAt: "created",
+        updatedAt: "updated"
+    },
     query: {
         byOrganization(organization) {
             return this.where({ organization: organization })

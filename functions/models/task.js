@@ -1,32 +1,25 @@
-import mongoose from 'mongoose';
+import mongoose from '../mongo.js'
+import Step from './step.js'
+
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
 const Task = new Schema({
-    assigned:       [ObjectId],
-    currentStep:    Number,
-    completed:      Boolean,
-    created:        Date,
-    updated:        Date,
-    orders: {  // * IN CASE OF PRODUCTION TASKS         {
-        type:       [ObjectId],
-        required:   false
-    },
-    details:        ObjectId,
-    product: {  // * IN CASE OF PRODUCTION TASKS         {
-        type:       [ObjectId],
-        required:   false
-    },
-    steps: [{
-        step:       Number,
-        assigned:   [ObjectId],
-        status:     String,
-        start:      Date,
-        end:        Date,
-        estimated:  Number // * Measured in hours
-    }],
+    assigned:       { type: [ObjectId], required: true, default: []    },
+    currentStep:    { type: Number,     required: true, default: 0     },
+    completed:      { type: Boolean,    required: true, default: false },
+    // * IN CASE OF PRODUCTION TASKS
+    orders:         { type: [ObjectId], required: false                },
+    details:        { type: ObjectId,   required: false                },
+    // * IN CASE OF PRODUCTION TASKS
+    product:        { type: [ObjectId], required: false                },
+    steps:          { type: [Step],     required: true                 }
 },
 {
+    timestamps: {
+        createdAt: "start",
+        updatedAt: "updated"
+    },
     query: {
         
     }

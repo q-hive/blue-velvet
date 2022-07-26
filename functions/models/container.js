@@ -36,7 +36,10 @@ const Container = new Schema({
     }
 },    
 {
-    timestamps: true,
+    timestamps: {
+        createdAt: "created",
+        updatedAt: "updated"
+    },
     query: {
         byName(name) {
             return this.where({ name: new RegExp(name, "i") })
