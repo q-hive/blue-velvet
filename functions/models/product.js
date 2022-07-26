@@ -13,11 +13,20 @@ const Product = new Schema({
         type:String,
         required:false
     }, //* Description
-    price:   Number, // * Cost per tray,
+    price:   [
+        {
+            amount:Number, //*Package price
+            packageSize:Number //*PACKAGE SIZE IN GRAMS
+        } 
+    ], // * Cost per tray,
     seedId: {
         type:String,
         required:false
     }, // * ID of quality of the seeds - track the seeds origin - metadata,
+    seedName: {
+        type:String,
+        required:false
+    }, // * Comes from provider
     mix: {
         type:{
             isMix:Boolean,
@@ -36,8 +45,8 @@ const Product = new Schema({
         type: {
             day:            Number, // * In days check email
             night:          Number, // * In days check email
-            seedingRate:    Number,
-            harvestRate:    Number  
+            seedingRate:    Number, //* * Per tray
+            harvestRate:    Number  //* Per tray
         },
         required:false
     },
