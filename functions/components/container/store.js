@@ -51,11 +51,11 @@ export const getContainers = (filters) => {
     let contModelFiltered = contModel 
 
     // * Apply filters if requested
-    if (filters.organization != undefined && filters.organization != null) {
+    if (filters.organization !== undefined && filters.organization !== null) {
         contModelFiltered = contModelFiltered.where({ organization: filters.organization })
     }
 
-    if (filters.admin != undefined && filters.admin != null) {
+    if (filters.admin !== undefined && filters.admin !== null) {
         contModelFiltered = contModelFiltered.where({ admin: filters.admin })
     }
 

@@ -1,5 +1,6 @@
 import Production from '../../models/production'
 import { mongoose } from '../../mongo.js'
+import { dateToArray, nextDay } from '../../utils/time'
 import { getContainers } from "../container/store"
 
 
@@ -13,8 +14,8 @@ export const getProductionForOrder = async (products, organization, filter) => {
         let totalTrays = products.map(prod => prod.trays).reduce((accTrays, trays) => accTrays + trays, 0)
 
         // * Check for production lines at same day and validate if adding is possible
-        let prodLines = await getProduction({
-            started:        filter.started,
+        let prodLines = await getProductions({
+            start:          filter.start,
             organization:   organization,
             trays:          totalTrays
         })
@@ -23,10 +24,15 @@ export const getProductionForOrder = async (products, organization, filter) => {
         // * If no production line available, create one new
         if (prodLines.length === 0) {
             // * Create new production line
+            let contId = getContainerForProduction({
+                trays: totalTrays   
+            })
+
             let prodMapped = {
-                orders:     filter.order,
-                tasks: [],
-                activeTasks: [],
+                orders:         [filter.order],
+                container:      
+                tasks:          [],
+                activeTasks:    [],
                 products: filter.products.map(prod => {
                     return {
                         _id: prod._id,
@@ -37,7 +43,7 @@ export const getProductionForOrder = async (products, organization, filter) => {
                 }),
                 end: addTimeToDate(filter.started, {
                     ms:     0,
-                    s:      0,
+                    s:      2, // * Add only 2 weeks
                     m:      0,
                     h:      0,
                     d:      0,
@@ -58,7 +64,23 @@ export const getProductionForOrder = async (products, organization, filter) => {
                 resolve([prod._id])
             })
         }
-
         resolve(prodLines) 
     })
+}
+
+export const getProductions = async (filters) => {
+    let criteria = prodModel
+    if (filters.start !== undefined && filters.start !== null) {
+        let dt = new Date(dateToArray(filters.start))
+        criteria = criteria.where({ start: { 
+            $gte:   dt, 
+            $lt:    nextDay(dt)
+        }})
+    }
+    if (filters.organization !== undefined && filters.organization !== null) 
+        criteria = criteria.where({ organization: filters.organization })
+    if (filters.trays !== undefined && filters.trays !== null) 
+        criteria = criteria.where({ available: { $gte: filters.trays } })
+
+    return await criteria.find({})
 }

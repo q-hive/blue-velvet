@@ -102,7 +102,7 @@ export function newAdminAccount(data) {
                 newOrganization(data.organization)
                 .then(org => {
                     // * Save user on MongoDB
-                    let hashedPassphrase = hashPassphrase(data.passphrase != undefined ? data.passphrase : genPassphrase(3))
+                    let hashedPassphrase = hashPassphrase(data.passphrase !== undefined ? data.passphrase : genPassphrase(3))
                     let userModel = new mongoose.model('users', User)
                     
                     let userData = {
