@@ -1,6 +1,7 @@
 import mongoose from '../mongo.js'
 import Production from './production.js'
 import Address from './address.js'
+import Product from './product.js'
 
 const { Schema } = mongoose
 const { ObjectId } = mongoose.Types
@@ -12,6 +13,7 @@ const Container = new Schema({
     available:      { type: Number,         required: true               }, // * Also in trays
     employees:      { type: [ObjectId],     required: true               },
     production:     { type: [Production],   required: true               },
+    products:       { type: [Product],      required: true,              },
     address:        { type: Address,        required: false              }
 },    
 {

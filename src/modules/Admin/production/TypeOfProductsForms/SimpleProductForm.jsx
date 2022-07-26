@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 //*MUI components
-import { Button, TextField, useTheme, Fab} from '@mui/material'
+import { Button, TextField, useTheme, Fab, Autocomplete} from '@mui/material'
 import CameraIcon from '@mui/icons-material/AddPhotoAlternate';
 import { Box } from '@mui/system'
 
@@ -24,7 +24,7 @@ export const SimpleProductForm = ({editing, product}) => {
     const [productData, setProductData] = useState({
         name:editing ? product.name : "",
         label:editing ? product.img : "",
-        price:editing ? product.price : null,
+        price:editing ? product.price : [{amount:null,packageSize:25}, {amount:null,packageSize:80}, {amount:null,packageSize:1000},],
         seedId:editing ? product.seedId : "",
         provider:editing ? product.provider : "",
         day:editing ? product.parameters.day : null,
@@ -33,7 +33,7 @@ export const SimpleProductForm = ({editing, product}) => {
         harvest:editing ? product.parameters.harvestRate : null,
         status:editing ? product.status : ""
     })
-    
+
     //*Render states
     const [stepBtnLabel, setStepBtnLabel] = useState("Accept")
     const [showTimes, setShowTimes] = useState(false)
@@ -43,6 +43,7 @@ export const SimpleProductForm = ({editing, product}) => {
         message:"",
         actions:[]
     })
+    const [selectedPackage, setSelectedPackage] = useState(null) 
     //*TODO REFACTOR ERROR STATES IN ORDER TO BE MORE EFFICIENT WITH MEMORY
     const [error, setError] = useState({
         name:{
@@ -87,6 +88,7 @@ export const SimpleProductForm = ({editing, product}) => {
         },
     })
     
+    
     const handleChangeProductData = (e) => {
         if(error[e.target.id].failed){
             setError({
@@ -104,6 +106,15 @@ export const SimpleProductForm = ({editing, product}) => {
         })
     }
 
+    const getDefaultPrice = (packages) => {
+        //*PACKAGE IS A RESERVED WORD IN STRICT MODE
+        return packages.find(pack => pack.packageSize === selectedPackage)
+    }
+
+    const handleSelectPackage = (v) => {
+        setSelectedPackage(v)
+    }
+    
     const handleChangeLabel = (e) => {
         setProductData({
             ...productData,
@@ -282,9 +293,29 @@ export const SimpleProductForm = ({editing, product}) => {
                         <TextField defaultValue={editing ? product.name : undefined} helperText={error.name.message} error={error.name.failed} id="name" onChange={handleChangeProductData} label="Product name" sx={theme.input.mobile.fullSize.desktop.thirdSize}/>
                         <TextField defaultValue={editing ? product.parameters.seedingRate : undefined} helperText={error.seeding.message} error={error.seeding.failed} id="seeding" type="number" onChange={handleChangeProductData} label="Seeding" sx={theme.input.mobile.fullSize.desktop.thirdSize}/>
                         <TextField defaultValue={editing ? product.parameters.harvestRate : undefined} helperText={error.harvest.message} error={error.harvest.failed} id="harvest" type="number" onChange={handleChangeProductData} label="Harvest" sx={theme.input.mobile.fullSize.desktop.thirdSize}/>
-                        <TextField defaultValue={editing ? product.price : undefined} helperText={error.price.message} error={error.price.failed} id="price" onChange={handleChangeProductData} label="Price" sx={theme.input.mobile.fullSize.desktop.thirdSize}/>
+
+                        {/* PACKAGES PRICES SYSTEM */}
+                        <TextField defaultValue={editing ? getDefaultPrice(productData.price).amount : undefined} helperText={error.price.message} error={error.price.failed} id="price" onChange={handleChangeProductData} label="Price" sx={theme.input.mobile.fullSize.desktop.thirdSize}/>
+                        <Autocomplete
+                            options={productData.price}
+                            renderInput={(params) => {
+                                return <TextField {...params} label="Package size (grs)"/>
+                            }}
+                            getOptionLabel={(opt) => opt.packageSize}
+                            onChange={(e,v,r) => {
+                                switch(r){
+                                    case "selectOption":
+                                        handleSelectPackage(v)
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }}
+                        />
+                        
                         <TextField defaultValue={editing ? product.provider : undefined} helperText={error.provider.message} error={error.provider.failed} id="provider" onChange={handleChangeProductData} label="Email / route" sx={theme.input.mobile.fullSize.desktop.thirdSize}/>
                         <TextField defaultValue={editing ? product.seedId : undefined} helperText={error.seedId.message} error={error.seedId.failed} id="seedId" onChange={handleChangeProductData} label="SeedID" sx={theme.input.mobile.fullSize.desktop.thirdSize}/>
+                        <TextField defaultValue={editing ? product.seedId : undefined} helperText={error.seedId.message} error={error.seedId.failed} id="seedId" onChange={handleChangeProductData} label="Official product name" sx={theme.input.mobile.fullSize.desktop.thirdSize}/>
                         <Fab color="primary" component="label" id="label" aria-label="add" sx={{marginY:"4%"}} size="large">
                             <input  type="file" accept="image/*" onChange={handleChangeLabel} hidden />
                             <CameraIcon />

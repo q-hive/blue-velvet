@@ -3,16 +3,20 @@ const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
 const Product = new Schema({
-    name:       { type: String, required: true  },
-    image:      { type: String, required: false }, // * BASE 64 PARSED PHOTO
-    desc:       { type: String, required: true  }, // * Description
-    price:      { type: Number, required: true  }, // * Cost per package
+    name:       { type: String,   required: true  },
+    image:      { type: String,   required: false }, // * BASE 64 PARSED PHOTO
+    desc:       { type: String,   required: false }, // * Description
+    status:     { type: String,   required: true  },
     // * ID of quality of the seeds - track the seeds origin - metadata 
-    // ? This seedId must be per order because many same proudcts can come from distinct providers because of users using their providers
-    // ? Should we consider an entity for providers
-    seedId:     { type: String, required: false }, 
-    status:     { type: String, required: true  }, // ? Que significa este status en esta tabla???
-    provider:   { type: String, required: false }, // ? Check if is needed the provider and if any more info is needed
+    seed:       { type: ObjectId, required: true  }, 
+    provider:   { type: ObjectId, required: true  },
+    price:      { // * Cost per package 
+        type: [{
+            amount:         { type: Number, required: true }, // * Package price
+            packageSize:    { type: Number, required: true }  // * PACKAGE SIZE IN GRAMS
+        }], 
+        required:   true  
+    }, 
     mix: {
         type: {
             isMix:  { type: Boolean, required: true },
@@ -27,13 +31,13 @@ const Product = new Schema({
         required:   false
     },
     parameters: {
-        type: { // ? Ask for validation of how parameters should be stored
+        type: {
             day:            { type: Number, required: true }, // * In days check email
             night:          { type: Number, required: true }, // * In days check email
-            seedingRate:    { type: Number, required: true },
-            harvestRate:    { type: Number, required: true }  
+            seedingRate:    { type: Number, required: true }, // * Per tray
+            harvestRate:    { type: Number, required: true }  // * Per tray
         },
-        required:false
+        required:   true
     }
 },
 {
@@ -47,6 +51,9 @@ const Product = new Schema({
         },
         byDesc(desc) {
             return this.where({ desc: new RegExp(desc, 'i') })
+        },
+        byStatus(status) {
+            return this.where({ status: status })
         }
     }
 })

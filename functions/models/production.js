@@ -15,6 +15,7 @@ const Production = new Schema({
             name:       { type: String,   required: true },
             amount:     { type: Number,   required: true }, // * Measured in packages
             surplus:    { type: Number,   required: true }, // * In tray numbers
+            seed:       { type: Number,   required: true },
         }],
         required: true
     }
