@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 //*MUI components
-import { Button, TextField, useTheme, Fab} from '@mui/material'
+import { Button, TextField, useTheme, Fab, Typography, Stepper, Step, StepLabel, StepContent, Paper, Tooltip, IconButton} from '@mui/material'
 import CameraIcon from '@mui/icons-material/AddPhotoAlternate';
 import { Box } from '@mui/system'
 
@@ -19,6 +19,8 @@ export const SimpleProductForm = ({editing, product}) => {
     const theme = useTheme(BV_THEME)
     const navigate = useNavigate()
     const {user} = useAuth()
+
+    
 
     //*DATA STATES
     const [productData, setProductData] = useState({
@@ -263,6 +265,41 @@ export const SimpleProductForm = ({editing, product}) => {
             })
         }
     }
+    ////STEPPER
+
+    const steps = [
+        {
+          label: 'Product Data',
+          description: `Please set Name and Label`,
+        },
+        {
+          label: 'Parameters',
+          description:
+            'Please set seeding rate, harvest rate, the cycle you want to use and the price to charge per category.',
+        },
+        {
+          label: 'Provider',
+          description: `Please set the ID of the product, the name of the product as the provider manages it and the provider's E-Mail`,
+        },
+      ];
+      
+      {
+        const [activeStep, setActiveStep] = useState(0);
+      
+        const handleNext = () => {
+          setActiveStep((prevActiveStep) => prevActiveStep + 1);
+        };
+      
+        const handleBack = () => {
+          setActiveStep((prevActiveStep) => prevActiveStep - 1);
+        };
+      
+        const handleReset = () => {
+          setActiveStep(0);
+        };
+        /////
+
+    
 
   return (
     <div style={{paddingLeft:"10vw", paddingRight:"10vw"}}>
@@ -293,17 +330,94 @@ export const SimpleProductForm = ({editing, product}) => {
                 )
             }
             {
-                showTimes && (
+                showTimes && ( 
                     <>
-                        <TextField defaultValue={editing ? productData.night : undefined} helperText={error.night.message} error={error.night.failed} id="night" onChange={handleChangeProductData} type="number" label="Dark time" sx={theme.input.mobile.fullSize.desktop.thirdSize}/>
-                        <TextField defaultValue={editing ? productData.day : undefined} helperText={error.day.message} error={error.day.failed} id="day" onChange={handleChangeProductData} type="number" label="Light time" sx={theme.input.mobile.fullSize.desktop.thirdSize}/>
-                        <TextField defaultValue={editing ? productData.status : undefined} helperText={error.day.message} error={error.day.failed} id="status" onChange={handleChangeProductData} type="text" label="Status" sx={theme.input.mobile.fullSize.desktop.thirdSize}/>
-                    </>        
-                )
-            
-            }
-            <Button variant="contained" size="large" onClick={handleComplete}>{stepBtnLabel}</Button>
+                    
+                        
+                <Box sx={{ width: "60%", display:"flex", flexDirection:"row" }}>
+                    <Box sx={{ width: "35%" }}>
+                        <Stepper activeStep={activeStep} orientation="vertical">
+                            {steps.map((step, index) => (
+                            <Step key={step.label}>
+                                <StepLabel 
+                                    optional={
+                                        index === steps.length - 1 ? (
+                                        <Typography variant="caption">Last step</Typography>
+                                        ) : null
+                                    }
+                                    sx={{fontSizeAdjust:"20px"}}
+                                >
+                                    {step.label}
+                                </StepLabel>
+                                <StepContent>
+                                <Typography>{step.description}</Typography>
+                                <Box sx={{ mb: 2 }}>
+                                    <div>
+                                    <Button
+                                        variant="contained"
+                                        onClick={handleNext}
+                                        sx={{ mt: 1, mr: 1 }}
+                                    >
+                                        {index === steps.length - 1 ? 'Finish' : 'Continue'}
+                                    </Button>
+                                    <Button
+                                        disabled={index === 0}
+                                        onClick={handleBack}
+                                        sx={{ mt: 1, mr: 1 }}
+                                    >
+                                        Back
+                                    </Button>
+                                    </div>
+                                </Box>
+                                </StepContent>
+                            </Step>
+                            ))}
+                        </Stepper>
+                    {activeStep === steps.length && (
+                    <Paper square elevation={0} sx={{ p: 3 }}>
+                        <Typography>All steps completed - you&apos;re finished</Typography>
+                        <Button onClick={handleReset} sx={{ mt: 1, mr: 1 }}>
+                            Reset
+                        </Button>
+                    </Paper>
+        
+      )}
+    </Box>
+    <Box sx={{ width: "65%", display:"flex", flexDirection:"column", padding:"5%", alignItems:"center" }}>
+        {
+        activeStep === 0 ? (
+            <TextField defaultValue={editing ? product.name : undefined} helperText={error.name.message} error={error.name.failed} id="name" onChange={handleChangeProductData} label="Product name" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
+        
+            ) : null
+        }
+        {
+        activeStep === 1 ? (
+            <>
+            <TextField defaultValue={editing ? product.parameters.seedingRate : undefined} helperText={error.seeding.message} error={error.seeding.failed} id="seeding" type="number" onChange={handleChangeProductData} label="Seeding" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
+            <TextField defaultValue={editing ? product.parameters.harvestRate : undefined} helperText={error.harvest.message} error={error.harvest.failed} id="harvest" type="number" onChange={handleChangeProductData} label="Harvest" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
+            <TextField defaultValue={editing ? product.price : undefined} helperText={error.price.message} error={error.price.failed} id="price" onChange={handleChangeProductData} label="Price" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
+            </>
+            ) : null
+        }
+        {
+        activeStep === 2 ? (
+            <>
+            <TextField defaultValue={editing ? product.seedId : undefined} helperText={error.seedId.message} error={error.seedId.failed} id="seedId" onChange={handleChangeProductData} label="SeedID" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
+            <TextField defaultValue={editing ? product.provider : undefined} helperText={error.provider.message} error={error.provider.failed} id="provider" onChange={handleChangeProductData} label="Email / route" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
+            </>
+            ) : null
+        }
+
+    </Box>
+    
+    </Box></>)}
+    <Button variant="contained" size="large" onClick={handleComplete}>{stepBtnLabel}</Button>
         </Box>
+
+
+
+        
+        
 
         <UserDialog
         dialog={dialog}
@@ -316,4 +430,4 @@ export const SimpleProductForm = ({editing, product}) => {
         
     </div>
   )
-}
+}}
