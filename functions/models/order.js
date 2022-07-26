@@ -1,36 +1,38 @@
-import mongoose from 'mongoose';
+import mongoose from '../mongo.js'
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
 const Order = new Schema({
-    customer:   ObjectId,
-    admin:      ObjectId,
-    type:       String, // REPETEAD ORDERS HAVE A START AND END DATE
-    packages:   Number,
-    price:      Number,
-    start:      Date,
-    end:        Date,
-    containers: [ObjectId],
-    production: [ObjectId],
-    products:   [{
-        _id:    ObjectId,
-        status: String,
-        trays:  Number,
-        seedId: {
-            type:       String,
-            required:   false
-        },
-        batch: {
-            type:       String,
-            required:   false,
-        }
-    }],
+    customer:   { type: ObjectId,   required: true },
+    admin:      { type: ObjectId,   required: true },
+    type:       { type: String,     required: true }, // REPETEAD ORDERS HAVE A START AND END DATE
+    packages:   { type: Number,     required: true },
+    price:      { type: Number,     required: true },
+    start:      { type: Date,       required: true },
+    end:        { type: Date,       required: true },
+    production: { type: [ObjectId], required: true },
+    products:   {
+        type: [{
+            _id:    { type: ObjectId, required: true  },
+            status: { type: String,   required: true  },
+            trays:  { type: Number,   required: true  },
+            seedId: { type: String,   required: false },
+            batch:  { type: String,   required: false }
+        }],
+        required: true
+    },
 },
 {
     timestamps: true,
     query: {
         byType(type) {
             return this.where({ type: type })
+        },
+        byAdmin(admin) {
+            return this.where({ admin: admin })
+        },
+        byCustomer(customer) {
+            return this.where({ customer: customer })
         }
     }
 })

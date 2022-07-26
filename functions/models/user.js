@@ -3,35 +3,29 @@ const { Schema  } = mongoose;
 const { ObjectId } = mongoose.Types
 
 const User = new Schema({
-    uid:            String,
-    email:          String,
-    name:           String,
-    lname:          String,
-    role:           String, 
-    phone:          String,
-    image:          String,
-    organization:   ObjectId,
-    containers:     [ObjectId],
-    passphrase:     { // * In case of ADMIN
-        type:       String,
-        required:   false
-    },     
-    customers:      { // * In case of ADMIN
-        type:       [ObjectId],
-        required:   false
-    },
-    salary:         {  // * In case of EMPLOYEE in money per Hours of work
-        type:       Number,
-        required:   false
-    },   
+    uid:            { type: String,     required: true  },
+    email:          { type: String,     required: true  },
+    name:           { type: String,     required: true  },
+    lname:          { type: String,     required: false },
+    role:           { type: String,     required: true  }, 
+    phone:          { type: String,     required: true  },
+    image:          { type: String,     required: true  },
+    organization:   { type: ObjectId,   required: true  },
+    passphrase:     { type: ObjectId,   required: false },
+    containers:     { type: [ObjectId], required: true  },
+    customers:      { type: [ObjectId], required: false },
+    salary:         { type: Number,     required: false },   
     address: {
-        stNumber:   String,
-        street:     String,
-        zip:        String,
-        city:       String,
-        state:      String,
-        country:    String,
-        references: String
+        type: {
+            stNumber:   String,
+            street:     String,
+            zip:        String,
+            city:       String,
+            state:      String,
+            country:    String,
+            references: String
+        },
+        required: true
     },
 },
 {

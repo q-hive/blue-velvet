@@ -3,19 +3,22 @@ const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
 const Organization = new Schema({ 
-    name: String,
-    admin: ObjectId,
-    employees: [ObjectId],
-    containers: [ObjectId],
+    name:       { type: String,     required: true, unique: true },
+    admin:      { type: ObjectId,   required: true },
+    employees:  { type: [ObjectId], required: true },
+    containers: { type: [ObjectId], required: true, unique: true }, 
     address: {
-        stNumber:   String,
-        street:     String,
-        zip:        String,
-        city:       String,
-        state:      String,
-        country:    String,
-        references: String
-    },
+        type: {
+            stNumber:   String,
+            street:     String,
+            zip:        String,
+            city:       String,
+            state:      String,
+            country:    String,
+            references: String    
+        },
+        required: false // ? Dont know if address is required
+    }
 },
 {
     query: {
@@ -23,7 +26,7 @@ const Organization = new Schema({
             return this.where({name: new RegExp(name, 'i')})
         },
         byAdmin(admin) {
-            return this.where({ admin: admin })
+            return this.where({ "admin.uid": admin })
         }
     }
 })

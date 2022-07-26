@@ -1,22 +1,21 @@
-import mongoose from 'mongoose';
+import mongoose from '../mongo.js'
+import Task from './task.js'
+
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
 const Production = new Schema({
-    end:            Date,
-    orders:         [ObjectId],
-    container:      ObjectId,
-    tasks:          [ObjectId],
-    activeTasks:    [ObjectId],
-    available:      Number, // * Starts as max and is for tracking purposes
-    max:            Number, // * Starts at max available space for container 
+    end:            { type: Date,       required: false },
+    orders:         { type: [ObjectId], required: true  },
+    tasks:          { type: [Task],     required: true  },
+    activeTasks:    { type: [ObjectId], required: true  },
     products: {
         type: [{
-            _id:        ObjectId,
-            name:       String,
-            prodCost:   Number,
-            trays:      Number,
-            surplus:    Number, // * In tray numbers
+            _id:        { type: ObjectId, required: true },
+            name:       { type: String,   required: true  },
+            prodCost:   { type: Number,   required: true  },
+            trays:      { type: Number,   required: true  },
+            surplus:    { type: Number,   required: true  }, // * In tray numbers
         }],
         required: true
     }

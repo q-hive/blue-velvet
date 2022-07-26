@@ -3,19 +3,23 @@ const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
 const Customer = new Schema({
-    name:               String,
-    businessName:       String,
-    image:              String,
-    socialInsurance:    String,
-    bankAccount:        String,
+    name:               { type: String,   required: true, unique: true },
+    businessName:       { type: String,   required: true },
+    image:              { type: String,   required: true },
+    socialInsurance:    { type: String,   required: true },
+    organization:       { type: ObjectId, required: true },
+    bankAccount:        { type: String,   required: true },
     address: {
-        stNumber:   String,
-        street:     String,
-        zip:        String,
-        city:       String,
-        state:      String,
-        country:    String,
-        references: String
+        type: {
+            stNumber:   String,
+            street:     String,
+            zip:        String,
+            city:       String,
+            state:      String,
+            country:    String,
+            references: String
+        },
+        required: true
     },
 },
 {
@@ -25,6 +29,9 @@ const Customer = new Schema({
         },
         byBusinessName(bName) {
             return this.where({ businessName: new RegExp(bName, "i")})
+        },
+        byOrganization(organization) {
+            return this.where({ organization: organization })
         }
     }
 })
