@@ -7,8 +7,7 @@ const Order = new Schema({
     admin:      { type: ObjectId,   required: true },
     type:       { type: String,     required: true }, // REPETEAD ORDERS HAVE A START AND END DATE
     packages:   { type: Number,     required: true },
-    price:      { type: Number,     required: true },
-    start:      { type: Date,       required: true },
+    price:      { type: Number,        required: true },
     end:        { type: Date,       required: true },
     production: { type: [ObjectId], required: true },
     products:   {
@@ -24,7 +23,7 @@ const Order = new Schema({
 },
 {
     timestamps: {
-        createdAt: "created",
+        createdAt: "start",
         updatedAt: "updated"
     },
     query: {

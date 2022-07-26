@@ -1,4 +1,6 @@
 import mongoose from '../mongo.js';
+import Address from './address.js'
+
 const { Schema  } = mongoose;
 const { ObjectId } = mongoose.Types
 
@@ -14,18 +16,7 @@ const User = new Schema({
     passphrase:     { type: ObjectId,   required: false }, // * role: ADMIN
     containers:     { type: [ObjectId], required: true  },
     salary:         { type: Number,     required: false }, // * role: EMPLOYEE   
-    address: {
-        type: {
-            stNumber:   String,
-            street:     String,
-            zip:        String,
-            city:       String,
-            state:      String,
-            country:    String,
-            references: String
-        },
-        required: true
-    },
+    address:        { type: Address,    required: true  },
 },
 {
     query: {

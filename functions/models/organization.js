@@ -1,4 +1,6 @@
 import mongoose from 'mongoose';
+import Address from './address.js'
+
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
@@ -7,18 +9,8 @@ const Organization = new Schema({
     admin:      { type: ObjectId,   required: true },
     employees:  { type: [ObjectId], required: true },
     containers: { type: [ObjectId], required: true, unique: true }, 
-    address: {
-        type: {
-            stNumber:   String,
-            street:     String,
-            zip:        String,
-            city:       String,
-            state:      String,
-            country:    String,
-            references: String    
-        },
-        required: false // ? Dont know if address is required
-    }
+     // ? Dont know if address is required
+    address:    { type: Address,    required: false              }
 },
 {
     query: {
