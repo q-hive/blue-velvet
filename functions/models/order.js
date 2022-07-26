@@ -3,7 +3,7 @@ const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
 const Order = new Schema({
-    customer:   { type: ObjectId,   required: true },
+    client:   { type: ObjectId,   required: true },
     admin:      { type: ObjectId,   required: true },
     type:       { type: String,     required: true }, // REPETEAD ORDERS HAVE A START AND END DATE
     packages:   { type: Number,     required: true },
@@ -33,8 +33,8 @@ const Order = new Schema({
         byAdmin(admin) {
             return this.where({ admin: admin })
         },
-        byCustomer(customer) {
-            return this.where({ customer: customer })
+        byClient(client) {
+            return this.where({ client: client })
         }
     }
 })

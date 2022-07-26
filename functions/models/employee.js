@@ -4,38 +4,32 @@ import Address from './address.js'
 const { Schema  } = mongoose;
 const { ObjectId } = mongoose.Types
 
-const User = new Schema({
+const Employee = new Schema({
     uid:            { type: String,     required: true  },
     email:          { type: String,     required: true  },
     name:           { type: String,     required: true  },
-    lname:          { type: String,     required: false },
-    role:           { type: String,     required: true  }, 
+    lname:          { type: String,     required: false }, 
     phone:          { type: String,     required: true  },
     image:          { type: String,     required: true  },
-    organization:   { type: ObjectId,   required: true  },
-    passphrase:     { type: ObjectId,   required: false }, // * role: ADMIN
     containers:     { type: [ObjectId], required: true  },
-    salary:         { type: Number,     required: false }, // * role: EMPLOYEE   
+    salary:         { type: Number,     required: true  },   
     address:        { type: Address,    required: true  },
 },
 {
     query: {
-        byRole(role) {
-            return this.where({ role: role })
-        },
         byContainer(contId) {
             return this.where({ container: { $in: contId } })
-        },
-        byOrganization(orgId) {
-            return this.where({ organization: { $in: orgId }})
         },
         byName(name) {
             return this.where({ name: new RegExp(name, "i")})
         },
         byLname(lname) {
-            return this.where({ lname: new RegExp(lname, "i")})
+            return this.where({ lname: new RegExp(lname, "i") })
+        },
+        byEmail(email) {
+            return this.where({ email: new RegExp(email, "i") })
         }
     }
 })
 
-export default User
+export default Employee

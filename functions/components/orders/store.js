@@ -18,7 +18,7 @@ export const createNewOrder = (order) => {
         // * Save products on production
         
         let orderMapped = {
-            customer: order.customer,
+            client: order.client,
             admin: order.admin,
             type: order.type,
             packages: order.packages,

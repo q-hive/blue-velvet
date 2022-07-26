@@ -35,8 +35,8 @@ export const Dashboard = () => {
         <Button sx={theme.button.dashboard} id="sales" onClick={handleRedirect} variant='contained'>
             Sales
         </Button>
-        <Button sx={theme.button.dashboard} id="customer" onClick={handleRedirect} variant='contained'>
-            Customer
+        <Button sx={theme.button.dashboard} id="Client" onClick={handleRedirect} variant='contained'>
+            Client
         </Button>
     </Box>
   )

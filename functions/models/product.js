@@ -6,7 +6,7 @@ const Product = new Schema({
     name:       { type: String, required: true  },
     image:      { type: String, required: false }, // * BASE 64 PARSED PHOTO
     desc:       { type: String, required: true  }, // * Description
-    price:      { type: Number, required: true  }, // * Cost per tray
+    price:      { type: Number, required: true  }, // * Cost per package
     // * ID of quality of the seeds - track the seeds origin - metadata 
     // ? This seedId must be per order because many same proudcts can come from distinct providers because of users using their providers
     // ? Should we consider an entity for providers

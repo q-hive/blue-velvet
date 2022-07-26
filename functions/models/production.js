@@ -12,10 +12,9 @@ const Production = new Schema({
     products: {
         type: [{
             _id:        { type: ObjectId, required: true },
-            name:       { type: String,   required: true  },
-            prodCost:   { type: Number,   required: true  },
-            trays:      { type: Number,   required: true  },
-            surplus:    { type: Number,   required: true  }, // * In tray numbers
+            name:       { type: String,   required: true },
+            amount:     { type: Number,   required: true }, // * Measured in packages
+            surplus:    { type: Number,   required: true }, // * In tray numbers
         }],
         required: true
     }

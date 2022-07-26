@@ -1,5 +1,4 @@
 import mongoose from '../mongo.js'
-import Order from './order.js'
 import Production from './production.js'
 import Address from './address.js'
 
@@ -9,13 +8,10 @@ const { ObjectId } = mongoose.Types
 
 const Container = new Schema({
     name:           { type: String,         required: true, unique: true },
-    admin:          { type: ObjectId,       required: true               },
-    organization:   { type: ObjectId,       required: true               },
     capacity:       { type: Number,         required: true               }, // * Measured in trays
     available:      { type: Number,         required: true               }, // * Also in trays
     employees:      { type: [ObjectId],     required: true               },
     production:     { type: [Production],   required: true               },
-    orders:         { type: [Order],        required: true               },
     address:        { type: Address,        required: false              }
 },    
 {

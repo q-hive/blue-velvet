@@ -11,7 +11,10 @@ const Address = new Schema({
     state:      { type: String,   required: true  },
     country:    { type: String,   required: true  },
     references: { type: String,   required: false },
-    coords:     { type: Location, required: false }
+    coords:     { type: {
+        latitude:  { type: Number, required: true },
+        longitude: { type: Number, required: true }
+    }, required: false }
 },
 {
     timestamps: {
