@@ -15,7 +15,7 @@ const Product = new Schema({
             amount:         { type: Number, required: true }, // * Package price
             packageSize:    { type: Number, required: true }  // * PACKAGE SIZE IN GRAMS
         }], 
-        required:   true  
+        required: true  
     }, 
     mix: {
         type: {
@@ -28,7 +28,7 @@ const Product = new Schema({
                 required: false 
             }
         },
-        required:   false
+        required: false
     },
     parameters: {
         type: {
