@@ -85,5 +85,19 @@ export const BV_THEME = createTheme({
         }
     },
 
+    loginModal : {
+        sx:{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: {xs:"80%",sm:400},
+            bgcolor: 'background.paper',
+            border: '1px solid #959595',
+            boxShadow: 24,
+            p: 4,
+        }
+    },
+
 
 })

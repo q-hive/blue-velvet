@@ -175,7 +175,7 @@ export const Login = () => {
     }
     
   return (
-        <div style={{width:"100%",height:"100vh", display:"flex", alignItems:"center", justifyContent:"center"}}>
+        <div style={{width:"100%",height:"100vh", display:"flex", alignItems:"center", justifyContent:"center", margin:"-8px"}}>
             {
                 alert.open
                 ?   <Snackbar
