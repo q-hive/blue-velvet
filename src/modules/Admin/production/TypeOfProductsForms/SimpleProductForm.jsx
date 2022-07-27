@@ -3,6 +3,10 @@ import React, { useState } from 'react'
 import { Button, TextField, useTheme, Fab, Typography, Stepper, Step, StepLabel, StepContent, Paper, Tooltip, IconButton} from '@mui/material'
 import CameraIcon from '@mui/icons-material/AddPhotoAlternate';
 import { Box } from '@mui/system'
+import LightModeOutlinedIcon from '@mui/icons-material/LightModeOutlined';
+import NightsStayTwoToneIcon from '@mui/icons-material/NightsStayTwoTone';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 //*THEME
 import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog.jsx'
@@ -13,6 +17,8 @@ import api from '../../../../axios.js'
 import { useNavigate } from 'react-router-dom'
 import { useEffect } from 'react';
 import useAuth from '../../../../contextHooks/useAuthContext.js';
+//Stepper
+import VerticalLinearStepper from './StepperTest.jsx';
 
 export const SimpleProductForm = ({editing, product}) => {
     //*UTILS
@@ -297,6 +303,34 @@ export const SimpleProductForm = ({editing, product}) => {
         const handleReset = () => {
           setActiveStep(0);
         };
+
+        const getStepContent = (step,index) => {
+            return (
+                <>
+                <Typography>{step.description}</Typography>
+                <Box sx={{ mb: 2 }}>
+                    <div>
+                        <Button
+                            variant="contained"
+                            onClick={handleNext}
+                            sx={{ mt: 1, mr: 1 }}
+                        >
+                            {index === steps.length - 1 ? 'Finish' : 'Continue'}
+                        </Button>
+                        
+                        <Button
+                            disabled={index === 0}
+                            onClick={handleBack}
+                            sx={{ mt: 1, mr: 1 }}
+                        >
+                            Back
+                        </Button>
+                    </div>
+                </Box>
+                </>
+            )
+        }
+        
         /////
 
     
@@ -332,85 +366,73 @@ export const SimpleProductForm = ({editing, product}) => {
             {
                 showTimes && ( 
                     <>
+                    <Box sx={{ width: "60%", display:"flex", flexDirection:"row" }}>
                     
-                        
-                <Box sx={{ width: "60%", display:"flex", flexDirection:"row" }}>
-                    <Box sx={{ width: "35%" }}>
-                        <Stepper activeStep={activeStep} orientation="vertical">
-                            {steps.map((step, index) => (
-                            <Step key={step.label}>
-                                <StepLabel 
-                                    optional={
-                                        index === steps.length - 1 ? (
-                                        <Typography variant="caption">Last step</Typography>
-                                        ) : null
-                                    }
-                                    sx={{fontSizeAdjust:"20px"}}
-                                >
-                                    {step.label}
-                                </StepLabel>
-                                <StepContent>
-                                <Typography>{step.description}</Typography>
-                                <Box sx={{ mb: 2 }}>
-                                    <div>
-                                    <Button
-                                        variant="contained"
-                                        onClick={handleNext}
-                                        sx={{ mt: 1, mr: 1 }}
+                        <Box sx={{ width: "35%" }}>
+                            <Stepper activeStep={activeStep} orientation="vertical">
+                                {steps.map((step, index) => (
+                                <Step key={step.label}>
+                                    <StepLabel 
+                                        /*optional={
+                                            index === steps.length - 1 ? (
+                                            <Typography variant="caption">Last step</Typography>
+                                            ) : null
+                                        }*/
+                                        sx={{fontSizeAdjust:"20px"}}
                                     >
-                                        {index === steps.length - 1 ? 'Finish' : 'Continue'}
-                                    </Button>
-                                    <Button
-                                        disabled={index === 0}
-                                        onClick={handleBack}
-                                        sx={{ mt: 1, mr: 1 }}
-                                    >
-                                        Back
-                                    </Button>
-                                    </div>
-                                </Box>
-                                </StepContent>
-                            </Step>
-                            ))}
-                        </Stepper>
-                    {activeStep === steps.length && (
-                    <Paper square elevation={0} sx={{ p: 3 }}>
-                        <Typography>All steps completed - you&apos;re finished</Typography>
-                        <Button onClick={handleReset} sx={{ mt: 1, mr: 1 }}>
-                            Reset
-                        </Button>
-                    </Paper>
-        
-      )}
-    </Box>
-    <Box sx={{ width: "65%", display:"flex", flexDirection:"column", padding:"5%", alignItems:"center" }}>
-        {
-        activeStep === 0 ? (
-            <TextField defaultValue={editing ? product.name : undefined} helperText={error.name.message} error={error.name.failed} id="name" onChange={handleChangeProductData} label="Product name" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
-        
-            ) : null
-        }
-        {
-        activeStep === 1 ? (
-            <>
-            <TextField defaultValue={editing ? product.parameters.seedingRate : undefined} helperText={error.seeding.message} error={error.seeding.failed} id="seeding" type="number" onChange={handleChangeProductData} label="Seeding" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
-            <TextField defaultValue={editing ? product.parameters.harvestRate : undefined} helperText={error.harvest.message} error={error.harvest.failed} id="harvest" type="number" onChange={handleChangeProductData} label="Harvest" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
-            <TextField defaultValue={editing ? product.price : undefined} helperText={error.price.message} error={error.price.failed} id="price" onChange={handleChangeProductData} label="Price" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
-            </>
-            ) : null
-        }
-        {
-        activeStep === 2 ? (
-            <>
-            <TextField defaultValue={editing ? product.seedId : undefined} helperText={error.seedId.message} error={error.seedId.failed} id="seedId" onChange={handleChangeProductData} label="SeedID" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
-            <TextField defaultValue={editing ? product.provider : undefined} helperText={error.provider.message} error={error.provider.failed} id="provider" onChange={handleChangeProductData} label="Email / route" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
-            </>
-            ) : null
-        }
-
-    </Box>
-    
-    </Box></>)}
+                                        {step.label}
+                                    </StepLabel>
+                                    <StepContent>
+                                        {getStepContent(step,index)}
+                                    </StepContent>
+                                </Step>
+                                ))}
+                            </Stepper>
+                            {activeStep === steps.length && (
+                            <Paper square elevation={0} sx={{ p: 3 }}>
+                                <Typography>All steps completed - you&apos;re finished</Typography>
+                                <Button onClick={handleReset} sx={{ mt: 1, mr: 1 }}>
+                                    Reset
+                                </Button>
+                            </Paper>
+            
+                        )}
+                    </Box>
+                    
+                    <Box sx={{ width: "65%", display:"flex", flexDirection:"column", padding:"5%", alignItems:"center" }}>
+                    {
+                    activeStep === 0 ? (
+                        <>
+                        <TextField defaultValue={editing ? product.name : undefined} helperText={error.name.message} error={error.name.failed} id="name" onChange={handleChangeProductData} label="Product name" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
+                        <Fab color="primary" component="label" id="label" aria-label="add" sx={{marginY:"4%"}} size="large" helpertext="Label">
+                            <input  type="file" accept="image/*" onChange={handleChangeLabel} hidden />
+                            <CameraIcon />
+                        </Fab>
+                        </>
+                        ) : null
+                    }
+                    {
+                    activeStep === 1 ? (
+                        <>
+                        <TextField defaultValue={editing ? product.parameters.seedingRate : undefined} helperText={error.seeding.message} error={error.seeding.failed} id="seeding" type="number" onChange={handleChangeProductData} label="Seeding" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
+                        <TextField defaultValue={editing ? product.parameters.harvestRate : undefined} helperText={error.harvest.message} error={error.harvest.failed} id="harvest" type="number" onChange={handleChangeProductData} label="Harvest" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
+                        <TextField defaultValue={editing ? product.price : undefined} helperText={error.price.message} error={error.price.failed} id="price" onChange={handleChangeProductData} label="Price" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
+                        </>
+                        ) : null
+                    }
+                    {
+                    activeStep === 2 ? (
+                        <>
+                        <TextField defaultValue={editing ? product.seedId : undefined} helperText={error.seedId.message} error={error.seedId.failed} id="seedId" onChange={handleChangeProductData} label="SeedID" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
+                        <TextField defaultValue={editing ? product.provider : undefined} helperText={error.provider.message} error={error.provider.failed} id="provider" onChange={handleChangeProductData} label="Email / route" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
+                        </>
+                        ) : null
+                    }
+            
+                </Box>
+                </Box>
+                </>
+                )}
     <Button variant="contained" size="large" onClick={handleComplete}>{stepBtnLabel}</Button>
         </Box>
 
