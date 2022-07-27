@@ -1,5 +1,5 @@
 import { mongoose } from '../../mongo.js'
-import Organization from '../../models/organization.js'
+import { Organization } from '../../models/index.js'
 
 const orgModel = new mongoose.model('organizations', Organization)
 

@@ -1,5 +1,5 @@
 import {mongoose} from '../../mongo.js'
-import task from '../../models/task.js'
+import { Task } from '../../models/index.js'
 import { ObjectId } from 'mongodb'
 
 export const createTask = (obj) => {

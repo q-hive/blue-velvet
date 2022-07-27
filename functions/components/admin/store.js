@@ -1,34 +1,38 @@
 import { mongoose } from '../../mongo.js'
-import adminAuth from '../../firebaseAdmin.js'
-import User from '../../models/employee.js'
+
+import adminAuth    from '../../firebaseAdmin.js'
+
+import { Client, Employee } from '../../models/index.js'
+
 import { hashPassphrase, genPassphrase } from './helper.js'
-import { newContainer, getContainers, updateContainers } from '../container/store.js'
+import { newContainer, updateContainers } from '../container/store.js'
 import { newOrganization, updateOrganization } from '../organization/store.js'
 
-var userModel = mongoose.model('users', User)
+const clientModel = mongoose.model('clients', Client)
+const contModel = mongoose
 
 export function newEmployee(data) {
     return new Promise((resolve, reject) => {
         // * Create account on firebase
         adminAuth.createUser({
-            email: data.email,
-            emailVerified: false,
-            password: data.password,
-            displayName: data.name + " " + data.lname,
-            photoURL: data.image,
-            disabled: false,
+            email:          data.email,
+            emailVerified:  false,
+            password:       data.password,
+            displayName:    data.name + " " + data.lname,
+            photoURL:       data.image,
+            disabled:       false,
         })
-        .then((userRecord) => {
+        .then(userRecord => {
             
             console.log('Successfully created new user on firebase:', userRecord.uid);
             
-            // * Update role to employee in custom claims
+            // * Update role and organization to employee in custom claims
             await adminAuth.setCustomUserClaims(userRecord.uid, { 
-                role: "employee",
-                organization: data.organization 
+                role:           "employee",
+                organization:   res.locals.organization 
             })
 
-            getOrganization(data.organization)
+            getOrganizationById(re.locals.organization)
             .then(org => {
                 let containerIds = containers.map(cont => cont._id)
                 console.log(containers[0])
@@ -41,14 +45,10 @@ export function newEmployee(data) {
                     email:          data.email,
                     name:           data.name,
                     lname:          data.lname,
-                    role:           "employee",
-                    containers:     containerIds,
-                    clients:        data.clients,
-                    admin:          admin,
-                    organization:   data.organization,
-                    address:        data.address,
-                    salary:         data.salary || 0,
-                    phone:          data.phone
+                    phone:          data.phone,
+                    image:          data.image,
+                    salary:         data.salary,
+                    address:        data.address
                 }
 
                 let mongoUser = new userModel(userData)

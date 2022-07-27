@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb'
-import product from '../../models/product.js'
+import { Product } from '../../models/index.js'
 import {mongoose} from '../../mongo.js'
 
 const productsCollection = mongoose.connection.collection('products')

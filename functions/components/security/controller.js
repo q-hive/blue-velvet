@@ -18,7 +18,6 @@ export const isAuthenticated = (req, res, next) => {
     } else {
         // * Authorization header was not found in the proper format 
         error(req, res, "The autorización header is in wrong format")
-        return
     }
 
 
