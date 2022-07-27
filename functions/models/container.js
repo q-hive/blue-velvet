@@ -1,4 +1,4 @@
-import mongoose from '../mongo.js'
+import mongoose from 'mongoose'
 import Production from './production.js'
 import Address from './address.js'
 import Product from './product.js'

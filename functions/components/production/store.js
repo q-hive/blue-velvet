@@ -1,13 +1,14 @@
-import Production from '../../models/production'
+// import Production from '../../models/production'
+import Production from '../../models/production.js'
 import { mongoose } from '../../mongo.js'
-import { dateToArray, nextDay } from '../../utils/time'
-import { getContainers } from "../container/store"
+import { dateToArray, nextDay } from '../../utils/time.js'
+import { getContainers } from "../container/store.js"
 
 
 const prodModel = mongoose.model('production', Production)
 
 export const getProductionForOrder = async (products, organization, filter) => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         // * Will return the production line with available parameters if it's one
         // * IF no production line is fit to host the order, a new production line must be returned
 
@@ -30,7 +31,7 @@ export const getProductionForOrder = async (products, organization, filter) => {
 
             let prodMapped = {
                 orders:         [filter.order],
-                container:      
+                container:      [],
                 tasks:          [],
                 activeTasks:    [],
                 products: filter.products.map(prod => {

@@ -1,4 +1,4 @@
-import mongoose from '../mongo.js';
+import mongoose from 'mongoose';
 import Address from './address.js'
 
 const { Schema  } = mongoose;

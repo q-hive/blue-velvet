@@ -1,4 +1,4 @@
-import mongoose from '../mongo.js'
+import mongoose from 'mongoose'
 import Task from './task.js'
 
 const { Schema } = mongoose;

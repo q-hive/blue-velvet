@@ -5,7 +5,7 @@ import { getProductionForOrder } from '../production/store.js'
 const orderModel = mongoose.model('orders', Order)
 
 export const createNewOrder = (order) => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         // TODO: CHRIS ORDERS
 
         // * 1- Check for suitable production lines

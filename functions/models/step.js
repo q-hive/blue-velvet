@@ -1,4 +1,4 @@
-import mongoose from '../mongo.js'
+import mongoose from 'mongoose'
 
 const { Schema } = mongoose
 const { ObjectId } = mongoose.Types 
