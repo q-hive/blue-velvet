@@ -1,5 +1,6 @@
 import mongoose from '../mongo.js';
 
+import { Address } from "./index.js"
 
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types

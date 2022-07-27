@@ -1,5 +1,5 @@
 import express from 'express'
-import {error, success} from '../../network/response.js'
+import { error, success } from '../../network/response.js'
 import { isEmailValid, validateBodyNotEmpty } from './secureHelpers.js'
 import userCreationRouter from '../admin/network.js'
 import { getUserByFirebaseId } from '../admin/store.js'

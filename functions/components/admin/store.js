@@ -2,14 +2,14 @@ import { mongoose } from '../../mongo.js'
 
 import adminAuth    from '../../firebaseAdmin.js'
 
-import { Client, Employee } from '../../models/index.js'
+import { Client, Container } from '../../models/index.js'
 
 import { hashPassphrase, genPassphrase } from './helper.js'
 import { newContainer, updateContainers } from '../container/store.js'
 import { newOrganization, updateOrganization } from '../organization/store.js'
 
-const clientModel = mongoose.model('clients', Client)
-const contModel = mongoose
+const clientModel = mongoose.model('clients',    Client)
+const contModel   = mongoose.model('containers', Container)
 
 export function newEmployee(data) {
     return new Promise((resolve, reject) => {
@@ -32,15 +32,10 @@ export function newEmployee(data) {
                 organization:   res.locals.organization 
             })
 
-            getOrganizationById(re.locals.organization)
+            getOrganizationById(res.locals.organization)
             .then(org => {
-                let containerIds = containers.map(cont => cont._id)
-                console.log(containers[0])
-                let admin = containers[0].admin
-                
-                let userModel = new mongoose.model('users', User)
 
-                let userData = {
+                let empData = {
                     uid:            userRecord.uid,  
                     email:          data.email,
                     name:           data.name,
@@ -51,21 +46,13 @@ export function newEmployee(data) {
                     address:        data.address
                 }
 
-                let mongoUser = new userModel(userData)
+                // * Add employee to record
+                org.employees.push(empData)
 
-                mongoUser.save((e, user) => {
-                    if (e) reject(e)
-                    
-                    Promise.all([
-                        // * Update containers field
-                        updateContainers(containerIds, {
-                            $push: { employees: user._id }
-                        }),
-                        // * Update organization field
-                        updateOrganization(data.organization, {
-                            $push: { employees: user._id }
-                        })
-                    ]).then(() => resolve(userData))    
+                org.save((err, doc) => {
+                    if (err) reject(err)
+
+                    resolve(doc)
                 })
             })
         })

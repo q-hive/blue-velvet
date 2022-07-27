@@ -1,8 +1,5 @@
 import mongoose from 'mongoose';
-import Address from './address.js'
-import Container from './container.js'
-import Employee from './employee.js'
-import Provider from './provider.js'
+import { Address, Container, Employee, Provider } from './index.js'
 
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types

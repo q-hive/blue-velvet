@@ -1,7 +1,5 @@
 import mongoose from '../mongo.js'
-import Production from './production.js'
-import Address from './address.js'
-import Product from './product.js'
+import { Address, Product, Production } from "./index.js"
 
 const { Schema } = mongoose
 const { ObjectId } = mongoose.Types
@@ -27,9 +25,6 @@ const Container = new Schema({
         },
         byAdmin(admin) {
             return this.where({ admin: admin })
-        },
-        byOrganization(orgId) {
-            return this.where({ organization: orgId })
         },
         byCapacity(capacity) {
             return this.where({ capacity: { $gte: capacity } })
