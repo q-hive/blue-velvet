@@ -303,19 +303,24 @@ export const SimpleProductForm = ({editing, product}) => {
         const handleReset = () => {
           setActiveStep(0);
         };
+        const isLastStep = (index) => {
+            if(index == steps.length - 1){return true}else{return false}
+
+        };
 
         const getStepContent = (step,index) => {
-            return (
+            return ( 
                 <>
                 <Typography>{step.description}</Typography>
                 <Box sx={{ mb: 2 }}>
                     <div>
                         <Button
                             variant="contained"
-                            onClick={handleNext}
-                            sx={{ mt: 1, mr: 1 }}
+                            onClick={isLastStep(index) ? handleComplete : handleNext}
+                            sx={()=>({...BV_THEME.button.standard,mt: 1, mr: 1,})}
+                            
                         >
-                            {index === steps.length - 1 ? 'Finish' : 'Continue'}
+                            {isLastStep(index) ? 'Save Product' : 'Continue'}
                         </Button>
                         
                         <Button
@@ -360,6 +365,7 @@ export const SimpleProductForm = ({editing, product}) => {
                             <input  type="file" accept="image/*" onChange={handleChangeLabel} hidden />
                             <CameraIcon />
                         </Fab>
+                        <Button variant="contained" size="large" onClick={handleComplete}>{stepBtnLabel}</Button>
                     </>    
                 )
             }
@@ -431,9 +437,11 @@ export const SimpleProductForm = ({editing, product}) => {
             
                 </Box>
                 </Box>
+                
+                
                 </>
                 )}
-    <Button variant="contained" size="large" onClick={handleComplete}>{stepBtnLabel}</Button>
+   
         </Box>
 
 
