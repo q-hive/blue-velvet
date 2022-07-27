@@ -19,6 +19,12 @@ export const createTask = (obj) => {
     })
 }
 
+export const generateTasks(product) => {
+    return new Promise((resolve, reject) => {
+        resolve([])
+    })
+}
+
 export const getTaskByProdId = (id) => {
     return new Promise((resolve, reject) => {
         mongoose.connection.collection('tasks')

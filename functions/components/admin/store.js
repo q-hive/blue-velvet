@@ -19,60 +19,58 @@ export function newEmployee(data) {
             disabled: false,
         })
         .then((userRecord) => {
+            
             console.log('Successfully created new user on firebase:', userRecord.uid);
+            
             // * Update role to employee in custom claims
-            adminAuth.setCustomUserClaims(userRecord.uid, { role: "employee" })
-            .then(() => {
-                getContainers({ 
-                    organization:   data.organization
-                })
-                .then(containers => {
-                    let containerIds = containers.map(cont => cont._id)
-                    console.log(containers[0])
-                    let admin = containers[0].admin
-                    
-                    let userModel = new mongoose.model('users', User)
-
-                    let userData = {
-                        uid:            userRecord.uid,  
-                        email:          data.email,
-                        name:           data.name,
-                        lname:          data.lname,
-                        role:           "employee",
-                        containers:     containerIds,
-                        clients:        data.clients,
-                        admin:          admin,
-                        organization:   data.organization,
-                        address:        data.address,
-                        salary:         data.salary || 0,
-                        phone:          data.phone
-                    }
-
-                    let mongoUser = new userModel(userData)
-
-                    mongoUser.save((e, user) => {
-                        if (e) reject(e)
-                        
-                        Promise.all([
-                            // * Update containers field
-                            updateContainers(containerIds, {
-                                $push: { employees: user._id }
-                            }),
-                            // * Update organization field
-                            updateOrganization(data.organization, {
-                                $push: { employees: user._id }
-                            })
-                        ]).then(() => resolve(userData))    
-                    })
-                })          
+            await adminAuth.setCustomUserClaims(userRecord.uid, { 
+                role: "employee",
+                organization: data.organization 
             })
-            .catch(err => {
-                console.log('Error assigning employee role on user at firebaseAtuh:', err)
-                reject(err)
+
+            getOrganization(data.organization)
+            .then(org => {
+                let containerIds = containers.map(cont => cont._id)
+                console.log(containers[0])
+                let admin = containers[0].admin
+                
+                let userModel = new mongoose.model('users', User)
+
+                let userData = {
+                    uid:            userRecord.uid,  
+                    email:          data.email,
+                    name:           data.name,
+                    lname:          data.lname,
+                    role:           "employee",
+                    containers:     containerIds,
+                    clients:        data.clients,
+                    admin:          admin,
+                    organization:   data.organization,
+                    address:        data.address,
+                    salary:         data.salary || 0,
+                    phone:          data.phone
+                }
+
+                let mongoUser = new userModel(userData)
+
+                mongoUser.save((e, user) => {
+                    if (e) reject(e)
+                    
+                    Promise.all([
+                        // * Update containers field
+                        updateContainers(containerIds, {
+                            $push: { employees: user._id }
+                        }),
+                        // * Update organization field
+                        updateOrganization(data.organization, {
+                            $push: { employees: user._id }
+                        })
+                    ]).then(() => resolve(userData))    
+                })
             })
         })
         .catch(err => {
-            console.log('Error creating new admin user on firebaseAtuh:', err)
+            console.log('Error creating new employee account on firebaseAtuh:', err)
             reject(err)
         })
 
@@ -166,6 +164,7 @@ export async function updateUser(id, edit) {
 }
 
 export async function getUserByFirebaseId(uid) {
+
     let user = await userModel.findOne({ uid: uid })
     return user
 }

@@ -4,6 +4,11 @@ import { isEmailValid, validateBodyNotEmpty } from './secureHelpers.js'
 import userCreationRouter from '../admin/network.js'
 import { getUserByFirebaseId } from '../admin/store.js'
 
+import { getOrganization } from '../organization/store.js'
+
+// * Authentication
+import { isAuthenticated, isAuthorized } from './controller.js'
+
 //*Simple firebase
 import auth from '../../firebase.js'
 import { signInWithEmailAndPassword } from 'firebase/auth'
@@ -19,34 +24,37 @@ authRouter.post('/login', (req, res) => {
 
     if(isEmailValid(req.body.email) && req.body.password !== ""){
         signInWithEmailAndPassword(auth, req.body.email, req.body.password)
-        .then(user => {
-            adminAuth.verifyIdToken(user._tokenResponse.idToken)
+        .then(userRegister => {
+            adminAuth.verifyIdToken(userRegister._tokenResponse.idToken)
             .then(claims => {
                 if (claims.role === 'admin') {
                     return success(req, res, 200, "Authentication succeed", { isAdmin: true })
+                } else if (claims.role === 'employee') {
+                    // * Obtain organization info to query for employee data
+                    getOrganization(claims.organization)
+                    .then(organization => {
+                        organization.employees.byUid(userRegister.user.uid).findOne({}).exec()
+                        .then(employee => {})
+                        .catch(err => {})
+                        
+                    })
+                    .catch(err => error(req, res, 500, "Error verifying ID Token", err))
+                    getUserByFirebaseId(user.user.uid)
+                    .then(data => success(req, res, 200, "Authentication success", 
+                    { 
+                        isAdmin: false,
+                        user: data, 
+                        token: user._tokenResponse.idToken
+                    }))
                 }
-                getUserByFirebaseId(user.user.uid)
-                .then(data => success(req, res, 200, "Authentication success", 
-                { 
-                    isAdmin: false,
-                    user: data, 
-                    token: user._tokenResponse.idToken
-                }))
             })
-            .catch(err => {
-                error(req, res, 500, "Error verifying ID Token", err)
-            })
-            return
+            .catch(err => error(req, res, 500, "Error verifying ID Token", err))
         })
-        .catch(err => {
-            error(req, res, 500, "Error signing in", err)            
-            return
-        })
-        return
+        .catch(err => error(req, res, 500, "Error signing in", err))
 
     }
 
-    error(req,res,400, "Invalid request", new Error("Any successful validation"))
+    return error(req, res, 400, "Invalid request", new Error("Any successful validation"))
 })
 
 authRouter.post('/login/admin', (req, res) => {
@@ -101,6 +109,6 @@ authRouter.post('/refresh', (req, res) => {
     validateBodyNotEmpty(req, res)
 })
 
-authRouter.use('/create', userCreationRouter)
+authRouter.use('/create', isAuthenticated, isAuthorized(["admin"]), userCreationRouter)
 
 export default authRouter

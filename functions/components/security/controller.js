@@ -2,28 +2,22 @@ import auth from '../../firebaseAdmin.js'
 
 import { error } from '../../network/response.js'
 export const isAuthenticated = (req, res, next) => {
-    /* 
-     * Verifica que el request contenga un ID Token.
-    */
 
-    
-    // TODO: REMOVE AFTER TEST
-    return next()
-
+    // * Verify request contains an ID Token.
     if (!(req.headers.authorization && req.headers.user)) {
-        error(req, res, 401, "No tienes autorización")
+        error(req, res, 401, "You have no authorization header")
         return
     }
 
     let idToken;
 
     if (typeof req.headers.authorization === "string") {
-        // * En este caso se encuentra exitosamente un token en formato string'.
-        // * Lee el ID Token del authorization header.
+        // * In this case, a string token was found'.
+        // * Read the ID Token from authorization header.
         idToken = req.headers.authorization;
     } else {
-        // * No se encontró el authorization header en el formato correcto. 
-        error(req, res, "El header de autorización no tiene el formato correcto")
+        // * Authorization header was not found in the proper format 
+        error(req, res, "The autorización header is in wrong format")
         return
     }
 
@@ -31,22 +25,28 @@ export const isAuthenticated = (req, res, next) => {
     // * Una vez obtenido el ID Token, procedemos a verificar que sea correcto mediante firebase auth
     auth.verifyIdToken(idToken)
     .then( decodedIdToken => { // * Obtenemos el decodedIDToken como resultado de una operación exitosa
-        console.log('ID Token verificado!');
-        if (decodedIdToken.rol === undefined) {
-            error(req, res, "No tienes rol")
-        } else {
-            res.locals = { ...res.locals, uid: decodedIdToken.uid, rol: decodedIdToken.rol }
+        console.log('ID Token verified!');
+        if (decodedIdToken.role === undefined) 
+            return error(req, res, "You have no role assigned")
+
+        res.locals = { 
+            ...res.locals, 
+            uid: decodedIdToken.uid, 
+            role: decodedIdToken.role, 
+            organization: decodedIdToken.organization 
         }
-        next();
+
+        next()
     })
     .catch( err => {
-        if(err.errorInfo.code === "auth/id-token-expired"){
-            console.log(err)
-            error(req,res,403, "Tu sesión expiró, recarga la página", err)
-            return
-        }
-        console.log(err)
-        error(req, res,500, "Error verificando autenticación", err)
+        let expired = err.errorInfo.code === "auth/id-token-expired"
+
+        return error(
+            req, res,
+            expired ? 403 : 500, 
+            expired ? "Your session has expired, reload the page" : "Error verifying session", 
+            err
+        )
     });
 }
 
@@ -54,28 +54,24 @@ export const isAuthorized = (authorized) => {
     //*Se asume que el usuario ya esta autencitc
     
     return (req, res, next) => {
-        // TODO: REMOVE AFTER TEST
-        return next()
         //*Desestructuramos el rol y su id de usuario de locals
-        const {rol, uid} = res.locals
+        const { role, uid } = res.locals
         //*Comprobamos que realmente exista un rol y un UID válidos
-        if(rol !== undefined && uid !== ""){
+        if (role !== undefined && uid !== "") {
             //*Se vuelve a verificar el id Token para obtener el id de nuevo
             auth.verifyIdToken(req.headers.authorization)
             .then(decodedId => {
                 //*Si el ID es igual al id autenticado y el arreglo de autorización incluye su rol, entonces puede acceder al recurso
-                if(decodedId.uid === uid && authorized.includes(rol)){
+                if(decodedId.uid === uid && authorized.includes(role)){
                     next()
                 } else{
-                    error(req, res, 403,"No coinciden los datos de verificación.")
+                    error(req, res, 403, "Verification data is unconsistent.")
                 }
             })
-            .catch(err => {
-                error(req, res,500, "Error en tu proceso de verificación, intenta más tarde", err)
-            }) 
-        } else {
-            error(req, res, 403, "No tienes acceso")
+            .catch(err => error(req, res, 500, err)) 
         }
+
+        return error(req, res, 403, "You have no access")
     }
 }
 

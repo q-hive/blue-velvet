@@ -11,9 +11,9 @@ const Container = new Schema({
     name:           { type: String,         required: true, unique: true },
     capacity:       { type: Number,         required: true               }, // * Measured in trays
     available:      { type: Number,         required: true               }, // * Also in trays
-    employees:      { type: [ObjectId],     required: true               },
-    production:     { type: [Production],   required: true               },
-    products:       { type: [Product],      required: true,              },
+    employees:      { type: [ObjectId],     required: true, default: []  },
+    production:     { type: [Production],   required: true, default: []  },
+    products:       { type: [Product],      required: true, default: []  },
     address:        { type: Address,        required: false              }
 },    
 {

@@ -28,6 +28,17 @@ const Employee = new Schema({
         },
         byEmail(email) {
             return this.where({ email: new RegExp(email, "i") })
+        },
+        byUid(uid) {
+            return this.where({ uid: uid })
+        },
+        byPhone(phone) {
+            return this.where({ phone: phone })
+        },
+        bySalary(salary, compare) {
+            let comparison = {}
+            comparison[compare] = salary
+            return this.where({ salary: comparison })
         }
     }
 })
