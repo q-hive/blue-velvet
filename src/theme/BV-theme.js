@@ -10,6 +10,10 @@ export const BV_THEME = createTheme({
         secondary: {
             main:"#FF0000",
         },
+        white_btn:{
+            main:"#F9F9F9"
+
+        },
         
     },
 
@@ -23,9 +27,12 @@ export const BV_THEME = createTheme({
         mainHeader:{xs:"15%",sm:"10%",md:"4%"},
 
     },
+    typography: {
+        button: {
+          textTransform: "none"}},
 
     button:{
-        table:{},
+        table:{borderRadius:"15px",backgroundColor:"#6B7FE7", fontSize:"10px"},
         dialog:{marginY:"1%",padding:"10px", minWidth:{xs:"50%",sm:"45%"}},
         standard:{marginY:"1%",padding:"10px", minWidth:{xs:"50%",sm:"45%"}},
         dashboard:{marginY:"1%",padding:"10px", minWidth:{xs:"50%",sm:"20%"}}
@@ -75,6 +82,20 @@ export const BV_THEME = createTheme({
             },
                 
 
+        }
+    },
+
+    loginModal : {
+        sx:{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: {xs:"80%",sm:400},
+            bgcolor: 'background.paper',
+            border: '1px solid #959595',
+            boxShadow: 24,
+            p: 4,
         }
     },
 

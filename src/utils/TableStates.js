@@ -1,12 +1,13 @@
 import {useState} from "react"
 
-import { Button, CircularProgress } from "@mui/material"
 import { UserModal } from "../CoreComponents/UserActions/UserModal"
 
 import api from '../axios'
 import useAuth from "../contextHooks/useAuthContext"
 import { useNavigate } from "react-router-dom"
 import { UserDialog } from "../CoreComponents/UserFeedback/Dialog"
+
+import { BV_THEME } from "../theme/BV-theme"
 
 export const productsColumns = [
     {
@@ -102,6 +103,7 @@ export const productsColumns = [
                         {
                             label:"Stop production",
                             type:"normal",
+                            btn_color:"white_btn",
                             execute:() => {
                                 setLoading(true)
                                 setModal({
@@ -119,6 +121,7 @@ export const productsColumns = [
                                         actions:[
                                             {
                                                 label:"Ok",
+                                                btn_color:"primary",
                                                 execute:() => {
                                                     params.api.forceUpdate()
                                                     setDialog({
@@ -140,6 +143,7 @@ export const productsColumns = [
                                         actions:[
                                             {
                                                 label:"Ok",
+                                                btn_color:"primary",
                                                 execute:() => {
                                                     setDialog({
                                                         ...dialog,
@@ -154,6 +158,7 @@ export const productsColumns = [
                         },
                         {
                             label:"Edit product",
+                            btn_color:"white_btn",
                             type:"privileged",
                             execute:() => {
                                 console.log("Redirect to the type of product screen with prefilled data")    
@@ -163,6 +168,7 @@ export const productsColumns = [
                         },
                         {
                             label:"Allocate task",
+                            btn_color:"white_btn",
                             type:"normal",
                             execute:() => {
                                 console.log("Redirect to task allocation screen")    
@@ -171,6 +177,7 @@ export const productsColumns = [
                         {
                             label:"Delete",
                             type:"dangerous",
+                            btn_color:"secondary",
                             execute:() => {
                                 console.log("Are you sure you want to delete this product?")
                                 setModal({
@@ -185,6 +192,7 @@ export const productsColumns = [
                                     actions:[
                                         {
                                             label:"Yes",
+                                            btn_color:"primary",
                                             execute:() => {
                                                 setDialog({
                                                     ...dialog,
@@ -205,6 +213,7 @@ export const productsColumns = [
                                                         actions:[
                                                             {
                                                                 label:"Ok",
+                                                                btn_color:"primary",
                                                                 execute:() => {
                                                                     setDialog({
                                                                         ...dialog,
@@ -245,7 +254,7 @@ export const productsColumns = [
                     open={dialog.open}
                     />    
                 
-                    <Button variant='contained' onClick={handleModal} disabled={loading} sx={{fontSize:"10px"}}> {loading ? 'Loading...' : 'view'} </Button>    
+                    <Button variant='contained' onClick={handleModal} disabled={loading} sx={BV_THEME.button.table}> {loading ? 'Loading...' : 'View'} </Button>    
                 
                 </>
                 

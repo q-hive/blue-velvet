@@ -72,11 +72,14 @@ export const LoginInputs = ({
         </ValidatorForm>
         
         {
+            <>
+            
             <Modal
             open={openPassphrase}
             onClose={closePassModal}
+            
             >   
-                <Box component="form" onSubmit={handleAdminSignIn}>
+                <Box component="form" onSubmit={handleAdminSignIn} sx={theme.loginModal.sx} display="flex" flexDirection="column">
                     <TextField
                     label="Passphrase"
                     variant="outlined" 
@@ -85,16 +88,20 @@ export const LoginInputs = ({
                     disabled={loading}
                     onChange={handleLoginData}
                     required
+                    
                     />
                     <Button 
-                        sx={{background:"#0E0C8F", color:"white"}} 
+                        sx={()=>({...BV_THEME.button.standard, })} 
+                        color="primary"
+                        variant="contained"
                         endIcon={<LoginIcon/>} 
                         type="submit"
                     >
-                        {loading ? "Loading..." : "Send passphrase"}
+                        {loading ? "Loading..." : "Send Passphrase"}
                     </Button>   
                 </Box>
             </Modal>
+            </>
             
         }
             
