@@ -157,7 +157,8 @@ export const productsColumns = [
                             type:"privileged",
                             execute:() => {
                                 console.log("Redirect to the type of product screen with prefilled data")    
-                                navigate(`/${user.uid}/${user.role}/production/editProduct/?id=${params.id}`)
+                                // navigate(`/${user.uid}/${user.role}/production/editProduct/?id=${params.id}`)
+                                navigate(`/$123456/admin/production/editProduct/?id=${params.id}`)
                             }
                         },
                         {

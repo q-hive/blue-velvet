@@ -39,7 +39,7 @@ export const isValidProductObject = (json) => {
             }
         }
 
-        if(json.mix.isMix){
+        if(json.mix){
             productModel = {
                 "name":"", 
                 "price":"",

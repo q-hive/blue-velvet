@@ -59,9 +59,9 @@ authRouter.post('/login/admin', (req, res) => {
             .then(claims => {
                 // * Generate containers
                 if (claims.role === 'admin') {
-                    console.log(user.user)
                     getUserByFirebaseId(user.user.uid)
                     .then(data => {
+                        console.log(data)
                         if (data.passphrase == hashPassphrase(req.body.passphrase)) 
                             success(req, res, 200, "Successfully logged as admin", {                                                                                                  
                                 user: {

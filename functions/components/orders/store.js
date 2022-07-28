@@ -3,6 +3,7 @@ import Order from '../../models/order.js'
 import { getProductionForOrder } from '../production/store.js'
 
 const orderModel = mongoose.model('orders', Order)
+const ordersCollection = mongoose.connection.collection('orders')
 
 export const createNewOrder = (order) => {
     return new Promise(async (resolve, reject) => {

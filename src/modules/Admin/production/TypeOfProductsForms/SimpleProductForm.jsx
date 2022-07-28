@@ -13,6 +13,7 @@ import api from '../../../../axios.js'
 import { useNavigate } from 'react-router-dom'
 import { useEffect } from 'react';
 import useAuth from '../../../../contextHooks/useAuthContext.js';
+import { ProductsPrice } from '../components/ProductsPrice.jsx';
 
 export const SimpleProductForm = ({editing, product}) => {
     //*UTILS
@@ -100,21 +101,29 @@ export const SimpleProductForm = ({editing, product}) => {
             })
         }
         
+        if(e.target.id === "price"){
+            // Array.prototype.findIndex
+            const index = productData.price.findIndex((obj) => {
+                return obj.packageSize === selectedPackage.packageSize
+            })
+            setProductData(current => {
+                const price = current.price.map((obj, idx) => {
+                    if(idx === index) {
+                        return {...obj, amount:e.target.value}
+                    }
+                    return obj
+                })
+                return {...current, price:price} 
+            })
+            return
+        }
+
         setProductData({
             ...productData,
             [e.target.id]:e.target.value
         })
     }
 
-    const getDefaultPrice = (packages) => {
-        //*PACKAGE IS A RESERVED WORD IN STRICT MODE
-        return packages.find(pack => pack.packageSize === selectedPackage)
-    }
-
-    const handleSelectPackage = (v) => {
-        setSelectedPackage(v)
-    }
-    
     const handleChangeLabel = (e) => {
         setProductData({
             ...productData,
@@ -165,7 +174,7 @@ export const SimpleProductForm = ({editing, product}) => {
             const mappedProduct = {
                 name:productData.name,
                 label:productData.label,
-                price:Number(productData.price),
+                price:productData.price,
                 seedId:productData.seedId,
                 provider:productData.provider,
                 status:productData.status,
@@ -295,23 +304,15 @@ export const SimpleProductForm = ({editing, product}) => {
                         <TextField defaultValue={editing ? product.parameters.harvestRate : undefined} helperText={error.harvest.message} error={error.harvest.failed} id="harvest" type="number" onChange={handleChangeProductData} label="Harvest" sx={theme.input.mobile.fullSize.desktop.thirdSize}/>
 
                         {/* PACKAGES PRICES SYSTEM */}
-                        <TextField defaultValue={editing ? getDefaultPrice(productData.price).amount : undefined} helperText={error.price.message} error={error.price.failed} id="price" onChange={handleChangeProductData} label="Price" sx={theme.input.mobile.fullSize.desktop.thirdSize}/>
-                        <Autocomplete
-                            options={productData.price}
-                            renderInput={(params) => {
-                                return <TextField {...params} label="Package size (grs)"/>
-                            }}
-                            getOptionLabel={(opt) => opt.packageSize}
-                            onChange={(e,v,r) => {
-                                switch(r){
-                                    case "selectOption":
-                                        handleSelectPackage(v)
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            }}
-                        />
+                        {/* <ProductsPrice
+                        productData={productData} 
+                        handleChangeProductData={handleChangeProductData}
+                        setSelectedPackage={setSelectedPackage}
+                        selectedPackage={selectedPackage}
+                        editing={editing}
+                        product={product}
+                        error={error}
+                        /> */}
                         
                         <TextField defaultValue={editing ? product.provider : undefined} helperText={error.provider.message} error={error.provider.failed} id="provider" onChange={handleChangeProductData} label="Email / route" sx={theme.input.mobile.fullSize.desktop.thirdSize}/>
                         <TextField defaultValue={editing ? product.seedId : undefined} helperText={error.seedId.message} error={error.seedId.failed} id="seedId" onChange={handleChangeProductData} label="SeedID" sx={theme.input.mobile.fullSize.desktop.thirdSize}/>

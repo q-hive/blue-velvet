@@ -124,7 +124,7 @@ export function newAdminAccount(data) {
                         console.log("error", e)
                         // * Update the admin field in organization
                         updateOrganization(org._id, {
-                            $set: { admin: user._id }
+                            $set: { owner: user._id }
                         })
                         .then(upOrg => {
                             // * Register all containers with correct admin

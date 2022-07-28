@@ -9,7 +9,7 @@ export const newOrganization = (orgData) => {
 
         let orgMapped = {
             name: orgData.name,
-            admin: orgData.admin,
+            owner: orgData.owner,
             employees: [],
             containers: [],
             address: orgData.address
