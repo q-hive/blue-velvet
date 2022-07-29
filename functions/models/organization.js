@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { Address, Container, Employee, Provider } from './index.js'
+import { Address, Container, Customer, Employee, Provider } from './index.js'
 
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
@@ -9,7 +9,7 @@ const Organization = new Schema({
     owner:      { type: ObjectId,    required: true, unique: true  },
     employees:  { type: [Employee],  required: true, default: []   },
     orders:     { tpye: [Order],     required: true, default: []   },
-    containers: { type: [Container], required: true, unique: true  },
+    containers: { type: [Container], required: true, defualt: []   },
     customers:  { type: [Customer],  required: true, default: []   },
     providers:  { type: [Provider],  required: true, default: []   }, 
     address:    { type: Address,     required: true                }
