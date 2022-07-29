@@ -34,7 +34,7 @@ export const BV_THEME = createTheme({
     button:{
         table:{borderRadius:"15px",backgroundColor:"#6B7FE7", fontSize:"10px"},
         dialog:{marginY:"1%",padding:"10px", minWidth:{xs:"50%",sm:"45%"}},
-        standard:{marginY:"1%",padding:"10px", minWidth:{xs:"50%",sm:"45%"}},
+        standard:{marginY:"1%",marginX:"1%",padding:"10px", minWidth:{xs:"48%",sm:"45%"}},
         dashboard:{marginY:"1%",padding:"10px", minWidth:{xs:"50%",sm:"20%"}}
 
     },

@@ -1,5 +1,6 @@
 import React from 'react'
 import { Autocomplete, TextField } from '@mui/material'
+import { BV_THEME } from '../../../../theme/BV-theme'
 
 const options = [ 
     {
@@ -40,7 +41,7 @@ export const ProductsTime = ({productData, setProductData}) => {
     
   return (
     <Autocomplete
-        sx={{width:"100%"}}
+        sx={BV_THEME.input.mobile.fullSize.desktop.fullSize}
         value={{day:productData.day, night:productData.night, type:productData.cycleType}}
         options={options}
         onChange={handleSetTime}

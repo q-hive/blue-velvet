@@ -339,7 +339,7 @@ export const SimpleProductForm = ({editing, product}) => {
     const getStepContent = (step,index) => {
         return ( 
             <>
-            <Typography>{step.description}</Typography>
+            <Typography sx={{display:{xs:"none", sm:"flex"}}}>{step.description}</Typography>
             <Box sx={{ mb: 2 }}>
                 <div>
                     <Button
@@ -364,6 +364,36 @@ export const SimpleProductForm = ({editing, product}) => {
         )
     }
 
+    const getMobileStepperButtons = (index) => {
+        return (
+            <Box sx={{width:"100%", mb: 2 ,display:{xs:"flex",sm:"none"}, justifyContent: 'space-evenly' }}>
+                
+                <Button
+                        disabled={index === 0}
+                        onClick={handleBack}
+                        sx={()=>({...BV_THEME.button.standard, color:"white_btn"})}
+                        variant="outlined"
+                    >
+                        Back
+                    </Button>
+
+
+                    <Button
+                        variant="contained"
+                        onClick={isLastStep(index) ? handleComplete : handleNext}
+                        sx={()=>({...BV_THEME.button.standard})}
+                        
+                    >
+                        {isLastStep(index) ? 'Save Product' : 'Continue'}
+                    </Button>
+                    
+                    
+                
+            </Box>
+        )
+
+    }
+
     // useEffect(() => {
     //     console.log(error)
     // },[error])
@@ -379,14 +409,24 @@ export const SimpleProductForm = ({editing, product}) => {
                 alignItems:"center"
             }
         }>
-            <Box sx={{ width: "90%", display:"flex", flexDirection:"row" }}>
-                <Box sx={{ width: "35%" }}>
+            <Box sx={{ width: "90%", display:"flex", flexDirection:{xs:"column",sm:"row"} }}>
+            
+            <Box sx={{ width: "90%", display:{xs:"flex", sm:"none"}}}>
+                <Stepper activeStep={activeStep} >
+                        {steps.map((step, index) => (
+                        <Step key={step.label}>
+                            <StepLabel sx={{fontSizeAdjust:"20px"}}>
+                                {step.label}
+                            </StepLabel>
+                        </Step>
+                        ))}
+                    </Stepper>
+                </Box>
+                <Box sx={{ width: "35%", display:{xs:"none", sm:"inline-block"}}}>
                     <Stepper activeStep={activeStep} orientation="vertical">
                         {steps.map((step, index) => (
                         <Step key={step.label}>
-                            <StepLabel 
-                                sx={{fontSizeAdjust:"20px"}}
-                            >
+                            <StepLabel sx={{fontSizeAdjust:"20px"}}>
                                 {step.label}
                             </StepLabel>
                             <StepContent>
@@ -406,7 +446,8 @@ export const SimpleProductForm = ({editing, product}) => {
                     )}
                 </Box>
                     
-                <Box sx={{ width: "65%", display:"flex", flexDirection:"column", padding:"5%", alignItems:"center" }}>
+                <Box sx={{ width:{xs:"90%",sm:"65%"}, display:"flex", flexDirection:"column", padding:"5%", alignItems:"center" }}>
+                    {getMobileStepperButtons(activeStep)}
                     {
                     activeStep === 0 ? (
                         <>
@@ -435,6 +476,7 @@ export const SimpleProductForm = ({editing, product}) => {
                         editing={editing}
                         product={product}
                         error={error}
+                        sx={theme.input.mobile.halfSize.desktop.halfSize}
                         />
                         <TextField defaultValue={editing ? product.parameters.status : undefined} value={productData.status} helperText={error.harvest.message} error={error.harvest.failed} id="status" type="text" onChange={handleChangeProductData} label="Status" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
                         </>

@@ -1,6 +1,7 @@
 import { Autocomplete, Box, TextField } from '@mui/material'
 import React from 'react'
 import { useEffect, useState } from 'react'
+import { BV_THEME } from '../../../../theme/BV-theme'
 
 export const ProductsPrice = ({productData, handleChangeProductData,setSelectedPackage,selectedPackage, editing, error}) => {
     const [value, setValue] = useState(undefined)
@@ -25,10 +26,10 @@ export const ProductsPrice = ({productData, handleChangeProductData,setSelectedP
     // }, [productData.price])
 
   return (
-    <Box sx={{display:"flex"}}>
-        <TextField disabled={!selectedPackage} value={getPriceValue()} defaultValue={editing ? getDefaultPrice(productData.price).amount : undefined} helperText={error.price.message} error={error.price.failed} id="price" onChange={handleChangeProductData} label="Price" sx={{width:"30%"}}/>
+    <Box sx={{display:"flex", width:"100%"}}>
+        <TextField disabled={!selectedPackage} value={getPriceValue()} defaultValue={editing ? getDefaultPrice(productData.price).amount : undefined} helperText={error.price.message} error={error.price.failed} id="price" onChange={handleChangeProductData} label="Price" sx={BV_THEME.input.mobile.halfSize.desktop.halfSize}/>
         <Autocomplete
-            sx={{width:"70%"}}
+            sx={BV_THEME.input.mobile.halfSize.desktop.halfSize}
             options={productData.price}
             renderInput={(params) => {
                 return <TextField {...params} label="Package size (grs)"/>
