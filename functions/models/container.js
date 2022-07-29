@@ -1,43 +1,42 @@
-import mongoose from 'mongoose';
-const { Schema } = mongoose;
+import mongoose from 'mongoose'
+import Production from './production.js'
+import Address from './address.js'
+import Product from './product.js'
+
+const { Schema } = mongoose
 const { ObjectId } = mongoose.Types
 
+
 const Container = new Schema({
-    name:           String,
-    admin:          ObjectId,
-    organization:   ObjectId,
-    capacity:       Number, // * Measured in trays
-    employees:      [ObjectId],
-    prodLines:      [ObjectId],
-    address: {
-        stNumber:   String,
-        street:     String,
-        zip:        String,
-        city:       String,
-        state:      String,
-        country:    String,
-        references: String
-    },
-    products: [{
-        _id:    ObjectId,
-        trays:  Number
-    }],
-    location: {
-        latitude:   Number,
-        longitude:  Number
-    },
-},
+    name:           { type: String,         required: true, unique: true },
+    capacity:       { type: Number,         required: true               }, // * Measured in trays
+    available:      { type: Number,         required: true               }, // * Also in trays
+    employees:      { type: [ObjectId],     required: true               },
+    production:     { type: [Production],   required: true               },
+    products:       { type: [Product],      required: true,              },
+    address:        { type: Address,        required: false              }
+},    
 {
+    timestamps: {
+        createdAt: "created",
+        updatedAt: "updated"
+    },
     query: {
         byName(name) {
-            return this.where({ name: new RegExp(name, "i")})
+            return this.where({ name: new RegExp(name, "i") })
         },
         byAdmin(admin) {
             return this.where({ admin: admin })
         },
         byOrganization(orgId) {
             return this.where({ organization: orgId })
-        }
+        },
+        byCapacity(capacity) {
+            return this.where({ capacity: { $gte: capacity } })
+        },
+        byAvailabilty(need) {
+            return this.where({ available: { $gte: need } })
+        },
     }
 })
 

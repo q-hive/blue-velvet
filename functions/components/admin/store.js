@@ -1,6 +1,6 @@
 import { mongoose } from '../../mongo.js'
 import adminAuth from '../../firebaseAdmin.js'
-import User from '../../models/user.js'
+import User from '../../models/employee.js'
 import { hashPassphrase, genPassphrase } from './helper.js'
 import { newContainer, getContainers, updateContainers } from '../container/store.js'
 import { newOrganization, updateOrganization } from '../organization/store.js'
@@ -40,7 +40,7 @@ export function newEmployee(data) {
                         lname:          data.lname,
                         role:           "employee",
                         containers:     containerIds,
-                        customers:      data.customers,
+                        clients:        data.clients,
                         admin:          admin,
                         organization:   data.organization,
                         address:        data.address,
@@ -102,7 +102,7 @@ export function newAdminAccount(data) {
                 newOrganization(data.organization)
                 .then(org => {
                     // * Save user on MongoDB
-                    let hashedPassphrase = hashPassphrase(data.passphrase != undefined ? data.passphrase : genPassphrase(3))
+                    let hashedPassphrase = hashPassphrase(data.passphrase !== undefined ? data.passphrase : genPassphrase(3))
                     let userModel = new mongoose.model('users', User)
                     
                     let userData = {
@@ -111,12 +111,9 @@ export function newAdminAccount(data) {
                         name:           data.name,
                         lname:          data.lname,
                         role:           "admin",
-                        passphrase:     hashedPassphrase,
                         organization:   org._id,
                         image:          data.image,
                         phone:          data.phone,
-                        containers:     [],
-                        customers:      [],
                         address:        data.address
                     }
     
@@ -127,7 +124,7 @@ export function newAdminAccount(data) {
                         console.log("error", e)
                         // * Update the admin field in organization
                         updateOrganization(org._id, {
-                            $set: { admin: user._id }
+                            $set: { owner: user._id }
                         })
                         .then(upOrg => {
                             // * Register all containers with correct admin

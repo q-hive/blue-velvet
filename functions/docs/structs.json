@@ -1,0 +1,36 @@
+{
+    "ADDRESS_STRUCTURE": {
+        "stNumber":   "String",
+        "street":     "String",
+        "zip":        "String",
+        "city":       "String",
+        "state":      "String",
+        "country":    "String",
+        "references": "String",
+        "coords":     "LOCATION_STRUCTURE"
+    },
+    "LOCATION_STRUCTURE": {
+        "latitude": "Number",
+        "longitude": "Number"
+    },
+    "PRODUCT_SCHEMA": {
+        "name":     "String",
+        "desc":     "String",
+        "price":    "Number",
+        "seedId":   "String",
+        "provider": "String",
+        "mix": {
+            "isMix": "Boolean",
+            "products": [{
+                "strain": "ObjectId",
+                "amount": "Number"
+            }]
+        },
+        "parameters": { 
+            "day":          "Number",
+            "night":        "Number",
+            "seedingRate":  "Number",
+            "harvestRate":  "Number"
+        }
+    }
+}

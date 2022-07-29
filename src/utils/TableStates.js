@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom"
 import { UserDialog } from "../CoreComponents/UserFeedback/Dialog"
 
 import { BV_THEME } from "../theme/BV-theme"
+import { Button, Typography } from "@mui/material"
 
 export const productsColumns = [
     {
@@ -56,7 +57,22 @@ export const productsColumns = [
         align:"center",
         headerName:"Prod. price",
         width:150,
-        flex:1
+        flex:1,
+        renderCell:(params) => {
+            console.log(params)
+            return (
+                <>
+                    {params.formattedValue.map((obj) => {
+                        return (
+                            <p>
+                                <Typography>Package Size: {obj.packageSize}</Typography> 
+                                <Typography>Price: {obj.amount}</Typography> 
+                            </p>    
+                        )
+                    })}
+                </>
+            )
+        }
     },
     {
         field:"seedingRate",
@@ -162,7 +178,8 @@ export const productsColumns = [
                             type:"privileged",
                             execute:() => {
                                 console.log("Redirect to the type of product screen with prefilled data")    
-                                navigate(`/${user.uid}/${user.role}/production/editProduct/?id=${params.id}`)
+                                // navigate(`/${user.uid}/${user.role}/production/editProduct/?id=${params.id}`)
+                                navigate(`/$123456/admin/production/editProduct/?id=${params.id}`)
                             }
                         },
                         {

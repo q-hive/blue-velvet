@@ -9,7 +9,7 @@ export const newOrganization = (orgData) => {
 
         let orgMapped = {
             name: orgData.name,
-            admin: orgData.admin,
+            owner: orgData.owner,
             employees: [],
             containers: [],
             address: orgData.address
@@ -30,11 +30,11 @@ export const newOrganization = (orgData) => {
 export const getOrganizations = (filters) => {
     
     // * Apply filters if requested
-    if (filters.name != undefined && filters.name != null) {
+    if (filters.name !== undefined && filters.name != null) {
         contModel = contModel.byName(filters.name)
     }
 
-    if (filters.admin != undefined && filters.admin != null) {
+    if (filters.admin !== undefined && filters.admin != null) {
         contModel = contModel.byAdmin(filters.admin)
     }
 

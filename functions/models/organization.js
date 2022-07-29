@@ -1,29 +1,30 @@
 import mongoose from 'mongoose';
+import Address from './address.js'
+import Container from './container.js'
+import Employee from './employee.js'
+import Provider from './provider.js'
+import Order from './order.js'
+
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
 const Organization = new Schema({ 
-    name: String,
-    admin: ObjectId,
-    employees: [ObjectId],
-    containers: [ObjectId],
-    address: {
-        stNumber:   String,
-        street:     String,
-        zip:        String,
-        city:       String,
-        state:      String,
-        country:    String,
-        references: String
-    },
+    name:       { type: String,      required: true, unique: true  },
+    owner:      { type: ObjectId,    required: true, unique: true  },
+    employees:  { type: [Employee],  required: true                },
+    orders:     { type: [Order],     required: true, unique: true  },
+    containers: { type: [Container], required: true, unique: true  },
+    customers:  { type: [ObjectId],  required: true, unique: true  },
+    providers:  { type: [Provider],  required: true, unique: true  }, 
+    address:    { type: [Address],   required: true                }
 },
 {
     query: {
         byName(name) {
-            return this.where({name: new RegExp(name, 'i')})
+            return this.where({ name: new RegExp(name, 'i') })
         },
-        byAdmin(admin) {
-            return this.where({ admin: admin })
+        byOwner(owner) {
+            return this.where({ owner: owner })
         }
     }
 })

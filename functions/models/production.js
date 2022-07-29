@@ -1,25 +1,30 @@
-import mongoose from 'mongoose';
+import mongoose from 'mongoose'
+import Task from './task.js'
+
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
 const Production = new Schema({
-    start:          Date,
-    end:            Date,
-    updated:        Date,
-    surplus:        Number,
-    orders:         [ObjectId],
-    tasks:          [ObjectId],
-    activeTasks:    [ObjectId],
-    products: [
-        {
-            id:         ObjectId,
-            name:       String,
-            prodCost:   Number,
-            surplus:    Number, // * In tray numbers
-        }
-    ],
+    end:            { type: Date,       required: false },
+    orders:         { type: [ObjectId], required: true  },
+    tasks:          { type: [Task],     required: true  },
+    activeTasks:    { type: [ObjectId], required: true  },
+    products: {
+        type: [{
+            _id:        { type: ObjectId, required: true },
+            name:       { type: String,   required: true },
+            amount:     { type: Number,   required: true }, // * Measured in packages
+            surplus:    { type: Number,   required: true }, // * In tray numbers
+            seed:       { type: Number,   required: true },
+        }],
+        required: true
+    }
 },
 {
+    timestamps: {
+        createdAt: "start",
+        updatedAt: "updated"
+    },
     query: {
         
     }

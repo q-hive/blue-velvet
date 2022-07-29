@@ -1,28 +1,42 @@
-import {mongoose} from '../../mongo.js'
-import order from '../../models/order.js'
-import { ObjectId } from 'mongodb'
+import { mongoose } from '../../mongo.js'
+import Order from '../../models/order.js'
+import { getProductionForOrder } from '../production/store.js'
 
+const orderModel = mongoose.model('orders', Order)
 const ordersCollection = mongoose.connection.collection('orders')
 
-export const createNewOrder = (obj) => {
-    return new Promise((resolve, reject) => {
+export const createNewOrder = (order) => {
+    return new Promise(async (resolve, reject) => {
         // TODO: CHRIS ORDERS
-        obj._id = new ObjectId()
-        obj.customer = new ObjectId()
-        obj.admin = new ObjectId()
-        obj.date = new Date()
-        obj.containers = [new ObjectId()]
-        obj.production = [new ObjectId()]
 
-                
-        obj.products = [new ObjectId("62c798da7de115dbf70e600f")]
+        // * 1- Check for suitable production lines
+        // * 2- If production line is available to fulfill order, 
+        // *        assign order and perform updates
+        let prod = await getProductionForOrder(order.products, order.organization, {
+            started: new Date(),
+            
+        })
+        // * Save products on production
         
-        const orderModel = new mongoose.model('order', order)
+        let orderMapped = {
+            client: order.client,
+            admin: order.admin,
+            type: order.type,
+            packages: order.packages,
+            price: order.price,
+            containers: order.containers,
+            production: prod,
+            produts: order.products
+        }
         
-        const orderDoc = new orderModel(obj)
+        const orderDoc = new orderModel(orderMapped)
 
-        orderDoc.save((err) => {
+        orderDoc.save((err, ord) => {
             if(err) reject(err)
+
+            updateProduction(prod, {
+                $push: { orders: ord._id }
+            })
 
             resolve("New order saved")
         })

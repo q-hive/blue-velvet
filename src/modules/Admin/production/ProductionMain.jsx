@@ -148,6 +148,7 @@ export const ProductionMain = () => {
                 getRowId={(row) => {
                     return row._id
                 }}
+                getRowHeight={() => 'auto'}
                 sx={{marginY:"2vh", display:() => theme.mobile.hidden}}
                 />
 
@@ -158,9 +159,9 @@ export const ProductionMain = () => {
                     return row._id
                 }}
                 onStateChange={(s,e,d) => {
-                    console.log(s)
-                    console.log(e)
-                    console.log(d)
+                    // console.log(s)
+                    // console.log(e)
+                    // console.log(d)
                 }}
                 
                 sx={{marginY:"2vh", display:() => theme.mobile.only}}

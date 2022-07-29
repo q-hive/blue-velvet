@@ -4,14 +4,343 @@
             "admin": {},
             "employee": {},
             "container": {},
-            "production": {}
+            "production": {},
+            "order": {
+                "add": {
+                    "endpoint": "api/v1/order/new",
+                    "method": "POST",
+                    "desc": "Route for creating new order",
+                    "payload": {
+                        "client": "ObjectId",
+                        "admin":    "ObjectId",
+                        "type":     "ObjectId",
+                        "packages": "ObjectId",
+                        "price":    "ObjectId",
+                        "products": [{
+                            "_id":      "ObjectId",
+                            "trays":    "Number",
+                            "seedId":   "String",
+                            "batch":    "String"
+                        }]
+                    },
+                    "response": {
+                        "success": {
+                            "case": "Successfully registered new product",
+                            "code": 201,
+                            "msg":  "Created",
+                            "payload": {
+                                "_id": "ObjectId"
+                            }
+                        },
+                        "fail": {
+                            "case": "Wrong product data",
+                            "code": 400,
+                            "msg":  "Bad Request",
+                            "payload": {
+                                "error":    "Object",
+                                "message":  "String",
+                                "date":     "Date"
+                            }
+                        }
+                    }
+                },
+                "getById": {
+                    "endpoint": "api/v1/product/:id",
+                    "method": "GET",
+                    "desc": "Route to search specific product by id",
+                    "payload": {},
+                    "response": {
+                        "success": {
+                            "case": "Successfully found product",
+                            "code": 200,
+                            "msg":  "OK",
+                            "payload": "PRODUCT_SCHEMA"
+                        },
+                        "fail": {
+                            "case": "Wrong product data",
+                            "code": 204,
+                            "msg":  "No Content",
+                            "payload": {
+                                "error":    "Object",
+                                "message":  "String",
+                                "date":     "Date"
+                            }
+                        }
+                    }
+                },
+                "getAll": {
+                    "endpoint": "api/v1/product/",
+                    "method": "GET",
+                    "desc": "Route to search for all products or filtered in payload",
+                    "payload": {
+                        "ids": "[ObjectId]",
+                        "name": "String",
+                        "seedId": "String",
+                        "provider": "String",
+                        "isMix": "Boolean"  
+                    },
+                    "response": {
+                        "success": {
+                            "case": "Successfully found product",
+                            "code": 200,
+                            "msg":  "OK",
+                            "payload": ["PRODUCT_SCHEMA"]
+                        },
+                        "fail": {
+                            "case": "Wrong product data",
+                            "code": 204,
+                            "msg":  "No Content",
+                            "payload": {
+                                "error":    "Object",
+                                "message":  "String",
+                                "date":     "Date"
+                            }
+                        }
+                    }
+                },
+                "updateById": {
+                    "endpoint": "api/v1/product/:id",
+                    "method": "PUT",
+                    "desc": "Route for updating existing product",
+                    "payload": "PRODUCT_SCHEMA",
+                    "response": {
+                        "success": {
+                            "case": "Successfully updated product",
+                            "code": 201,
+                            "msg":  "Created",
+                            "payload": {
+                                "_id": "ObjectId"
+                            }
+                        },
+                        "fail": [{
+                            "case": "Wrong product data",
+                            "code": 400,
+                            "msg":  "Bad Request",
+                            "payload": {
+                                "error":    "Object",
+                                "message":  "String",
+                                "date":     "Date"
+                            }
+                        }]
+                    }
+                },
+                "updateMany": {
+                    "endpoint": "api/v1/product/",
+                    "method":   "PUT",
+                    "desc":     "Route for updating existing multiple products",
+                    "payload": {
+                        "filter": {
+                            "name":     "String",
+                            "seedId":   "String",
+                            "provider": "String",
+                            "isMix":    "boolean",
+                            "price": {
+                                "value":        "Number",
+                                "comparator":   "String"
+                            }
+                        },
+                        "data": "PRODUCT_SCHEMA"
+                    },
+                    "response": {
+                        "success": {
+                            "case": "Successfully updated product",
+                            "code": 201,
+                            "msg":  "Created",
+                            "payload": {
+                                "ids": "[ObjectId]"
+                            }
+                        },
+                        "fail": [{
+                            "case": "Wrong product data",
+                            "code": 400,
+                            "msg":  "Bad Request",
+                            "payload": {
+                                "error":    "Object",
+                                "message":  "String",
+                                "date":     "Date"
+                            }
+                        }]
+                    }
+                }
+            },
+            "product": {
+                "add": {
+                    "endpoint": "api/v1/product/new",
+                    "method": "POST",
+                    "desc": "Route for creating new product",
+                    "payload": {
+                        "name":     "String",
+                        "image":    "String",
+                        "desc":     "String",
+                        "price":    "Number",
+                        "seedId":   "String",
+                        "provider": "String",
+                        "mix": {
+                            "isMix": "Boolean",
+                            "products": [{
+                                "strain": "ObjectId",
+                                "amount": "Number"
+                            }]
+                        },
+                        "parameters": { 
+                            "day":          "Number",
+                            "night":        "Number",
+                            "seedingRate":  "Number",
+                            "harvestRate":  "Number"
+                        }
+                    },
+                    "response": {
+                        "success": {
+                            "case": "Successfully registered new product",
+                            "code": 201,
+                            "msg":  "Created",
+                            "payload": {
+                                "_id": "ObjectId"
+                            }
+                        },
+                        "fail": {
+                            "case": "Wrong product data",
+                            "code": 400,
+                            "msg":  "Bad Request",
+                            "payload": {
+                                "error":    "Object",
+                                "message":  "String",
+                                "date":     "Date"
+                            }
+                        }
+                    }
+                },
+                "getById": {
+                    "endpoint": "api/v1/product/:id",
+                    "method": "GET",
+                    "desc": "Route to search specific product by id",
+                    "payload": {},
+                    "response": {
+                        "success": {
+                            "case": "Successfully found product",
+                            "code": 200,
+                            "msg":  "OK",
+                            "payload": "PRODUCT_SCHEMA"
+                        },
+                        "fail": {
+                            "case": "Wrong product data",
+                            "code": 204,
+                            "msg":  "No Content",
+                            "payload": {
+                                "error":    "Object",
+                                "message":  "String",
+                                "date":     "Date"
+                            }
+                        }
+                    }
+                },
+                "getAll": {
+                    "endpoint": "api/v1/product/",
+                    "method": "GET",
+                    "desc": "Route to search for all products or filtered in payload",
+                    "payload": {
+                        "ids": "[ObjectId]",
+                        "name": "String",
+                        "seedId": "String",
+                        "provider": "String",
+                        "isMix": "Boolean"  
+                    },
+                    "response": {
+                        "success": {
+                            "case": "Successfully found product",
+                            "code": 200,
+                            "msg":  "OK",
+                            "payload": ["PRODUCT_SCHEMA"]
+                        },
+                        "fail": {
+                            "case": "Wrong product data",
+                            "code": 204,
+                            "msg":  "No Content",
+                            "payload": {
+                                "error":    "Object",
+                                "message":  "String",
+                                "date":     "Date"
+                            }
+                        }
+                    }
+                },
+                "updateById": {
+                    "endpoint": "api/v1/product/:id",
+                    "method": "PUT",
+                    "desc": "Route for updating existing product",
+                    "payload": "PRODUCT_SCHEMA",
+                    "response": {
+                        "success": {
+                            "case": "Successfully updated product",
+                            "code": 201,
+                            "msg":  "Created",
+                            "payload": {
+                                "_id": "ObjectId"
+                            }
+                        },
+                        "fail": [{
+                            "case": "Wrong product data",
+                            "code": 400,
+                            "msg":  "Bad Request",
+                            "payload": {
+                                "error":    "Object",
+                                "message":  "String",
+                                "date":     "Date"
+                            }
+                        }]
+                    }
+                },
+                "updateMany": {
+                    "endpoint": "api/v1/product/",
+                    "method":   "PUT",
+                    "desc":     "Route for updating existing multiple products",
+                    "payload": {
+                        "filter": {
+                            "name":     "String",
+                            "seedId":   "String",
+                            "provider": "String",
+                            "isMix":    "boolean",
+                            "price": {
+                                "value":        "Number",
+                                "comparator":   "String"
+                            }
+                        },
+                        "data": "PRODUCT_SCHEMA"
+                    },
+                    "response": {
+                        "success": {
+                            "case": "Successfully updated product",
+                            "code": 201,
+                            "msg":  "Created",
+                            "payload": {
+                                "ids": "[ObjectId]"
+                            }
+                        },
+                        "fail": [{
+                            "case": "Wrong product data",
+                            "code": 400,
+                            "msg":  "Bad Request",
+                            "payload": {
+                                "error":    "Object",
+                                "message":  "String",
+                                "date":     "Date"
+                            }
+                        }]
+                    }
+                }
+            },
+            "taskDetail": {},
+            "passphrase": {},
+            "organization": {},
+            "client": {}
 
         }
     },
     "auth": {
         "login": {
-            "desc": "Ruta de login para cuentas  no admin",
-            "method": "POST",
+            "endpoint": "auth/login",
+            "method":   "POST",
+            "desc":     "Login route for employee accounts",
             "payload": {
                 "email":    "String",
                 "password": "String"
@@ -19,94 +348,81 @@
             "response": {
                 "success": [
                     {
-                        "code":     200,
-                        "method":   "Authentication success",
+                        "case": "Employee user successfully logged",
+                        "code": 200,
+                        "msg":  "OK",
                         "payload": {
-                            "isAdmin": false,
-                            "token": "String",                                                                                                      
+                            "isAdmin":  false,
+                            "token":    "String",                                                                                                      
                             "user": {
-                                "_id":       "String",
-                                "name":     "String",
+                                "_id":      "ObjectId",
+                                "uid":      "String",
                                 "email":    "String",
+                                "name":     "String",
+                                "lname":    "String",
                                 "image":    "String",
-                                "role":     "String"
+                                "role":     "String",
+                                "phone":    "String"
                             }
                         }
                     },
                     {
-                        "code":     200,
-                        "method":   "Admin passphrase required",
+                        "case": "Admin user successfully logged credentials, but request to front for passphrase",
+                        "code": 200,
+                        "msg":  "OK",
                         "payload": {
                             "isAdmin": true
                         }
                     }
                 ], 
-                "fail": [
-                    {
-                        "code":     401,
-                        "method":   "Unauthorized",
-                        "payload": {
-                            "error":    "Object",
-                            "message":  "String",
-                            "date":     "Date"
-                        }
-                    },
-                    {
-                        "code":     403,
-                        "method":   "Forbidden",
-                        "payload": {
-                            "error":    "Object",
-                            "message":  "String",
-                            "date":     "Date"
-                        }
+                "fail": {
+                    "case": "Wrong credentials",
+                    "code": 401,
+                    "msg":  "Unauthorized",
+                    "payload": {
+                        "error":    "Object",
+                        "message":  "String",
+                        "date":     "Date"
                     }
-                ]
+                }
             }
         },
         "login/admin": {
-            "desc": "Ruta de login para cuentas admin",
-            "method": "POST",
+            "endpoint": "auth/login/admin",
+            "method":   "POST",
+            "desc":     "Login route for admin accounts",
             "payload": {
                 "email":        "String",
                 "password":     "String",
                 "passphrase":   "String"
             },
             "response": {
-                "success": [
-                    {
-                        "code":     200,
-                        "method":   "Authentication success",
-                        "payload": {
-                            "token": "String",                                                                                                      
-                            "user": {
-                                "_id":          "ObjectId",
-                                "uid":          "String",
-                                "name":         "String",
-                                "lname":        "String",
-                                "email":        "String",
-                                "photo":        "String",
-                                "role":         "String",
-                                "organization": "ObjectId",
-                                "image":        "String",
-                                "phone":        "String",
-                                "containers":   "[ObjectId]",
-                                "customers":    "[ObjectId]",
-                                "address": "ADDRESS.ARCHITECTURE"
-                            }
-                        }
-                    },
-                    {
-                        "code":     200,
-                        "method":   "Admin passphrase required",
-                        "payload": {
-                            "isAdmin": true
+                "success": {
+                    "case": "Admin user successfully logged credentials and passphrase",
+                    "code": 200,
+                    "msg":  "OK",
+                    "payload": {
+                        "token": "String",                                                                                                      
+                        "user": {
+                            "_id":          "ObjectId",
+                            "uid":          "String",
+                            "name":         "String",
+                            "lname":        "String",
+                            "email":        "String",
+                            "photo":        "String",
+                            "role":         "String",
+                            "organization": "ObjectId",
+                            "image":        "String",
+                            "phone":        "String",
+                            "containers":   "[ObjectId]"
                         }
                     }
-                ], 
+                }, 
                 "fail": [
                     {
-                        "code":     401,
-                        "method":   "Unauthorized",
+                        "case": "Wrong passphrase",
+                        "code": 401,
+                        "msg":  "Unauthorized",
                         "payload": {
                             "error":    "Object",
                             "message":  "String",
@@ -114,8 +430,9 @@
                         }
                     },
                     {
-                        "code":     403,
-                        "method":   "Forbidden",
+                        "case": "Unauthorized user with role: {role}",
+                        "code": 403,
+                        "msg":  "Forbidden",
                         "payload": {
                             "error":    "Object",
                             "message":  "String",
@@ -126,56 +443,77 @@
             }
         },
         "logout": {
-
+            "endpoint": "auth/logout",
+            "method": "POST",
+            "desc": "Login route for employee accounts",
+            "payload": {},
+            "response": {
+                "success": {
+                    "case": "Successfully logged out account",
+                    "code": 200,
+                    "msg":  "OK",
+                    "payload": {}
+                },
+                "fail": {
+                    "case": "Unexisted logged account",
+                    "code": 400,
+                    "msg":  "Bad request",
+                    "payload": {
+                        "message": "Unable to find logged account"
+                    }
+                }
+            }
         },
         "refresh": {
-
+            "endpoint": "auth/refresh",
+            "method":   "POST",
+            "desc":     "Refresh route to renew token",
+            "payload": {
+                "token": "String"
+            },
+            "response": {
+                "success": {
+                    "case": "Token successfully refreshed",
+                    "cdoe": 200,
+                    "msg":  "OK",
+                    "payload": {
+                        "token": "String"
+                    }
+                },
+                "fail": {
+                    "case": "Invalid token",
+                    "cdoe": 401,
+                    "msg":  "Unauthorized",
+                    "payload": {
+                        "error": "String"
+                    }
+                }
+            }
         },
         "create": {
             "admin": {
-                "desc":     "Admin account generation for given organization and containers",
+                "endpoint": "auth/create/admin",
                 "method":   "POST",
+                "desc":     "Admin account generation for given organization and containers",
                 "payload": {
-                    "email":        "String",
-                    "password":     "String",
-                    "passphrase":   "String",
-                    "name":         "String",
-                    "lname":        "String",
+                    "admin": {
+                        "email":        "String",
+                        "password":     "String",
+                        "passphrase":   "String",
+                        "name":         "String",
+                        "lname":        "String",
+                        "phone":        "String",
+                        "image":        "String",
+                        "address":      "ADDRESS_STRUCTURE"
+                    },
                     "organization": {
                         "name": "String",
-                        "address": {
-                            "stNumber":   "String",
-                            "street":     "String",
-                            "zip":        "String",
-                            "city":       "String",
-                            "state":      "String",
-                            "country":    "String",
-                            "references": "String"
-                        }
+                        "address": "ADDRESS_STRUCTURE"
                     },
-                    "phone":        "String",
-                    "image":        "String",
                     "containers":    [{
-                        "name": "String",
-                        "capacitry": "Number",
-                        "employees": [],
-                        "address": {
-                            "stNumber":   "String",
-                            "street":     "String",
-                            "zip":        "String",
-                            "city":       "String",
-                            "state":      "String",
-                            "country":    "String",
-                            "references": "String"
-                        },
-                        "products": [{
-                            "id": "ObjectId",
-                            "trays": "Number"
-                        }],
-                        "location": {
-                            "latitude": "Number",
-                            "longitude": "Number"
-                        }
+                        "name":         "String",
+                        "capacitry":    "Number",
+                        "address":      "ADDRESS_STRUCTURE"
                     }]
                 },
                 "response": {
@@ -183,19 +521,39 @@
                         "code":     201,
                         "method":   "Admin user creation success",
                         "payload": {
-                            "token":        "String",
-                            "passphrase":   "String",                                                                                                      
+                            "token":        "String",                                                                                                    
                             "user": {
-                                "id":       "String",
-                                "name":     "String",
-                                "email":    "String",
-                                "image":    "String",
-                                "role":     "String"
-                            }
+                                "_id":       "ObjectId",
+                                "uid":       "String",
+                                "name":      "String",
+                                "email":     "String",
+                                "image":     "String",
+                                "role":      "String"
+                            },
+                            "organization": {
+                                "_id":  "ObjectId",
+                                "name": "String"
+                            },
+                            "containers": [{
+                                "_id":          "ObjectId",
+                                "name":         "String",
+                                "capacitry":    "Number"
+                            }]
                         }
                     }, 
                     "fail": [
                         {
+                            "case":     "Wrongly formatted payload",
+                            "code":     400,
+                            "method":   "Bad Request",
+                            "payload": {
+                                "error":    "Object",
+                                "message":  "String",
+                                "date":     "Date"
+                            }
+                        },
+                        {
+                            "case":     "No account was found",
                             "code":     401,
                             "method":   "Unauthorized",
                             "payload": {
@@ -205,6 +563,7 @@
                             }
                         },
                         {
+                            "case":     "Account role invalid",
                             "code":     403,
                             "method":   "Forbidden",
                             "payload": {
@@ -217,7 +576,7 @@
                 }  
             },
             "employee": {
-                "desc":     "Employee account generation for given organization",
+                "endpoint": "auth/create/employee",
                 "method":   "POST",
                 "payload": {
                     "email":        "String",
@@ -225,27 +584,18 @@
                     "name":         "String",
                     "lname":        "String",
                     "organization": "ObjectId",
-                    "containers":    "[ObjectId]",
+                    "containers":   "[ObjectId]",
                     "phone":        "String",
                     "image":        "String",
                     "salary":       "Number",
-                    "address": {
-                        "stNumber":   "String",
-                        "street":     "String",
-                        "zip":        "String",
-                        "city":       "String",
-                        "state":      "String",
-                        "country":    "String",
-                        "references": "String"
-                    }
+                    "address":      "ADDRESS_STRUCTURE"
                 },
                 "response": {
                     "success": {
                         "code":     201,
-                        "method":   "Admin user creation success",
+                        "method":   "Employee user creation success",
                         "payload": {
-                            "token":        "String",
-                            "passphrase":   "String",                                                                                                      
+                            "token":        "String",                                                                                                     
                             "user": {
                                 "id":       "String",
                                 "name":     "String",
@@ -257,6 +607,17 @@
                     }, 
                     "fail": [
                         {
+                            "case":     "Wrongly formatted payload",
+                            "code":     400,
+                            "method":   "Bad Request",
+                            "payload": {
+                                "error":    "Object",
+                                "message":  "String",
+                                "date":     "Date"
+                            }
+                        },
+                        {
+                            "case":     "No account was found",
                             "code":     401,
                             "method":   "Unauthorized",
                             "payload": {
@@ -266,6 +627,7 @@
                             }
                         },
                         {
+                            "case":     "Account role invalid",
                             "code":     403,
                             "method":   "Forbidden",
                             "payload": {
