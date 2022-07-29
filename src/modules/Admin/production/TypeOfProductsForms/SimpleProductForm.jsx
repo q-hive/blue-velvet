@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom'
 import { useEffect } from 'react';
 import useAuth from '../../../../contextHooks/useAuthContext.js';
 import { ProductsPrice } from '../components/ProductsPrice.jsx';
+import { ProductsTime } from '../components/ProductsTime.jsx';
 //Stepper
 // import VerticalLinearStepper from './StepperTest.jsx';
 
@@ -31,18 +32,19 @@ export const SimpleProductForm = ({editing, product}) => {
     const [productData, setProductData] = useState({
         name:editing ? product.name : "",
         label:editing ? product.img : "",
-        price:editing ? product.price : [{amount:null,packageSize:25}, {amount:null,packageSize:80}, {amount:null,packageSize:1000},],
+        price:editing ? product.price : [{amount:undefined,packageSize:25}, {amount:undefined,packageSize:80}, {amount:undefined,packageSize:1000}],
         seedId:editing ? product.seedId : "",
         provider:editing ? product.provider : "",
-        day:editing ? product.parameters.day : null,
-        night:editing ? product.parameters.night : null,
-        seeding:editing ? product.parameters.seedingRate : null,
-        harvest:editing ? product.parameters.harvestRate : null,
+        providerSeedName:editing ? product.provider : "",
+        day:editing ? product.parameters.day : "",
+        night:editing ? product.parameters.night : "",
+        cycleType: "",
+        seeding:editing ? product.parameters.seedingRate : "",
+        harvest:editing ? product.parameters.harvestRate : "",
         status:editing ? product.status : ""
     })
 
     //*Render states
-    // const [stepBtnLabel, setStepBtnLabel] = useState("Accept")
     const [showTimes, setShowTimes] = useState(false)
     const [dialog, setDialog] = useState({
         open:false,
@@ -50,7 +52,7 @@ export const SimpleProductForm = ({editing, product}) => {
         message:"",
         actions:[]
     })
-    const [selectedPackage, setSelectedPackage] = useState(null) 
+    const [selectedPackage, setSelectedPackage] = useState({amount:null,packageSize:25}) 
     const [activeStep, setActiveStep] = useState(0)
 
     //*TODO REFACTOR ERROR STATES IN ORDER TO BE MORE EFFICIENT WITH MEMORY
@@ -131,164 +133,103 @@ export const SimpleProductForm = ({editing, product}) => {
             [e.target.id]:e.target.value
         })
     }
-
+    
     const handleChangeLabel = (e) => {
         setProductData({
             ...productData,
             label:e.target.files[0]
         })
     }
-
-    const handleComplete = () => {
+    
+    const mapErrors = () => {
         const errors = []
         Object.entries(productData).forEach((val, index) => {
-            if((val[1] === "" || val[1] === (null || undefined)) && val[0] !== "label"){
-                // if((val[0] === "day" || val[0] === "night" || val[0] === "status") && !showTimes) {
-                //     console.log("Parameters should not be inserted into array because the component is not displayed")
-                //     return
-                // }
+            console.log(val)
+            console.log((val[1] === "" || val[1] === null || val[1] === undefined))
+            if((val[1] === "" || val[1] === null || val[1] === undefined) && val[0] !== "label"){
                 errors.push(val)
             }
         })
-
-        if(errors.length > 0 ){
-            let errorMapped
-            errors.forEach((err) => {
-                console.log(err)
-                errorMapped = {
-                    ...errorMapped,
-                    [err[0]]:{
-                        failed:true,
-                        message:"Please correct or fill this value."
-                    }
+        let errorMapped
+        errors.forEach((err) => {
+            errorMapped = {
+                ...errorMapped,
+                [err[0]]:{
+                    failed:true,
+                    message:"Please correct or fill this value."
                 }
-            })
+            }
+        })
+
+        return {errors, errorMapped}
+    }
+
+    const handleComplete = () => {
+        
+        const {errors, errorMapped} = mapErrors()
+        console.log(errors)
+        if(errors.length>0){
             setError({
                 ...error,
                 ...errorMapped
             })
+            setDialog({
+                ...dialog,
+                open:true,
+                title:"You cannot save an uncomplete product",
+                message:"Please complete the values marked.",
+            })
             return
         }
-        
-        // if(errors.length === 0 && !showTimes) {
-        //     setShowTimes(!showTimes)
-        //     setStepBtnLabel("Save product")
+
+        console.log(productData)
+        //     //*Request if is creating product
+        //     api.api.post(`${api.apiVersion}/products/`, mappedProduct)
+        //     .then(response => {
+        //         setDialog({
+        //             ...dialog,
+        //             open:true,
+        //             title:"Product created succesfully",
+        //             message:"What do you want to do?",
+        //             actions:[
+        //                 {
+        //                     label:"Create another",
+        //                     execute: () => {
+        //                         window.location.reload()
+        //                     }
+        //                 },
+        //                 {
+        //                     label:"Exit",
+        //                     execute: () => {
+        //                         navigate(`/${user.uid}/${user.role}/production`)
+        //                     }
+        //                 },
+        //             ]
+        //         })       
+        //     })
+        //     .catch(err => {
+        //         setDialog({
+        //             ...dialog,
+        //             open:true,
+        //             title:"Error adding product",
+        //             message:"What do you want to do?",
+        //             actions:[
+        //                 {
+        //                     label:"Try again",
+        //                     execute: () => {
+        //                         window.location.reload()
+        //                     }
+        //                 },
+        //                 {
+        //                     label:"Cancel",
+        //                     execute: () => {
+        //                         navigate(`/${user.uid}/${user.role}/production`)
+        //                     }
+        //                 },
+        //             ]   
+        //         })
+        //     })
         // }
-
-        if(errors.length === 0 && showTimes){
-            console.log("Time to save the product")
-            console.log(productData)
-            const mappedProduct = {
-                name:productData.name,
-                label:productData.label,
-                price:productData.price,
-                seedId:productData.seedId,
-                provider:productData.provider,
-                status:productData.status,
-                parameters: {
-                    day:Number(productData.day),
-                    night:Number(productData.night),
-                    seedingRate:Number(productData.seeding),
-                    harvestRate:Number(productData.harvest)
-                }
-            }
-            if(editing) {
-                api.api.patch(`${api.apiVersion}/products/?id=${product._id}`, {value:mappedProduct})
-                .then((response) => {
-                    setDialog({
-                        ...dialog,
-                        open:true,
-                        title:"Product updated succesfully",
-                        message:"What do you want to do?",
-                        actions:[
-                            {
-                                label:"Try another",
-                                execute: () => {
-                                    navigate(`/${user.uid}/${user.role}/production`)
-                                }
-                            },
-                            {
-                                label:"Finish",
-                                execute: () => {
-                                    navigate(`/${user.uid}/${user.role}/dashboard`)
-                                }
-                            },
-                        ]   
-                    })
-                })
-                .catch(err => {
-                    setDialog({
-                        ...dialog,
-                        open:true,
-                        title:"Error updating product status",
-                        message:"What do you want to do?",
-                        actions:[
-                            {
-                                label:"Try again",
-                                execute: () => {
-                                    window.location.reload()
-                                }
-                            },
-                            {
-                                label:"Cancel",
-                                execute: () => {
-                                    navigate(`/${user.uid}/${user.role}/production`)
-                                }
-                            },
-                        ]   
-                    })
-                })
-                
-                return
-            }
-
-            //*Request if is creating product
-            api.api.post(`${api.apiVersion}/products/`, mappedProduct)
-            .then(response => {
-                setDialog({
-                    ...dialog,
-                    open:true,
-                    title:"Product created succesfully",
-                    message:"What do you want to do?",
-                    actions:[
-                        {
-                            label:"Create another",
-                            execute: () => {
-                                window.location.reload()
-                            }
-                        },
-                        {
-                            label:"Exit",
-                            execute: () => {
-                                navigate(`/${user.uid}/${user.role}/production`)
-                            }
-                        },
-                    ]
-                })       
-            })
-            .catch(err => {
-                setDialog({
-                    ...dialog,
-                    open:true,
-                    title:"Error adding product",
-                    message:"What do you want to do?",
-                    actions:[
-                        {
-                            label:"Try again",
-                            execute: () => {
-                                window.location.reload()
-                            }
-                        },
-                        {
-                            label:"Cancel",
-                            execute: () => {
-                                navigate(`/${user.uid}/${user.role}/production`)
-                            }
-                        },
-                    ]   
-                })
-            })
-        }
     }
 
 
@@ -309,26 +250,8 @@ export const SimpleProductForm = ({editing, product}) => {
     ];
       
     const handleNext = () => {
-        const errors = []
-        Object.entries(productData).forEach((val, index) => {
-            console.log(val)
-            console.log((val[1] === "" || val[1] === null || val[1] === undefined))
-            if((val[1] === "" || val[1] === null || val[1] === undefined) && val[0] !== "label"){
-                errors.push(val)
-            }
-        })
+        const {errors, errorMapped} = mapErrors()
         if(errors.length > 0 ){
-            let errorMapped
-            errors.forEach((err) => {
-                errorMapped = {
-                    ...errorMapped,
-                    [err[0]]:{
-                        failed:true,
-                        message:"Please correct or fill this value."
-                    }
-                }
-            })
-            
             let failed
             switch(activeStep){
                 case 0:
@@ -365,6 +288,8 @@ export const SimpleProductForm = ({editing, product}) => {
                     break;
             }
         }
+
+        setActiveStep((prev) => prev + 1)
         
     };
     
@@ -376,7 +301,7 @@ export const SimpleProductForm = ({editing, product}) => {
         setActiveStep(0);
     };
     const isLastStep = (index) => {
-        if(index == steps.length - 1){return true}else{return false}
+        return index == steps.length - 1
 
     };
 
@@ -456,7 +381,7 @@ export const SimpleProductForm = ({editing, product}) => {
                     {
                     activeStep === 0 ? (
                         <>
-                        <TextField defaultValue={editing ? product.name : undefined} helperText={error.name.message} error={error.name.failed} id="name" onChange={handleChangeProductData} label="Product name" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
+                        <TextField defaultValue={editing ? product.name : undefined} value={productData.name} helperText={error.name.message} error={error.name.failed} id="name" onChange={handleChangeProductData} label="Product name" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
                         <Fab color="primary" component="label" id="label" aria-label="add" sx={{marginY:"4%"}} size="large" helpertext="Label">
                             <input  type="file" accept="image/*" onChange={handleChangeLabel} hidden />
                             <CameraIcon />
@@ -467,10 +392,12 @@ export const SimpleProductForm = ({editing, product}) => {
                     {
                     activeStep === 1 ? (
                         <>
-                        <TextField defaultValue={editing ? product.parameters.seedingRate : undefined} helperText={error.seeding.message} error={error.seeding.failed} id="seeding" type="number" onChange={handleChangeProductData} label="Seeding" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
-                        <TextField defaultValue={editing ? product.parameters.harvestRate : undefined} helperText={error.harvest.message} error={error.harvest.failed} id="harvest" type="number" onChange={handleChangeProductData} label="Harvest" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
-                        <TextField defaultValue={editing ? product.parameters.harvestRate : undefined} helperText={error.harvest.message} error={error.harvest.failed} id="day" type="number" onChange={handleChangeProductData} label="Day" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
-                        <TextField defaultValue={editing ? product.parameters.harvestRate : undefined} helperText={error.harvest.message} error={error.harvest.failed} id="night" type="number" onChange={handleChangeProductData} label="Night" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
+                        <TextField defaultValue={editing ? product.parameters.seedingRate : undefined} value={productData.seeding} helperText={error.seeding.message} error={error.seeding.failed} id="seeding" type="number" onChange={handleChangeProductData} label="Seeding" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
+                        <TextField defaultValue={editing ? product.parameters.harvestRate : undefined} value={productData.harvest} helperText={error.harvest.message} error={error.harvest.failed} id="harvest" type="number" onChange={handleChangeProductData} label="Harvest" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
+                        {/* <TextField defaultValue={editing ? product.parameters.harvestRate : undefined} helperText={error.harvest.message} error={error.harvest.failed} id="day" type="number" onChange={handleChangeProductData} label="Day" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
+                        <TextField defaultValue={editing ? product.parameters.harvestRate : undefined} helperText={error.harvest.message} error={error.harvest.failed} id="night" type="number" onChange={handleChangeProductData} label="Night" sx={theme.input.mobile.fullSize.desktop.fullSize}/> */}
+                        <ProductsTime productData={productData} setProductData={setProductData}/>
+                        
                         <ProductsPrice
                         productData={productData} 
                         handleChangeProductData={handleChangeProductData}
@@ -480,16 +407,16 @@ export const SimpleProductForm = ({editing, product}) => {
                         product={product}
                         error={error}
                         />
-                        <TextField defaultValue={editing ? product.parameters.status : undefined} helperText={error.harvest.message} error={error.harvest.failed} id="status" type="text" onChange={handleChangeProductData} label="Status" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
+                        <TextField defaultValue={editing ? product.parameters.status : undefined} value={productData.status} helperText={error.harvest.message} error={error.harvest.failed} id="status" type="text" onChange={handleChangeProductData} label="Status" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
                         </>
                         ) : null
                     }
                     {
                     activeStep === 2 ? (
                         <>
-                        <TextField defaultValue={editing ? product.seedId : undefined} helperText={error.seedId.message} error={error.seedId.failed} id="seedId" onChange={handleChangeProductData} label="SeedID" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
-                        <TextField defaultValue={editing ? product.provider : undefined} helperText={error.provider.message} error={error.provider.failed} id="seedname" onChange={handleChangeProductData} label="Official product name" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
-                        <TextField defaultValue={editing ? product.provider : undefined} helperText={error.provider.message} error={error.provider.failed} id="provider" onChange={handleChangeProductData} label="Email / route" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
+                        <TextField defaultValue={editing ? product.seedId : undefined}  value={productData.seedId} helperText={error.seedId.message} error={error.seedId.failed} id="seedId" onChange={handleChangeProductData} label="SeedID" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
+                        <TextField defaultValue={editing ? product.provider : undefined} value={productData.providerSeedName} helperText={error.provider.message} error={error.provider.failed} id="providerSeedName" onChange={handleChangeProductData} label="Official product name" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
+                        <TextField defaultValue={editing ? product.provider : undefined} value={productData.provider}  helperText={error.provider.message} error={error.provider.failed} id="provider" onChange={handleChangeProductData} label="Email / route" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
                         </>
                         ) : null
                     }
