@@ -1,23 +1,53 @@
 import { ObjectId } from 'mongodb'
 import product from '../../models/product.js'
 import {mongoose} from '../../mongo.js'
+import { createProvider } from '../providers/store.js'
+import { createSeed } from '../seeds/store.js'
 
 const productsCollection = mongoose.connection.collection('products')
 
 export const insertNewProduct = (object) => {
-    return new Promise((res, rej) => {
-        const productModelInstance = new mongoose.model('Product', product)
+    return new Promise(async (res, rej) => {
+        let seed
+        let provider
+        const productModel = mongoose.model('Product', product)
+        const productDoc = new productModel(object)
     
-        object._id = new ObjectId()
-        
-        const productDoc = new productModelInstance(object)
-    
-        productDoc.save((err) => {
-            if(err){
-                rej(err)                
-            }
+        //*FIRST SEED NEEDS TO BE CREATED
+        const seedMapped = {
+            seedId:     object.seed.seedId,
+            seedName:   object.seed.seedName,
+            product:    productDoc._id
+        } 
 
-            res("New product created")
+        //*If is a new provider, then creates it
+        const providerMapped = {
+            email:  object.provider.email,
+            name:   object.provider.name,
+            seeds: []
+        }
+        try {
+            seed = await createSeed(seedMapped)
+
+            providerMapped.seeds.push(seed)
+
+            //*CREATE PROVIDER
+            provider = await createProvider(providerMapped)
+        }
+        catch(err){
+            rej(err)
+        }
+
+        console.log(productDoc)
+
+        productDoc.seed = seed._id
+        productDoc.provider = provider._id
+        
+        productDoc.save((err) => {
+            if(err) rej(err)                
+
+
+            res(productDoc)
         })
     })
     

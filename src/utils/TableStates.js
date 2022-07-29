@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom"
 import { UserDialog } from "../CoreComponents/UserFeedback/Dialog"
 
 import { BV_THEME } from "../theme/BV-theme"
+import { Button } from "@mui/material"
 
 export const productsColumns = [
     {

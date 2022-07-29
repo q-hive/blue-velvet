@@ -51,6 +51,9 @@ export const ProductsTime = ({productData, setProductData}) => {
             return o.type
         }}
         isOptionEqualToValue={(o,v) => {
+            if(v.type === "") {
+                return true
+            }
             return o.type === v.type
         }}
     />

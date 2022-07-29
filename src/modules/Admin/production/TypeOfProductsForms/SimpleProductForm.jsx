@@ -164,10 +164,57 @@ export const SimpleProductForm = ({editing, product}) => {
         return {errors, errorMapped}
     }
 
+    const saveProduct = (mappedProduct) => {
+        api.api.post(`${api.apiVersion}/products/`, mappedProduct)
+        .then(response => {
+            setDialog({
+                ...dialog,
+                open:true,
+                title:"Product created succesfully",
+                message:"What do you want to do?",
+                actions:[
+                    {
+                        label:"Create another",
+                        execute: () => {
+                            window.location.reload()
+                        }
+                    },
+                    {
+                        label:"Exit",
+                        execute: () => {
+                            navigate(`/${user.uid}/${user.role}/production`)
+                        }
+                    },
+                ]
+            })       
+        })
+        .catch(err => {
+            setDialog({
+                ...dialog,
+                open:true,
+                title:"Error adding product",
+                message:"What do you want to do?",
+                actions:[
+                    {
+                        label:"Try again",
+                        execute: () => {
+                            window.location.reload()
+                        }
+                    },
+                    {
+                        label:"Cancel",
+                        execute: () => {
+                            navigate(`/${user.uid}/${user.role}/production`)
+                        }
+                    },
+                ]   
+            })
+        })
+    }
+
     const handleComplete = () => {
         
         const {errors, errorMapped} = mapErrors()
-        console.log(errors)
         if(errors.length>0){
             setError({
                 ...error,
@@ -183,53 +230,33 @@ export const SimpleProductForm = ({editing, product}) => {
         }
 
         console.log(productData)
-        //     //*Request if is creating product
-        //     api.api.post(`${api.apiVersion}/products/`, mappedProduct)
-        //     .then(response => {
-        //         setDialog({
-        //             ...dialog,
-        //             open:true,
-        //             title:"Product created succesfully",
-        //             message:"What do you want to do?",
-        //             actions:[
-        //                 {
-        //                     label:"Create another",
-        //                     execute: () => {
-        //                         window.location.reload()
-        //                     }
-        //                 },
-        //                 {
-        //                     label:"Exit",
-        //                     execute: () => {
-        //                         navigate(`/${user.uid}/${user.role}/production`)
-        //                     }
-        //                 },
-        //             ]
-        //         })       
-        //     })
-        //     .catch(err => {
-        //         setDialog({
-        //             ...dialog,
-        //             open:true,
-        //             title:"Error adding product",
-        //             message:"What do you want to do?",
-        //             actions:[
-        //                 {
-        //                     label:"Try again",
-        //                     execute: () => {
-        //                         window.location.reload()
-        //                     }
-        //                 },
-        //                 {
-        //                     label:"Cancel",
-        //                     execute: () => {
-        //                         navigate(`/${user.uid}/${user.role}/production`)
-        //                     }
-        //                 },
-        //             ]   
-        //         })
-        //     })
-        // }
+        //*Request if is creating product
+        const mappedProduct = {
+            name:       productData.name,
+            // image:      { type: String,   required: false },     // *TODO MANAGE IMAGE PROCESSING
+            // desc:       { type: String,   required: false },     // * Description
+            status:     productData.status,
+            // * ID of quality of the seeds - track the seeds origin - metadata 
+            seed:       { 
+                        seedId:         productData.seedId, 
+                        seedName:       productData.providerSeedName
+            }, //* SEND THE SEED ID AND CREATE IT IN THE DATABASE 
+            provider:   { 
+                        email:          productData.provider, 
+                        name:           productData.provider
+            }, //* SEND THE PROVIDER DATA AND CREATE FIRST IN DB
+            price:      productData.price, 
+            mix:        { isMix:        false},
+            parameters: {
+                         day:            Number(productData.day),       // * In days check email
+                         night:          Number(productData.night),     // * In days check email
+                         seedingRate:    Number(productData.seeding),   // * Per tray
+                         harvestRate:    Number(productData.harvest)    // * Per tray
+            }
+        }
+
+        saveProduct(mappedProduct)
+            
     }
 
 
@@ -287,6 +314,8 @@ export const SimpleProductForm = ({editing, product}) => {
                 default:
                     break;
             }
+
+            return
         }
 
         setActiveStep((prev) => prev + 1)

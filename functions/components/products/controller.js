@@ -39,20 +39,30 @@ export const isValidProductObject = (json) => {
             }
         }
 
-        if(json.mix){
+        if(json.mix && json.mix.isMix === false){
+            productModel = {
+                "name":"", 
+                "price":"",
+                "mix":{
+                    "isMix":"",
+                }
+            }
+        } else if(json.mix && json.mix.isMix === true){
             productModel = {
                 "name":"", 
                 "price":"",
                 "mix":{
                     "isMix":"",
                     "name":"",
-                    "products":[],
+                    "products":[]
                 }
             }
         }
 
         return hasEveryKey(productModel, json)
 }
+
+
 
 export const relateOrdersAndTasks = async () => {
     //*ASK FOR PRODUCTS ARRAY

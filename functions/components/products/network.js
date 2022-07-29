@@ -1,4 +1,7 @@
 import express from 'express'
+import { ObjectId } from 'mongodb'
+import mongoose from 'mongoose'
+import Product from '../../models/product.js'
 import {error, success} from '../../network/response.js'
 import { hasQueryString } from '../../utils/hasQuery.js'
 
@@ -62,7 +65,6 @@ router.get('/:id', (req, res) => {
 
 router.post('/', (req, res) => {
     if(Array.isArray(req.body)){
-        
         insertManyProducts(req.body)
         .then(message => {
             success(req, res,201, message)
@@ -70,12 +72,11 @@ router.post('/', (req, res) => {
         .catch(err => {
             error(req, res, 500, "Error agregando productos a la base de datos", err)
         })
-        
         return
     }
     
     if(isValidProductObject(req.body)){
-        //*insert to db
+        //*CREATE PRODUCT
         insertNewProduct(req.body)
         //*promise message returned
         .then(pm => {
@@ -87,7 +88,7 @@ router.post('/', (req, res) => {
                     error(req, res,500, err.message, err)    
                     break;
                 case "ValidationError":
-                    error(req, res, 400, `The following values are invalid: ${Object.keys(err.errors)}`, err)
+                    error(req, res, 400, `${err._message} in the following keys: ${Object.keys(err.errors)}`, err)
                     break;
                 default:
                     error(req, res, 500, "Internal server error", err)
