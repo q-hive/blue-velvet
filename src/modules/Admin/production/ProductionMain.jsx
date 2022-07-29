@@ -148,6 +148,7 @@ export const ProductionMain = () => {
                 getRowId={(row) => {
                     return row._id
                 }}
+                getRowHeight={() => 'auto'}
                 sx={{marginY:"2vh", display:() => theme.mobile.hidden}}
                 />
 

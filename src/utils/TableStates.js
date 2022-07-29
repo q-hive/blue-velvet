@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom"
 import { UserDialog } from "../CoreComponents/UserFeedback/Dialog"
 
 import { BV_THEME } from "../theme/BV-theme"
-import { Button } from "@mui/material"
+import { Button, Typography } from "@mui/material"
 
 export const productsColumns = [
     {
@@ -57,7 +57,22 @@ export const productsColumns = [
         align:"center",
         headerName:"Prod. price",
         width:150,
-        flex:1
+        flex:1,
+        renderCell:(params) => {
+            console.log(params)
+            return (
+                <>
+                    {params.formattedValue.map((obj) => {
+                        return (
+                            <p>
+                                <Typography>Package Size: {obj.packageSize}</Typography> 
+                                <Typography>Price: {obj.amount}</Typography> 
+                            </p>    
+                        )
+                    })}
+                </>
+            )
+        }
     },
     {
         field:"seedingRate",
