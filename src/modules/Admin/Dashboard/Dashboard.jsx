@@ -14,9 +14,9 @@ import { useNavigate } from "react-router-dom";
 //Theme
 import { BV_THEME } from '../../../theme/BV-theme';
 //Appbar
-import BV_AppBar from './AppBar_Test';
+import BV_AppBar from '../../../CoreComponents/AppBar_Test';
 //Drawer
-import BV_Drawer from './Drawer_Test';
+import BV_Drawer from '../../../CoreComponents/Drawer_Test';
 
 export const Dashboard = () => {
     const {user} = useAuth()
@@ -31,10 +31,7 @@ export const Dashboard = () => {
     
   return (
     <>
-    <Box>
-        <BV_AppBar />
-        <Stack direction={"row"} justifyContent="center">
-    <BV_Drawer />
+    
     <Box sx={{display:"flex", flexDirection:"column", width:"100vw", height:"100vh", alignItems:"center", justifyContent:"center"}}>
     
 
@@ -53,8 +50,7 @@ export const Dashboard = () => {
         </Button>
     </Box>
     </Box>
-    </Stack>
-    </Box>
+    
     </>
   )
 }

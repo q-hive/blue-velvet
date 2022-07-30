@@ -486,7 +486,7 @@ export const MixProductsForm = () => {
 
     
   return (
-    <div style={{paddingLeft:"10vw", paddingRight:"10vw"}}>
+    <div style={{}}>
         <UserDialog
         dialog={dialog}
         setDialog={setDialog}

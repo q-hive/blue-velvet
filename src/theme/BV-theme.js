@@ -35,7 +35,8 @@ export const BV_THEME = createTheme({
         table:{borderRadius:"15px",backgroundColor:"#6B7FE7", fontSize:"10px"},
         dialog:{marginY:"1%",padding:"10px", minWidth:{xs:"50%",sm:"45%"}},
         standard:{marginY:"1%",marginX:"1%",padding:"10px", minWidth:{xs:"48%",sm:"45%"}},
-        dashboard:{marginY:"1%",padding:"10px", minWidth:{xs:"50%",sm:"20%"}}
+        dashboard:{marginY:"1%",padding:"10px", minWidth:{xs:"50%",sm:"20%"}},
+        sidebar:{width:"98%", marginY:"1%",marginX:"1%",paddingY:"10px",paddingX:"3%",justifyContent:"flex-start", color:"#757575"},
 
     },
 
