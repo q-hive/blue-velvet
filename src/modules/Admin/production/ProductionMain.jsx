@@ -99,7 +99,7 @@ export const ProductionMain = () => {
 
   return (
     <>
-        <Box>
+        <Box width="75%">
             <Container sx={{padding:"2%"}}>
             <Box sx={
                 

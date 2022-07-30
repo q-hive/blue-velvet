@@ -13,15 +13,15 @@ import { Divider, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItem
 import BV_Drawer from './Drawer_Test';
 
 //*ROUTER
-import { navigate } from '../../../utils/router'
+import { navigate } from '../utils/router'
 
 //*Contexts
-import useAuth from '../../../contextHooks/useAuthContext'
+import useAuth from '../contextHooks/useAuthContext'
 
 //*Routing
 import { useNavigate } from "react-router-dom";
 //Theme
-import { BV_THEME } from '../../../theme/BV-theme';
+import { BV_THEME } from '../theme/BV-theme';
 
 const pages = ['Products', 'Pricing', 'Blog'];
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];

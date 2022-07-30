@@ -1,9 +1,8 @@
 import { Stack } from '@mui/material'
-import { Box } from '@mui/system'
 import React from 'react'
 import useAuth from '../contextHooks/useAuthContext'
-import BV_AppBar from '../modules/Admin/Dashboard/AppBar_Test'
-import BV_Drawer from '../modules/Admin/Dashboard/Drawer_Test'
+import BV_AppBar from './AppBar_Test'
+import BV_Drawer from './Drawer_Test'
 
 export const PrivateRoutes = (props) => {
     const {user} = useAuth()
@@ -22,8 +21,9 @@ export const PrivateRoutes = (props) => {
   return (
     <>
     <BV_AppBar />
-    <BV_Drawer/>
-    {props.children}
-    </>
+    <Stack direction={"row"} spacing={1} justifyContent="center">
+      <BV_Drawer />
+      {props.children}
+    </Stack></>
   )
 }
