@@ -58,13 +58,13 @@ const BV_Drawer = (props) => {
         )
     }
 
-    const drawer = (
+    const DrawerComp = () => (
         <>
           <Toolbar sx={{backgroundColor: "#0E0C8F",}}>
-          <Typography variant="h6"  component="div" color="grey.A100" justifyContent="center" display="block" sx={{marginTop:"55%"}}>
-                Administrator Options
+            <Typography variant="h6"  component="div" color="grey.A100" justifyContent="center" display="block" sx={{marginTop:"55%"}}>
+                  Administrator Options
               </Typography>
-            </Toolbar>
+          </Toolbar>
           <Divider />
           <List>
             {['Employees', 'Production', 'Sales', 'Customer'].map((text, index) => (
@@ -114,7 +114,7 @@ const BV_Drawer = (props) => {
             
           }}
         >
-          {drawer}
+          <DrawerComp/>
         </Drawer>
         <Drawer
           variant="permanent"
@@ -124,7 +124,7 @@ const BV_Drawer = (props) => {
           }}
           open
         >
-          {drawer}
+          <DrawerComp/>
         </Drawer>
       </Box>
       </Box>

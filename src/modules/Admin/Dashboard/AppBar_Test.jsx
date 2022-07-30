@@ -26,7 +26,7 @@ import { BV_THEME } from '../../../theme/BV-theme';
 const pages = ['Products', 'Pricing', 'Blog'];
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
-const BV_AppBar = () => {
+export const BV_AppBar = () => {
     
 //appbar
     const [anchorElNav, setAnchorElNav] = React.useState(null);
