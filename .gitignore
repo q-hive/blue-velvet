@@ -3,6 +3,3 @@ sdk
 /functions/logs/access.log
 /functions/.env
 .env
-
-
-/build
