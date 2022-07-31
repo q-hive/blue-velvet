@@ -6,8 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start-client": "react-scripts start",
-    "start": "cd functions && npm start",
-    "build": "react-scripts build && (cd functions && npm install)"
+    "build": "react-scripts build && (cd functions && npm install)",
+    "start": "cd functions && npm start"
   },
   "keywords": [
     "frontend",
