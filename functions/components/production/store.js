@@ -1,8 +1,6 @@
-// import Production from '../../models/production'
-import Production from '../../models/production.js'
+import { Production } from '../../models/index.js'
 import { mongoose } from '../../mongo.js'
 import { dateToArray, nextDay } from '../../utils/time.js'
-import { getContainers } from "../container/store.js"
 
 
 const prodModel = mongoose.model('production', Production)

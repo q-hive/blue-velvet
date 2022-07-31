@@ -1,5 +1,5 @@
-import mongoose from 'mongoose'
-import Seed from './seed.js'
+import mongoose from '../mongo.js'
+import { Seed } from './index.js'
 
 const { Schema } = mongoose
 

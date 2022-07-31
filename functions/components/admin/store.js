@@ -1,85 +1,69 @@
 import { mongoose } from '../../mongo.js'
-import adminAuth from '../../firebaseAdmin.js'
-import User from '../../models/employee.js'
-import { hashPassphrase, genPassphrase } from './helper.js'
-import { newContainer, getContainers, updateContainers } from '../container/store.js'
-import { newOrganization, updateOrganization } from '../organization/store.js'
+import { ObjectId } from mongoose.Types
 
-var userModel = mongoose.model('users', User)
+import adminAuth    from '../../firebaseAdmin.js'
+
+import { Client, Passphrase } from '../../models/index.js'
+
+import { hashPassphrase, genPassphrase } from './helper.js'
+import { newOrganization, updateOrganization } from '../organization/store.js'
+import { newPassphrase } from '../passphrase/store.js'
+
 
 export function newEmployee(data) {
     return new Promise((resolve, reject) => {
         // * Create account on firebase
         adminAuth.createUser({
-            email: data.email,
-            emailVerified: false,
-            password: data.password,
-            displayName: data.name + " " + data.lname,
-            photoURL: data.image,
-            disabled: false,
+            email:          data.email,
+            emailVerified:  false,
+            password:       data.password,
+            displayName:    data.name + " " + data.lname,
+            photoURL:       data.image,
+            disabled:       false,
         })
-        .then((userRecord) => {
+        .then(userRecord => {
+            
             console.log('Successfully created new user on firebase:', userRecord.uid);
-            // * Update role to employee in custom claims
-            adminAuth.setCustomUserClaims(userRecord.uid, { role: "employee" })
-            .then(() => {
-                getContainers({ 
-                    organization:   data.organization
-                })
-                .then(containers => {
-                    let containerIds = containers.map(cont => cont._id)
-                    console.log(containers[0])
-                    let admin = containers[0].admin
-                    
-                    let userModel = new mongoose.model('users', User)
-
-                    let userData = {
-                        uid:            userRecord.uid,  
-                        email:          data.email,
-                        name:           data.name,
-                        lname:          data.lname,
-                        role:           "employee",
-                        containers:     containerIds,
-                        clients:        data.clients,
-                        admin:          admin,
-                        organization:   data.organization,
-                        address:        data.address,
-                        salary:         data.salary || 0,
-                        phone:          data.phone
-                    }
-
-                    let mongoUser = new userModel(userData)
-
-                    mongoUser.save((e, user) => {
-                        if (e) reject(e)
-                        
-                        Promise.all([
-                            // * Update containers field
-                            updateContainers(containerIds, {
-                                $push: { employees: user._id }
-                            }),
-                            // * Update organization field
-                            updateOrganization(data.organization, {
-                                $push: { employees: user._id }
-                            })
-                        ]).then(() => resolve(userData))    
-                    })
-                })          
+            
+            // * Update role and organization to employee in custom claims
+            await adminAuth.setCustomUserClaims(userRecord.uid, { 
+                role:           "employee",
+                organization:   res.locals.organization 
             })
-            .catch(err => {
-                console.log('Error assigning employee role on user at firebaseAtuh:', err)
-                reject(err)
+
+            getOrganizationById(res.locals.organization)
+            .then(org => {
+
+                let empData = {
+                    uid:            userRecord.uid,  
+                    email:          data.email,
+                    name:           data.name,
+                    lname:          data.lname,
+                    phone:          data.phone,
+                    image:          data.image,
+                    salary:         data.salary,
+                    address:        data.address
+                }
+
+                // * Add employee to record
+                org.employees.push(empData)
+
+                org.save((err, doc) => {
+                    if (err) reject(err)
+
+                    resolve(doc)
+                })
             })
         })
         .catch(err => {
-            console.log('Error creating new admin user on firebaseAtuh:', err)
+            console.log('Error creating new employee account on firebaseAtuh:', err)
             reject(err)
         })
 
     })
 }
 
-export function newAdminAccount(data) {
+export function newAdmin(data) {
     return new Promise((resolve, reject) => {
         // * Create account on firebase
         adminAuth.createUser({
@@ -91,32 +75,59 @@ export function newAdminAccount(data) {
             disabled: false,
         })
         .then((userRecord) => {
+            
             console.log('Successfully created new user on firebase:', userRecord.uid);
-            // * Update role to admin in custom claims
-            adminAuth.setCustomUserClaims(userRecord.uid, { role: "admin" })
-            .then(() => {
-                // * Register organization
-                //      * It's impoertant to do this step first to avoid 
-                //      * any inconsistency and provide proper ObjectIds
+            
+            // * Generate ObjectId for client document
+            let id = new ObjectId()
+            
+            // * Register organization
+            //      * It's impoertant to do this step first to avoid 
+            //      * any inconsistency and provide proper ObjectIds
+            
+            let orgData = {
+                owner:      id,
+                name:       data.org.name,
+                address:    data.org.address
+            }
+            
+            newOrganization(orgData)
+            .then(org => {
+ 
+                // * Update customUserClaims
+                await adminAuth.setCustomUserClaims(userRecord.uid, { role: "admin", organization: org._id })
                 console.log("Role successfully set to: admin")
-                newOrganization(data.organization)
-                .then(org => {
-                    // * Save user on MongoDB
-                    let hashedPassphrase = hashPassphrase(data.passphrase !== undefined ? data.passphrase : genPassphrase(3))
-                    let userModel = new mongoose.model('users', User)
+
+                // * Generate hashed passphrase mongo record
+                let hashedPassphrase = hashPassphrase(data.passphrase !== undefined ? data.passphrase : genPassphrase(3))
+                
+                let passData = {
+                    client:         id,
+                    uid:            userRecord.uid,
+                    passphrase:     hashedPassphrase,
+                    organization:   org._id
+                }
+
+                newPassphrase(passData)
+                .then(pass => {
                     
-                    let userData = {
-                        uid:            userRecord.uid,
-                        email:          data.email,
-                        name:           data.name,
-                        lname:          data.lname,
-                        role:           "admin",
-                        organization:   org._id,
-                        image:          data.image,
-                        phone:          data.phone,
-                        address:        data.address
+                    let clientData = {
+                        _id:                id,
+                        uid:                userRecord.uid,
+                        email:              data.email,
+                        passphrase:         pass._id,
+                        organization:       org._id,
+                        name:               data.name,
+                        lname:              data.lname,
+                        phone:              data.phone,
+                        image:              data.image,
+                        businessName:       data.businessName,
+                        socialInsurance:    data.socialInsurancem,
+                        bankAccount:        data.bankAccount,
+                        address:            data.address
                     }
     
+<<<<<<< HEAD
                     let mongoUser = new userModel(userData)
     
                     mongoUser.save((e, user) => {
@@ -142,14 +153,19 @@ export function newAdminAccount(data) {
                             })
                         })
                     })
+=======
+                    newClient(clientData)
+                    .then(client => resolve(client))
+                    .catch(err => reject(err))
+>>>>>>> 2255196cfcabb7ac6290269a5ec07c26474be93d
                 })
                 .catch((error) => {
-                    console.log(`Error creating new organization :`, error)
+                    console.log('Error creating new passphrase on MongoDB:', error)
                     reject(error)
                 })
             })
             .catch((error) => {
-                console.log(`Error assigning new admin role on ${userRecord.email}:`, error)
+                console.log('Error creating new organization on MongoDB:', error)
                 reject(error)
             })
         })
@@ -159,42 +175,3 @@ export function newAdminAccount(data) {
         })
     })
 }
-
-export async function updateUser(id, edit) {
-    let user = await userModel.findOneAndUpdate({ _id: id }, edit, { new: true })
-    return user   
-}
-
-export async function getUserByFirebaseId(uid) {
-    let user = await userModel.findOne({ uid: uid })
-    return user
-}
-
-export async function getUserById(id) {
-    let user = await userModel.findOneById(id)
-    return user
-}
-
-export async function getEmployeesByAdmin(admin) {
-
-}
-
-export async function deleteEmployee(id) {
-
-    // * Obtain user info
-    let user = await getUserById(id)
-
-    // * Delete employee record from organization
-    let org = await updateOrganization(user.organization, { $pull: { employees: user._id } })
-    // * Delete employee record from containers
-    let cont = await updateContainers(user.containers, { $pull: { employees: user._id } })
-    // TODO: Delete employee record from tasks
-    //   * 1 - Obtain related tasks
-    //   * 2 - Update related task
-
-
-}
-
-export async function deleteAdmin(id, options) {}
-
-export async function deleteOrganization(id, options) {}

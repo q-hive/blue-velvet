@@ -1,5 +1,5 @@
 import { mongoose } from '../../mongo.js'
-import Order from '../../models/order.js'
+import { Order } from '../../models/index.js'
 import { getProductionForOrder } from '../production/store.js'
 
 const orderModel = mongoose.model('orders', Order)

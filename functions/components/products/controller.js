@@ -1,4 +1,4 @@
-import product from '../../models/product.js'
+import { Product } from '../../models/index.js'
 import { getOrdersByProd } from '../orders/store.js'
 import { getTaskByProdId } from '../tasks/store.js'
 import { getAllProducts } from './store.js'

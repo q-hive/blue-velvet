@@ -3,13 +3,13 @@ const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
 const Product = new Schema({
-    name:       { type: String,   required: true  },
-    image:      { type: String,   required: false }, // * BASE 64 PARSED PHOTO
-    desc:       { type: String,   required: false }, // * Description
-    status:     { type: String,   required: true  },
+    name:       { type: String,   required: true,                    },
+    image:      { type: String,   required: false                    }, // * BASE 64 PARSED PHOTO
+    desc:       { type: String,   required: false                    }, // * Description
+    status:     { type: String,   required: true, default: 'on hold' },
     // * ID of quality of the seeds - track the seeds origin - metadata 
-    seed:       { type: ObjectId, required: true  }, 
-    provider:   { type: ObjectId, required: true  },
+    seed:       { type: ObjectId, required: true                     }, 
+    provider:   { type: ObjectId, required: true                     },
     price:      { // * Cost per package 
         type: [{
             amount:         { type: Number, required: true }, // * Package price
