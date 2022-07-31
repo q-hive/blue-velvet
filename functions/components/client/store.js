@@ -5,8 +5,8 @@ import { Client } from '../../models/client.js'
 
 const clientModel = mongoose.Schema('clients', Client)
 
-export const updateClient = (id, edit) {
+export const updateClient = (id, edit) => {
     return new Promise((resolve, reject) => {
-        
+
     })
 }
