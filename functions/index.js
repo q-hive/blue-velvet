@@ -12,7 +12,7 @@ import {
 import { authRoutes } from './network/routes.js'
 
 
-var port = normalizePort(9999 || process.env.PORT)
+var port = normalizePort(process.env.PORT || 9999)
 
 const app = express()
 
