@@ -9,6 +9,9 @@
     "build": "react-scripts build && (cd functions && npm install)",
     "start": "cd functions && npm start"
   },
+  "engines":{
+    "node":"16.16.0"
+  },
   "keywords": [
     "frontend",
     "react",
