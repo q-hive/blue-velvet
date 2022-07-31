@@ -128,11 +128,8 @@ export function newAdmin(data) {
                     }
     
                     newClient(clientData)
-                    .then(client => {
-                        await updateOrganization(org._id, {
-                            $set: { owner: user._id }
-                        })
-                    })
+                    .then(client => resolve(client))
+                    .catch(err => reject(err))
                 })
                 .catch((error) => {
                     console.log('Error creating new passphrase on MongoDB:', error)
