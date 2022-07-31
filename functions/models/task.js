@@ -1,5 +1,5 @@
-import mongoose from '../mongo.js'
-import { Step } from './index.js'
+import { mongoose } from '../mongo.js'
+import Step from './step.js'
 
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types

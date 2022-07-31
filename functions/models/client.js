@@ -1,6 +1,5 @@
-import mongoose from 'mongoose';
-
-import { Address } from "./index.js"
+import { mongoose } from '../mongo.js';
+import Address from "./address.js"
 
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types

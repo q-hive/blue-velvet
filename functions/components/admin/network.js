@@ -1,6 +1,6 @@
 import express from 'express'
 import { error, success } from '../../network/response.js'
-import { newEmployee, newAdminAccount } from './store.js'  
+import { newEmployee, newAdmin } from './store.js'  
 
 const router = express.Router()
 
@@ -15,7 +15,7 @@ router.post('/employee', (req, res) => {
 })
 
 router.post('/admin', (req, res) => {
-    newAdminAccount(req.body)
+    newAdmin(req.body)
     .then(result => {
         success(req, res, 201, "Admin account has been created successfully", result)
     })

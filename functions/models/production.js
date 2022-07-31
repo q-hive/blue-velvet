@@ -1,5 +1,5 @@
-import mongoose from '../mongo.js'
-import { Task } from './index.js'
+import { mongoose } from '../mongo.js'
+import Task from './task.js'
 
 import { addTimeToDate } from '../utils/time.js';
 import { generateTasks } from '../components/tasks/store.js'

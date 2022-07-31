@@ -1,5 +1,7 @@
-import mongoose from '../mongo.js'
-import { Address, Product, Production } from "./index.js"
+import { mongoose } from '../mongo.js'
+import Address from './address.js' 
+import Product from './product.js' 
+import Production from './production.js' 
 
 const { Schema } = mongoose
 const { ObjectId } = mongoose.Types

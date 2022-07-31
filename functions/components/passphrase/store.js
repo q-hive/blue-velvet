@@ -1,8 +1,8 @@
 import { mongoose } from '../../mongo.js'
-import { ObjectId } from mongoose.Types
-import { Passphrase } from '../../models/index.js'
+let { ObjectId } = mongoose.Types
+import Passphrase from '../../models/passphrase.js'
 
-import { updateClient } from '../client'
+import { updateClient } from '../client/store.js'
 
 const passModel = mongoose.model('passphrases', Passphrase)
 

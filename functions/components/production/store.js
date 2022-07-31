@@ -1,4 +1,4 @@
-import { Production } from '../../models/index.js'
+import Production from '../../models/production.js'
 import { mongoose } from '../../mongo.js'
 import { dateToArray, nextDay } from '../../utils/time.js'
 

@@ -2,9 +2,9 @@ import express from 'express'
 import { error, success } from '../../network/response.js'
 import { isEmailValid, validateBodyNotEmpty } from './secureHelpers.js'
 import userCreationRouter from '../admin/network.js'
-import { getUserByFirebaseId } from '../admin/store.js'
+import {  } from '../admin/store.js'
 
-import { getOrganization } from '../organization/store.js'
+import { getOrganizationById } from '../organization/store.js'
 
 // * Authentication
 import { isAuthenticated, isAuthorized } from './controller.js'
@@ -30,7 +30,7 @@ authRouter.post('/login', (req, res) => {
                 return success(req, res, 200, "Authentication succeed", { isAdmin: true })
             } else if (claims.role === 'employee') {
                 // * Obtain organization info to query for employee data
-                getOrganization(claims.organization)
+                getOrganizationById(claims.organization)
                 .then(organization => {
                     organization.employees.byUid(userRegister.user.uid).findOne({}).exec()
                     .then(employee => {
