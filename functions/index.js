@@ -22,8 +22,8 @@ const {pathname: buildPath} = new URL('../build', import.meta.url)
 
 app.use(express.static(buildPath))
 app.use(express.json())
-
 app.use(fileUpload())
+
 
 /* Morgan implementation */
 useMorgan(app);
