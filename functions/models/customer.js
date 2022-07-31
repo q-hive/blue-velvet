@@ -1,4 +1,4 @@
-import mongoose from '../mongo.js'
+import { mongoose } from '../mongo.js'
 const { Schema } = mongoose;
 
 const Customer = new Schema({

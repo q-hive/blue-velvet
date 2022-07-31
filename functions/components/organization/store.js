@@ -1,5 +1,5 @@
 import { mongoose } from '../../mongo.js'
-import { Organization } from '../../models/index.js'
+import Organization from '../../models/organization.js'
 
 const orgModel = new mongoose.model('organizations', Organization)
 
@@ -31,9 +31,7 @@ export const getOrganizations = () => {
 
             resolve(docs)
         })
-    })
-
-    
+    })   
 }
 
 export const getOrganizationById = (id) => {

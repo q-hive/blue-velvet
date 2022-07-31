@@ -24,7 +24,7 @@ export function newEmployee(data) {
             console.log('Successfully created new user on firebase:', userRecord.uid);
             
             // * Update role and organization to employee in custom claims
-            await adminAuth.setCustomUserClaims(userRecord.uid, { 
+            adminAuth.setCustomUserClaims(userRecord.uid, { 
                 role:           "employee",
                 organization:   res.locals.organization 
             })
@@ -93,9 +93,8 @@ export function newAdmin(data) {
             .then(org => {
  
                 // * Update customUserClaims
-                await adminAuth.setCustomUserClaims(userRecord.uid, { role: "admin", organization: org._id })
-                console.log("Role successfully set to: admin")
-
+                adminAuth.setCustomUserClaims(userRecord.uid, { role: "admin", organization: org._id })
+                
                 // * Generate hashed passphrase mongo record
                 let hashedPassphrase = hashPassphrase(data.passphrase !== undefined ? data.passphrase : genPassphrase(3))
                 
@@ -125,37 +124,9 @@ export function newAdmin(data) {
                         address:            data.address
                     }
     
-<<<<<<< HEAD
-                    let mongoUser = new userModel(userData)
-    
-                    mongoUser.save((e, user) => {
-                        if (e) reject(e)
-                        console.log("error", e)
-                        // * Update the admin field in organization
-                        updateOrganization(org._id, {
-                            $set: { owner: user._id }
-                        })
-                        .then(upOrg => {
-                            // * Register all containers with correct admin
-                            Promise.all(data.containers.map(contData => newContainer({
-                                ...contData,
-                                admin:          user._id,
-                                organization:   upOrg._id
-                            })))
-                            .then(containerIds => {
-                                delete userData.passphrase
-                                resolve({
-                                    ...userData,
-                                    containers: containerIds.map(contRes => contRes._id)
-                                })
-                            })
-                        })
-                    })
-=======
                     newClient(clientData)
                     .then(client => resolve(client))
                     .catch(err => reject(err))
->>>>>>> 2255196cfcabb7ac6290269a5ec07c26474be93d
                 })
                 .catch((error) => {
                     console.log('Error creating new passphrase on MongoDB:', error)

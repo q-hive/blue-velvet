@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb'
-import { Product } from '../../models/index.js'
+import Product  from '../../models/product.js'
 import {mongoose} from '../../mongo.js'
 import { createProvider } from '../providers/store.js'
 import { createSeed } from '../seeds/store.js'
