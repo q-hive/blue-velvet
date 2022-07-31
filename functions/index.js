@@ -18,6 +18,9 @@ const app = express()
 
 app.set('port', port)
 
+const {pathname: buildPath} = new URL('../build', import.meta.url) 
+
+app.use(express.static(buildPath))
 app.use(express.json())
 app.use(fileUpload())
 
@@ -34,6 +37,12 @@ app.use(cors({
     origin: originsList[0],
     credentials: true
 }));
+
+const {pathname: indexPath} = new URL('../build/index.html', import.meta.url)
+
+app.get(/^\/(?!api).*/, (req, res, ) => {
+    res.sendFile(indexPath)
+})
 
 authRoutes(app)
 organizationRoutes(app)
