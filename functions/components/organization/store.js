@@ -7,11 +7,20 @@ export const newOrganization = (orgData) => {
     return new Promise((resolve, reject) => {
         let orgModel = new mongoose.model('organizations', Organization)
 
+        // * Fill the 'available' field on the data
+        let contMapped = orgData.containers.map(container => {
+            return {...container, available: container.capacity}
+        })
+
         let orgMapped = {
             name:       orgData.name,
             owner:      orgData.owner,
-            containers: orgData.containers,
-            address:    orgData.address    
+            employees:  [],
+            orders:     [],
+            containers: contMapped,
+            customers:  orgData.customers,
+            providers:  [], 
+            address:    orgData.address,
         }
 
         let orgDoc = orgModel(orgMapped)

@@ -12,11 +12,11 @@ const { ObjectId } = mongoose.Types
 const Organization = new Schema({
     name:       { type: String,      required: true, unique: false  },
     owner:      { type: ObjectId,    required: true, unique: true  },
-    employees:  { type: [Employee],  required: false, default: []   },
-    orders:     { type: [Order],     required: false, default: []   },
-    containers: { type: [Container], required: false, default: []   },
-    customers:  { type: [Customer],  required: false, default: []   },
-    providers:  { type: [Provider],  required: false, default: []   }, 
+    employees:  { type: [Employee],  required: false   },
+    orders:     { type: [Order],     required: false   },
+    containers: { type: [Container], required: false   },
+    customers:  { type: [Customer],  required: false   },
+    providers:  { type: [Provider],  required: false   }, 
     address:    { type: Address,     required: true                }
 },
 {

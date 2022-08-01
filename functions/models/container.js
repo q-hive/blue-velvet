@@ -10,10 +10,10 @@ const { ObjectId } = mongoose.Types
 const Container = new Schema({
     name:           { type: String,         required: true               },
     capacity:       { type: Number,         required: true               }, // * Measured in trays
-    available:      { type: Number,         required: true               }, // * Also in trays
-    employees:      { type: [ObjectId],     required: true, default: []  },
-    production:     { type: [Production],   required: true, default: []  },
-    products:       { type: [Product],      required: true, default: []  },
+    available:      { type: Number                                       }, // * Also in trays
+    employees:      { type: [ObjectId],     required: true  },
+    production:     { type: [Production],   required: true  },
+    products:       { type: [Product],      required: true  },
     address:        { type: Address,        required: false              }
 },    
 {

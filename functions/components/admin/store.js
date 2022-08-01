@@ -1,7 +1,7 @@
 import { mongoose } from '../../mongo.js'
 let { ObjectId } = mongoose.Types
 
-import adminAuth    from '../../firebaseAdmin.js'
+import adminAuth from '../../firebaseAdmin.js'
 
 import { hashPassphrase, genPassphrase } from './helper.js'
 import { newOrganization } from '../organization/store.js'
@@ -72,10 +72,7 @@ export function newAdmin(data) {
             photoURL: data.image,
             disabled: false,
         })
-        .then((userRecord) => {
-            
-
-            
+        .then((userRecord) => {     
             console.log('Successfully created new user on firebase:', userRecord.uid);
             
             // * Generate ObjectId for client document
@@ -87,8 +84,9 @@ export function newAdmin(data) {
             
             let orgData = {
                 owner:      id,
-                name:       data.org.name,
-                address:    data.org.address
+                name:       data.organization.name,
+                address:    data.organization.address,
+                containers: data.organization.containers
             }
             
             newOrganization(orgData)
@@ -132,13 +130,15 @@ export function newAdmin(data) {
                 })
                 .catch((error) => {
                     console.log('Error creating new passphrase on MongoDB:', error)
-                    // TODO: Delete user in firebase if any error after it happens
+                    // * Delete account from firebase as rollback
+                    adminAuth.deleteUser(userRecord.uid)
                     reject(error)
                 })
             })
             .catch((error) => {
                 console.log('Error creating new organization on MongoDB:', error)
-                // TODO: Delete user in firebase if any error after it happens
+                // * Delete account from firebase as rollback
+                adminAuth.deleteUser(userRecord.uid)
                 reject(error)
             })
         })

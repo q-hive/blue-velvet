@@ -12,6 +12,18 @@ export const getProductionForOrder = async (products, organization, filter) => {
 
         let totalTrays = products.map(prod => prod.trays).reduce((accTrays, trays) => accTrays + trays, 0)
 
+        // * Obtain organization
+        getOrganizationById(res.locals.organization)
+        .then(organization => {
+            let availableContainers = await organization.containers.find({ available: { $gte: totalTrays } }).exec()
+
+            if (prodLines.length == 0) {
+            
+            }
+
+            return availableContainers
+        })
+
         // * Check for production lines at same day and validate if adding is possible
         let prodLines = await getProductions({
             start:          filter.start,
