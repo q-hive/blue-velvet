@@ -63,19 +63,19 @@ const BV_Drawer = (props) => {
           <Divider />
             <>
               <Box sx={{display:"flex", flexDirection:"column", width:"auto", height:"auto", alignItems:"left", justifyContent:"left"}}>
-                  <Button sx={theme.button.sidebar} id="employees" startIcon={<GroupsIcon />} onClick={handleRedirect} >
+                  <Button sx={theme.button.sidebar} id="employees" startIcon={<GroupsIcon color="primary"/>} onClick={handleRedirect} >
                       Employees
                   </Button>
                   
-                  <Button sx={theme.button.sidebar} id="production" startIcon={<WorkspacesIcon />} onClick={handleRedirect} >
+                  <Button sx={theme.button.sidebar} id="production" startIcon={<WorkspacesIcon color="primary"/>} onClick={handleRedirect} >
                       Production
                   </Button>
                       
-                  <Button sx={theme.button.sidebar} id="sales" startIcon={<RequestPageIcon />} onClick={handleRedirect} >
+                  <Button sx={theme.button.sidebar} id="sales" startIcon={<RequestPageIcon color="primary"/>} onClick={handleRedirect} >
                       Sales
                   </Button>
                       
-                  <Button sx={theme.button.sidebar} id="Client" startIcon={<SupportAgentIcon />} onClick={handleRedirect} >
+                  <Button sx={theme.button.sidebar} id="Client" startIcon={<SupportAgentIcon color="primary"/>} onClick={handleRedirect} >
                       Client
                   </Button>
                 </Box>

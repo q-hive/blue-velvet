@@ -398,7 +398,7 @@ export const SimpleProductForm = ({editing, product}) => {
     //     console.log(error)
     // },[error])
   return (
-    <div style={{paddingLeft:"10vw", paddingRight:"10vw"}}>
+    <div style={{width:"100%"}}>
         <Box sx={
             {
                 display:"flex",

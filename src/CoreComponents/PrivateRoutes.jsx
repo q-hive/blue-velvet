@@ -1,4 +1,5 @@
 import { Stack } from '@mui/material'
+import { Container } from '@mui/system'
 import React from 'react'
 import useAuth from '../contextHooks/useAuthContext'
 import BV_AppBar from './AppBar_Test'
@@ -21,9 +22,11 @@ export const PrivateRoutes = (props) => {
   return (
     <>
     <BV_AppBar />
-    <Stack direction={"row"} spacing={1} justifyContent="center">
+    <Stack direction={"row"} justifyContent="center">
       <BV_Drawer />
-      {props.children}
+      <Container>
+        {props.children}
+      </Container>
       </Stack></>
   )
 }

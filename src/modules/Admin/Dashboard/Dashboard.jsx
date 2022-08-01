@@ -1,7 +1,7 @@
 import React from 'react'
 
 //*MUI COMPONENTS
-import { Box, Button, Stack, useTheme } from '@mui/material'
+import { Box, Button, Container, Stack, useTheme } from '@mui/material'
 
 //*ROUTER
 import { navigate } from '../../../utils/router'
@@ -32,24 +32,24 @@ export const Dashboard = () => {
   return (
     <>
     
-    <Box sx={{display:"flex", flexDirection:"column", width:"100vw", height:"100vh", alignItems:"center", justifyContent:"center"}}>
     
+    <Box width="100%">
+        <Box sx={{display:"flex", flexDirection:"column", height:"100vh", alignItems:"center", justifyContent:"center"}}>
+            <Button sx={theme.button.dashboard} id="employees" onClick={handleRedirect} variant='contained'>
+                Employees
+            </Button>
+            <Button sx={theme.button.dashboard} id="production" onClick={handleRedirect} variant='contained'>
+                Production
+            </Button>
+            <Button sx={theme.button.dashboard} id="sales" onClick={handleRedirect} variant='contained'>
+                Sales
+            </Button>
+            <Button sx={theme.button.dashboard} id="Client" onClick={handleRedirect} variant='contained'>
+                Client
+            </Button>
+        </Box>
+    </Box>
 
-    <Box sx={{display:"flex", flexDirection:"column", width:"100vw", height:"100vh", alignItems:"center", justifyContent:"center"}}>
-        <Button sx={theme.button.dashboard} id="employees" onClick={handleRedirect} variant='contained'>
-            Employees
-        </Button>
-        <Button sx={theme.button.dashboard} id="production" onClick={handleRedirect} variant='contained'>
-            Production
-        </Button>
-        <Button sx={theme.button.dashboard} id="sales" onClick={handleRedirect} variant='contained'>
-            Sales
-        </Button>
-        <Button sx={theme.button.dashboard} id="Client" onClick={handleRedirect} variant='contained'>
-            Client
-        </Button>
-    </Box>
-    </Box>
     
     </>
   )
