@@ -4,6 +4,7 @@ import Container from './container.js'
 import Customer from './customer.js'
 import Employee from './employee.js'
 import Provider from './provider.js'
+import Order from './order.js';
 
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
@@ -12,7 +13,7 @@ const Organization = new Schema({
     name:       { type: String,      required: true, unique: true  },
     owner:      { type: ObjectId,    required: true, unique: true  },
     employees:  { type: [Employee],  required: true, default: []   },
-    orders:     { tpye: [Order],     required: true, default: []   },
+    orders:     { type: [Order],     required: true, default: []   },
     containers: { type: [Container], required: true, defualt: []   },
     customers:  { type: [Customer],  required: true, default: []   },
     providers:  { type: [Provider],  required: true, default: []   }, 

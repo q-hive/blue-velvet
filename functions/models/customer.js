@@ -1,4 +1,5 @@
 import { mongoose } from '../mongo.js'
+import Address from './address.js';
 const { Schema } = mongoose;
 
 const Customer = new Schema({

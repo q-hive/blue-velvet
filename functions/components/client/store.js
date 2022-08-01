@@ -1,9 +1,12 @@
 import { mongoose } from '../../mongo.js'
-let { ObjectId } = mongoose.Types
-
 import Client from '../../models/client.js' 
 
-const clientModel = mongoose.Schema('clients', Client)
+let { ObjectId } = mongoose.Types
+
+
+console.log(Client.requiredPaths())
+
+const clientModel = mongoose.model('clients', Client)
 
 export const updateClient = (id, edit) => {
     return new Promise((resolve, reject) => {

@@ -1,6 +1,23 @@
+import mongoose from 'mongoose'
 import auth from '../../firebaseAdmin.js'
+import Passphrase from '../../models/passphrase.js'
 
 import { error } from '../../network/response.js'
+
+export const getPassphraseByUid = (uid) => {
+    return new Promise(async (resolve, reject) => {
+        const passModel = mongoose.model('passphrase', Passphrase)
+
+        passModel.findOne({uid:uid}).exec()
+        .then(  (pass) => {
+            resolve(pass)
+        })
+        .catch(err => {
+            reject(err)
+        })
+    
+    })
+}
 export const isAuthenticated = (req, res, next) => {
 
     // * Verify request contains an ID Token.

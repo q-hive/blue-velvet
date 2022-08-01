@@ -8,6 +8,7 @@ import { getOrganizationById } from '../organization/store.js'
 
 // * Authentication
 import { isAuthenticated, isAuthorized } from './controller.js'
+import {getPassphraseByUid} from './controller.js'
 
 //*Simple firebase
 import auth from '../../firebase.js'
@@ -27,7 +28,7 @@ authRouter.post('/login', (req, res) => {
         adminAuth.verifyIdToken(userRegister._tokenResponse.idToken)
         .then(claims => {
             if (claims.role === 'admin') {
-                return success(req, res, 200, "Authentication succeed", { isAdmin: true })
+                return success(req, res, 200, "Authentication succeed", { isAdmin: true, token: userRegister._tokenResponse.idToken, user:userRegister.user })
             } else if (claims.role === 'employee') {
                 // * Obtain organization info to query for employee data
                 getOrganizationById(claims.organization)
