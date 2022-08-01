@@ -6,12 +6,12 @@ const { ObjectId } = mongoose.Types
 
 const Client = new Schema({
     uid:                { type: String,   required: true, unique: true },
-    email:              { type: String,     required: true             },
+    email:              { type: String,   required: true               },
     passphrase:         { type: ObjectId, required: true, unique: true },
     organization:       { type: ObjectId, required: true, unique: true },
     name:               { type: String,   required: true,              },
     lname:              { type: String,   required: true,              },
-    phone:              { type: String,     required: true             },
+    phone:              { type: String,   required: true               },
     image:              { type: String,   required: true               },
     businessName:       { type: String,   required: true, unique: true },
     socialInsurance:    { type: String,   required: true               },

@@ -8,9 +8,7 @@ const URI = process.env.MONGODB_URI;
 // * Config Object to Avoid Deprecation Warnings
 const configMongo = { useNewUrlParser: true, useUnifiedTopology: true };
 
-mongoose.connect(URI, configMongo, ()=> {
-    console.log('Connected to MongoDB');
-});
+mongoose.connect(URI, configMongo);
 
 //Store Connection Object
 const db = mongoose.connection;

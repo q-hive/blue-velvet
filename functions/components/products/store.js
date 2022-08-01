@@ -1,8 +1,8 @@
-import { ObjectId } from 'mongodb'
+import { mongoose } from '../../mongo.js'
 import Product  from '../../models/product.js'
-import {mongoose} from '../../mongo.js'
 import { createProvider } from '../providers/store.js'
 import { createSeed } from '../seeds/store.js'
+const { ObjectId } = mongoose.Types
 
 const productsCollection = mongoose.connection.collection('products')
 
