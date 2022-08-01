@@ -1,7 +1,6 @@
 import { mongoose } from '../mongo.js'
 import Address from './address.js';
 const { Schema } = mongoose;
-import Address from './address.js'
 
 const Customer = new Schema({
     name:               { type: String,   required: true, unique: true },

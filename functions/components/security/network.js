@@ -25,8 +25,11 @@ authRouter.post('/login', (req, res) => {
 
     signInWithEmailAndPassword(auth, req.body.email, req.body.password)
     .then(userRegister => {
+        console.log("Signed id")
         adminAuth.verifyIdToken(userRegister._tokenResponse.idToken)
         .then(claims => {
+            console.log("Id TOKEN VERIFIED")
+            console.log(claims)
             if (claims.role === 'admin') {
                 return success(req, res, 200, "Authentication succeed", { isAdmin: true, token: userRegister._tokenResponse.idToken, user:userRegister.user })
             } else if (claims.role === 'employee') {
@@ -44,6 +47,8 @@ authRouter.post('/login', (req, res) => {
                     .catch(err => error(req, res, 500, "Error verifying ID Token", err))
                 })
                 .catch(err => error(req, res, 500, "Error verifying ID Token", err))
+            } else {
+                return error(req, res, 401, "No role assigned. Please create an account with role.")
             }
         })
         .catch(err => error(req, res, 500, "Error verifying ID Token", err))
@@ -61,8 +66,8 @@ authRouter.post('/login/admin', (req, res) => {
             if (claims.role === 'admin') {
                 getPassphraseByUid(user.user.uid)
                 .then(data => {
-                    if (data.passphrase == hashPassphrase(req.body.passphrase)) 
-                        success(req, res, 200, "Successfully logged as admin", {                                                                                                  
+                    if (data.passphrase == hashPassphrase(req.body.passphrase)) {
+                        return success(req, res, 200, "Successfully logged as admin", {                                                                                                  
                             user: {
                                 id:     data._id,
                                 role:   claims.role,
@@ -72,10 +77,13 @@ authRouter.post('/login/admin', (req, res) => {
                             },
                             token: user._tokenResponse.idToken
                         })
-                    else error(req, res, 403, "Forbidden: Wrong passphrase", { "error": "Wrong passphrase"})
+                    } else {
+                        return error(req, res, 403, "Forbidden: Wrong passphrase", { "error": "Wrong passphrase"})
+                    } 
                 })
+            } else {
+                return error(req, res, 403, "Forbidden: Not admin", { "error": "Not admin role"})
             }
-            return error(req, res, 403, "Forbidden: Not admin", { "error": "Not admin role"})
         })
         .catch(err => error(req, res, 500, "Error verifying ID Token", err)) 
     })

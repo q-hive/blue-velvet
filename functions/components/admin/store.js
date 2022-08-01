@@ -6,6 +6,7 @@ import adminAuth    from '../../firebaseAdmin.js'
 import { hashPassphrase, genPassphrase } from './helper.js'
 import { newOrganization } from '../organization/store.js'
 import { newPassphrase } from '../passphrase/store.js'
+import { newClient } from '../client/store.js'
 
 
 export function newEmployee(data) {
@@ -74,26 +75,24 @@ export function newAdmin(data) {
         })
         .then((userRecord) => {
             
-
-            
             console.log('Successfully created new user on firebase:', userRecord.uid);
             
             // * Generate ObjectId for client document
             let id = new ObjectId()
             
             // * Register organization
-            //      * It's impoertant to do this step first to avoid 
-            //      * any inconsistency and provide proper ObjectIds
+            // * It's impoertant to do this step first to avoid 
+            // * any inconsistency and provide proper ObjectIds
             
             let orgData = {
                 owner:      id,
-                name:       data.org.name,
-                address:    data.org.address
+                name:       data.organization.name,
+                address:    data.organization.address
             }
             
             newOrganization(orgData)
             .then(org => {
- 
+                console.log("Succesfully created organization")
                 // * Update customUserClaims
                 adminAuth.setCustomUserClaims(userRecord.uid, { role: "admin", organization: org._id })
                 
@@ -120,11 +119,13 @@ export function newAdmin(data) {
                         lname:              data.lname,
                         phone:              data.phone,
                         image:              data.image,
-                        businessName:       data.businessName,
+                        businessName:       org.name,
                         socialInsurance:    data.socialInsurance,
                         bankAccount:        data.bankAccount,
-                        address:            data.address
+                        address:            org.address
                     }
+
+                    console.log(clientData)
     
                     newClient(clientData)
                     .then(client => resolve(client))
