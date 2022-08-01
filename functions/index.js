@@ -34,7 +34,7 @@ useMorgan(app);
 const originsList = ["http://localhost:3000", "https://bluevelvetdeploy.herokuapp.com"]
  
 app.use(cors({
-    origin: originsList[0],
+    origin: originsList[1],
     credentials: true
 }));
 
