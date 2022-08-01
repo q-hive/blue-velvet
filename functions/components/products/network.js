@@ -1,6 +1,6 @@
 import express from 'express'
 import { ObjectId } from 'mongodb'
-import mongoose from 'mongoose'
+import { mongoose } from '../../mongo.js'
 import Product from '../../models/product.js'
 import {error, success} from '../../network/response.js'
 import { hasQueryString } from '../../utils/hasQuery.js'

@@ -8,7 +8,7 @@ const { ObjectId } = mongoose.Types
 
 
 const Container = new Schema({
-    name:           { type: String,         required: true, unique: true },
+    name:           { type: String,         required: true               },
     capacity:       { type: Number,         required: true               }, // * Measured in trays
     available:      { type: Number,         required: true               }, // * Also in trays
     employees:      { type: [ObjectId],     required: true, default: []  },

@@ -74,6 +74,8 @@ export function newAdmin(data) {
         })
         .then((userRecord) => {
             
+
+            
             console.log('Successfully created new user on firebase:', userRecord.uid);
             
             // * Generate ObjectId for client document
@@ -119,7 +121,7 @@ export function newAdmin(data) {
                         phone:              data.phone,
                         image:              data.image,
                         businessName:       data.businessName,
-                        socialInsurance:    data.socialInsurancem,
+                        socialInsurance:    data.socialInsurance,
                         bankAccount:        data.bankAccount,
                         address:            data.address
                     }
@@ -130,11 +132,13 @@ export function newAdmin(data) {
                 })
                 .catch((error) => {
                     console.log('Error creating new passphrase on MongoDB:', error)
+                    // TODO: Delete user in firebase if any error after it happens
                     reject(error)
                 })
             })
             .catch((error) => {
                 console.log('Error creating new organization on MongoDB:', error)
+                // TODO: Delete user in firebase if any error after it happens
                 reject(error)
             })
         })

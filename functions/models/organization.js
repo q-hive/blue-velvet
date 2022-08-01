@@ -4,19 +4,19 @@ import Container from './container.js'
 import Customer from './customer.js'
 import Employee from './employee.js'
 import Provider from './provider.js'
-import Order from './order.js';
+import Order from './order.js'
 
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
 const Organization = new Schema({
-    name:       { type: String,      required: true, unique: true  },
+    name:       { type: String,      required: true, unique: false  },
     owner:      { type: ObjectId,    required: true, unique: true  },
-    employees:  { type: [Employee],  required: true, default: []   },
-    orders:     { type: [Order],     required: true, default: []   },
-    containers: { type: [Container], required: true, defualt: []   },
-    customers:  { type: [Customer],  required: true, default: []   },
-    providers:  { type: [Provider],  required: true, default: []   }, 
+    employees:  { type: [Employee],  required: false, default: []   },
+    orders:     { type: [Order],     required: false, default: []   },
+    containers: { type: [Container], required: false, default: []   },
+    customers:  { type: [Customer],  required: false, default: []   },
+    providers:  { type: [Provider],  required: false, default: []   }, 
     address:    { type: Address,     required: true                }
 },
 {

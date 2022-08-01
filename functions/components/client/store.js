@@ -1,10 +1,8 @@
 import { mongoose } from '../../mongo.js'
+const { ObjectId } = mongoose.Types
+const { Schema } = mongoose
+
 import Client from '../../models/client.js' 
-
-let { ObjectId } = mongoose.Types
-
-
-console.log(Client.requiredPaths())
 
 const clientModel = mongoose.model('clients', Client)
 
