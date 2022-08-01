@@ -24,7 +24,7 @@ const Product = new Schema({
                 type: [{
                     strain: { type: ObjectId, required: true },
                     amount: { type: Number,   required: true }, // * Measured in trays
-                }],
+                }], 
                 required: false 
             }
         },

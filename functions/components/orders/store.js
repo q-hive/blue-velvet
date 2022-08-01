@@ -5,8 +5,6 @@ import { getProductionForOrder } from '../production/store.js'
 import { addTimeToDate } from '../../utils/time.js'
 import { getOrganizationById } from '../organization/store.js'
 
-const orderModel = mongoose.model('orders', Order)
-const ordersCollection = mongoose.connection.collection('orders')
 
 export const createNewOrder = (order) => {
     return new Promise(async (resolve, reject) => {
@@ -24,9 +22,10 @@ export const createNewOrder = (order) => {
         // * Save products on production
         prodLines.forEach(pLine => {
             pLine.orders.push(id)
-            pLine.products.psuh(order.products)
+            pLine.products.push(order.products)
             
             // TODO: Update Tasks data
+            
 
             pLine.save((err, doc) => {
                 if (err) reject(err)
@@ -45,18 +44,17 @@ export const createNewOrder = (order) => {
             produts:    order.products
         }
         
-        const orderDoc = new orderModel(orderMapped)
 
         getOrganizationById(res.locals.organization)
         .then(organization => {
 
-            organization.orders.push(orderDoc)
+            organization.orders.push(orderMapped)
             organization.production.push(id)
 
-            organization.save((err, ord) => {
+            organization.save((err, org) => {
                 if(err) reject(err)
     
-                resolve("New order saved")
+                resolve(org)
             })
         })        
     })

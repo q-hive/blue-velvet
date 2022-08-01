@@ -18,7 +18,7 @@ export const newOrganization = (orgData) => {
             employees:  [],
             orders:     [],
             containers: contMapped,
-            customers:  orgData.customers,
+            customers:  orgData.customers || [],
             providers:  [], 
             address:    orgData.address,
         }

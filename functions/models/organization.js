@@ -15,7 +15,7 @@ const Organization = new Schema({
     employees:  { type: [Employee],  required: false   },
     orders:     { type: [Order],     required: false   },
     containers: { type: [Container], required: false   },
-    customers:  { type: [Customer],  required: false   },
+    customers:  { type: [Customer],  required: false, unique: false   },
     providers:  { type: [Provider],  required: false   }, 
     address:    { type: Address,     required: true                }
 },

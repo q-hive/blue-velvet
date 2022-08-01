@@ -14,7 +14,7 @@ export const getProductionForOrder = async (products, organization, filter) => {
 
         // * Obtain organization
         getOrganizationById(res.locals.organization)
-        .then(organization => {
+        .then(async organization => {
             let availableContainers = await organization.containers.find({ available: { $gte: totalTrays } }).exec()
 
             if (prodLines.length == 0) {
@@ -52,17 +52,7 @@ export const getProductionForOrder = async (products, organization, filter) => {
                         batch: prod.batch
                     }
                 }),
-                end: addTimeToDate(filter.started, {
-                    ms:     0,
-                    s:      2, // * Add only 2 weeks
-                    m:      0,
-                    h:      0,
-                    d:      0,
-                    w:      0,
-                    month:  0,
-                    y:      0
-
-                })
+                end: addTimeToDate(filter.started, { w: 2 })
             }
 
             let prodDoc = new prodModel(prodMapped)

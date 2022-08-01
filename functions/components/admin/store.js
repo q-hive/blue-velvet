@@ -6,6 +6,7 @@ import adminAuth from '../../firebaseAdmin.js'
 import { hashPassphrase, genPassphrase } from './helper.js'
 import { newOrganization } from '../organization/store.js'
 import { newPassphrase } from '../passphrase/store.js'
+import { newClient } from '../client/store.js'
 
 
 export function newEmployee(data) {
@@ -86,7 +87,8 @@ export function newAdmin(data) {
                 owner:      id,
                 name:       data.organization.name,
                 address:    data.organization.address,
-                containers: data.organization.containers
+                containers: data.organization.containers,
+                customers:   data.organization.customers
             }
             
             newOrganization(orgData)
@@ -118,10 +120,10 @@ export function newAdmin(data) {
                         lname:              data.lname,
                         phone:              data.phone,
                         image:              data.image,
-                        businessName:       data.businessName,
+                        businessName:       data.organization.name,
                         socialInsurance:    data.socialInsurance,
                         bankAccount:        data.bankAccount,
-                        address:            data.address
+                        address:            data.organization.address
                     }
     
                     newClient(clientData)
