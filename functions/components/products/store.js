@@ -1,29 +1,66 @@
 import { mongoose } from '../../mongo.js'
-import Product  from '../../models/product.js'
 import { createProvider } from '../providers/store.js'
 import { createSeed } from '../seeds/store.js'
+import { getOrganizationById } from '../organization/store.js'
 const { ObjectId } = mongoose.Types
 
 const productsCollection = mongoose.connection.collection('products')
 
-export const insertNewProduct = (object) => {
+export const newProduct = (orgId, product) => {
     return new Promise(async (res, rej) => {
-        let seed
-        let provider
-        const productModel = mongoose.model('Product', product)
-        const productDoc = new productModel(object)
+
+        getOrganizationById(orgId)
+        .then(organization => {
+
+            let prodId = new ObjectId()
+            let seedId = new ObjectId()
+            let providerId = new ObjectId()
+
+            let prodMapped = {
+                _id:        prodId,
+                name:       product.name,
+                image:      product.image,
+                desc:       product.desc,
+                status:     'idle',
+                seed:       seedId,
+                provider:   providerId,
+                price:      product.price
+            }
+
+            
+            let seedMapped = {
+                _id: seedId,
+                seedName: product.seed.seedName,
+                product: prodId,
+                batch: product.seed.batch
+            }
+            
+            // * Check if provider exists
+            let prov = await organization.providers.findOne({ name: product.provider.name }).exec()
+            let providerMapped
+            if (prov) {
+                providerMapped = {
+                    _id
+                    email: product.provider.email,
+                    name: product.provider.name,
+                    seeds =
+                }
+            }
+
+        })
+
     
         //*FIRST SEED NEEDS TO BE CREATED
         const seedMapped = {
-            seedId:     object.seed.seedId,
-            seedName:   object.seed.seedName,
+            seedId:     product.seed.seedId,
+            seedName:   product.seed.seedName,
             product:    productDoc._id
         } 
 
         //*If is a new provider, then creates it
         const providerMapped = {
-            email:  object.provider.email,
-            name:   object.provider.name,
+            email:  product.provider.email,
+            name:   product.provider.name,
             seeds: []
         }
         try {
