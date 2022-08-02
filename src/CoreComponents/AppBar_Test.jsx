@@ -23,14 +23,34 @@ import { useNavigate } from "react-router-dom";
 //Theme
 import { BV_THEME } from '../theme/BV-theme';
 
-const pages = ['Products', 'Pricing', 'Blog'];
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
 export const BV_AppBar = () => {
-    
-//appbar
-    const [anchorElNav, setAnchorElNav] = React.useState(null);
-    const [anchorElUser, setAnchorElUser] = React.useState(null);
+  
+  const {logout} = useAuth()
+  
+  //appbar
+  const [anchorElNav, setAnchorElNav] = React.useState(null);
+  const [anchorElUser, setAnchorElUser] = React.useState(null);
+
+  const pages = ['Products', 'Pricing', 'Blog'];
+  const settings = [
+    {
+      label:  'Profile',
+      action: () => console.log("Unavailable") 
+    },
+    {
+      label:  'Account',
+      action: () => console.log("Unavailable") 
+    },
+    {
+      label:  'Dashboard',
+      action: () => console.log("Unavailable") 
+    },
+    {
+      label:  'Logout',
+      action: () => logout() 
+    },
+];
 
     const handleOpenNavMenu = (event) => {
         setAnchorElNav(event.currentTarget);
@@ -149,9 +169,9 @@ export const BV_AppBar = () => {
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
             >
-              {settings.map((setting) => (
-                <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                  <Typography textAlign="center">{setting}</Typography>
+              {settings.map((setting, idx) => (
+                <MenuItem key={idx} onClick={setting.action}>
+                  <Typography textAlign="center">{setting.label}</Typography>
                 </MenuItem>
               ))}
             </Menu>

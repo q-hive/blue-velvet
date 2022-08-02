@@ -131,7 +131,7 @@ export const Login = () => {
                 const { token, user } = response.data.data
                 
                 // updateToken(token)
-                setUser(user)
+                setUser({user, token})
                 navigate(`${user.uid}/${user.role}/dashboard`)
                 
                 return
