@@ -1,22 +1,35 @@
-import { Stack } from '@mui/material'
+import { CircularProgress, Stack } from '@mui/material'
 import React from 'react'
 import useAuth from '../contextHooks/useAuthContext'
 import BV_AppBar from './AppBar_Test'
 import BV_Drawer from './Drawer_Test'
+import auth from '../firebaseInit'
+
 
 export const PrivateRoutes = (props) => {
-    const {user} = useAuth()
-
+    const {user, setUser, loading} = useAuth()
     if(!user) {
         return (
-            <div>
-                NO EXISTE USUARIO, no deberias estar aqui
-            </div>
+            <>
+              {
+                !auth.currentUser && !loading && (
+                  <div>
+                    NO EXISTE USUARIO, no deberias estar aqui
+                  </div>  
+                )
+              }
+
+              {
+              
+                loading && (
+                  <CircularProgress/>  
+                )
+              }
+
+
+            </>
         )
     }
-
-    console.log(props)
-
 
   return (
     <>

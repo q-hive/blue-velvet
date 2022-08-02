@@ -1,6 +1,7 @@
 import { mongoose } from '../mongo.js'
 import Address from './address.js' 
 import Production from './production.js' 
+import Product from './product.js'
 
 const { Schema } = mongoose
 const { ObjectId } = mongoose.Types

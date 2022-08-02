@@ -92,7 +92,7 @@ export const newProduct = (orgId, product) => {
 
 export const insertManyProducts = (array) => {
     return new Promise((resolve, reject) => {
-        const productModel = new mongoose.model('products', product)
+        const productModel = new mongoose.model('products', Product)
 
         productModel.insertMany(array)
         .then(() => {
@@ -119,7 +119,7 @@ export const getAllProducts = () => {
 
 export const updateProduct = (param) => {
     return new Promise((resolve, reject) => {
-        const productModelInstance = new mongoose.model('Product', product)
+        const productModelInstance = new mongoose.model('Product', Product)
         let update
         update = param.value
         if(param.field){
@@ -140,7 +140,7 @@ export const updateProduct = (param) => {
 
 export const deleteProduct = (param) => {
     return new Promise((resolve, reject) => {
-        const productModelInstance = new mongoose.model('Product', product)
+        const productModelInstance = new mongoose.model('Product', Product)
 
         productModelInstance.findByIdAndDelete(param,{} ,(err) => {
             if(err) {

@@ -16,7 +16,7 @@ const Client = new Schema({
     businessName:       { type: String,   required: true, unique: true },
     socialInsurance:    { type: String,   required: false              },
     bankAccount:        { type: String,   required: false              },
-    address:            { type: Address,  required: false               }
+    address:            { type: Address,  required: true               }
 },
 {
     query: {
