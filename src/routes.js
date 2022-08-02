@@ -1,5 +1,5 @@
 //*Admin
-import { SecurityPhraseComponent } from "./modules/Admin/PassPhrase";
+// import { SecurityPhraseComponent } from "./modules/Admin/PassPhrase";
 import { Dashboard } from "./modules/Admin/Dashboard/Dashboard";
 import { ProductionMain } from "./modules/Admin/production/ProductionMain";
 
@@ -9,10 +9,10 @@ import { NewProduct } from "./modules/Admin/production/NewProduct";
 
 
 export const AppRoutes  = [
-    {
-        path:"/:uid/admin",
-        component:<SecurityPhraseComponent/>
-    },
+    // {
+    //     path:"/:uid/admin",
+    //     component:<SecurityPhraseComponent/>
+    // },
     {
         path:"/:uid/admin/dashboard",
         component:<Dashboard/>

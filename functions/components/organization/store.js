@@ -7,45 +7,58 @@ export const newOrganization = (orgData) => {
     return new Promise((resolve, reject) => {
         let orgModel = new mongoose.model('organizations', Organization)
 
+        // * Fill the 'available' field on the data
+        let contMapped = orgData.containers.map(container => {
+            return {...container, available: container.capacity}
+        })
+
         let orgMapped = {
-            name: orgData.name,
-            owner: orgData.owner,
-            employees: [],
-            containers: [],
-            address: orgData.address
-            
+            name:       orgData.name,
+            owner:      orgData.owner,
+            employees:  [],
+            orders:     [],
+            containers: contMapped,
+            customers:  orgData.customers || [],
+            providers:  [], 
+            address:    orgData.address,
         }
 
         let orgDoc = orgModel(orgMapped)
 
-        orgDoc.save((e, org) => {
-            if (e) {
-                reject(e)
-            }
+        orgDoc.save((err, org) => {
+            if (err) reject(err)
+
             resolve(org)
         })
     })
 }
 
-export const getOrganizations = (filters) => {
-    
-    // * Apply filters if requested
-    if (filters.name !== undefined && filters.name != null) {
-        contModel = contModel.byName(filters.name)
-    }
+export const getOrganizations = () => {
+    return new Promise((resolve, reject) => {  
+        orgModel.find({}).exec((err, docs) => {
+            if (err) reject(err)
 
-    if (filters.admin !== undefined && filters.admin != null) {
-        contModel = contModel.byAdmin(filters.admin)
-    }
-
-    return orgModel.find({})
+            resolve(docs)
+        })
+    })   
 }
 
-export const getOrganizationById = (id) => { 
-    return orgModel.findById(id)
+export const getOrganizationById = (id) => {
+    return new Promise((resolve, reject) => {
+        orgModel.findById(id).exec((err, doc) => {
+            if (err) reject(err)
+
+            resolve(doc)
+        })
+    }) 
 }
 
-export const updateOrganization = async (id, edit) => {
-    let org = await orgModel.findOneAndUpdate({ _id: id }, edit, { new: true })
-    return org
+export const updateOrganization = (id, edit) => {
+    return new Promise((resolve, reject) => {
+        orgModel.findOneAndUpdate({ _id: id }, edit, { new: true }).exec((err, doc) => {
+            if (err) reject(err)
+            
+            resolve(doc)
+        })
+    })
 }

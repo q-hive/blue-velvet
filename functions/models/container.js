@@ -1,6 +1,6 @@
-import mongoose from 'mongoose'
-import Production from './production.js'
-import Address from './address.js'
+import { mongoose } from '../mongo.js'
+import Address from './address.js' 
+import Production from './production.js' 
 import Product from './product.js'
 
 const { Schema } = mongoose
@@ -8,13 +8,13 @@ const { ObjectId } = mongoose.Types
 
 
 const Container = new Schema({
-    name:           { type: String,         required: true, unique: true },
-    capacity:       { type: Number,         required: true               }, // * Measured in trays
-    available:      { type: Number,         required: true               }, // * Also in trays
-    employees:      { type: [ObjectId],     required: true               },
-    production:     { type: [Production],   required: true               },
-    products:       { type: [Product],      required: true,              },
-    address:        { type: Address,        required: false              }
+    name:           { type: String,         required: false, unique: false },
+    capacity:       { type: Number,         required: true                 }, // * Measured in trays
+    available:      { type: Number                                         }, // * Also in trays
+    employees:      { type: [ObjectId],     required: true                 },
+    production:     { type: [Production],   required: true                 },
+    products:       { type: [Product],      required: true                 },
+    address:        { type: Address,        required: false                }
 },    
 {
     timestamps: {
@@ -27,9 +27,6 @@ const Container = new Schema({
         },
         byAdmin(admin) {
             return this.where({ admin: admin })
-        },
-        byOrganization(orgId) {
-            return this.where({ organization: orgId })
         },
         byCapacity(capacity) {
             return this.where({ capacity: { $gte: capacity } })

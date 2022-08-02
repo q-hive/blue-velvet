@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import Address from './address.js'
 import Container from './container.js'
+import Customer from './customer.js'
 import Employee from './employee.js'
 import Provider from './provider.js'
 import Order from './order.js'
@@ -8,17 +9,21 @@ import Order from './order.js'
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
-const Organization = new Schema({ 
-    name:       { type: String,      required: true, unique: true  },
+const Organization = new Schema({
+    name:       { type: String,      required: true, unique: false  },
     owner:      { type: ObjectId,    required: true, unique: true  },
-    employees:  { type: [Employee],  required: true                },
-    orders:     { type: [Order],     required: true, unique: true  },
-    containers: { type: [Container], required: true, unique: true  },
-    customers:  { type: [ObjectId],  required: true, unique: true  },
-    providers:  { type: [Provider],  required: true, unique: true  }, 
-    address:    { type: [Address],   required: true                }
+    employees:  { type: [Employee],  required: false   },
+    orders:     { type: [Order],     required: false   },
+    containers: { type: [Container], required: false   },
+    customers:  { type: [Customer],  required: false, unique: false   },
+    providers:  { type: [Provider],  required: false   }, 
+    address:    { type: Address,     required: true                }
 },
 {
+    timestamps: {
+        "createdAt": "created",
+        "updatedAt": "updated"
+    },
     query: {
         byName(name) {
             return this.where({ name: new RegExp(name, 'i') })

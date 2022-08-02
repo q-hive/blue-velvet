@@ -6,7 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start-client": "react-scripts start",
+    "build": "react-scripts build && (cd functions && npm install)",
     "start": "cd functions && npm start"
+  },
+  "engines":{
+    "node":"16.16.0"
   },
   "keywords": [
     "frontend",

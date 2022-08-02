@@ -1,8 +1,8 @@
-import { ObjectId } from 'mongodb'
-import product from '../../models/product.js'
-import {mongoose} from '../../mongo.js'
+import { mongoose } from '../../mongo.js'
+import Product  from '../../models/product.js'
 import { createProvider } from '../providers/store.js'
 import { createSeed } from '../seeds/store.js'
+const { ObjectId } = mongoose.Types
 
 const productsCollection = mongoose.connection.collection('products')
 
@@ -10,7 +10,7 @@ export const insertNewProduct = (object) => {
     return new Promise(async (res, rej) => {
         let seed
         let provider
-        const productModel = mongoose.model('Product', product)
+        const productModel = mongoose.model('Product', Product)
         const productDoc = new productModel(object)
     
         //*FIRST SEED NEEDS TO BE CREATED
@@ -55,7 +55,7 @@ export const insertNewProduct = (object) => {
 
 export const insertManyProducts = (array) => {
     return new Promise((resolve, reject) => {
-        const productModel = new mongoose.model('products', product)
+        const productModel = new mongoose.model('products', Product)
 
         productModel.insertMany(array)
         .then(() => {
@@ -82,7 +82,7 @@ export const getAllProducts = () => {
 
 export const updateProduct = (param) => {
     return new Promise((resolve, reject) => {
-        const productModelInstance = new mongoose.model('Product', product)
+        const productModelInstance = new mongoose.model('Product', Product)
         let update
         update = param.value
         if(param.field){
@@ -103,7 +103,7 @@ export const updateProduct = (param) => {
 
 export const deleteProduct = (param) => {
     return new Promise((resolve, reject) => {
-        const productModelInstance = new mongoose.model('Product', product)
+        const productModelInstance = new mongoose.model('Product', Product)
 
         productModelInstance.findByIdAndDelete(param,{} ,(err) => {
             if(err) {

@@ -3,20 +3,36 @@ import { Container } from '@mui/system'
 import React from 'react'
 import useAuth from '../contextHooks/useAuthContext'
 import BV_Layout from './Layout'
+import { CircularProgress, Stack } from '@mui/material'
+import React from 'react'
+import useAuth from '../contextHooks/useAuthContext'
+import auth from '../firebaseInit'
+
 
 export const PrivateRoutes = (props) => {
-    const {user} = useAuth()
-
+    const {user, setUser, loading} = useAuth()
     if(!user) {
         return (
-            <div>
-                NO EXISTE USUARIO, no deberias estar aqui
-            </div>
+            <>
+              {
+                !auth.currentUser && !loading && (
+                  <div>
+                    NO EXISTE USUARIO, no deberias estar aqui
+                  </div>  
+                )
+              }
+
+              {
+              
+                loading && (
+                  <CircularProgress/>  
+                )
+              }
+
+
+            </>
         )
     }
-
-    console.log(props)
-
 
   return (
     <>

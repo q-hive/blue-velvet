@@ -4,7 +4,7 @@ const { ObjectId } = mongoose.Types
 
 //**NETHERLANDS FOR BETA VERSION */
 //*TODO UPDATE MODEL FROM TEMPLATE
-const Invoice = Schema({
+const Invoice = new Schema({
     client:     { type: ObjectId, required: true               },
     order:      { type: ObjectId, required: true, unique: true },
     cost:       { type: Number,   required: true               },

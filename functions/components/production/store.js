@@ -1,8 +1,6 @@
-// import Production from '../../models/production'
 import Production from '../../models/production.js'
 import { mongoose } from '../../mongo.js'
 import { dateToArray, nextDay } from '../../utils/time.js'
-import { getContainers } from "../container/store.js"
 
 
 const prodModel = mongoose.model('production', Production)
@@ -13,6 +11,18 @@ export const getProductionForOrder = async (products, organization, filter) => {
         // * IF no production line is fit to host the order, a new production line must be returned
 
         let totalTrays = products.map(prod => prod.trays).reduce((accTrays, trays) => accTrays + trays, 0)
+
+        // * Obtain organization
+        getOrganizationById(res.locals.organization)
+        .then(async organization => {
+            let availableContainers = await organization.containers.find({ available: { $gte: totalTrays } }).exec()
+
+            if (prodLines.length == 0) {
+            
+            }
+
+            return availableContainers
+        })
 
         // * Check for production lines at same day and validate if adding is possible
         let prodLines = await getProductions({
@@ -42,17 +52,7 @@ export const getProductionForOrder = async (products, organization, filter) => {
                         batch: prod.batch
                     }
                 }),
-                end: addTimeToDate(filter.started, {
-                    ms:     0,
-                    s:      2, // * Add only 2 weeks
-                    m:      0,
-                    h:      0,
-                    d:      0,
-                    w:      0,
-                    month:  0,
-                    y:      0
-
-                })
+                end: addTimeToDate(filter.started, { w: 2 })
             }
 
             let prodDoc = new prodModel(prodMapped)

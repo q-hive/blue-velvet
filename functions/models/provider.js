@@ -1,4 +1,4 @@
-import mongoose from 'mongoose'
+import { mongoose } from '../mongo.js'
 import Seed from './seed.js'
 
 const { Schema } = mongoose

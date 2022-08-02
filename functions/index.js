@@ -12,15 +12,18 @@ import {
 import { authRoutes } from './network/routes.js'
 
 
-var port = normalizePort(9999 || process.env.PORT)
+var port = normalizePort(process.env.PORT || 9999)
 
 const app = express()
 
 app.set('port', port)
 
-app.use(express.json())
-app.use(fileUpload())
+const {pathname: buildPath} = new URL('../build', import.meta.url) 
 
+app.use(express.static(buildPath))
+app.use(express.json())
+
+app.use(fileUpload())
 
 /* Morgan implementation */
 useMorgan(app);
@@ -28,12 +31,18 @@ useMorgan(app);
 /*
  *  CORS Implementation
  */
-const originsList = ["http://localhost:3000"]
+const originsList = ["http://localhost:3000", "https://bluevelvetdeploy.herokuapp.com"]
  
 app.use(cors({
     origin: originsList[0],
     credentials: true
 }));
+
+const {pathname: indexPath} = new URL('../build/index.html', import.meta.url)
+
+app.get(/^\/(?!api).*/, (req, res, ) => {
+    res.sendFile(indexPath)
+})
 
 authRoutes(app)
 organizationRoutes(app)

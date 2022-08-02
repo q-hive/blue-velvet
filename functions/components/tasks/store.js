@@ -1,12 +1,12 @@
 import {mongoose} from '../../mongo.js'
-import task from '../../models/task.js'
+import Task from '../../models/task.js'
 import { ObjectId } from 'mongodb'
 
 export const createTask = (obj) => {
     return new Promise((resolve, reject) => {
         obj._id = new ObjectId()
         
-        const taskModel = new mongoose.model('tasks', task)
+        const taskModel = new mongoose.model('tasks', Task)
 
         const taskDoc = new taskModel(obj)
 
@@ -16,6 +16,12 @@ export const createTask = (obj) => {
             }
             resolve()
         })
+    })
+}
+
+export const generateTasks = (product) => {
+    return new Promise((resolve, reject) => {
+        resolve([])
     })
 }
 

@@ -1,5 +1,5 @@
 import { mongoose } from '../../mongo.js'
-import Container from '../../models/container.js'
+import { Container } from '../../models/index.js'
 import { updateOrganization } from '../organization/store.js'
 import { updateUser } from '../admin/store.js'
 

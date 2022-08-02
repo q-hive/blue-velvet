@@ -1,4 +1,4 @@
-import mongoose from 'mongoose'
+import { mongoose } from '../mongo.js'
 import Step from './step.js'
 
 const { Schema } = mongoose;

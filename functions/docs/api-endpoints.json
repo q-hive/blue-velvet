@@ -513,6 +513,21 @@
                     "containers":    [{
                         "name":         "String",
                         "capacitry":    "Number",
+                        "products":     [{
+                            "name":     "String",
+                            "image":    "String",
+                            "desc":     "String",
+                            "price": {
+                                "amount":       "Number",
+                                "packageSize":  "Number"
+                            },
+                            "parameters": {
+                                "day":          "Number",
+                                "night":        "Number",
+                                "seedingRate":  "Number",
+                                "harvestRate":  "Number"
+                            }
+                        }],
                         "address":      "ADDRESS_STRUCTURE"
                     }]
                 },
@@ -584,7 +599,6 @@
                     "name":         "String",
                     "lname":        "String",
                     "organization": "ObjectId",
-                    "containers":   "[ObjectId]",
                     "phone":        "String",
                     "image":        "String",
                     "salary":       "Number",
