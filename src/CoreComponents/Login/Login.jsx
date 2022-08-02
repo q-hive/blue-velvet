@@ -63,8 +63,6 @@ export const Login = () => {
         e.preventDefault()
 
         setLoading(true)
-        // setUser("false user")
-        // navigate('123456/admin')
         api.api.post('/auth/login', loginData)
         .then(response => {
             if (response.data.data.isAdmin) {
@@ -134,16 +132,17 @@ export const Login = () => {
                 
                 // updateToken(token)
                 setUser(user)
-                navigate(`${user.uid}/${user.role}`)
+                navigate(`${user.uid}/${user.role}/dashboard`)
                 
                 return
+            } else {
+                // * Unrecognized role
+                setAlert({
+                    open:       true,
+                    status:     "error",
+                    message:    "Unrecognized role - Access blocked"
+                })
             }
-            // * Unrecognized role
-            setAlert({
-                open:       true,
-                status:     "error",
-                message:    "Unrecognized role - Access blocked"
-            })
         })
         .catch((err) => {
             console.log(err)
@@ -157,6 +156,12 @@ export const Login = () => {
                     })
                     break;
                 default:
+                    setAlert({
+                        ...alert,
+                        status:"error",
+                        slide:true,
+                        slideMessage:"The data you entered is invalid, please verify the format."
+                    })
                     break;
             }
         })

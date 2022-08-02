@@ -73,27 +73,26 @@ export function newAdmin(data) {
             photoURL: data.image,
             disabled: false,
         })
-        .then((userRecord) => {     
+        .then((userRecord) => {
+            
             console.log('Successfully created new user on firebase:', userRecord.uid);
             
             // * Generate ObjectId for client document
             let id = new ObjectId()
             
             // * Register organization
-            //      * It's impoertant to do this step first to avoid 
-            //      * any inconsistency and provide proper ObjectIds
+            // * It's impoertant to do this step first to avoid 
+            // * any inconsistency and provide proper ObjectIds
             
             let orgData = {
                 owner:      id,
                 name:       data.organization.name,
-                address:    data.organization.address,
-                containers: data.organization.containers,
-                customers:   data.organization.customers
+                address:    data.organization.address
             }
             
             newOrganization(orgData)
             .then(org => {
- 
+                console.log("Succesfully created organization")
                 // * Update customUserClaims
                 adminAuth.setCustomUserClaims(userRecord.uid, { role: "admin", organization: org._id })
                 
@@ -125,6 +124,8 @@ export function newAdmin(data) {
                         bankAccount:        data.bankAccount,
                         address:            data.organization.address
                     }
+
+                    console.log(clientData)
     
                     newClient(clientData)
                     .then(client => resolve(client))

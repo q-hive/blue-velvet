@@ -57,6 +57,7 @@ authRouter.post('/login/admin', (req, res) => {
 
     signInWithEmailAndPassword(auth, req.body.email, req.body.password)
     .then(user => {
+        console.log("Admin signed id")
         adminAuth.verifyIdToken(user._tokenResponse.idToken)
         .then(claims => {
             if (claims.role === 'admin') {
