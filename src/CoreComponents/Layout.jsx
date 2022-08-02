@@ -49,40 +49,69 @@ const BV_Layout = (props) => {
       setMobileOpen(!mobileOpen);
     };
 
+    //User Menu
+    const [anchorElUser, setAnchorElUser] = React.useState(null);
+    const handleOpenUserMenu = (event) => {
+      setAnchorElUser(event.currentTarget);
+    };
+    const handleCloseUserMenu = () => {
+      setAnchorElUser(null);
+    };
+
     
-const adminOptions = [
-                {
-                  label:'Employees',
-                  icon:<GroupsIcon color="primary"/>,
-                }, 
-                {
-                  label:'Production',
-                  icon:<WorkspacesIcon color="primary"/>,
-                }, 
-                {
-                  label:'Sales',
-                  icon:<RequestPageIcon color="primary"/>,
-                }, 
-                {
-                  label:'Client',
-                  icon:<SupportAgentIcon color="primary"/>,
-                }
-              ];
+    const adminOptions = [
+                    {
+                      label:'Employees',
+                      icon:<GroupsIcon color="primary"/>,
+                    }, 
+                    {
+                      label:'Production',
+                      icon:<WorkspacesIcon color="primary"/>,
+                    }, 
+                    {
+                      label:'Sales',
+                      icon:<RequestPageIcon color="primary"/>,
+                    }, 
+                    {
+                      label:'Client',
+                      icon:<SupportAgentIcon color="primary"/>,
+                    }
+                  ];
+
+
+    const settings = [
+                    {
+                      label:  'Profile',
+                      action: () => console.log("Unavailable") 
+                    },
+                    {
+                      label:  'Account',
+                      action: () => console.log("Unavailable") 
+                    },
+                    {
+                      label:  'Dashboard',
+                      action: () => console.log("Unavailable") 
+                    },
+                    {
+                      label:  'Logout',
+                      action: () => logout() 
+                    },
+                ];
 
 
   
     // FRAGMENT , children of Drawer Component 
     const drawer = (
         <>
-          <Toolbar sx={{backgroundColor: "#0E0C8F",}}>
-            
+          <Toolbar />
+          <Toolbar alignItems="center" sx={{backgroundColor: "#0E0C8F", p:2}}>
             <Typography 
                 variant="h6"  
                 component="div" 
                 color="grey.A100" 
                 justifyContent="center" 
                 display="block" 
-                sx={{marginTop:"50%"}}
+                sx={{margin:"7%",}}
             >
                 Administrator Options
             </Typography>
@@ -91,7 +120,7 @@ const adminOptions = [
           
           <Divider />
 
-          <Box sx={{display:"flex", flexDirection:"column", width:"auto", height:"auto", alignItems:"left", justifyContent:"left"}}>
+          <Box sx={{display:"flex", flexDirection:"column", width:"auto", height:"auto", alignItems:"left", justifyContent:"left", p:2}}>
             {adminOptions.map((option) => (
                 <Button sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
                   {option.label}
@@ -104,51 +133,70 @@ const adminOptions = [
         </>
       );
 
-    const container = window !== undefined ? () => window().document.body : undefined;
-
-
-    return (
-        <>
-          <Grid container spacing={1} wrap="wrap">
-            <Grid item xs={12} >
-              
-              {/*APPBAR BEGINS*/}
-                <Box sx={{ display: 'flex' }}>
-                      
-                  <AppBar
-                    position="sticky"
+    // FRAGMENT , cleaner look on layout
+    const appBar = (
+              <>
+                <AppBar
+                    position="fixed"
                     sx={{
                           width: { sm: "100%" },
                           ml: { sm: `0%` },
-                          zIndex:"3000",
-                          height:"5%",
+                          height:"auto",
                           backgroundColor:"#F9F9F9",
-                          alignItems:"space-between"
+                          alignItems:"space-between",
+                          zIndex:BV_THEME.zIndex.drawer + 1,
                         }}
                   >
                     <Toolbar sx={{alignItems:"space-between"}}>
                       
                       
-                      <Typography variant="h6"  component="div" color="primary" sx={{flexGrow: 1}}>
+                      <Typography variant="h6"  component="a" href="#" color="primary" sx={{flexGrow: 1, textDecoration: "none",}}>
                         Blue Velvet
                       </Typography>
                       
                       <IconButton
-                        size="large" edge="end"
+                        size="large" edge={false}
                       >
                         <NotificationsIcon />
                       </IconButton>
+                    
 
-                      <IconButton
-                        size="large" edge="end"
-                      >
-                        <AccountCircle />
-                      </IconButton>
+                      {/*AVATAR BUTTON AND MENU*/ }
+                      <Box sx={{ flexGrow: 0 }}>
+                        <Tooltip title="Open settings">
+                          <IconButton edge={false} onClick={handleOpenUserMenu} sx={{ p: 0 , m: 2}}>
+                            <Avatar alt="test admin" src="/static/images/avatar/2.jpg" />
+                          </IconButton>
+                        </Tooltip>
+                        <Menu
+                          sx={{ mt: '60px' }}
+                          id="menu-appbar"
+                          anchorEl={anchorElUser}
+                          anchorOrigin={{
+                            vertical: 'top',
+                            horizontal: 'right',
+                          }}
+                          keepMounted
+                          transformOrigin={{
+                            vertical: 'top',
+                            horizontal: 'right',
+                          }}
+                          open={Boolean(anchorElUser)}
+                          onClose={handleCloseUserMenu}
+                        >
+                          {settings.map((setting, idx) => (
+                            <MenuItem key={idx} onClick={setting.action}>
+                              <Typography textAlign="center">{setting.label}</Typography>
+                            </MenuItem>
+                          ))}
+                        </Menu>
+                      </Box>
+                      {/* END AVATAR BUTTON AND MENU*/ }
 
                       <IconButton
                           color="inherit"
                           aria-label="open drawer"
-                          edge="end"
+                          edge="false"
                           onClick={handleDrawerToggle}
                           sx={{ mr: 2, display: { md: 'none' } }}
                       >
@@ -156,14 +204,25 @@ const adminOptions = [
                       </IconButton>
                     </Toolbar>
                     
-                   </AppBar>
-                      
-                </Box>
+                </AppBar>
+              </>
+              )
+
+    const container = window !== undefined ? () => window().document.body : undefined;
+
+
+    return (
+        <>
+        
+          <Grid container spacing={1} noWrap>
+            <Grid item xs={12} >
+              {/*APPBAR BEGINS*/}
+                {appBar}
               {/*APPBAR ENDS*/}
             </Grid>
 
 
-            <Grid item xs='auto'  md={3} lg={2} wrap="wrap">
+            <Grid item xs='auto'  md={3} lg={2} wrap>
             
               <Drawer
                 container={container}
@@ -175,7 +234,7 @@ const adminOptions = [
                 }}
                 sx={{
                   display: { xs: 'block', md: 'none' },
-                  '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 'auto' },
+                  '& .MuiDrawer-paper': { boxSizing: 'border-box', width: '80%' },
                   
                 }}
               >
@@ -195,11 +254,11 @@ const adminOptions = [
             </Grid>
 
 
-            <Grid item xs={true} wrap="wrap">
+            <Grid item xs={true} wrap>
+              <Toolbar />
               {props.children}
             </Grid>
           </Grid>
-        
         </>
     )}
 
