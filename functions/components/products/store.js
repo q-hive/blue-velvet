@@ -58,6 +58,11 @@ export const newProduct = (orgId, contId, product) => {
             }  
 
             // * Save product on specified container
+            if (contId == undefined) {
+                organization.containers.forEach(container => {
+                    
+                })
+            }
             organization.containers.findById(contId).exec()
             .then(container => {
                 container.products.push(prodMapped)
