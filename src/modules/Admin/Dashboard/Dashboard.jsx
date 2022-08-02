@@ -13,10 +13,7 @@ import useAuth from '../../../contextHooks/useAuthContext'
 import { useNavigate } from "react-router-dom";
 //Theme
 import { BV_THEME } from '../../../theme/BV-theme';
-//Appbar
-import BV_AppBar from '../../../CoreComponents/AppBar_Test';
-//Drawer
-import BV_Drawer from '../../../CoreComponents/Drawer_Test';
+
 
 export const Dashboard = () => {
     const {user} = useAuth()
