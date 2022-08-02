@@ -24,10 +24,12 @@ authRouter.post('/login', (req, res) => {
 
     signInWithEmailAndPassword(auth, req.body.email, req.body.password)
     .then(userRegister => {
+        console.log("Signed in")
         adminAuth.verifyIdToken(userRegister._tokenResponse.idToken)
         .then(claims => {
+            console.log("Id token verified")
             if (claims.role === 'admin') {
-                return success(req, res, 200, "Authentication succeed", { isAdmin: true })
+                return success(req, res, 200, "Authentication succeed", { isAdmin: true, token:userRegister._tokenResponse.idToken, user:userRegister })
             } else if (claims.role === 'employee') {
                 // * Obtain organization info to query for employee data
                 getOrganizationById(claims.organization)
