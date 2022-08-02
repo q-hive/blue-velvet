@@ -6,7 +6,7 @@ const { ObjectId } = mongoose.Types
 
 const productsCollection = mongoose.connection.collection('products')
 
-export const newProduct = (orgId, product) => {
+export const newProduct = (orgId, contId, product) => {
     return new Promise(async (res, rej) => {
 
         getOrganizationById(orgId)
@@ -14,8 +14,7 @@ export const newProduct = (orgId, product) => {
 
             let prodId = new ObjectId()
             let seedId = new ObjectId()
-            let providerId = new ObjectId()
-
+            
             let prodMapped = {
                 _id:        prodId,
                 name:       product.name,
@@ -35,17 +34,38 @@ export const newProduct = (orgId, product) => {
                 batch: product.seed.batch
             }
             
-            // * Check if provider exists
+            // * Check if provider exists and update whether it exists or not
             let prov = await organization.providers.findOne({ name: product.provider.name }).exec()
-            let providerMapped
-            if (prov) {
-                providerMapped = {
-                    _id
-                    email: product.provider.email,
-                    name: product.provider.name,
-                    seeds =
+            if (prov != undefined) {
+                prov.seeds.push(seedMapped)
+                prov.save((err, doc) => {
+                    if (err) reject(err)
+                })
+            } else {
+                let providerId = new ObjectId()
+                let providerMapped = {
+                    _id:    providerId,
+                    email:  product.provider.email,
+                    name:   product.provider.name,
+                    seeds:  [seedId]
                 }
-            }
+
+                organization.providers.push(providerMapped)
+
+                organization.save((err, doc) => {
+                    if (err) reject(err)
+                })
+            }  
+
+            // * Save product on specified container
+            organization.containers.findById(contId).exec()
+            .then(container => {
+                container.products.push(prodMapped)
+
+                container.save((err, doc) => {
+                    if (err) reject(err)
+                })
+            })
 
         })
 
