@@ -18,6 +18,8 @@ import WorkspacesIcon from '@mui/icons-material/Workspaces';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import NearbyErrorIcon from '@mui/icons-material/NearbyError';
+import TollIcon from '@mui/icons-material/Toll';
 
 //*ROUTER
 import { navigate } from '../utils/router'
@@ -57,8 +59,13 @@ const BV_Layout = (props) => {
     const handleCloseUserMenu = () => {
       setAnchorElUser(null);
     };
-
     
+
+    //TASKS icons
+    const importantTask = <NearbyErrorIcon large color="primary" />;
+    const normalTask = <TollIcon large color="primary" />;
+
+    //Admin Options Drawer buttons content (label and Icon)
     const adminOptions = [
                     {
                       label:'Employees',
@@ -77,9 +84,30 @@ const BV_Layout = (props) => {
                       icon:<SupportAgentIcon color="primary"/>,
                     }
                   ];
+    
+    
+    //Drawer Task array (TESTING PURPOSES)
+    const employeeTasks = [
+                    {
+                      label:'Task 1',
+                      icon:importantTask,
+                    }, 
+                    {
+                      label:'Task 2',
+                      icon:normalTask,
+                    }, 
+                    {
+                      label:'Task 3',
+                      icon:importantTask,
+                    }, 
+                    {
+                      label:'Task 4',
+                      icon:normalTask,
+                    }
+                  ];
 
-
-    const settings = [
+    //Settings to show when user avatar is clicked
+    const userSettings = [
                     {
                       label:  'Profile',
                       action: () => console.log("Unavailable") 
@@ -121,8 +149,43 @@ const BV_Layout = (props) => {
           <Divider />
 
           <Box sx={{display:"flex", flexDirection:"column", width:"auto", height:"auto", alignItems:"left", justifyContent:"left", p:2}}>
-            {adminOptions.map((option) => (
-                <Button sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
+            {/* IF admin */}
+              {adminOptions.map((option) => (
+                  <Button sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
+                    {option.label}
+                  </Button>
+                ))
+              }
+            {/*ElSE Employee? */}
+          </Box> 
+            
+          <Divider />
+        </>
+      );
+
+
+      // FRAGMENT , children of Drawer Component if Employee
+      const tasks = (
+        <>
+          <Toolbar alignItems="center" sx={{backgroundColor: "#0958bf", p:1}}>
+            <Typography 
+                variant="h6"  
+                component="div" 
+                color="grey.A100" 
+                justifyContent="center" 
+                display="block" 
+                sx={{marginLeft:"7%",margin:"3%"}}
+            >
+                Tasks
+            </Typography>
+
+          </Toolbar>
+          
+          <Divider />
+
+          <Box sx={{display:"flex", flexDirection:"column", width:"auto", height:"auto", alignItems:"left", justifyContent:"left", p:2}}>
+            {employeeTasks.map((option) => (
+                <Button sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon}  >
                   {option.label}
                 </Button>
               ))
@@ -132,6 +195,7 @@ const BV_Layout = (props) => {
           <Divider />
         </>
       );
+    
 
     // FRAGMENT , cleaner look on layout
     const appBar = (
@@ -184,7 +248,7 @@ const BV_Layout = (props) => {
                           open={Boolean(anchorElUser)}
                           onClose={handleCloseUserMenu}
                         >
-                          {settings.map((setting, idx) => (
+                          {userSettings.map((setting, idx) => (
                             <MenuItem key={idx} onClick={setting.action}>
                               <Typography textAlign="center">{setting.label}</Typography>
                             </MenuItem>
@@ -213,17 +277,15 @@ const BV_Layout = (props) => {
 
     return (
         <>
-        
-          <Grid container spacing={1} noWrap>
+          <Grid container spacing={1}>
+            
+            {/*APPBAR GRID ITEM*/}
             <Grid item xs={12} >
-              {/*APPBAR BEGINS*/}
                 {appBar}
-              {/*APPBAR ENDS*/}
             </Grid>
 
-
-            <Grid item xs='auto'  md={3} lg={2} wrap>
-            
+            {/*DRAWER GRID ITEM*/}
+            <Grid item xs='auto'  md={3} lg={2}>
               <Drawer
                 container={container}
                 variant="temporary"
@@ -239,6 +301,8 @@ const BV_Layout = (props) => {
                 }}
               >
                 {drawer}
+                {/* IF employee */}
+                {tasks}
               </Drawer>
 
               <Drawer
@@ -250,10 +314,12 @@ const BV_Layout = (props) => {
                   open
               >
                 {drawer}
+                {/* IF Employee */}
+                {tasks}
               </Drawer>
             </Grid>
 
-
+            {/*CHILDREN GRID ITEM (PRIVATE ROUTES)*/}
             <Grid item xs={true} wrap>
               <Toolbar />
               {props.children}
