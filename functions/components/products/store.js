@@ -6,27 +6,30 @@ const { ObjectId } = mongoose.Types
 
 const productsCollection = mongoose.connection.collection('products')
 
-export const insertNewProduct = (object) => {
+export const createNewProduct = (object) => {
     return new Promise(async (res, rej) => {
         let seed
         let provider
-        const productModel = mongoose.model('Product', Product)
-        const productDoc = new productModel(object)
+        let productModel
+        let productDoc
+        productModel = mongoose.model('Product', Product)
+        productDoc = new productModel(object)
     
-        //*FIRST SEED NEEDS TO BE CREATED
-        const seedMapped = {
-            seedId:     object.seed.seedId,
-            seedName:   object.seed.seedName,
-            product:    productDoc._id
-        } 
-
-        //*If is a new provider, then creates it
-        const providerMapped = {
-            email:  object.provider.email,
-            name:   object.provider.name,
-            seeds: []
-        }
         try {
+            //*FIRST SEED NEEDS TO BE CREATED
+            const seedMapped = {
+                seedId:     object.seed.seedId,
+                seedName:   object.seed.seedName,
+                product:    productDoc._id
+            } 
+    
+            //*If is a new provider, then creates it
+            const providerMapped = {
+                email:  object.provider.email,
+                name:   object.provider.name,
+                seeds: []
+            }
+
             seed = await createSeed(seedMapped)
 
             providerMapped.seeds.push(seed)
@@ -38,16 +41,16 @@ export const insertNewProduct = (object) => {
             rej(err)
         }
 
-        console.log(productDoc)
-
         productDoc.seed = seed._id
         productDoc.provider = provider._id
         
-        productDoc.save((err) => {
-            if(err) rej(err)                
 
-
+        productDoc.validate()
+        .then(() => {
             res(productDoc)
+        })
+        .catch(err => {
+            rej(err)
         })
     })
     

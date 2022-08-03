@@ -7,10 +7,14 @@ export const createSeed = (seedObj) => {
 
         const seedDoc = new seedModel(seedObj)
 
-        seedDoc.save((err) => {
-            if (err) reject(err)    
-            
+
+        seedDoc.validate()
+        .then(() => {
             resolve(seedDoc)
         })
+        .catch((err) => {
+            reject(err)    
+        })
+
     })
 }

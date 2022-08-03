@@ -26,8 +26,8 @@ export const SimpleProductForm = ({editing, product}) => {
     //*UTILS
     const theme = useTheme(BV_THEME)
     const navigate = useNavigate()
-    const {user} = useAuth()
-
+    const {user, credential} = useAuth()
+    console.log(credential)
     //*DATA STATES
     const [productData, setProductData] = useState({
         name:editing ? product.name : "",
@@ -165,7 +165,13 @@ export const SimpleProductForm = ({editing, product}) => {
     }
 
     const saveProduct = (mappedProduct) => {
-        api.api.post(`${api.apiVersion}/products/`, mappedProduct)
+        console.log(credential)
+        api.api.post(`${api.apiVersion}/products/`, mappedProduct, {
+            headers:{
+                authorization:credential._tokenResponse.idToken,
+                user:user,
+            }
+        })
         .then(response => {
             setDialog({
                 ...dialog,

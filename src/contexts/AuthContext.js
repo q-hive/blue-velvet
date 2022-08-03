@@ -21,34 +21,15 @@ const AuthContext = ({children}) => {
     }
     
     useEffect(() => {
-      auth.onAuthStateChanged((user) => {
-        setUser(user)
+      auth.onAuthStateChanged(async (User) => {
+        setUser(User)
+        const newToken = await User.getIdToken()
         setLoading(false)
+        setCredential({_tokenResponse:{idToken:newToken}})
       })
     }, [])
-    
-    
-    useEffect(() => {
-      if(user){
-        console.log("User exists")
-        if(user.token !== undefined) {
-          setPersistence(getAuth(), browserSessionPersistence)
-          .then(() => {
-            return signInWithCustomToken(getAuth(), user.token)
-          })
-          .then((Ucredential) => {
-            console.log('User with credential, setting session persistance...')
-            console.log(Ucredential)
-            setCredential(() => Ucredential)
-          })
-          .catch((err) => {
-            console.log(err)
-          })
-        }
-      }
-    },[user])
   return (
-    <AuthContextProv.Provider value={{user, setUser, loading, logout}}>
+    <AuthContextProv.Provider value={{user, setUser, loading, logout, credential, setCredential}}>
         {children}
     </AuthContextProv.Provider>
   )

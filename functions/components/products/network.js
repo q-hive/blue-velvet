@@ -10,12 +10,13 @@ import {isValidProductObject, relateOrdersAndTasks} from './controller.js'
 
 //*Store
 import {
-    insertNewProduct,
+    createNewProduct,
     getAllProducts,
     insertManyProducts,
     updateProduct,
     deleteProduct
 } from './store.js'
+import { getContainerById, updateContainer } from '../container/store.js'
 
 const router = express.Router()
 
@@ -77,10 +78,12 @@ router.post('/', (req, res) => {
     
     if(isValidProductObject(req.body)){
         //*CREATE PRODUCT
-        insertNewProduct(req.body)
+        createNewProduct(req.body)
         //*promise message returned
-        .then(pm => {
-            success(req, res,201,pm)
+        .then(async product => {
+            //*Update container with the new products
+            const update = await updateContainer(res.locals.organization, undefined, product)
+            success(req, res,201,update)
         })
         .catch(err => {
             switch(err.name){
