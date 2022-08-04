@@ -1,8 +1,9 @@
-import { CircularProgress, Stack } from '@mui/material'
+import { Box, Stack } from '@mui/material'
+import { Container } from '@mui/system'
 import React from 'react'
+import BV_Layout from './Layout'
+import { CircularProgress} from '@mui/material'
 import useAuth from '../contextHooks/useAuthContext'
-import BV_AppBar from './AppBar_Test'
-import BV_Drawer from './Drawer_Test'
 import auth from '../firebaseInit'
 
 
@@ -33,10 +34,9 @@ export const PrivateRoutes = (props) => {
 
   return (
     <>
-    <BV_AppBar />
-    <Stack direction={"row"} spacing={1} justifyContent="center">
-      <BV_Drawer />
-      {props.children}
-    </Stack></>
+      <BV_Layout>
+        {props.children}
+      </BV_Layout>
+    </>
   )
 }

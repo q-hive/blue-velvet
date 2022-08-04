@@ -7,10 +7,12 @@ export const createProvider = (obj) => {
 
         const provDoc = new providerModel(obj)
 
-        provDoc.save((err) => {
-            if(err) reject(err)
-
+        provDoc.validate()
+        .then(() => {
             resolve(provDoc)
+        })
+        .catch(err => {
+            reject(err)
         })
     })
 

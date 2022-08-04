@@ -17,6 +17,7 @@ import { LoginInputs } from './LoginInputs'
 
 // * Auth context
 import useAuth from '../../contextHooks/useAuthContext.js'
+import {getAuth,signInWithCustomToken,setPersistence, browserSessionPersistence, signOut} from 'firebase/auth'
 
 
 // * Images
@@ -27,7 +28,7 @@ import api  from        '../../axios.js'
 export const Login = () => {
 
     const navigate = useNavigate()
-    const { setUser } = useAuth()
+    const { setUser, setCredential } = useAuth()
 
     const [tabContext, setTabContext] = useState('0')
     const [loading, setLoading] = useState(false)
@@ -131,8 +132,19 @@ export const Login = () => {
                 const { token, user } = response.data.data
                 
                 // updateToken(token)
-                setUser({user, token})
-                navigate(`${user.uid}/${user.role}/dashboard`)
+                setPersistence(getAuth(), browserSessionPersistence)
+                .then(() => {
+                    setUser({user, token})
+                    return signInWithCustomToken(getAuth(), token)
+                })
+                .then((Ucredential) => {
+                    console.log('User with credential, setting session persistance...')
+                    setCredential(() => Ucredential)
+                    navigate(`${user.uid}/${user.role}/dashboard`)
+                })
+                .catch((err) => {
+                    console.log(err)
+                })
                 
                 return
             } else {

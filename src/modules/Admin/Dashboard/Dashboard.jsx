@@ -1,7 +1,7 @@
 import React from 'react'
 
 //*MUI COMPONENTS
-import { Box, Button, Stack, useTheme } from '@mui/material'
+import { Box, Button, Container, Stack, useTheme } from '@mui/material'
 
 //*ROUTER
 import { navigate } from '../../../utils/router'
@@ -13,10 +13,7 @@ import useAuth from '../../../contextHooks/useAuthContext'
 import { useNavigate } from "react-router-dom";
 //Theme
 import { BV_THEME } from '../../../theme/BV-theme';
-//Appbar
-import BV_AppBar from '../../../CoreComponents/AppBar_Test';
-//Drawer
-import BV_Drawer from '../../../CoreComponents/Drawer_Test';
+
 
 export const Dashboard = () => {
     const {user} = useAuth()
@@ -32,24 +29,24 @@ export const Dashboard = () => {
   return (
     <>
     
-    <Box sx={{display:"flex", flexDirection:"column", width:"100vw", height:"100vh", alignItems:"center", justifyContent:"center"}}>
     
+    <Box width="100%">
+        <Box sx={{display:"flex", flexDirection:"column", height:"100vh", alignItems:"center", justifyContent:"center"}}>
+            <Button sx={theme.button.dashboard} id="employees" onClick={handleRedirect} variant='contained'>
+                Employees
+            </Button>
+            <Button sx={theme.button.dashboard} id="production" onClick={handleRedirect} variant='contained'>
+                Production
+            </Button>
+            <Button sx={theme.button.dashboard} id="sales" onClick={handleRedirect} variant='contained'>
+                Sales
+            </Button>
+            <Button sx={theme.button.dashboard} id="Client" onClick={handleRedirect} variant='contained'>
+                Client
+            </Button>
+        </Box>
+    </Box>
 
-    <Box sx={{display:"flex", flexDirection:"column", width:"100vw", height:"100vh", alignItems:"center", justifyContent:"center"}}>
-        <Button sx={theme.button.dashboard} id="employees" onClick={handleRedirect} variant='contained'>
-            Employees
-        </Button>
-        <Button sx={theme.button.dashboard} id="production" onClick={handleRedirect} variant='contained'>
-            Production
-        </Button>
-        <Button sx={theme.button.dashboard} id="sales" onClick={handleRedirect} variant='contained'>
-            Sales
-        </Button>
-        <Button sx={theme.button.dashboard} id="Client" onClick={handleRedirect} variant='contained'>
-            Client
-        </Button>
-    </Box>
-    </Box>
     
     </>
   )

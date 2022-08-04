@@ -96,77 +96,78 @@ export const ProductionMain = () => {
             console.log(err)
         })
     }, [])
+    
 
   return (
     <>
-        <Box width="75%">
+        <Box width="100%">
             <Container sx={{padding:"2%"}}>
-            <Box sx={
-                
-                {
-                    width:"100%", 
-                    height:"80vh",
-                    "& .header-products-table":{
-                        backgroundColor:BV_THEME.palette.primary.main,
-                        color:"white"
+                <Box sx={
+                    
+                    {
+                        width:"100%", 
+                        height:"80vh",
+                        "& .header-products-table":{
+                            backgroundColor:BV_THEME.palette.primary.main,
+                            color:"white"
+                        }
                     }
-                }
-            }>
+                }>
 
-                <UserDialog
-                setDialog={setDialog}
-                dialog={dialog}
-                open={dialog.open}
-                title={dialog.title}
-                content={dialog.message}
-                actions={dialog.actions}
-                />
-                
+                    <UserDialog
+                    setDialog={setDialog}
+                    dialog={dialog}
+                    open={dialog.open}
+                    title={dialog.title}
+                    content={dialog.message}
+                    actions={dialog.actions}
+                    />
+                    
 
-                <Typography variant="h4" textAlign={"center"} margin={theme.margin.mainHeader}>
-                    Production management (products)
-                </Typography>
-                <Box sx={{
-                        display:"flex", 
-                        justifyContent:{xs:"center",sm:"flex-end"}
-                        }}>
-                    {/* <Button 
-                        variant='text' 
-                        color="primary" 
-                        onClick={handleUpdateTable} 
-                        sx={{display:() => theme.mobile.hidden}}  
-                    >
-                        See production lines
-                    </Button> */}
-                    <Button variant="contained" startIcon={<Add/>} onClick={handleNewProduct} color="primary"  >
-                        Add new product
-                    </Button>
+                    <Typography variant="h4" textAlign={"center"} margin={theme.margin.mainHeader}>
+                        Production management (products)
+                    </Typography>
+                    <Box sx={{
+                            display:"flex", 
+                            justifyContent:{xs:"center",sm:"flex-end"}
+                            }}>
+                        {/* <Button 
+                            variant='text' 
+                            color="primary" 
+                            onClick={handleUpdateTable} 
+                            sx={{display:() => theme.mobile.hidden}}  
+                        >
+                            See production lines
+                        </Button> */}
+                        <Button variant="contained" startIcon={<Add/>} onClick={handleNewProduct} color="primary"  >
+                            Add new product
+                        </Button>
+                    </Box>
+                    <DataGrid
+                        columns={columnsState}
+                        rows={rows}
+                        getRowId={(row) => {
+                            return row._id
+                        }}
+                        getRowHeight={() => 'auto'}
+                        sx={{marginY:"2vh", display:() => theme.mobile.hidden}}
+                    />
+
+                    <DataGrid
+                        columns={productsColumnsMobile}
+                        rows={rows}
+                        getRowId={(row) => {
+                            return row._id
+                        }}
+                        onStateChange={(s,e,d) => {
+                            // console.log(s)
+                            // console.log(e)
+                            // console.log(d)
+                        }}
+                        
+                        sx={{marginY:"2vh", display:() => theme.mobile.only}}
+                    />
                 </Box>
-                <DataGrid
-                columns={columnsState}
-                rows={rows}
-                getRowId={(row) => {
-                    return row._id
-                }}
-                getRowHeight={() => 'auto'}
-                sx={{marginY:"2vh", display:() => theme.mobile.hidden}}
-                />
-
-                <DataGrid
-                columns={productsColumnsMobile}
-                rows={rows}
-                getRowId={(row) => {
-                    return row._id
-                }}
-                onStateChange={(s,e,d) => {
-                    // console.log(s)
-                    // console.log(e)
-                    // console.log(d)
-                }}
-                
-                sx={{marginY:"2vh", display:() => theme.mobile.only}}
-                />
-            </Box>
             </Container>
         </Box>
     </>

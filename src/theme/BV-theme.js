@@ -6,6 +6,7 @@ export const BV_THEME = createTheme({
     palette: {
         primary: {
             main: "#0E0C8F",
+            light: "#312ef0"
         },
         secondary: {
             main:"#FF0000",
