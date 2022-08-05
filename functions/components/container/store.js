@@ -1,10 +1,12 @@
 import { mongoose } from '../../mongo.js'
-import { Container } from '../../models/index.js'
+import Container from '../../models/container.js'
+import Organization from '../../models/organization.js'
+import {updateUser} from '../admin/store.js'
 import { updateOrganization } from '../organization/store.js'
-import { updateUser } from '../admin/store.js'
 
 const { ObjectId } = mongoose.Types
 const contModel = mongoose.model('containers', Container)
+const orgModel = mongoose.model('organizations', Organization)
 
 export const newContainer = (contData) => {
     return new Promise((resolve, reject) => {
@@ -63,16 +65,23 @@ export const getContainers = (filters) => {
 
 }
 
-export const getContainerById = (id) => {
+export const getContainerById = (id, orgId) => {
     return contModel.findById(ObjectId(id))
 }
 
-export const updateContainer = async (id, edit) => { 
-    let cont = await contModel.findOneAndUpdate({ _id: id }, edit, { new: true })
-    return cont
+export const updateContainer = async (orgId,id, edit) => { 
+    //*TODO: Change to one query because is updateContainer not updateProductInContainer
+    let org = await orgModel.findById(orgId)
+    console.log(org.containers[0])
+    console.log(Object.keys(edit))
+    org.containers[0][Object.keys(edit)[0]].push(edit[Object.keys(edit)[0]])
+    await org.save()
+
+    return org
 }
 
 export const updateContainers = async (ids, edit) => {
     let cont = await contModel.updateMany({ _id: { $in: ids }}, edit, { multi: true, new: true })
+
     return cont
 }

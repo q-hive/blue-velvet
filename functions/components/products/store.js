@@ -2,31 +2,37 @@ import { mongoose } from '../../mongo.js'
 import Product  from '../../models/product.js'
 import { createProvider } from '../providers/store.js'
 import { createSeed } from '../seeds/store.js'
+import Organization from '../../models/organization.js'
 const { ObjectId } = mongoose.Types
 
 const productsCollection = mongoose.connection.collection('products')
+const orgModel = mongoose.model("organization", Organization)
 
-export const insertNewProduct = (object) => {
+
+export const createNewProduct = (object) => {
     return new Promise(async (res, rej) => {
         let seed
         let provider
-        const productModel = mongoose.model('Product', Product)
-        const productDoc = new productModel(object)
+        let productModel
+        let productDoc
+        productModel = mongoose.model('Product', Product)
+        productDoc = new productModel(object)
     
-        //*FIRST SEED NEEDS TO BE CREATED
-        const seedMapped = {
-            seedId:     object.seed.seedId,
-            seedName:   object.seed.seedName,
-            product:    productDoc._id
-        } 
-
-        //*If is a new provider, then creates it
-        const providerMapped = {
-            email:  object.provider.email,
-            name:   object.provider.name,
-            seeds: []
-        }
         try {
+            //*FIRST SEED NEEDS TO BE CREATED
+            const seedMapped = {
+                seedId:     object.seed.seedId,
+                seedName:   object.seed.seedName,
+                product:    productDoc._id
+            } 
+    
+            //*If is a new provider, then creates it
+            const providerMapped = {
+                email:  object.provider.email,
+                name:   object.provider.name,
+                seeds: []
+            }
+
             seed = await createSeed(seedMapped)
 
             providerMapped.seeds.push(seed)
@@ -38,16 +44,16 @@ export const insertNewProduct = (object) => {
             rej(err)
         }
 
-        console.log(productDoc)
-
         productDoc.seed = seed._id
         productDoc.provider = provider._id
         
-        productDoc.save((err) => {
-            if(err) rej(err)                
 
-
+        productDoc.validate()
+        .then(() => {
             res(productDoc)
+        })
+        .catch(err => {
+            rej(err)
         })
     })
     
@@ -67,51 +73,72 @@ export const insertManyProducts = (array) => {
     })
 }
 
-export const getAllProducts = () => {
-    return new Promise((resolve, reject) => {
-        productsCollection.find({}).toArray((err, data) => {
-            if(err){
-                reject(err)
-            }
-
-            resolve(data)
-        })
-        
-    })
-}
-
-export const updateProduct = (param) => {
-    return new Promise((resolve, reject) => {
-        const productModelInstance = new mongoose.model('Product', Product)
-        let update
-        update = param.value
-        if(param.field){
-            update = {
-                [param.field]:param.value
-            }    
+export const getAllProducts = (orgId) => {
+    return new Promise(async (resolve, reject) => {
+        const org =  await orgModel.findById(orgId)
+        if(!org){
+            return reject("No organization found")
+        }
+        const container =  org.containers[0]
+        if(!container) {
+            return reject("No containers found")
         }
 
-        productModelInstance.findByIdAndUpdate(param.id, update , {}, (err) => {
-            if(err){
-                reject(err)
-                return
-            }
-            resolve("Product updated")
+        const products = container.products
+
+        if(!products){
+            return reject("No products found")
+        }
+
+        resolve(products)
+    })
+}
+
+export const updateProduct = (orgId, id, field, value) => {
+    return new Promise(async (resolve, reject) => {
+        const org = await orgModel.findById(orgId)
+
+        if(org === null || org === undefined) {
+            reject("No organization found")
+        }
+
+
+        const product = org.containers[0].products.id(id)
+
+        if(product === null || product === undefined) {
+            reject("No product found")
+        }
+
+        product[field] = value
+
+        org.save((err) => {
+            if(err) reject(err)
+            
+            resolve(org)
         })
     })
 }
 
-export const deleteProduct = (param) => {
+export const deleteProduct = (orgId, id) => {
     return new Promise((resolve, reject) => {
-        const productModelInstance = new mongoose.model('Product', Product)
+        const org = orgModel.findById(orgId)
 
-        productModelInstance.findByIdAndDelete(param,{} ,(err) => {
-            if(err) {
-                reject(err)
-                return
-            }
+        if(org === null || org === undefined) {
+            reject("No organization found")
+        }
 
-            resolve("Deleted")
+        const product = org.containers[0].products.id(id)
+
+        if(product === null || product === undefined) {
+            reject("No product found")
+        }
+
+        product.remove()
+
+        org.save((err) => {
+            if(err) reject(err)
+
+            resolve("Doc removed")
         })
     })
 }

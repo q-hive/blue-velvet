@@ -85,9 +85,8 @@ export function newAdmin(data) {
             // * any inconsistency and provide proper ObjectIds
             
             let orgData = {
-                owner:      id,
-                name:       data.organization.name,
-                address:    data.organization.address
+                ...data.organization,
+                owner:      id
             }
             
             newOrganization(orgData)
@@ -149,5 +148,11 @@ export function newAdmin(data) {
             console.log('Error creating new admin user on firebaseAtuh:', error)
             reject(error)
         })
+    })
+}
+
+export const updateUser = () => {
+    return new Promise((resolve, reject) => {
+        resolve()
     })
 }

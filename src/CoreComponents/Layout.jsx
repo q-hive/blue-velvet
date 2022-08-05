@@ -35,7 +35,7 @@ import { BV_THEME } from '../theme/BV-theme';
 
 
 const BV_Layout = (props) => {
-    const {user} = useAuth()
+    const {user, logout} = useAuth()
 
     const theme = useTheme(BV_THEME)
 

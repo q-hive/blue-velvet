@@ -19,9 +19,15 @@ import { breakpoints } from '@mui/system'
 import api from '../../../axios'
 import { useNavigate } from 'react-router-dom'
 import { UserModal } from '../../../CoreComponents/UserActions/UserModal'
+import useAuth from '../../../contextHooks/useAuthContext'
 
 export const ProductionMain = () => {
+    
     const theme = useTheme(BV_THEME);
+    //*CONTEXTS
+    const {user, credential} = useAuth()
+    
+    //*Render states
     const [columnsState, setColumnsState] = useState(productsColumns)
     const [rows, setRows] = useState([])
     const [dialog, setDialog] = useState({
@@ -31,16 +37,12 @@ export const ProductionMain = () => {
         actions:[]
     })
 
+    //*Network, routing and api
     const navigate = useNavigate()
 
     const handleMobileTable = () => {
         setColumnsState(productsColumnsMobile)
     }
-
-    const handleUpdateTable = () => {
-        //*This functions is going to dissapear is no longer needed
-    }
-
     const handleNewProduct = () => {
         setDialog({
             ...dialog,
@@ -77,23 +79,49 @@ export const ProductionMain = () => {
     useEffect(() => {
         const requests = async () => {
             //*API SHOULD ACCEPT PARAMETERS IN ORDER TO GET THE MERGED DATA FROM ORDERS AND TASKS
-            //*TODO API SHOULD REQUEST FOR PRODUCTION LINES
-            const productsRequest = await api.api.get(`${api.apiVersion}/products/?orders&&tasks`)
-            const allProducts = await api.api.get(`${api.apiVersion}/products/`)
-            productsRequest.data.products = true
-            window.localStorage.setItem('products', JSON.stringify(allProducts.data))
-            return [productsRequest.data]
+            const productsRequest = await api.api.get(`${api.apiVersion}/products/?orders&&tasks`, {
+                headers:{
+                    user:user,
+                    authorization:credential._tokenResponse.idToken
+                }
+            })
+            return productsRequest.data
         }
 
         requests()
-        .then(resArray => {
-            //*If the data requested is valid (contains all the fields of the GridColDef) 
-            //*then set the rows (first products) data in order to render it in table
-            const products = resArray.find((response) => response.products === true)
+        .then(products => {
+            if(products.data.length === 0){
+                return setDialog((dialog) => {
+                    return ({
+                        ...dialog,
+                        open:   true,
+                        title:  "No products added",
+                        message:"Your container doesnt have any product, please create a new one.",
+                        actions:[
+                            {
+                                label:"Create new product",
+                                execute:() => handleNewProduct()
+                            }
+                        ]
+                    })
+                })
+            }
             setRows(products.data)
         })
         .catch(err => {
             console.log(err)
+            setDialog({
+                ...dialog,
+                open:true,
+                title:"Error getting products",
+                message:"Sorry, we are having trouble to get the products. Try again.",
+                actions:[
+                    {
+                        label:"Reload page",
+                        execute:() => window.location.reload()
+                    }
+                ]
+            })
         })
     }, [])
 
@@ -182,14 +210,6 @@ export const ProductionMain = () => {
                             display:"flex", 
                             justifyContent:{xs:"center",sm:"flex-end"}
                             }}>
-                        {/* <Button 
-                            variant='text' 
-                            color="primary" 
-                            onClick={handleUpdateTable} 
-                            sx={{display:() => theme.mobile.hidden}}  
-                        >
-                            See production lines
-                        </Button> */}
                         <Button variant="contained" startIcon={<Add/>} onClick={handleNewProduct} color="primary"  >
                             Add new product
                         </Button>

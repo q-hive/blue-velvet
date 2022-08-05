@@ -21,10 +21,10 @@ export const getPassphraseByUid = (uid) => {
 export const isAuthenticated = (req, res, next) => {
 
 
-    return next()
+    // return next()
     // * Verify request contains an ID Token.
     if (!(req.headers.authorization && req.headers.user)) {
-        error(req, res, 401, "You have no authorization header")
+        error(req, res, 401, "Youre not an allowed user", new Error("User without authorization header or it is not an user"))
         return
     }
 

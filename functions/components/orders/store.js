@@ -1,10 +1,15 @@
 import { mongoose } from '../../mongo.js'
 let { ObjectId } = mongoose.Types
+
+//*Schema
+import Organization from '../../models/organization.js'
 import Order from '../../models/order.js'
+
 import { getProductionForOrder } from '../production/store.js'
 import { addTimeToDate } from '../../utils/time.js'
 import { getOrganizationById } from '../organization/store.js'
 
+const orgModel = mongoose.model('organization', Organization)
 
 export const createNewOrder = (order) => {
     return new Promise(async (resolve, reject) => {
@@ -60,16 +65,23 @@ export const createNewOrder = (order) => {
     })
 }
 
-export const getOrdersByProd = (id) => {
-    return new Promise((resolve, reject) => {
+export const getOrdersByProd = (orgId, id) => {
+    return new Promise(async (resolve, reject) => {
         // TODO: Corregir query
-        ordersCollection
-        .find({products:[id]})
-        .toArray((err, data) => {
-            if(err){
-                reject(err)
-            }
-            resolve(data)
-        })
+        const org = await orgModel.findById(orgId)
+
+        if(!org){
+            return reject("No organization found")
+        }
+
+        const orders = org.orders
+        
+        if(!orders ||  orders.length == 0) {
+            return resolve(orders)
+        }
+
+        const orderByProd = orders.products.id(id)
+
+        resolve(orderByProd)
     })
 }
