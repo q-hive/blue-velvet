@@ -5,7 +5,7 @@ import { newEmployee, newAdmin } from './store.js'
 const router = express.Router()
 
 router.post('/employee', (req, res) => {
-    newEmployee(req.body)
+    newEmployee(res, req.body)
     .then(result => {
         success(req, res, 201, "Employee has been created successfully", result)
     })

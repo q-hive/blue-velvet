@@ -30,7 +30,7 @@ export const AppRoutes  = [
         component:<NewProduct edit={true}/>
     },
     {
-        path:"/:uid/employee",
+        path:"/:uid/employee/dashboard",
         component:<ContainerEmployeeComponent/>
     },
 ]
