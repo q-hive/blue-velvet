@@ -145,34 +145,7 @@ export const ProductionMain = () => {
   return (
     <>  
 
-        {/*Employee Tasks BEGINS*/}
-            <Container maxWidth="md">
-                <Box py={8} width="100%"  alignItems="center">
-                    <Typography variant="h4" textAlign={"center"} margin={theme.margin.mainHeader}>
-                            Employee Tasks
-                    </Typography>
-
-                    <Box width="100%" height="60%" textAlign='center' p={5} sx={{border:"2px solid #e3e3e3", borderRadius:"4px"}} justifyContent="center">
-                        
-                            <Box sx={{display:"flex", flexDirection:"column", width:"auto", height:"auto", p:2}}>
-                                
-                                <Container maxWidth="xs">
-                                    {employeeTasks.map((option) => (
-                                            <Button sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()}  >
-                                                {option.label}
-                                            </Button>
-                                        ))
-                                    }
-
-                                    <Button variant="contained" sx={theme.button.standard}>
-                                        Finish Task
-                                    </Button>
-                                </Container>
-                            </Box>
-                        
-                    </Box>
-                </Box>
-            </Container>
+        
 
 
 
