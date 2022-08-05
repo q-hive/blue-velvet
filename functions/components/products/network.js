@@ -22,21 +22,15 @@ const router = express.Router()
 
 //*Returns all the products and if requested returns all their related tasks and orders
 router.get('/', (req, res) => {
-    //*TODO IF THERE IS A QUERY STRING ASKING FOR SPECIFIC RESPONSE SHIULD USE OTHER CONTROLLER INSTEAD OF getAllProducts
-    //*TODO Determine valid query strings for this route like: 
-    //* ["?tasks (this returns all the products and the tasks related to it) "]
-    //* ["?orders (this returns all the products and the orders related to it) "]
-    //* ["?orders&tasks (this returns all the products and the orders related to them)"]
-
     const validQueries = ["orders", "tasks"]
-
+    const orgId = res.locals.organization
     //*This is true if request has some of the valid queries
     if(hasQueryString(req,validQueries)){
         //* If are all the valid queries we use the relateOrdersAndTasks 
         //* controller if not, use a normal filter in store controller
         const areAll = validQueries.every(key => Object.keys(req.query).includes(key))
         if(areAll){
-            relateOrdersAndTasks()
+            relateOrdersAndTasks(orgId)
             .then(relatedProds => {
                 success(req, res, 200, "Products related with orders and tasks obtained", relatedProds)
             })
@@ -47,7 +41,7 @@ router.get('/', (req, res) => {
         return
     }
 
-    getAllProducts()
+    getAllProducts(orgId)
     .then(data => {
         success(req, res, 200, "Request succeded", data)
     })
@@ -82,7 +76,7 @@ router.post('/', (req, res) => {
         //*promise message returned
         .then(async product => {
             //*Update container with the new products
-            const update = await updateContainer(res.locals.organization, undefined, product)
+            const update = await updateContainer(res.locals.organization, undefined, {products:product})
             success(req, res,201,update)
         })
         .catch(err => {
@@ -106,15 +100,19 @@ router.post('/', (req, res) => {
 router.patch('/', (req, res) => {
     //*TODO VALIDATE IF REQU.QUERY IS RECEIVING AN ID
     if(req.query.id !== undefined && req.query.id !== ""){
+        const orgId = res.locals.organization
         const id = req.query.id
         const field = req.query.field
         const value = req.body.value
+
+        console.log(req.query)
+        
         //*TODO IF THERE IS AN ORDER RELATED TO A PRODUCT. NOTIFY CLIENT THAT MUST FIRST CANCEL THE ORDER
         //*TODO TRIGGER TASKS RELATED TO A PRODUCT CANCELLATION
         //*TODO WHEN AL THIS PROCESSES ARE COMPLETED, THEN UPDATE THE PRODUCT STATE
         //*TODO If a products is updated, then the container must be updated
         
-        updateProduct({id, field, value})
+        updateProduct(orgId,id,field,value)
         .then((result) => {
             success(req, res, 200, result)
         })
@@ -126,9 +124,11 @@ router.patch('/', (req, res) => {
 
 router.delete('/', (req, res) => {
     if(req.query.id !== undefined && req.query.id !== ""){
-        deleteProduct(req.query.id)
-        .then(() => {
-            success(req, res, 200, "Deleted")
+        const orgId = res.locals.organization
+        const id = req.query.id
+        deleteProduct(orgId, id)
+        .then((msg) => {
+            success(req, res, 200, msg)
         })
         .catch(err => {
             error(req, res, 500, "Error deleting product", err)

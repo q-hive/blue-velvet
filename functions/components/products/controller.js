@@ -62,29 +62,32 @@ export const isValidProductObject = (json) => {
 
 
 
-export const relateOrdersAndTasks = async () => {
-    //*ASK FOR PRODUCTS ARRAY
-    const products = await getAllProducts()
-    if(products.length>0) {
-        //* ITERATE ARRAY
-        const tasksByProducts = products.map(async (prod) => {
-            //* AND SEARCH IN TASKS BY PRODUCTS
-            const tasks = await getTaskByProdId(prod._id)
-            //*SEARCH IN ORDERS BY PRODUCT ID
-            const orders = await getOrdersByProd(prod._id)
-            prod.tasks = [...tasks]
-            prod.orders = [...orders]
-            return prod
-        })
-        return Promise.all(tasksByProducts)
-        .then((data) => {
-            return data
-        })
-        .catch((err) => {
-            Promise.reject(err)
-        })
-    }
+export const relateOrdersAndTasks = (orgId) => {
+    return new Promise(async (resolve, reject) => {
+        //*ASK FOR PRODUCTS ARRAY
+        const products = await getAllProducts(orgId)
+        if(products.length>0) {
+            console.log("Has products")
+            //* ITERATE ARRAY
+            const tasksByProducts = products.map(async (prod) => {
+                //* AND SEARCH IN TASKS BY PRODUCTS
+                const tasks = await getTaskByProdId(orgId ,prod._id)
+                //*SEARCH IN ORDERS BY PRODUCT ID
+                const orders = await getOrdersByProd(orgId, prod._id)
+                prod.tasks = [...tasks]
+                prod.orders = [...orders]
+    
+                return prod
+            })
+            return Promise.all(tasksByProducts)
+            .then((data) => {
+                resolve(data)
+            })
+            .catch((err) => {
+                reject(err)
+            })
+        }
 
-    return products
-    //? ARE TASKS REALLY RELATED TO THE PRODUCTS? no
+        reject("No products added")
+    })
 }
