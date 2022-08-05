@@ -71,16 +71,24 @@ export const Login = () => {
                 setOpenPassphrase(true)                
             } else {
                 // * It's employee
-                let { role } = response.data.data.user
-                
-                if (role == 'employee' || role == 'admin') {
+                if (!response.data.data.isAdmin) {
                     
-                    const { token, user } = response.data
+                    const { token, user } = response.data.data
 
-                    // updateToken(token)
-                    setUser(user)   
-                    navigate(`${user.uid}/${user.role}`)
-                    
+                    setPersistence(getAuth(), browserSessionPersistence)
+                    .then(() => {
+                        user.role = "employee"
+                        setUser({user, token})
+                        return signInWithCustomToken(getAuth(), token)
+                    })
+                    .then((Ucredential) => {
+                        console.log('User with credential, setting session persistance...')
+                        setCredential(() => Ucredential)
+                        navigate(`${user.uid}/${user.role}/dashboard`)
+                    })
+                    .catch((err) => {
+                        console.log(err)
+                    })
                     return
                 }
                 
