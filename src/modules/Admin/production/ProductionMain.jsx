@@ -125,32 +125,10 @@ export const ProductionMain = () => {
         })
     }, [])
 
-    //Drawer Task array (TESTING PURPOSES)
-    const employeeTasks = [
-        {
-          label:'Task 1',
-        }, 
-        {
-          label:'Task 2',
-        }, 
-        {
-          label:'Task 3',
-        }, 
-        {
-          label:'Task 4',
-        }
-      ];
     
 
   return (
     <>  
-
-        
-
-
-
-
-
         {/*PRODUCTION MAIN BEGINS*/}
         <Box width="100%" height="100%">
             <Container sx={{padding:"2%"}}>
