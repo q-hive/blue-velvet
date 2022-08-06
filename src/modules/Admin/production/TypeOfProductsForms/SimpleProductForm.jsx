@@ -27,7 +27,7 @@ export const SimpleProductForm = ({editing, product}) => {
     const theme = useTheme(BV_THEME)
     const navigate = useNavigate()
     const {user, credential} = useAuth()
-    console.log(credential)
+
     //*DATA STATES
     const [productData, setProductData] = useState({
         name:editing ? product.name : "",
@@ -45,7 +45,6 @@ export const SimpleProductForm = ({editing, product}) => {
     })
 
     //*Render states
-    const [showTimes, setShowTimes] = useState(false)
     const [dialog, setDialog] = useState({
         open:false,
         title:"",
@@ -144,8 +143,6 @@ export const SimpleProductForm = ({editing, product}) => {
     const mapErrors = () => {
         const errors = []
         Object.entries(productData).forEach((val, index) => {
-            console.log(val)
-            console.log((val[1] === "" || val[1] === null || val[1] === undefined))
             if((val[1] === "" || val[1] === null || val[1] === undefined) && val[0] !== "label"){
                 errors.push(val)
             }

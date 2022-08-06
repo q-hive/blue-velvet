@@ -15,9 +15,9 @@ export const App = () => {
     
   return (
     
-    <AuthContext>
         
-      <Router history={history}>
+    <Router history={history}>
+        <AuthContext>
             <Routes>
                 <Route path="/" element={<Login/>}></Route>
                 
@@ -40,8 +40,8 @@ export const App = () => {
                 })}
                 
             </Routes>
-        </Router>
+        </AuthContext>
+    </Router>
         
-    </AuthContext>
   )
 }
