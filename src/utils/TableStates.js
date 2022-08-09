@@ -8,7 +8,8 @@ import { useNavigate } from "react-router-dom"
 import { UserDialog } from "../CoreComponents/UserFeedback/Dialog"
 
 import { BV_THEME } from "../theme/BV-theme"
-import { Button, Typography } from "@mui/material"
+import { Button, Typography, Box, Accordion, AccordionSummary, AccordionDetails, Divider } from "@mui/material"
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 export const productsColumns = [
     {
@@ -55,20 +56,33 @@ export const productsColumns = [
         headerClassName:"header-products-table",
         headerAlign:"center",
         align:"center",
-        headerName:"Prod. price",
-        width:150,
+        headerName:"Prod. Price",
+        minWidth:180,
         flex:1,
         renderCell:(params) => {
             return (
                 <>
-                    {params.formattedValue.map((obj) => {
-                        return (
-                            <p>
-                                <Typography>Package Size: {obj.packageSize}</Typography> 
-                                <Typography>Price: {obj.amount}</Typography> 
-                            </p>    
-                        )
-                    })}
+                    <Box display="flex" p={1}>
+                        <Accordion>
+                            <AccordionSummary
+                                expandIcon={<ExpandMoreIcon />}
+                                aria-controls="panel1a-content"
+                                id="panel1a-header"
+                            >
+                                <Typography>Price</Typography>
+                            </AccordionSummary>
+
+                            <AccordionDetails>
+                                    {params.formattedValue.map((obj) => {
+                                        return (
+                                            <>
+                                            <Typography align="center">Size {obj.packageSize}:  ${obj.amount} </Typography>
+                                            <Divider /> 
+                                            </>
+                                            )})}
+                            </AccordionDetails>
+                        </Accordion>
+                    </Box>
                 </>
             )
         }
