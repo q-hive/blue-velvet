@@ -76,7 +76,7 @@ export const Login = () => {
                     user.role = "employee"
                     setPersistence(getAuth(), browserSessionPersistence)
                     .then(() => {
-                        setUser({user, token})
+                        setUser({...user, token})
                         // window.localStorage.setItem('usermeta', finalUser)
                         return signInWithCustomToken(getAuth(), token)
                     })

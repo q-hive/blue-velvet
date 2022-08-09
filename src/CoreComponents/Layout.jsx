@@ -162,7 +162,7 @@ const BV_Layout = (props) => {
                 display="block" 
                 sx={{margin:"7%",}}
             >
-                {user.role === "admin" ? "Administrator Options" : "Employee Options"}
+                {user.role === "employee" ?  "Employee Options" : "Administrator Options" }
             </Typography>
 
           </Toolbar>
@@ -171,18 +171,17 @@ const BV_Layout = (props) => {
 
           <Box sx={{display:"flex", flexDirection:"column", width:"auto", height:"auto", alignItems:"left", justifyContent:"left", p:2}}>
             {/* IF admin */}
-            {user.role === "admin" ? 
-              
-                adminOptions.map((option) => (
-                    <Button sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
-                      {option.label}
-                    </Button>
-                  ))
-
+            {user.role === "employee" ? 
+                employeeOptions.map((option) => (
+                  <Button sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
+                    {option.label}
+                  </Button>
+                ))
                 : 
 
                 /*ElSE Employee? */
-                employeeOptions.map((option) => (
+
+                  adminOptions.map((option) => (
                     <Button sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
                       {option.label}
                     </Button>
