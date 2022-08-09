@@ -51,7 +51,7 @@ const BV_Layout = (props) => {
 
   const handleShowTask = (e) => {
     //Should redirect to a page section, but router doesn't support it. Looking for Alternatives
-    navigate(`/${user.uid}/employee/dashboard#${e.target.id + "_task"}`)
+    navigate(`/${user.uid}/employee/tasks/${e.target.id}`)
 }
     const { window } = props;
     const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -68,7 +68,16 @@ const BV_Layout = (props) => {
     const handleCloseUserMenu = () => {
       setAnchorElUser(null);
     };
+
+    const handleFinishTask = () => {
+
+      console.log("task finished");
+    };
     
+    
+    const handleSeeAllTasks = () => {
+        navigate(`/${user.uid}/employee/tasks`)
+    };
 
     //TASKS icons
     const importantTask = <NearbyErrorIcon large color="primary" />;
@@ -210,7 +219,7 @@ const BV_Layout = (props) => {
                 display="block" 
                 sx={{marginLeft:"7%",margin:"3%"}}
             >
-                Tasks
+                Pending Tasks
             </Typography>
 
           </Toolbar>
@@ -218,18 +227,27 @@ const BV_Layout = (props) => {
           <Divider />
 
           <Box display="flex" sx={{display:"flex", flexDirection:"column", width:"auto", height:"auto", p:2}}>
-            {employeeTasks.map((option) => (
+            {employeeTasks.length != 0 ?
+            
+            employeeTasks.map((option) => (
                 
-                  <FormGroup sx={{}}>
-                    <Box display="flex" flexDirection="row">
-                      <Button sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleShowTask} >
-                        {option.label}
-                      </Button>
-                      <FormControlLabel control={<Checkbox />} />
-                    </Box>
-                  </FormGroup>
-              ))
-            }
+              <FormGroup sx={{}}>
+                <Box display="flex" flexDirection="row">
+                  <Button sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleShowTask} >
+                    {option.label}
+                  </Button>
+                  <Button variant="outlined" sx={theme.button.task_done} onClick={handleFinishTask}>Done</Button>
+                </Box>
+              </FormGroup>
+          ))
+        
+            
+            : 
+            
+            <Typography>You currently don't have any pending tasks</Typography>}
+
+            <Button onClick={handleSeeAllTasks}>See all Tasks</Button>
+            
           </Box> 
             
           <Divider />
