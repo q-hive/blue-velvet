@@ -72,14 +72,12 @@ export const Login = () => {
             } else {
                 // * It's employee
                 if (!response.data.data.isAdmin) {
-                    
                     const { token, user } = response.data.data
-
+                    user.role = "employee"
                     setPersistence(getAuth(), browserSessionPersistence)
                     .then(() => {
-                        user.role = "employee"
                         setUser({user, token})
-                        window.localStorage.setItem('usermeta', user)
+                        // window.localStorage.setItem('usermeta', finalUser)
                         return signInWithCustomToken(getAuth(), token)
                     })
                     .then((Ucredential) => {
