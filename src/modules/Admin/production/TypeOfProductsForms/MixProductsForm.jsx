@@ -21,7 +21,7 @@ import useAuth from '../../../../contextHooks/useAuthContext'
 //*Auth
 const amounts = ["25","30","40","50","60","70","80","90"]
 
-export const MixProductsForm = () => {
+export const MixProductsForm = ({edit, product}) => {
     const theme = useTheme(BV_THEME);
     //* STEPPER
     const [activeStep, setActiveStep] = useState(0)
@@ -36,9 +36,11 @@ export const MixProductsForm = () => {
     })
 
     //*RENDER STATES
-    const [actualValue, setActualValue] = useState({
+    const [inputValue, setInputValue] = useState({
         strain:"",
-        amount:null
+        amount:"",
+        label:"",
+        cost:""
     })
     const [showFinal, setShowFinal] = useState(false)
     const [canAdd, setCanAdd] = useState(true)
@@ -72,71 +74,93 @@ export const MixProductsForm = () => {
         },
     })
 
-    const {user} = useAuth()
+    const {user, credential} = useAuth()
     const navigate = useNavigate()
     
-    const handleChangeStrain = (e,v,r) => {
-        //*event, value, reason
+    const handleInputChange = (e,v,r) => {
+        let id
+        if(e.target.id.includes('-')){
+            id = e.target.id.split('-')[0]
+        } else {
+            id = e.target.id
+        }
+        
         switch(r){
+            case "input":
+                setInputValue({
+                    ...inputValue,
+                    [id]:v
+                })
+                break;
             case "selectOption":
-                if(e.target.id.split('-')[0] === "strain"){
-                    setActualValue({
-                        ...actualValue,
-                        strain:v._id
-                    })
-
-                    if(error.strain.failed){
-                        setError({
-                            ...error,
-                            strain:{
-                                failed:false
-                            }
-                        })
-                    }
-                    break
-                } 
+                setInputValue({
+                    ...inputValue,
+                    [id]:v
+                })
+                break;
             case "clear":
-                setActualValue({
-                    ...actualValue,
-                    strain:""
+                setInputValue({
+                    ...inputValue,
+                    [id]:""
                 })
                 break;
             default:
                 break;
+            
         }
+    
     }
 
-    const handleChangeAmount = (e) => {
-        setActualValue({
-            ...actualValue,
-            [e.target.id]:Number(e.target.value)
+    const mapErrors = (object) => {
+        const valuesMapped = Object.entries(object).map((entry, idx) => {
+            if(activeStep === 0) {
+                if(entry[0] === "strain" && (entry[1] === "" || entry[1] === null || entry[1] === undefined)){
+                    return {
+                        [entry[0]]:{
+                            failed:true,
+                            message:"Please select a strain"
+                        }
+                    }
+                }
+                if(entry[0] === "amount" && (entry[1] === "" || entry[1] === null || entry[1] === undefined || entry[1] === 0)){
+                    return {
+                        [entry[0]]:{
+                            failed:true,
+                            message:"Please set an amount."
+                        }
+                    }
+                }
+
+                return {
+                    [entry[0]]:{
+                        failed:false,
+                        message:""
+                    }
+
+                }
+            }
         })
 
-        if(error.amount.failed){
-            setError({
-                ...error,
-                amount:{
-                    failed:false
-                }
-            })
-        }
+        let mappedErrors
+        valuesMapped.forEach(err => {
+            console.log(err)
+            mappedErrors = {
+                ...mappedErrors,
+                ...err
+            }
+        })
+
+        return {mappedErrors}
     }
     
     const handleAddToMixComb = () => {
-        //*Entry array = entrArr
-        // const empty = Object.entries(actualValue).map((entrArr, idx) => {
-            //*This doesnt update both error states when they are empty
-            // if(entrArr[1] === "" || entrArr[1] === null) {
-            //     console.log(error[entrArr[0]])
-            //     setError({
-            //         ...error,
-            //         [entrArr[0]]:{
-            //             failed:true,
-            //             message:"Empty values are not accepted"
-            //         }
-            //     })
-            // }
-        // })
+        const {mappedErrors} = mapErrors(inputValue)
+        console.log(mappedErrors)
+        setError({
+            ...error,
+            ...mappedErrors
+        })
+        return
         
         if(actualValue.amount === null && actualValue.strain === ""){
             setError(
@@ -305,7 +329,12 @@ export const MixProductsForm = () => {
     }
 
     useEffect(() => {
-        api.api.get(`${api.apiVersion}/products/`)
+        api.api.get(`${api.apiVersion}/products/`, {
+            headers:{
+                authorization:credential._tokenResponse.idToken,
+                user:user
+            }
+        })
         .then((response) => {
             setStrains(response.data.data)
         })
@@ -484,7 +513,9 @@ export const MixProductsForm = () => {
 
     }
 
-    
+    useEffect(() => {
+        console.log(error)
+    }, [error])
   return (
     <div style={{}}>
         <UserDialog
@@ -566,7 +597,7 @@ export const MixProductsForm = () => {
                                 getOptionLabel={(option) => {
                                     return option.name
                                 }}
-                                onChange={handleChangeStrain}
+                                onChange={handleInputChange}
                                 sx={theme.input.mobile.fullSize.desktop.halfSize}
                             />
 
@@ -574,7 +605,7 @@ export const MixProductsForm = () => {
                                 id="amount"
                                 label="Amount %"
                                 ref={ref}
-                                onChange={handleChangeAmount}
+                                onChange={handleInputChange}
                                 sx={theme.input.mobile.twoThirds.desktop.quarterSize}
                                 error={error.amount.failed}
                                 helperText={error.amount.message}
@@ -642,11 +673,11 @@ export const MixProductsForm = () => {
                                             alignItems:"center"
                                         }
                                     }>
-                                        <TextField label="Mix Name" id="name" onChange={handleChangeFinalData} variant="outlined" sx={theme.input.mobile.fullSize.desktop.halfSize}>
+                                        <TextField label="Mix Name" id="name" onChange={handleInputChange} variant="outlined" sx={theme.input.mobile.fullSize.desktop.halfSize}>
                                             
                                         </TextField>
 
-                                        <TextField label="Mix Price" id="price" onChange={handleChangeFinalData} variant="outlined" sx={theme.input.mobile.fullSize.desktop.halfSize}>
+                                        <TextField label="Mix Price" id="price" onChange={handleInputChange} variant="outlined" sx={theme.input.mobile.fullSize.desktop.halfSize}>
                                             
                                         </TextField>
 
@@ -663,8 +694,8 @@ export const MixProductsForm = () => {
                                 }>
 
                                         <Fab color="primary" component="label" id="label" aria-label="add" sx={{marginY:"4%"}} >
-                                                <input  type="file" accept="image/*" onChange={handleChangeLabel} hidden />
-                                                <CameraIcon />
+                                            <input  type="file" accept="image/*" onChange={handleChangeLabel} hidden />
+                                            <CameraIcon />
                                         </Fab>
                                     
                                     <Button variant="contained" onClick={handleSendMixData} size='large' >

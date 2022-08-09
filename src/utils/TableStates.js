@@ -60,7 +60,6 @@ export const productsColumns = [
         minWidth:180,
         flex:1,
         renderCell:(params) => {
-            console.log(params)
             return (
                 <>
                     <Box display="flex" p={1}>
@@ -191,9 +190,7 @@ export const productsColumns = [
                             btn_color:"white_btn",
                             type:"privileged",
                             execute:() => {
-                                console.log("Redirect to the type of product screen with prefilled data")    
-                                // navigate(`/${user.uid}/${user.role}/production/editProduct/?id=${params.id}`)
-                                navigate(`/$123456/admin/production/editProduct/?id=${params.id}`)
+                                navigate(`/${user.uid}/${user.role}/production/editProduct/?id=${params.id}`)
                             }
                         },
                         {

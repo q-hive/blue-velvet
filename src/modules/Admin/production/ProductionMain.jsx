@@ -13,12 +13,10 @@ import { UserDialog } from '../../../CoreComponents/UserFeedback/Dialog'
 
 //*UTILS
 import { productsColumns, productsColumnsMobile } from '../../../utils/TableStates'
-import { breakpoints } from '@mui/system'
 
 //*network AND API
 import api from '../../../axios'
 import { useNavigate } from 'react-router-dom'
-import { UserModal } from '../../../CoreComponents/UserActions/UserModal'
 import useAuth from '../../../contextHooks/useAuthContext'
 
 export const ProductionMain = () => {
@@ -90,6 +88,7 @@ export const ProductionMain = () => {
 
         requests()
         .then(products => {
+            window.localStorage.setItem('products', JSON.stringify(products.data))
             if(products.data.length === 0){
                 return setDialog((dialog) => {
                     return ({

@@ -72,13 +72,12 @@ export const Login = () => {
             } else {
                 // * It's employee
                 if (!response.data.data.isAdmin) {
-                    
                     const { token, user } = response.data.data
-
+                    user.role = "employee"
                     setPersistence(getAuth(), browserSessionPersistence)
                     .then(() => {
-                        user.role = "employee"
                         setUser({user, token})
+                        // window.localStorage.setItem('usermeta', finalUser)
                         return signInWithCustomToken(getAuth(), token)
                     })
                     .then((Ucredential) => {
@@ -133,20 +132,15 @@ export const Login = () => {
 
         api.api.post('/auth/login/admin', loginData)
         .then(response => {
-            console.log(response)
-
             if (response.data.data.user.role == 'admin'){
-                    
                 const { token, user } = response.data.data
-                
-                // updateToken(token)
                 setPersistence(getAuth(), browserSessionPersistence)
                 .then(() => {
-                    setUser({user, token})
                     return signInWithCustomToken(getAuth(), token)
                 })
                 .then((Ucredential) => {
-                    console.log('User with credential, setting session persistance...')
+                    setUser({...user, token})
+                    window.localStorage.setItem('usermeta', JSON.stringify(user))
                     setCredential(() => Ucredential)
                     navigate(`${user.uid}/${user.role}/dashboard`)
                 })
