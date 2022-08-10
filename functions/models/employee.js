@@ -11,7 +11,6 @@ const Employee = new Schema({
     lname:          { type: String,     required: false             }, 
     phone:          { type: String,     required: true              },
     image:          { type: String,     required: true              },
-    containers:     { type: [ObjectId], required: true, default: [] },
     salary:         { type: Number,     required: true              },   
     address:        { type: Address,    required: true              },
 },

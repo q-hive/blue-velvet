@@ -5,7 +5,6 @@ const orgModel = new mongoose.model('organizations', Organization)
 
 export const newOrganization = (orgData) => {
     return new Promise((resolve, reject) => {
-        let orgModel = new mongoose.model('organizations', Organization)
 
         // * Fill the 'available' field on the data
         let contMapped = orgData.containers.map(container => {

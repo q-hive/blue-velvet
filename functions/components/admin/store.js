@@ -4,12 +4,12 @@ let { ObjectId } = mongoose.Types
 import adminAuth from '../../firebaseAdmin.js'
 
 import { hashPassphrase, genPassphrase } from './helper.js'
-import { newOrganization } from '../organization/store.js'
+import { getOrganizationById, newOrganization } from '../organization/store.js'
 import { newPassphrase } from '../passphrase/store.js'
 import { newClient } from '../client/store.js'
 
 
-export function newEmployee(data) {
+export function newEmployee(res,data) {
     return new Promise((resolve, reject) => {
         // * Create account on firebase
         adminAuth.createUser({

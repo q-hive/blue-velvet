@@ -70,9 +70,11 @@ export const getContainerById = (id, orgId) => {
 }
 
 export const updateContainer = async (orgId,id, edit) => { 
+    //*TODO: Change to one query because is updateContainer not updateProductInContainer
     let org = await orgModel.findById(orgId)
-    console.log(org.containers)
-    org.containers[0].products.push(edit)
+    console.log(org.containers[0])
+    console.log(Object.keys(edit))
+    org.containers[0][Object.keys(edit)[0]].push(edit[Object.keys(edit)[0]])
     await org.save()
 
     return org

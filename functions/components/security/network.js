@@ -16,6 +16,8 @@ import { signInWithEmailAndPassword } from 'firebase/auth'
 //*FIREBASE ADMIN
 import adminAuth from '../../firebaseAdmin.js'
 import { hashPassphrase } from '../admin/helper.js'
+import mongoose from 'mongoose'
+import Employee from '../../models/employee.js'
 
 const authRouter = express.Router()
 
@@ -33,16 +35,24 @@ authRouter.post('/login', (req, res) => {
             } else if (claims.role === 'employee') {
                 // * Obtain organization info to query for employee data
                 getOrganizationById(claims.organization)
-                .then(organization => {
-                    organization.employees.byUid(userRegister.user.uid).findOne({}).exec()
-                    .then(employee => {
+                .then(async organization => {
+                    const employee = organization.employees.find(employee => employee.uid === userRegister.user.uid) 
+                    let token
+                    if(employee) {
+                        try {
+                            token = await adminAuth.createCustomToken(employee.uid)
+                        } catch(err) {
+                            return error(req, res, 500, "Error creating credential", err)
+                        }    
+
                         return success(req, res, 200, "Employee login successful", {
                             isAdmin: false,
-                            token: userRegister._tokenResponse.idToken,
+                            token: token,
                             user: employee
                         })
-                    })
-                    .catch(err => error(req, res, 500, "Error verifying ID Token", err))
+                    }
+
+                    return error(req, res, 400, "No employee found", new Error("No employee in DB"))
                 })
                 .catch(err => error(req, res, 500, "Error verifying ID Token", err))
             }
