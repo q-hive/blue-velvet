@@ -9,7 +9,6 @@ export const HarvestingTask = () => {
     
     return (
         <>
-        {/*Employee Tasks BEGINS*/}
         <Box component="div" minHeight="100vh" id="harvesting_task">
         
             <Container maxWidth="md">

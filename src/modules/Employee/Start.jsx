@@ -8,19 +8,11 @@ export const ContainerEmployeeComponent = () => {
     const orders = 25
     const employeePic = "https://i.imgflip.com/58g25p.jpg"
 
-    // Sample data
-const data = [
-    { argument: 'Monday', value: 30 },
-    { argument: 'Tuesday', value: 20 },
-    { argument: 'Wednesday', value: 10 },
-    { argument: 'Thursday', value: 50 },
-    { argument: 'Friday', value: 60 },
-  ];
 
     const theme = useTheme(BV_THEME);
     return (
         <>
-       <Box component="div" minHeight="100vh" display="flex" alignItems="center" >
+       <Box component="div" minHeight="100vh" display="flex"  >
             <Container maxWidth="md" >
                 <Box display="flex" flexDirection="column" py={8} width="100%" height="100%" alignItems="center" >
                     <Avatar

@@ -120,19 +120,11 @@ const BV_Layout = (props) => {
     const employeeTasks = [
                     {
                       label:'Harvesting',
-                      icon:<AgricultureIcon large color="primary" />,
-                    }, 
-                    {
-                      label:'Packing',
-                      icon:<InventoryIcon large color="primary" />,
-                    }, 
-                    {
-                      label:'Delivery',
-                      icon:<LocalShippingIcon large color="primary" />,
+                      icon:<AgricultureIcon  color="primary" />,
                     }, 
                     {
                       label:'Growing',
-                      icon:<GrassIcon large color="primary" />,
+                      icon:<GrassIcon  color="primary" />,
                     }
                   ];
 
@@ -318,7 +310,7 @@ const BV_Layout = (props) => {
                       <IconButton
                           color="inherit"
                           aria-label="open drawer"
-                          edge="false"
+                          edge={false}
                           onClick={handleDrawerToggle}
                           sx={{ mr: 2, display: { md: 'none' } }}
                       >

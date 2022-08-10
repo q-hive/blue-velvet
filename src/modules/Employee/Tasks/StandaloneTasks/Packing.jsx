@@ -1,7 +1,6 @@
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Container, Divider, Typography, useTheme } from '@mui/material'
+import { Box, Button, Container, Typography, useTheme } from '@mui/material'
 import React from 'react'
 import { BV_THEME } from '../../../../theme/BV-theme';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 export const PackingTask = () => {
       
