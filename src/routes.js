@@ -6,6 +6,8 @@ import { ProductionMain } from "./modules/Admin/production/ProductionMain";
 //*Employee
 import { ContainerEmployeeComponent } from "./modules/Employee/Start";
 import { NewProduct } from "./modules/Admin/production/NewProduct";
+import { SalesIndex } from "./modules/Admin/Sales/SalesIndex";
+import { NewOrder } from "./modules/Admin/Sales/newOrders/NewOrder";
 
 
 export const AppRoutes  = [
@@ -28,6 +30,14 @@ export const AppRoutes  = [
     {
         path:"/:uid/admin/production/editProduct",
         component:<NewProduct edit={true}/>
+    },
+    {
+        path:"/:uid/admin/sales/",
+        component:<SalesIndex/>
+    },
+    {
+        path:"/:uid/admin/sales/new",
+        component:<NewOrder/>
     },
     {
         path:"/:uid/employee/dashboard",
