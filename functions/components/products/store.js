@@ -1,7 +1,7 @@
 import { mongoose } from '../../mongo.js'
-import Product  from '../../models/product.js'
 import { createProvider } from '../providers/store.js'
 import { createSeed } from '../seeds/store.js'
+import { getOrganizationById } from '../organization/store.js'
 import Organization from '../../models/organization.js'
 const { ObjectId } = mongoose.Types
 
@@ -9,15 +9,88 @@ const productsCollection = mongoose.connection.collection('products')
 const orgModel = mongoose.model("organization", Organization)
 
 
-export const createNewProduct = (object) => {
+export const newProduct = (orgId, contId, product) => {
     return new Promise(async (res, rej) => {
-        let seed
-        let provider
-        let productModel
-        let productDoc
-        productModel = mongoose.model('Product', Product)
-        productDoc = new productModel(object)
+
+        getOrganizationById(orgId)
+        .then(organization => {
+
+            let prodId = new ObjectId()
+            let seedId = new ObjectId()
+            
+            let prodMapped = {
+                _id:        prodId,
+                name:       product.name,
+                image:      product.image,
+                desc:       product.desc,
+                status:     'idle',
+                seed:       seedId,
+                provider:   providerId,
+                price:      product.price
+            }
+
+            
+            let seedMapped = {
+                _id: seedId,
+                seedName: product.seed.seedName,
+                product: prodId,
+                batch: product.seed.batch
+            }
+            
+            // * Check if provider exists and update whether it exists or not
+            let prov = await organization.providers.findOne({ name: product.provider.name }).exec()
+            if (prov != undefined) {
+                prov.seeds.push(seedMapped)
+                prov.save((err, doc) => {
+                    if (err) reject(err)
+                })
+            } else {
+                let providerId = new ObjectId()
+                let providerMapped = {
+                    _id:    providerId,
+                    email:  product.provider.email,
+                    name:   product.provider.name,
+                    seeds:  [seedId]
+                }
+
+                organization.providers.push(providerMapped)
+
+                organization.save((err, doc) => {
+                    if (err) reject(err)
+                })
+            }  
+
+            // * Save product on specified container
+            if (contId == undefined) {
+                organization.containers.forEach(container => {
+                    
+                })
+            }
+            organization.containers.findById(contId).exec()
+            .then(container => {
+                container.products.push(prodMapped)
+
+                container.save((err, doc) => {
+                    if (err) reject(err)
+                })
+            })
+
+        })
+
     
+        //*FIRST SEED NEEDS TO BE CREATED
+        const seedMapped = {
+            seedId:     product.seed.seedId,
+            seedName:   product.seed.seedName,
+            product:    productDoc._id
+        } 
+
+        //*If is a new provider, then creates it
+        const providerMapped = {
+            email:  product.provider.email,
+            name:   product.provider.name,
+            seeds: []
+        }
         try {
             //*FIRST SEED NEEDS TO BE CREATED
             const seedMapped = {
