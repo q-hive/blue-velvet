@@ -120,7 +120,7 @@ export const productsColumns = [
 
             const [loading, setLoading] = useState(false)
 
-            const {user} = useAuth()
+            const {user, credential} = useAuth()
             const navigate = useNavigate()
             
             const handleModal = () => {
@@ -139,7 +139,12 @@ export const productsColumns = [
                                     ...modal,
                                     open:false
                                 })
-                                api.api.patch(`${api.apiVersion}/products/?id=${params.id}&field=status`,{value:"stopped"})
+                                api.api.patch(`${api.apiVersion}/products/?id=${params.id}&field=status`,{value:"stopped"},{
+                                    headers:{
+                                        authorization:credential._tokenResponse.idToken,
+                                        user:user
+                                    }
+                                })
                                 .then((res) => {
                                     setLoading(false)
                                     setDialog({
@@ -227,7 +232,12 @@ export const productsColumns = [
                                                 })
                                                 setLoading(true)
                                                 
-                                                api.api.delete(`${api.apiVersion}/products/?id=${params.id}`)
+                                                api.api.delete(`${api.apiVersion}/products/?id=${params.id}`,{
+                                                    headers:{
+                                                        authorization:credential._tokenResponse.idToken,
+                                                        user:user
+                                                    }
+                                                })
                                                 .then(() => {
                                                     console.log(params)
                                                 })
@@ -385,5 +395,24 @@ export const ProductionLinesColumns = [
         renderCell:(params) => {
             return 35
         }
+    },
+]
+
+export const salesColumns = [
+    {
+        field:"customer",
+        headerName:"Customer"
+    },
+    {
+        field:"date",
+        headerName:"Tuesday"
+    },
+    {
+        field:"date",
+        headerName:"Friday"
+    },
+    {
+        field:"type",
+        headerName:"type"
     },
 ]
