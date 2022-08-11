@@ -24,9 +24,6 @@ const Container = new Schema({
         byName(name) {
             return this.where({ name: new RegExp(name, "i") })
         },
-        byAdmin(admin) {
-            return this.where({ admin: admin })
-        },
         byCapacity(capacity) {
             return this.where({ capacity: { $gte: capacity } })
         },

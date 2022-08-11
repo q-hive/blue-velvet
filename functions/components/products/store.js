@@ -1,11 +1,11 @@
 import { mongoose } from '../../mongo.js'
-import { createProvider } from '../providers/store.js'
-import { createSeed } from '../seeds/store.js'
+import { newProvider } from '../providers/store.js'
+import { newSeed } from '../seeds/store.js'
+import { newProduct } from '../products/store.js'
 import { getOrganizationById } from '../organization/store.js'
 import Organization from '../../models/organization.js'
 const { ObjectId } = mongoose.Types
 
-const productsCollection = mongoose.connection.collection('products')
 const orgModel = mongoose.model("organization", Organization)
 
 
@@ -13,10 +13,10 @@ export const newProduct = (orgId, contId, product) => {
     return new Promise(async (res, rej) => {
 
         getOrganizationById(orgId)
-        .then(organization => {
+        .then(org => {
 
             let prodId = new ObjectId()
-            let seedId = new ObjectId()
+            let sId = new ObjectId()
             
             let prodMapped = {
                 _id:        prodId,
@@ -26,149 +26,109 @@ export const newProduct = (orgId, contId, product) => {
                 status:     'idle',
                 seed:       seedId,
                 provider:   providerId,
-                price:      product.price
+                price:      product.price,
+                parameters: product.parameters
+            }
+
+            if (product.mix !== undefined && product.mix.isMix === true) {
+                prodMapped.mix = product.mix
             }
 
             
             let seedMapped = {
-                _id: seedId,
-                seedName: product.seed.seedName,
-                product: prodId,
-                batch: product.seed.batch
+                _id:        sId,
+                seedId:     product.seed.seedId,
+                seedName:   product.seed.seedName,
+                product:    prodId,
+                batch:      product.seed.batch
             }
             
             // * Check if provider exists and update whether it exists or not
-            let prov = await organization.providers.findOne({ name: product.provider.name }).exec()
-            if (prov != undefined) {
-                prov.seeds.push(seedMapped)
-                prov.save((err, doc) => {
-                    if (err) reject(err)
-                })
+            let prov = await org.providers.findOne({ name: product.provider.name }).exec()
+            if (prov !== undefined) {
+                newSeed(orgId, prov._id, seedMapped)
             } else {
-                let providerId = new ObjectId()
-                let providerMapped = {
-                    _id:    providerId,
-                    email:  product.provider.email,
-                    name:   product.provider.name,
-                    seeds:  [seedId]
-                }
-
-                organization.providers.push(providerMapped)
-
-                organization.save((err, doc) => {
-                    if (err) reject(err)
+                newProvider(orgId, providerMapped)
+                .then(provDoc => {
+                    newSeed(orgId, provDoc._id, seedMapped)
                 })
             }  
 
+
             // * Save product on specified container
-            if (contId == undefined) {
-                organization.containers.forEach(container => {
-                    
-                })
-            }
-            organization.containers.findById(contId).exec()
-            .then(container => {
-                container.products.push(prodMapped)
-
-                container.save((err, doc) => {
-                    if (err) reject(err)
-                })
-            })
-
+            newProduct(orgId, contId, prodMapped)
+            .then(prod => resolve(prod))
         })
 
-    
-        //*FIRST SEED NEEDS TO BE CREATED
-        const seedMapped = {
-            seedId:     product.seed.seedId,
-            seedName:   product.seed.seedName,
-            product:    productDoc._id
-        } 
-
-        //*If is a new provider, then creates it
-        const providerMapped = {
-            email:  product.provider.email,
-            name:   product.provider.name,
-            seeds: []
-        }
-        try {
-            //*FIRST SEED NEEDS TO BE CREATED
-            const seedMapped = {
-                seedId:     object.seed.seedId,
-                seedName:   object.seed.seedName,
-                product:    productDoc._id
-            } 
-    
-            //*If is a new provider, then creates it
-            const providerMapped = {
-                email:  object.provider.email,
-                name:   object.provider.name,
-                seeds: []
-            }
-
-            seed = await createSeed(seedMapped)
-
-            providerMapped.seeds.push(seed)
-
-            //*CREATE PROVIDER
-            provider = await createProvider(providerMapped)
-        }
-        catch(err){
-            rej(err)
-        }
-
-        productDoc.seed = seed._id
-        productDoc.provider = provider._id
-        
-
-        productDoc.validate()
-        .then(() => {
-            res(productDoc)
-        })
-        .catch(err => {
-            rej(err)
-        })
     })
     
 }
 
-export const insertManyProducts = (array) => {
+export const insertManyProducts = (orgId, contId, prodArray) => {
     return new Promise((resolve, reject) => {
-        const productModel = new mongoose.model('products', Product)
-
-        productModel.insertMany(array)
-        .then(() => {
-            resolve("Many products inserted")
-        })
-        .catch(err => {
-            reject(err)
-        })
+        
+        Promise.all(prodArray.map(prod => {
+            return newProduct(orgId, contId, prod)
+        }))
+        .then(prods => resolve(prods))
+        
     })
 }
 
-export const getAllProducts = (orgId) => {
+export const getAllProductsByOrg = (orgId) => {
     return new Promise(async (resolve, reject) => {
+        getOrganizationById(orgId)
+        .then(org => {
+            let products = {}
+            org.containers.forEach(cont => {
+                products[cont._id] = cont.products
+            })
+            if(!org){
+                return reject("No organization found")
+            }
+            if(org.containers.length == 0) {
+                return reject("No containers found")
+            }
+
+            if(!products){
+                return reject("No products found")
+            }
+
+            resolve(products)
+        })
         const org =  await orgModel.findById(orgId)
-        if(!org){
-            return reject("No organization found")
-        }
-        const container =  org.containers[0]
-        if(!container) {
-            return reject("No containers found")
-        }
-
-        const products = container.products
-
-        if(!products){
-            return reject("No products found")
-        }
-
-        resolve(products)
+        
     })
 }
 
-export const updateProduct = (orgId, id, field, value) => {
+export const getAllProductsByCont = (orgId, contId) => {
     return new Promise(async (resolve, reject) => {
+        getOrganizationById(orgId)
+        .then(org => {
+
+            if(!org){
+                return reject("No organization found")
+            }
+            
+            org.containers.findOneById(contId).exec()
+            .then(cont => {
+                if(cont.products.length == 0) reject("No products found")
+                resolve(products)
+            })
+        })
+
+    })
+}
+
+
+export const updateProduct = (orgId, contId, prodId, edit) => {
+    return new Promise(async (resolve, reject) => {
+
+        getOrganizationById(orgId)
+        .then(org => {
+            org.containers.findOneBy
+        })
+        
         const org = await orgModel.findById(orgId)
 
         if(org === null || org === undefined) {

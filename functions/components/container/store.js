@@ -1,87 +1,106 @@
 import { mongoose } from '../../mongo.js'
-import Container from '../../models/container.js'
 import Organization from '../../models/organization.js'
-import {updateUser} from '../admin/store.js'
-import { updateOrganization } from '../organization/store.js'
+import { updateUser} from '../admin/store.js'
+import { getOrganizationById, updateOrganization } from '../organization/store.js'
 
 const { ObjectId } = mongoose.Types
-const contModel = mongoose.model('containers', Container)
 const orgModel = mongoose.model('organizations', Organization)
 
-export const newContainer = (contData) => {
+export const newContainer = (orgId, contData) => {
     return new Promise((resolve, reject) => {
 
-        let containerMapped = {
-            name:           contData.name,
-            admin:          contData.admin,
-            organization:   contData.organization,
-            capacity:       contData.capacity, // * Measured in trays
-            employees:      contData.employees || [],
-            production:     [],
-            orders:         [],
-            address:        contData.address,
-            products:       [],
-            location:       contData.location
-        }
+        getOrganizationById(orgId)
+        .then(org => {
 
-        let containerDoc = new contModel(containerMapped)
+            let contId = new ObjectId()
 
-        containerDoc.save((e, cont) => {
-            if (e) reject(e)
+            let containerMapped = {
+                _id:            contId,
+                name:           contData.name,
+                capacity:       contData.capacity, // * Measured in trays
+                available:      contData.capacity,
+                employees:      contData.employees || [],
+                production:     [],
+                products:       [],
+                address:        contData.address
+            }
 
-            Promise.all([
-                updateOrganization(contData.organization, {
-                    $push: { containers: cont._id } 
-                }),
-                updateUser(contData.admin, {
-                    $push: { containers: cont._id }
-                })
-            ]).then(() => resolve(cont))
+            org.containers.push(containerMapped)
+    
+            org.save((err, doc) => {
+                if (err) reject(err)
+                resolve(doc)
+            })
         })
+
     })    
 }
 
-export const getContainers = (filters) => {
+export const getContainers = (orgId, filters) => {
 
     /*
      * Get all containers for the given filters if present
-     ?   organization
-     ?   admin
+     ?   name
+     ?   capacity
+     ?   available
      ?   sort
      */
+    return new Promise((resolve, reject) => {
 
-    let contModelFiltered = contModel 
+        getOrganizationById(orgId)
+        .then(org => {
+            let contFiltered = org.containers
+            
+            // * Apply filters if requested
+            if (filters.name !== undefined && filters.name !== null) {
+                contFiltered = contFiltered.where({ name: filters.name })
+            }
+            if (filters.capacity !== undefined && filters.capacity !== null) {
+                contFiltered = contFiltered.where({ capacity: filters.capacity })
+            }
+            if (filters.available !== undefined && filters.available !== null) {
+                contFiltered = contFiltered.where({ available: filters.available })
+            }
+        
+        
+            return contFiltered.find().exec()
+        })
 
-    // * Apply filters if requested
-    if (filters.organization !== undefined && filters.organization !== null) {
-        contModelFiltered = contModelFiltered.where({ organization: filters.organization })
-    }
-
-    if (filters.admin !== undefined && filters.admin !== null) {
-        contModelFiltered = contModelFiltered.where({ admin: filters.admin })
-    }
-
-    return contModelFiltered.find({})
-
+    })
 }
 
-export const getContainerById = (id, orgId) => {
-    return contModel.findById(ObjectId(id))
+export const getContainerById = (orgId, contId) => {
+    return new Promise((resolve, reject) => {
+
+        getOrganizationById(orgId)
+        .then(org => { 
+            org.containers.findOneById(contId).exec((err, doc => {
+                if (err) reject(err)
+                resolve(doc)
+            }))
+        })
+
+    })
 }
 
-export const updateContainer = async (orgId,id, edit) => { 
-    //*TODO: Change to one query because is updateContainer not updateProductInContainer
-    let org = await orgModel.findById(orgId)
-    console.log(org.containers[0])
-    console.log(Object.keys(edit))
-    org.containers[0][Object.keys(edit)[0]].push(edit[Object.keys(edit)[0]])
-    await org.save()
-
-    return org
+export const updateContainer = async (orgId, contId, edit) => { 
+    // * Should be used ONLY to edit metadata of the container
+    getOrganizationById(orgId)
+    .then(org => {
+        org.containers.findByIdAndUpdate(contId, edit, { new: true })
+        .exec((err, doc) => {
+            if (err) reject(err)
+            resolve(doc)
+        })
+    })
 }
 
 export const updateContainers = async (ids, edit) => {
-    let cont = await contModel.updateMany({ _id: { $in: ids }}, edit, { multi: true, new: true })
 
-    return cont
+    return new Promise((resolve, reject) => {
+        getOrganizationById(orgId =>)
+        let cont = await contModel.update({ _id: { $in: ids }}, edit, { multi: true, new: true })
+        return cont
+    })
+
 }
