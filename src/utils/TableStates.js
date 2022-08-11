@@ -303,7 +303,6 @@ export const productsColumns = [
         field:"status",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Status",
         flex:1
     },
@@ -314,7 +313,6 @@ export const productsColumnsMobile = [
         field:"name",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Microgreen",
         minWidth:150,
         flex:1,
@@ -323,7 +321,6 @@ export const productsColumnsMobile = [
         field:"orders",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Orders",
         width:150,
         renderCell:(params) => {
@@ -336,7 +333,6 @@ export const productsColumnsMobile = [
         field:"tasks",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Options",
         width:150,
         flex:1
@@ -349,21 +345,18 @@ export const ProductionLinesColumns = [
         field:"start",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Start date"
     },
     {
         field:"end",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"End Date"
     },
     {
         field:"updated",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Updated",
         width:150
     },
@@ -371,7 +364,6 @@ export const ProductionLinesColumns = [
         field:"orders",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Orders",
         width:150,
         renderCell:(params) => {
@@ -382,7 +374,6 @@ export const ProductionLinesColumns = [
         field:"Active",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Active tasks",
         width:150
     },
@@ -390,7 +381,6 @@ export const ProductionLinesColumns = [
         field:"products",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Products",
         renderCell:(params) => {
             return 35
@@ -401,18 +391,34 @@ export const ProductionLinesColumns = [
 export const salesColumns = [
     {
         field:"customer",
-        headerName:"Customer"
+        headerName:"Customer",
+        headerAlign:"center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1
     },
     {
         field:"date",
-        headerName:"Tuesday"
+        headerName:"Tuesday",
+        headerClassName:"header-sales-table",
+        headerAlign:"center",
+        minWidth:{xs:"25%",md:100},
+        flex:1
     },
     {
-        field:"date",
-        headerName:"Friday"
+        field:"date2",
+        headerName:"Friday",
+        headerClassName:"header-sales-table",
+        headerAlign:"center",
+        minWidth:{xs:"25%",md:100},
+        flex:1
     },
     {
         field:"type",
-        headerName:"type"
+        headerName:"type",
+        headerClassName:"header-sales-table",
+        headerAlign:"center",
+        minWidth:{xs:"25%",md:130},
+        flex:1
     },
 ]

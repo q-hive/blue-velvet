@@ -154,7 +154,7 @@ const BV_Layout = (props) => {
     const drawer = (
         <>
           <Toolbar />
-          <Toolbar alignItems="center" sx={{backgroundColor: "#0E0C8F", p:2}}>
+          <Toolbar alignitems="center" sx={{backgroundColor: "#0E0C8F", p:2}}>
             <Typography 
                 variant="h6"  
                 component="div" 
@@ -174,7 +174,7 @@ const BV_Layout = (props) => {
             {/* IF admin */}
             {user.role === "employee" ? 
                 employeeOptions.map((option) => (
-                  <Button sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
+                  <Button key={option.label} sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
                     {option.label}
                   </Button>
                 ))
@@ -183,7 +183,7 @@ const BV_Layout = (props) => {
                 /*ElSE Employee? */
 
                   adminOptions.map((option) => (
-                    <Button sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
+                    <Button key={option.label} sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
                       {option.label}
                     </Button>
                   ))
@@ -223,7 +223,7 @@ const BV_Layout = (props) => {
             
             employeeTasks.map((option) => (
                 
-              <FormGroup sx={{}}>
+              <FormGroup key={option.label} sx={{}}>
                 <Box display="flex" flexDirection="row">
                   <Button sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleShowTask} >
                     {option.label}
@@ -371,7 +371,7 @@ const BV_Layout = (props) => {
             </Grid>
 
             {/*CHILDREN GRID ITEM (PRIVATE ROUTES)*/}
-            <Grid item xs={true} wrap>
+            <Grid item xs={true}>
               <Toolbar />
               {props.children}
             </Grid>

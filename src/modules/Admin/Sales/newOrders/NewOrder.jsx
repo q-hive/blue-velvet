@@ -3,15 +3,17 @@ import React, {useState} from 'react'
 import { 
     Autocomplete, Checkbox, 
     FormControlLabel, TextField, 
-    Typography, Button 
+    Typography, Button, Box, Stack 
 } from '@mui/material'
 import {DatePicker, LocalizationProvider} from '@mui/x-date-pickers'
 import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns'
+import { BV_THEME } from '../../../../theme/BV-theme'
+import { textAlign } from '@mui/system'
 
 export const NewOrder = () => {
     const [options, setOptions] = useState({
-        customers:  [],
-        products:   []
+        customers:  ["Elmo","test"],
+        products:   ["prime"]
     })
     
 
@@ -20,52 +22,74 @@ export const NewOrder = () => {
     }
   return (
     <>
-        <Typography>New order settings</Typography>
+    <Box sx={
+        {
+            display:"flex",
+            width:"100%", 
+            alignItems:"center",
+            marginTop:"5vh", 
+            flexDirection:"column",
+        }
+    }>
+        <Box sx={{ width: "90%", display:"flex", flexDirection:{xs:"column",sm:"column"}  }} alignItems="center" textAlign="center">
+    
+        <Typography variant="h4" mb={{xs:"5vh",md:"3vh"}}>New order settings</Typography>
 
         <Autocomplete
-        options={options.customers}
-        renderInput={(params) => {
-            return <TextField
-                    {...params}
-                    label="Customer"
-                />
-        }}
+            options={options.customers}
+            sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})}
+            renderInput={(params) => { 
+                return <TextField
+                        {...params}
+                        label="Customer"
+                    />
+            }}
         />
         
         <Autocomplete
-        options={options.products}
-        renderInput={(params) => {
-            return <TextField
-                    {...params}
-                    label="Product"
-                />
-        }}
+            options={options.products}
+            sx={BV_THEME.input.mobile.fullSize.desktop.halfSize}
+            renderInput={(params) => { 
+                return <TextField
+                        {...params}
+                        label="Product"
+                    />
+            }}
         />
+        
         <TextField
             type="number"
             label="Number of packages"
+            sx={BV_THEME.input.mobile.fullSize.desktop.halfSize}
         />
 
-        <Typography>Select size</Typography>
-        <FormControlLabel control={<Checkbox/>} label="Small"/> 
-        <FormControlLabel control={<Checkbox/>} label="Medium"/> 
-        <FormControlLabel control={<Checkbox/>} label="Big"/> 
+        <Typography variant="h6" mb="2vh" mt="4vh">Select size</Typography>
+        <Stack direction="row" >
+            <FormControlLabel control={<Checkbox/>} label="Small"/> 
+            <FormControlLabel control={<Checkbox/>} label="Medium"/> 
+            <FormControlLabel control={<Checkbox/>} label="Large"/> 
+        </Stack>
 
         
-        <Typography>Delivery date</Typography>
+        <Typography variant="h6" mb="1vh" mt="4vh">Delivery date</Typography>
         <LocalizationProvider dateAdapter={AdapterDateFns}>
             <DatePicker
                 label="Select a date"
                 onChange={handleChangeDate}
                 renderInput={(params) => <TextField {...params} />}
+                sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize,})}
             />
         </LocalizationProvider>
         
 
-        <Button>
+        <Button sx={{marginTop:"2vh"}}>
             Add more products
         </Button>
 
+    
+        </Box>
+    </Box>
     </>
+
   )
 }
