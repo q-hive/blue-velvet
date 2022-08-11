@@ -98,9 +98,14 @@ export const updateContainer = async (orgId, contId, edit) => {
 export const updateContainers = async (ids, edit) => {
 
     return new Promise((resolve, reject) => {
-        getOrganizationById(orgId =>)
-        let cont = await contModel.update({ _id: { $in: ids }}, edit, { multi: true, new: true })
-        return cont
+        getOrganizationById(orgId)
+        .then(org => {
+            org.containers.update({ _id: { $in: ids }}, edit, { multi: true, new: true })
+            .exec((err, doc) => {
+                if (err) reject(err)
+                resolve(doc)
+            })
+        })
     })
 
 }
