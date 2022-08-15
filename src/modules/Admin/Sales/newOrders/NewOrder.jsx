@@ -8,7 +8,6 @@ import {
 import {DatePicker, LocalizationProvider} from '@mui/x-date-pickers'
 import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns'
 import { BV_THEME } from '../../../../theme/BV-theme'
-import { textAlign } from '@mui/system'
 
 export const NewOrder = () => {
     const [options, setOptions] = useState({

@@ -415,14 +415,14 @@ export const SimpleProductForm = ({editing, product}) => {
         }>
             <Box sx={{ width: "90%", display:"flex", flexDirection:{xs:"column",sm:"row"} }}>
             
-            <Box sx={{ width: "90%", display:{xs:"flex", sm:"none"}}}>
-                <Stepper activeStep={activeStep} >
-                        {steps.map((step, index) => (
-                        <Step key={step.label}>
-                            <StepLabel sx={{fontSizeAdjust:"20px"}}>
-                                {step.label}
-                            </StepLabel>
-                        </Step>
+                <Box sx={{ width: "90%", display:{xs:"flex", sm:"none"}}}>
+                    <Stepper activeStep={activeStep} >
+                            {steps.map((step, index) => (
+                            <Step key={step.label}>
+                                <StepLabel sx={{fontSizeAdjust:"20px"}}>
+                                    {step.label}
+                                </StepLabel>
+                            </Step>
                         ))}
                     </Stepper>
                 </Box>

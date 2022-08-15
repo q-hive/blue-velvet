@@ -16,6 +16,7 @@ import { NewProduct } from "./modules/Admin/production/NewProduct";
 
 import { SalesIndex } from "./modules/Admin/Sales/SalesIndex";
 import { NewOrder } from "./modules/Admin/Sales/newOrders/NewOrder";
+import { NewCustomer } from "./modules/Admin/Sales/newCustomer";
 
 
 
@@ -47,6 +48,10 @@ export const AppRoutes  = [
     {
         path:"/:uid/admin/sales/new",
         component:<NewOrder/>
+    },
+    {
+        path:"/:uid/admin/sales/newCustomer",
+        component:<NewCustomer/>
     },
     {
         path:"/:uid/employee/dashboard",

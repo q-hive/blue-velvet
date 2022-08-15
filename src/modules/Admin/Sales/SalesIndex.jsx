@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 
 //*MUI Components
 import { DataGrid } from '@mui/x-data-grid'
-import { Box, Button, Container, Typography } from '@mui/material'
+import { Box, Button, Container, Stack, Typography } from '@mui/material'
 
 //*UTILS
 import { salesColumns } from '../../../utils/TableStates'
@@ -28,6 +28,10 @@ export const SalesIndex = () => {
     const handleNewOrder = () => {
         console.log("Redirect user")
         navigate('new')
+    } 
+    const handleNewCustomer = () => {
+        console.log("Redirect user")
+        navigate('newCustomer')
     }  
     
   return (
@@ -51,8 +55,13 @@ export const SalesIndex = () => {
                 </Typography>
 
                 <Box sx={{width:"100%", height:"100%"}}>
-                    <Box sx={{display:"flex", justifyContent:{xs:"center",sm:"flex-end"} }}>
-                        <Button variant='contained' color='primary' startIcon={<Add/>} onClick={handleNewOrder}>
+                
+                
+                <Box sx={{display:"flex", justifyContent:"space-between"}} >
+                        <Button variant='contained' color='primary' startIcon={<Add/>} onClick={handleNewCustomer} sx={{minWidth:"20%"}}>
+                            New Customer
+                        </Button>
+                        <Button variant='contained' color='primary' startIcon={<Add/>} onClick={handleNewOrder} sx={{minWidth:"20%"}}>
                             New order
                         </Button>
                     </Box>
