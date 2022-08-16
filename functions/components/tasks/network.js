@@ -7,18 +7,21 @@ import {createTask, insertManyTasks} from './store.js'
 const router = express.Router()
 
 router.post('/details', (req, res) => {
-    if(Array.isArray(req.body)){
-        //*Si es un arreglo es para popular base de datos
-        //*controlador insert many
+    console.log(Array.isArray(req.body.tasksDetails))
     
+    if(req.body && Array.isArray(req.body.tasksDetails)){
         insertManyTasks(req.body.tasksDetails)
         .then(message => {
-            response(req, res, 201, message)
+            success(req, res, 201, message)
         })
         .catch(err => {
-            //*CASTEAR ERRORES ESTOY HASTA LA MADRE DE NO GESTIONAR COMPLETOS LOS ERRORES
+            error(req, res, 500,"Something went wrong" ,err)
         })
+
+        return
     }
+
+    error(req, res, 400, "Not correct format provided")
 })
 
 router.post('/', (req, res) => {
