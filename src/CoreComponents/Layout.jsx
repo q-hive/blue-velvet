@@ -51,7 +51,7 @@ const BV_Layout = (props) => {
 
   const handleShowTask = (e) => {
     //Should redirect to a page section, but router doesn't support it. Looking for Alternatives
-    navigate(`/${user.uid}/employee/dashboard#${e.target.id + "_task"}`)
+    navigate(`/${user.uid}/employee/tasks/${e.target.id}`)
 }
     const { window } = props;
     const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -68,7 +68,16 @@ const BV_Layout = (props) => {
     const handleCloseUserMenu = () => {
       setAnchorElUser(null);
     };
+
+    const handleFinishTask = () => {
+
+      console.log("task finished");
+    };
     
+    
+    const handleSeeAllTasks = () => {
+        navigate(`/${user.uid}/employee/tasks`)
+    };
 
     //TASKS icons
     const importantTask = <NearbyErrorIcon large color="primary" />;
@@ -111,19 +120,11 @@ const BV_Layout = (props) => {
     const employeeTasks = [
                     {
                       label:'Harvesting',
-                      icon:<AgricultureIcon large color="primary" />,
-                    }, 
-                    {
-                      label:'Packing',
-                      icon:<InventoryIcon large color="primary" />,
-                    }, 
-                    {
-                      label:'Delivery',
-                      icon:<LocalShippingIcon large color="primary" />,
+                      icon:<AgricultureIcon  color="primary" />,
                     }, 
                     {
                       label:'Growing',
-                      icon:<GrassIcon large color="primary" />,
+                      icon:<GrassIcon  color="primary" />,
                     }
                   ];
 
@@ -153,7 +154,7 @@ const BV_Layout = (props) => {
     const drawer = (
         <>
           <Toolbar />
-          <Toolbar alignItems="center" sx={{backgroundColor: "#0E0C8F", p:2}}>
+          <Toolbar alignitems="center" sx={{backgroundColor: "#0E0C8F", p:2}}>
             <Typography 
                 variant="h6"  
                 component="div" 
@@ -162,7 +163,7 @@ const BV_Layout = (props) => {
                 display="block" 
                 sx={{margin:"7%",}}
             >
-                {user.role === "admin" ? "Administrator Options" : "Employee Options"}
+                {user.role === "employee" ?  "Employee Options" : "Administrator Options" }
             </Typography>
 
           </Toolbar>
@@ -171,19 +172,18 @@ const BV_Layout = (props) => {
 
           <Box sx={{display:"flex", flexDirection:"column", width:"auto", height:"auto", alignItems:"left", justifyContent:"left", p:2}}>
             {/* IF admin */}
-            {user.role === "admin" ? 
-              
-                adminOptions.map((option) => (
-                    <Button sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
-                      {option.label}
-                    </Button>
-                  ))
-
+            {user.role === "employee" ? 
+                employeeOptions.map((option) => (
+                  <Button key={option.label} sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
+                    {option.label}
+                  </Button>
+                ))
                 : 
 
                 /*ElSE Employee? */
-                employeeOptions.map((option) => (
-                    <Button sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
+
+                  adminOptions.map((option) => (
+                    <Button key={option.label} sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
                       {option.label}
                     </Button>
                   ))
@@ -211,7 +211,7 @@ const BV_Layout = (props) => {
                 display="block" 
                 sx={{marginLeft:"7%",margin:"3%"}}
             >
-                Tasks
+                Pending Tasks
             </Typography>
 
           </Toolbar>
@@ -219,18 +219,27 @@ const BV_Layout = (props) => {
           <Divider />
 
           <Box display="flex" sx={{display:"flex", flexDirection:"column", width:"auto", height:"auto", p:2}}>
-            {employeeTasks.map((option) => (
+            {employeeTasks.length != 0 ?
+            
+            employeeTasks.map((option) => (
                 
-                  <FormGroup sx={{}}>
-                    <Box display="flex" flexDirection="row">
-                      <Button sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleShowTask} >
-                        {option.label}
-                      </Button>
-                      <FormControlLabel control={<Checkbox />} />
-                    </Box>
-                  </FormGroup>
-              ))
-            }
+              <FormGroup key={option.label} sx={{}}>
+                <Box display="flex" flexDirection="row">
+                  <Button sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleShowTask} >
+                    {option.label}
+                  </Button>
+                  <Button variant="outlined" sx={theme.button.task_done} onClick={handleFinishTask}>Done</Button>
+                </Box>
+              </FormGroup>
+          ))
+        
+            
+            : 
+            
+            <Typography>You currently don't have any pending tasks</Typography>}
+
+            <Button onClick={handleSeeAllTasks}>See all Tasks</Button>
+            
           </Box> 
             
           <Divider />
@@ -301,7 +310,7 @@ const BV_Layout = (props) => {
                       <IconButton
                           color="inherit"
                           aria-label="open drawer"
-                          edge="false"
+                          edge={false}
                           onClick={handleDrawerToggle}
                           sx={{ mr: 2, display: { md: 'none' } }}
                       >
@@ -362,7 +371,7 @@ const BV_Layout = (props) => {
             </Grid>
 
             {/*CHILDREN GRID ITEM (PRIVATE ROUTES)*/}
-            <Grid item xs={true} wrap>
+            <Grid item xs={true}>
               <Toolbar />
               {props.children}
             </Grid>

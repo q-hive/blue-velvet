@@ -120,7 +120,7 @@ export const productsColumns = [
 
             const [loading, setLoading] = useState(false)
 
-            const {user} = useAuth()
+            const {user, credential} = useAuth()
             const navigate = useNavigate()
             
             const handleModal = () => {
@@ -139,7 +139,12 @@ export const productsColumns = [
                                     ...modal,
                                     open:false
                                 })
-                                api.api.patch(`${api.apiVersion}/products/?id=${params.id}&field=status`,{value:"stopped"})
+                                api.api.patch(`${api.apiVersion}/products/?id=${params.id}&field=status`,{value:"stopped"},{
+                                    headers:{
+                                        authorization:credential._tokenResponse.idToken,
+                                        user:user
+                                    }
+                                })
                                 .then((res) => {
                                     setLoading(false)
                                     setDialog({
@@ -227,7 +232,12 @@ export const productsColumns = [
                                                 })
                                                 setLoading(true)
                                                 
-                                                api.api.delete(`${api.apiVersion}/products/?id=${params.id}`)
+                                                api.api.delete(`${api.apiVersion}/products/?id=${params.id}`,{
+                                                    headers:{
+                                                        authorization:credential._tokenResponse.idToken,
+                                                        user:user
+                                                    }
+                                                })
                                                 .then(() => {
                                                     console.log(params)
                                                 })
@@ -293,7 +303,6 @@ export const productsColumns = [
         field:"status",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Status",
         flex:1
     },
@@ -304,7 +313,6 @@ export const productsColumnsMobile = [
         field:"name",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Microgreen",
         minWidth:150,
         flex:1,
@@ -313,7 +321,6 @@ export const productsColumnsMobile = [
         field:"orders",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Orders",
         width:150,
         renderCell:(params) => {
@@ -326,7 +333,6 @@ export const productsColumnsMobile = [
         field:"tasks",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Options",
         width:150,
         flex:1
@@ -339,21 +345,18 @@ export const ProductionLinesColumns = [
         field:"start",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Start date"
     },
     {
         field:"end",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"End Date"
     },
     {
         field:"updated",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Updated",
         width:150
     },
@@ -361,7 +364,6 @@ export const ProductionLinesColumns = [
         field:"orders",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Orders",
         width:150,
         renderCell:(params) => {
@@ -372,7 +374,6 @@ export const ProductionLinesColumns = [
         field:"Active",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Active tasks",
         width:150
     },
@@ -380,10 +381,44 @@ export const ProductionLinesColumns = [
         field:"products",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Products",
         renderCell:(params) => {
             return 35
         }
+    },
+]
+
+export const salesColumns = [
+    {
+        field:"customer",
+        headerName:"Customer",
+        headerAlign:"center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1
+    },
+    {
+        field:"date",
+        headerName:"Tuesday",
+        headerClassName:"header-sales-table",
+        headerAlign:"center",
+        minWidth:{xs:"25%",md:100},
+        flex:1
+    },
+    {
+        field:"date2",
+        headerName:"Friday",
+        headerClassName:"header-sales-table",
+        headerAlign:"center",
+        minWidth:{xs:"25%",md:100},
+        flex:1
+    },
+    {
+        field:"type",
+        headerName:"type",
+        headerClassName:"header-sales-table",
+        headerAlign:"center",
+        minWidth:{xs:"25%",md:130},
+        flex:1
     },
 ]

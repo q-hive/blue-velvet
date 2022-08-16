@@ -1,4 +1,5 @@
 import React from 'react'
+
 //*Router
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 import history from './history.js'
