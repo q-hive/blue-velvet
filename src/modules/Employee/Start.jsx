@@ -27,7 +27,7 @@ export const ContainerEmployeeComponent = () => {
                     </Stack>
 
                     <Paper sx={{width: {xs:"80%", md:450}, height: 450, m:3}}>
-                        Insert Chart Here. How? IDK
+                        Insert Chart Here.
                     </Paper>
 
                     <Button variant="contained" sx={theme.button.standard}>

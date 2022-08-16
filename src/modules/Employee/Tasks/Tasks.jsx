@@ -1,4 +1,3 @@
-import { Card, CardActionArea, CardContent, Typography, useTheme } from '@mui/material'
 import React from 'react'
 import { BV_THEME } from '../../../theme/BV-theme';
 
@@ -11,7 +10,8 @@ import AgricultureIcon from '@mui/icons-material/Agriculture';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import { optionGroupUnstyledClasses } from '@mui/base';
-import { Box, Container, Stack } from '@mui/system';
+import { Card, CardActionArea, CardContent, Typography, useTheme, Stack } from '@mui/material'
+import { Box, Container } from '@mui/system';
 
 
 export const TasksCardsComponent = () => {
