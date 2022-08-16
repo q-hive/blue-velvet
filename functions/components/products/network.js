@@ -10,7 +10,7 @@ import {isValidProductObject, relateOrdersAndTasks} from './controller.js'
 
 //*Store
 import {
-    createNewProduct,
+    newProduct,
     getAllProducts,
     insertManyProducts,
     updateProduct,

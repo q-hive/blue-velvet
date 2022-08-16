@@ -13,7 +13,7 @@ export const newProduct = (orgId, contId, product) => {
     return new Promise(async (res, rej) => {
 
         getOrganizationById(orgId)
-        .then(organization => {
+        .then(async organization => {
 
             let prodId = new ObjectId()
             let seedId = new ObjectId()
