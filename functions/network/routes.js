@@ -5,6 +5,7 @@ import productsRouter from '../components/products/network.js'
 import ordersRouter from '../components/orders/network.js'
 import tasksRouter from '../components/tasks/network.js'
 import organizationRouter from '../components/organization/network.js'
+import productionRouter from '../components/production/network.js'
 import passphraseRouter from '../components/passphrase/network.js'
 
 
