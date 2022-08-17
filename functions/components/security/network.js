@@ -76,26 +76,26 @@ authRouter.post('/login/admin', (req, res) => {
                     let token
                     try {
                         token = await adminAuth.createCustomToken(user.user.uid)
+                        if (data.passphrase == hashPassphrase(req.body.passphrase)) {
+    
+                            return success(req, res, 200, "Successfully logged as admin", {                                                                                                  
+                                            user: {
+                                                id:     data._id,
+                                                role:   claims.role,
+                                                uid:    user.user.uid,
+                                                email:  user.user.email,
+                                                photo:  user.user.photoURL
+                                            },
+                                            token: token
+                            })
+                        
+                        } else {
+                            return error(req, res, 403, "Forbidden: Wrong passphrase", { "error": "Wrong passphrase"})
+                        }
                     } catch (err) {
                         return error(req, res, 500, "Error trying to create custom token", err)
                     }
                     
-                    if (data.passphrase == hashPassphrase(req.body.passphrase)) {
-
-                        return success(req, res, 200, "Successfully logged as admin", {                                                                                                  
-                                        user: {
-                                            id:     data._id,
-                                            role:   claims.role,
-                                            uid:    user.user.uid,
-                                            email:  user.user.email,
-                                            photo:  user.user.photoURL
-                                        },
-                                        token: token
-                        })
-                    
-                    } else {
-                        return error(req, res, 403, "Forbidden: Wrong passphrase", { "error": "Wrong passphrase"})
-                    }
                 })
             } else {
                 return error(req, res, 403, "Forbidden: Not admin", { "error": "Not admin role"})
