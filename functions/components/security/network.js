@@ -34,6 +34,8 @@ authRouter.post('/login', (req, res) => {
                 return success(req, res, 200, "Authentication succeed", { isAdmin: true, token:userRegister._tokenResponse.idToken, user:userRegister })
             } else if (claims.role === 'employee') {
                 // * Obtain organization info to query for employee data
+                console.group("Auth logs")
+                console.log(claims)
                 getOrganizationById(claims.organization)
                 .then(async organization => {
                     const employee = organization.employees.find(employee => employee.uid === userRegister.user.uid) 
