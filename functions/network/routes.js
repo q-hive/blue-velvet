@@ -38,6 +38,11 @@ export const taskRoutes = (app) => {
     app.use(`${apiV1}/tasks`, isAuthenticated, isAuthorized(authorized), tasksRouter)
 }
 
+export const productionRoutes = (app) => {
+    const authorized = ["admin", "employee"]
+    app.use(`${apiV1}/production`,  isAuthenticated, isAuthorized(authorized), productionRouter)
+}
+
 export const organizationRoutes = (app) => {
     const authorized = ["admin"]
     app.use(`${apiV1}/organizations`, isAuthenticated, isAuthorized(authorized), organizationRouter)
