@@ -39,6 +39,7 @@ app.use(cors({
     credentials: true
 }));
 
+
 const {pathname: indexPath} = new URL('../build/index.html', import.meta.url)
 
 app.get(/^\/(?!api).*/, (req, res, ) => {
