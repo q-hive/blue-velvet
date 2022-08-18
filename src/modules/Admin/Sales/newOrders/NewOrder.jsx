@@ -8,6 +8,7 @@ import {
 import {DatePicker, LocalizationProvider} from '@mui/x-date-pickers'
 import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns'
 import { BV_THEME } from '../../../../theme/BV-theme'
+import {CheckBoxGroup} from "../../../../CoreComponents/CheckboxGroup"
 
 export const NewOrder = () => {
     const [options, setOptions] = useState({
@@ -19,6 +20,18 @@ export const NewOrder = () => {
     const handleChangeDate = (date) => {
         console.log("Date changing")
     }
+
+    const handleSetOrder = (date) => {
+        console.log("Order Set! (but not really)")
+    }
+
+    const checkboxOptions = [
+        { id: "option1", label: "Small" },
+        { id: "option2", label: "Medium" },
+        { id: "option3", label: "Large" },   
+    ]
+
+
   return (
     <>
     <Box sx={
@@ -63,11 +76,7 @@ export const NewOrder = () => {
         />
 
         <Typography variant="h6" mb="2vh" mt="4vh">Select size</Typography>
-        <Stack direction="row" >
-            <FormControlLabel control={<Checkbox/>} label="Small"/> 
-            <FormControlLabel control={<Checkbox/>} label="Medium"/> 
-            <FormControlLabel control={<Checkbox/>} label="Large"/> 
-        </Stack>
+        <CheckBoxGroup >{checkboxOptions}</CheckBoxGroup>
 
         
         <Typography variant="h6" mb="1vh" mt="4vh">Delivery date</Typography>
@@ -83,6 +92,10 @@ export const NewOrder = () => {
 
         <Button sx={{marginTop:"2vh"}}>
             Add more products
+        </Button>
+
+        <Button variant="contained" onClick={handleSetOrder} sx={{marginTop:"2vh", color:{...BV_THEME.palette.white_btn}}}>
+            Set Order
         </Button>
 
     
