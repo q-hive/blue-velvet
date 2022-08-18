@@ -48,13 +48,15 @@ const BV_Layout = (props) => {
     const navigate = useNavigate()
 
     const handleRedirect = (e) => {
-      navigate(`/${user.uid}/admin/${e.target.id}`)
-  }
+      console.log(user.role)
+      
+      navigate(`/${user.uid}/${user.role}/${e.target.id}`)
+    }
 
   const handleShowTask = (e) => {
     //Should redirect to a page section, but router doesn't support it. Looking for Alternatives
     navigate(`/${user.uid}/employee/tasks/${e.target.id}`)
-}
+  }
     const { window } = props;
     const [mobileOpen, setMobileOpen] = React.useState(false);
   

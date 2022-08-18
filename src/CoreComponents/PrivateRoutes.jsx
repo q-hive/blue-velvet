@@ -5,6 +5,7 @@ import BV_Layout from './Layout'
 import { CircularProgress} from '@mui/material'
 import useAuth from '../contextHooks/useAuthContext'
 import auth from '../firebaseInit'
+import { useEffect } from 'react'
 
 
 export const PrivateRoutes = (props) => {
@@ -32,6 +33,9 @@ export const PrivateRoutes = (props) => {
         )
     }
 
+    useEffect(() => {
+      console.log(props.children)
+    }, [])
   return (
     <>
       <BV_Layout>

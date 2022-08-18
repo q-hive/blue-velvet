@@ -9,7 +9,7 @@ export const getPassphraseByUid = (uid) => {
         const passModel = mongoose.model('passphrase', Passphrase)
 
         passModel.findOne({uid:uid}).exec()
-        .then(  (pass) => {
+        .then((pass) => {
             resolve(pass)
         })
         .catch(err => {

@@ -58,9 +58,18 @@ export const AppRoutes  = [
         path:"/:uid/admin/client/NewCustomer",
         component:<NewCustomer/>
     },
+
     {
         path:"/:uid/employee/dashboard",
         component:<ContainerEmployeeComponent/>
+    },
+    {
+        path:"/:uid/employee/home",
+        component:<ContainerEmployeeComponent/>
+    },
+    {
+        path:"/:uid/employee/production",
+        component:<ProductionMain/>
     },
     //Task Routes
     {

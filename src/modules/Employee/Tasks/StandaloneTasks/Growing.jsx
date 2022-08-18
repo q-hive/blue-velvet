@@ -8,7 +8,7 @@ export const GrowingTask = () => {
     const theme = useTheme(BV_THEME);
     
     return (
-        <>
+    <>
 
     {/*Task 4 BEGINS*/}
     <Box component="div" minHeight="100vh" id="packing_task">
