@@ -9,124 +9,139 @@ const orgModel = mongoose.model("organization", Organization)
 
 
 export const newProduct = (orgId, contId, product) => {
-    return new Promise(async (res, rej) => {
-
+    return new Promise(async (resolve, reject) => {
         getOrganizationById(orgId)
         .then(async organization => {
 
+            console.log(product)
+            //* Declare and initialize object id for required fields in product model
             let prodId = new ObjectId()
             let seedId = new ObjectId()
-            
+            let provId = new ObjectId()
+
             let prodMapped = {
                 _id:        prodId,
                 name:       product.name,
                 image:      product.image,
                 desc:       product.desc,
-                status:     'idle',
+                status:     product.status,
                 seed:       seedId,
-                provider:   providerId,
-                price:      product.price
+                provider:   provId,
+                price:      product.price,
+                parameters: product.parameters
             }
 
             
             let seedMapped = {
-                _id: seedId,
-                seedName: product.seed.seedName,
-                product: prodId,
-                batch: product.seed.batch
+                _id:        prodMapped.seed,
+                seedName:   product.seed.seedName,
+                product:    prodMapped._id,
+                batch:      product.seed.batch,
+                provider:   provId,
+                seedId:     product.seed.seedId
             }
             
             // * Check if provider exists and update whether it exists or not
-            let prov = await organization.providers.findOne({ name: product.provider.name }).exec()
+            let prov = organization.providers.find(prov => prov.name == product.provider.name)
             if (prov != undefined) {
                 prov.seeds.push(seedMapped)
                 prov.save((err, doc) => {
                     if (err) reject(err)
                 })
             } else {
-                let providerId = new ObjectId()
                 let providerMapped = {
-                    _id:    providerId,
+                    _id:    provId,
                     email:  product.provider.email,
                     name:   product.provider.name,
-                    seeds:  [seedId]
+                    seeds:  []
                 }
 
+                providerMapped.seeds.push(seedMapped)
+
                 organization.providers.push(providerMapped)
+                organization.containers[contId].products.push(prodMapped)
 
                 organization.save((err, doc) => {
                     if (err) reject(err)
+                    resolve(doc)  
                 })
             }  
 
             // * Save product on specified container
-            if (contId == undefined) {
-                organization.containers.forEach(container => {
-                    
-                })
-            }
-            organization.containers.findById(contId).exec()
-            .then(container => {
-                container.products.push(prodMapped)
+            // organization.save((err, doc) =>{
+            //     if(err) reject(err)
 
-                container.save((err, doc) => {
-                    if (err) reject(err)
-                })
-            })
+            //     resolve(doc)
+            //     return
+            // })
+            // if (contId == undefined) {
+            //     organization.containers.forEach(container => {
+                    
+            //     })
+            // }
+            // organization.containers.findById(contId).exec()
+            // .then(container => {
+            //     container.products.push(prodMapped)
+
+            //     container.save((err, doc) => {
+            //         if (err) reject(err)
+            //     })
+            // })
 
         })
 
     
-        //*FIRST SEED NEEDS TO BE CREATED
-        const seedMapped = {
-            seedId:     product.seed.seedId,
-            seedName:   product.seed.seedName,
-            product:    productDoc._id
-        } 
+        // //*FIRST SEED NEEDS TO BE CREATED
+        // console.log(product)
+        // const seedMapped = {
+        //     seedId:     product.seedId,
+        //     seedName:   product.seed.seedName,
+        //     product:    productDoc._id
+        // } 
 
-        //*If is a new provider, then creates it
-        const providerMapped = {
-            email:  product.provider.email,
-            name:   product.provider.name,
-            seeds: []
-        }
-        try {
-            //*FIRST SEED NEEDS TO BE CREATED
-            const seedMapped = {
-                seedId:     object.seed.seedId,
-                seedName:   object.seed.seedName,
-                product:    productDoc._id
-            } 
+        // //*If is a new provider, then creates it
+        // const providerMapped = {
+        //     email:  product.provider.email,
+        //     name:   product.provider.name,
+        //     seeds: []
+        // }
+        // try {
+        //     //*FIRST SEED NEEDS TO BE CREATED
+        //     const seedMapped = {
+        //         seedId:     object.seed.seedId,
+        //         seedName:   object.seed.seedName,
+        //         product:    productDoc._id
+        //     } 
     
-            //*If is a new provider, then creates it
-            const providerMapped = {
-                email:  object.provider.email,
-                name:   object.provider.name,
-                seeds: []
-            }
+        //     //*If is a new provider, then creates it
+        //     const providerMapped = {
+        //         email:  object.provider.email,
+        //         name:   object.provider.name,
+        //         seeds: []
+        //     }
 
-            seed = await createSeed(seedMapped)
+        //     seed = await createSeed(seedMapped)
 
-            providerMapped.seeds.push(seed)
+        //     providerMapped.seeds.push(seed)
 
-            //*CREATE PROVIDER
-            provider = await createProvider(providerMapped)
-        }
-        catch(err){
-            rej(err)
-        }
+        //     //*CREATE PROVIDER
+        //     provider = await createProvider(providerMapped)
+        // }
+        // catch(err){
+        //     rej(err)
+        // }
 
-        productDoc.seed = seed._id
-        productDoc.provider = provider._id
+        // productDoc.seed = seed._id
+        // productDoc.provider = provider._id
         
 
-        productDoc.validate()
-        .then(() => {
-            res(productDoc)
-        })
-        .catch(err => {
-            rej(err)
-        })
+        // productDoc.validate()
+        // .then(() => {
+        //     res(productDoc)
+        // })
+        // .catch(err => {
+        //     rej(err)
+        // })
     })
     
 }
