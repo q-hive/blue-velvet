@@ -9,11 +9,10 @@ const orgModel = mongoose.model("organization", Organization)
 
 
 export const newProduct = (orgId, contId, product) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
         getOrganizationById(orgId)
-        .then(async organization => {
+        .then(organization => {
 
-            console.log(product)
             //* Declare and initialize object id for required fields in product model
             let prodId = new ObjectId()
             let seedId = new ObjectId()
@@ -45,9 +44,10 @@ export const newProduct = (orgId, contId, product) => {
             let prov = organization.providers.find(prov => prov.name == product.provider.name)
             if (prov != undefined) {
                 prov.seeds.push(seedMapped)
-                prov.save((err, doc) => {
-                    if (err) reject(err)
-                })
+                console.log(prov)
+                // prov.save((err, doc) => {
+                //     if (err) reject(err)
+                // })
             } else {
                 let providerMapped = {
                     _id:    provId,
@@ -57,16 +57,20 @@ export const newProduct = (orgId, contId, product) => {
                 }
 
                 providerMapped.seeds.push(seedMapped)
-
                 organization.providers.push(providerMapped)
-                organization.containers[contId].products.push(prodMapped)
 
+            }  
+            try{
+                organization.containers[contId].products.push(prodMapped)
+    
+                console.log("Is getting before updating DB")
                 organization.save((err, doc) => {
                     if (err) reject(err)
                     resolve(doc)  
                 })
-            }  
-
+            } catch(err){
+                reject(err)   
+            }
             // * Save product on specified container
             // organization.save((err, doc) =>{
             //     if(err) reject(err)

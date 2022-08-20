@@ -73,9 +73,9 @@ router.post('/', (req, res) => {
     if(isValidProductObject(req.body)){
         //*CREATE PRODUCT
         newProduct(res.locals.organization,0, req.body)
-        //*promise message returned
-        .then(async orgDoc => {
+        .then(orgDoc => {
             //*Update container with the new products
+            console.log(orgDoc)
             // const update = await updateContainer(res.locals.organization, undefined, {products:product})
             success(req, res,201,orgDoc)
         })
