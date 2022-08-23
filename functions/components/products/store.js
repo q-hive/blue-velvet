@@ -63,7 +63,6 @@ export const newProduct = (orgId, contId, product) => {
             try{
                 organization.containers[contId].products.push(prodMapped)
     
-                console.log("Is getting before updating DB")
                 organization.save((err, doc) => {
                     if (err) reject(err)
                     resolve(doc)  
@@ -71,88 +70,49 @@ export const newProduct = (orgId, contId, product) => {
             } catch(err){
                 reject(err)   
             }
-            // * Save product on specified container
-            // organization.save((err, doc) =>{
-            //     if(err) reject(err)
-
-            //     resolve(doc)
-            //     return
-            // })
-            // if (contId == undefined) {
-            //     organization.containers.forEach(container => {
-                    
-            //     })
-            // }
-            // organization.containers.findById(contId).exec()
-            // .then(container => {
-            //     container.products.push(prodMapped)
-
-            //     container.save((err, doc) => {
-            //         if (err) reject(err)
-            //     })
-            // })
 
         })
 
     
-        // //*FIRST SEED NEEDS TO BE CREATED
-        // console.log(product)
-        // const seedMapped = {
-        //     seedId:     product.seedId,
-        //     seedName:   product.seed.seedName,
-        //     product:    productDoc._id
-        // } 
-
-        // //*If is a new provider, then creates it
-        // const providerMapped = {
-        //     email:  product.provider.email,
-        //     name:   product.provider.name,
-        //     seeds: []
-        // }
-        // try {
-        //     //*FIRST SEED NEEDS TO BE CREATED
-        //     const seedMapped = {
-        //         seedId:     object.seed.seedId,
-        //         seedName:   object.seed.seedName,
-        //         product:    productDoc._id
-        //     } 
-    
-        //     //*If is a new provider, then creates it
-        //     const providerMapped = {
-        //         email:  object.provider.email,
-        //         name:   object.provider.name,
-        //         seeds: []
-        //     }
-
-        //     seed = await createSeed(seedMapped)
-
-        //     providerMapped.seeds.push(seed)
-
-        //     //*CREATE PROVIDER
-        //     provider = await createProvider(providerMapped)
-        // }
-        // catch(err){
-        //     rej(err)
-        // }
-
-        // productDoc.seed = seed._id
-        // productDoc.provider = provider._id
-        
-
-        // productDoc.validate()
-        // .then(() => {
-        //     res(productDoc)
-        // })
-        // .catch(err => {
-        //     rej(err)
-        // })
     })
     
 }
 
-export const createNewMix = () => {
+export const createNewMix = (orgId, contId, mix) => {
     return new Promise((resolve, reject) => {
         //*TODO CREATE MIX FUNCTION
+        getOrganizationById(orgId)
+        .then((organization) => {
+            let prodId = new ObjectId()
+            
+            let prodMapped = {
+                _id:        prodId,
+                name:       mix.name,
+                image:      mix.label,//*TODO PROCESS LABEL IN ORDER TO SAVE IT
+                status:     mix.status,
+                price:      mix.price,
+                mix:        mix.mix
+            }
+            //*TODO Write algorithm to calculate mix price based on its products
+
+
+            try {
+                organization.containers[contId].products.push(prodMapped)
+                organization.save((err, doc) => {
+                    if(err) reject(err)
+
+                    resolve(doc)
+                })
+            } catch(err){
+                reject(err)
+            }
+            
+
+        })
+        .catch((err) => {
+            reject(err)
+        })
+        
     })
 }
 

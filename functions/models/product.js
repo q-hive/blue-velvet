@@ -8,8 +8,8 @@ const Product = new Schema({
     desc:       { type: String,   required: false                    }, // * Description
     status:     { type: String,   required: true, default: 'on hold' },
     // * ID of quality of the seeds - track the seeds origin - metadata 
-    seed:       { type: ObjectId, required: true                     }, 
-    provider:   { type: ObjectId, required: true                     },
+    seed:       { type: ObjectId, required: false                    }, 
+    provider:   { type: ObjectId, required: false                    },
     price:      { // * Cost per package 
         type: [{
             amount:         { type: Number, required: true }, // * Package price
@@ -37,7 +37,7 @@ const Product = new Schema({
             seedingRate:    { type: Number, required: true }, // * Per tray
             harvestRate:    { type: Number, required: true }  // * Per tray
         },
-        required:   true
+        required:   false
     }
 },
 {

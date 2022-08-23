@@ -7,6 +7,7 @@ import tasksRouter from '../components/tasks/network.js'
 import organizationRouter from '../components/organization/network.js'
 import productionRouter from '../components/production/network.js'
 import passphraseRouter from '../components/passphrase/network.js'
+import customersRouter from '../components/customer/network.js'
 
 
 //*Middlewares
@@ -31,6 +32,11 @@ export const productsRoutes = (app) => {
 export const ordersRoutes = (app) => {
     const authorized = ["admin"]
     app.use(`${apiV1}/orders`, isAuthenticated, isAuthorized(authorized), ordersRouter)
+
+}
+export const customerRoutes = (app) => {
+    const authorized = ["admin"]
+    app.use(`${apiV1}/customers`, isAuthenticated, isAuthorized(authorized), customersRouter)
 
 }
 

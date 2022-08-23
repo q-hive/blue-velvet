@@ -133,13 +133,13 @@ export const Login = () => {
         api.api.post('/auth/login/admin', loginData)
         .then(response => {
             if (response.data.data.user.role == 'admin'){
-                const { token, user } = response.data.data
+                const { cToken, user } = response.data.data
                 setPersistence(getAuth(), browserSessionPersistence)
                 .then(() => {
-                    return signInWithCustomToken(getAuth(), token)
+                    return signInWithCustomToken(getAuth(), cToken)
                 })
                 .then((Ucredential) => {
-                    setUser({...user, token})
+                    setUser({...user, cToken})
                     window.localStorage.setItem('usermeta', JSON.stringify(user))
                     setCredential(() => Ucredential)
                     navigate(`${user.uid}/${user.role}/dashboard`)

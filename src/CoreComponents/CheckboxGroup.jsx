@@ -25,10 +25,10 @@ const reducer = (state, action) => {
 }
 
 
-export const CheckBoxGroup = ({children}) => {
+export const CheckBoxGroup = ({valueState, valueUpdate,children}) => {
   const initialState = { checkedIds: [] }
   const [state, dispatch] = useReducer(reducer, initialState)
- 
+  
   return (
     
         <Stack direction="row" >
@@ -37,7 +37,13 @@ export const CheckBoxGroup = ({children}) => {
                     key={id} 
                     control={
                         <Checkbox 
-                            onChange={() => dispatch({ id })} 
+                            onChange={() => {
+                              dispatch({ id })
+                              valueUpdate({
+                                ...valueState,
+                                size: id
+                              })
+                            }} 
                             checked={state.checkedIds.includes(id)}/>
                         } 
                     label={label}/> 

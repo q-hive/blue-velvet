@@ -6,7 +6,7 @@ import fileUpload from 'express-fileupload'
 
 import { 
     adminRoutes, ordersRoutes, organizationRoutes, 
-    productsRoutes, taskRoutes, passphraseRoutes 
+    productsRoutes, taskRoutes, passphraseRoutes, customerRoutes 
 } from './network/routes.js'
 
 import { authRoutes } from './network/routes.js'
@@ -55,7 +55,7 @@ ordersRoutes(app)
 productsRoutes(app)
 passphraseRoutes(app)
 organizationRoutes(app)
-
+customerRoutes(app)
 
 const server = http.createServer(app)
 
@@ -113,4 +113,8 @@ function onListening(){
     console.log('Listening on ' + bind)
 }
             
-            
+process.on('uncaughtException', (err, origin) => {
+    console.log("An exception wasnt caught: ")
+    console.log(err)
+    console.log(origin)
+})

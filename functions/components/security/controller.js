@@ -58,7 +58,7 @@ export const isAuthenticated = (req, res, next) => {
     })
     .catch( err => {
         let expired = err.errorInfo.code === "auth/id-token-expired"
-
+        
         return error(
             req, res,
             expired ? 403 : 500, 
