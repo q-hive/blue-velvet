@@ -114,6 +114,7 @@ function onListening(){
 }
             
 process.on('uncaughtException', (err, origin) => {
+    console.log("An exception wasnt caught: ")
     console.log(err)
     console.log(origin)
 })

@@ -1,12 +1,31 @@
 import express from 'express'
-import { success } from '../../network/response.js'
+import { error, success } from '../../network/response.js'
 import { validateBodyNotEmpty } from '../security/secureHelpers.js'
-import { createNewCustomer } from './store.js'
+import { createNewCustomer, getAllCustomers } from './store.js'
 
 const router = express.Router()
 
+router.get('/:id', (req, res) => {
+    if(req.params.id){
+        console.log("Retrieve specific customer")
+        success(req, res, 200, "Customers obtained succesfully")
+        return
+    }
+
+    console.log("Get all customers")
+    
+})
+
 router.get('/', (req, res) => {
-    success(req, res, 200, "Customers obtained succesfully")
+    getAllCustomers(res.locals.organization)
+    .then(docs => {
+        success(req, res, 200, "Customers obtained suiccesfully", docs)
+    })
+    .catch((err, processError) => {
+        console.log(processError)
+        error(req, res, 500, "Error retrieving customers - GENERIC ERROR", err, processError)
+    })
+    
 })
 
 router.post('/', (req, res) => {
@@ -16,7 +35,6 @@ router.post('/', (req, res) => {
     
     if(Array.isArray(req.body)){
         //*TODO create insert many customers function
-
         return
     }
 
@@ -24,8 +42,9 @@ router.post('/', (req, res) => {
     .then(orgDoc => {
         success(req, res, 201, "Client created succesfully", orgDoc)
     })
-    .catch(err => {
-        
+    .catch((err, processError) => {
+        console.log(processError)
+        error(req, res, 500, "Error creatiing customer - GENERIC ERROR", err, processError)
     })
 })
 

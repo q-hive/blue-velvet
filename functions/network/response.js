@@ -19,11 +19,23 @@ export const processing = (req, res, code, message, status, data) => {
     })
 }
 
-export const error = (req,res,code,message, error) => {
-    console.log(error)
-    return res.status(code).send({
-        "success":  false,
-        "error":    OPERATION_FAILED,
-        "message":  message
-    })
+export const error = (req,res,code, message, error, processError = undefined) => {
+    try {
+        let parsedError = JSON.parse(error.message)
+        if(processError){
+        }
+        return res.status(parsedError.status).send({
+            "success":  false,
+            "error":    OPERATION_FAILED,
+            "message":  parsedError.message,
+        })
+    
+    } catch(err) {
+        console.log(err)
+        return res.status(code).send({
+            "success":  false,
+            "error":    OPERATION_FAILED,
+            "message":  message
+        })
+    }
 }

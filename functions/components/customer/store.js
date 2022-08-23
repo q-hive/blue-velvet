@@ -7,19 +7,60 @@ export const createNewCustomer = (orgId, data) => {
     return new Promise((resolve, reject) => {
         orgModel.findById(orgId).exec()
         .then(async orgDoc => {
-            console.log(orgDoc)
-            const customerExists = await orgDoc.customers.find({name:data.name}).exec()
-            console.log(customerExists)
-            if(customerExists){
-                console.log("Customer already exists")
-                resolve(orgDoc)
-                return
-            }
+            const foundCustomer = orgDoc.customers.find(customer => customer.name === data.name)
             
+            if(foundCustomer){
+                return reject(new Error(JSON.stringify({message:"Customer already exists", status:409})))
+            }
+
+            console.log(data)
+            let customerMapped = {
+                name:   data.name,
+                email:  data.email,
+                image:  "",
+                address: data.address, 
+            } 
+            
+            orgDoc.customers.push(customerMapped)
+            orgDoc.save()
+            .then(doc => {
+                console.log("Customer saved succesfully")
+                return resolve(doc)
+            })
+            .catch(err => {
+                return reject(err)
+            })
         })
         .catch(err => {
             reject(err)
         })
     })
     
+}
+
+export const getAllCustomers = (orgId) => {
+    return new Promise((resolve, reject) => {
+        const emptyDbError = {
+            status: 204,
+            message:"Customers DB is empty"
+        }
+
+        const errorFindingOrg = {
+            status: 500,
+            message:"An error ocurred while finding organization",
+        }
+        
+        orgModel.findById(orgId).exec()
+        .then(orgDoc => {
+            if(orgDoc.customers.length > 0){
+                return resolve(orgDoc.customers)
+            }
+
+            return reject(new Error(JSON.stringify(emptyDbError)))
+        })
+        .catch(err => {
+            console.log(err)
+            reject(new Error(JSON.stringify(errorFindingOrg)))
+        })
+    })
 }
