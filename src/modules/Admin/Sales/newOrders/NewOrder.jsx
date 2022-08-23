@@ -1,28 +1,57 @@
-import React, {useState} from 'react'
+import React, {useEffect, useState} from 'react'
 //*MUI Components
 import { 
-    Autocomplete, Checkbox, 
-    FormControlLabel, TextField, 
-    Typography, Button, Box, Stack 
+    Autocomplete, TextField, 
+    Typography, Button, Box 
 } from '@mui/material'
 import {DatePicker, LocalizationProvider} from '@mui/x-date-pickers'
 import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns'
+
+//*App components
 import { BV_THEME } from '../../../../theme/BV-theme'
 import {CheckBoxGroup} from "../../../../CoreComponents/CheckboxGroup"
 
+//*Contexts
+import useAuth from '../../../../contextHooks/useAuthContext'
+
+//*Network and API
+import api from '../../../../axios.js'
+
 export const NewOrder = () => {
+    //*Auth context
+    const {user, credential} = useAuth()
+    
     const [options, setOptions] = useState({
-        customers:  ["Elmo","test"],
-        products:   ["prime"]
+        customers:  [],
+        products:   []
     })
+
+    const [input, setInput] = useState({
+        customer:   {},
+        product:    {},
+        packages:   undefined,
+        size:       undefined,
+        date:       undefined
+    });
+
+    const handleChangeInput = (e,v,r) => {
+        console.log(v)
+        
+        setInput({
+            ...input,
+            [e.target.id]:v
+        })
+    }
     
 
     const handleChangeDate = (date) => {
         console.log("Date changing")
+        
     }
 
     const handleSetOrder = (date) => {
         console.log("Order Set! (but not really)")
+        console.log(input)
     }
 
     const checkboxOptions = [
@@ -31,7 +60,38 @@ export const NewOrder = () => {
         { id: "option3", label: "Large" },   
     ]
 
+    useEffect(() => {
+        const getData = async () => {
+            const customers = await api.api.get(`${api.apiVersion}/customers/`, {
+                headers:{
+                    "authorization":    credential._tokenResponse.idToken,
+                    "user":             user
+                }
+            })
+            const products = await api.api.get(`${api.apiVersion}/products/`, {
+                headers:{
+                    "authorization":    credential._tokenResponse.idToken,
+                    "user":             user
+                }
+            })
+            return {customers:customers.data.data, products: products.data.data}
+        }
 
+        getData()
+        .then((data) => {
+            console.log(data)
+            setOptions((options) => {
+                return ({
+                    ...options,
+                    products: data.products,
+                    customers: []
+                })
+            })
+        })
+        .catch(err => {
+            console.log(err)
+        })
+    },[])
   return (
     <>
     <Box sx={
@@ -48,6 +108,7 @@ export const NewOrder = () => {
         <Typography variant="h4" mb={{xs:"5vh",md:"3vh"}}>New order settings</Typography>
 
         <Autocomplete
+            id="customer"
             options={options.customers}
             sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})}
             renderInput={(params) => { 
@@ -56,9 +117,11 @@ export const NewOrder = () => {
                         label="Customer"
                     />
             }}
+            omChange={handleChangeInput}
         />
         
         <Autocomplete
+            id="product"
             options={options.products}
             sx={BV_THEME.input.mobile.fullSize.desktop.halfSize}
             renderInput={(params) => { 
@@ -67,16 +130,22 @@ export const NewOrder = () => {
                         label="Product"
                     />
             }}
+            getOptionLabel={(opt) => {
+                return opt.name
+            }}
+            onChange={handleChangeInput}
         />
         
         <TextField
+            id="packages"
             type="number"
             label="Number of packages"
             sx={BV_THEME.input.mobile.fullSize.desktop.halfSize}
+            onChange={(e) => handleChangeInput(e, e.target.value, "input")}
         />
 
         <Typography variant="h6" mb="2vh" mt="4vh">Select size</Typography>
-        <CheckBoxGroup >{checkboxOptions}</CheckBoxGroup>
+        <CheckBoxGroup valueState={input} valueUpdate={setInput}>{checkboxOptions}</CheckBoxGroup>
 
         
         <Typography variant="h6" mb="1vh" mt="4vh">Delivery date</Typography>

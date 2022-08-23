@@ -6,7 +6,7 @@ import fileUpload from 'express-fileupload'
 
 import { 
     adminRoutes, ordersRoutes, organizationRoutes, 
-    productsRoutes, taskRoutes, passphraseRoutes 
+    productsRoutes, taskRoutes, passphraseRoutes, customerRoutes 
 } from './network/routes.js'
 
 import { authRoutes } from './network/routes.js'
@@ -35,7 +35,7 @@ useMorgan(app);
 const originsList = ["http://localhost:3000", "https://bluevelvetdeploy.herokuapp.com"]
 
 app.use(cors({
-    origin: originsList[1],
+    origin: originsList[0],
     credentials: true
 }));
 
@@ -55,7 +55,7 @@ ordersRoutes(app)
 productsRoutes(app)
 passphraseRoutes(app)
 organizationRoutes(app)
-
+customerRoutes(app)
 
 const server = http.createServer(app)
 
@@ -113,4 +113,7 @@ function onListening(){
     console.log('Listening on ' + bind)
 }
             
-            
+process.on('uncaughtException', (err, origin) => {
+    console.log(err)
+    console.log(origin)
+})

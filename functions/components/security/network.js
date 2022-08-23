@@ -88,7 +88,8 @@ authRouter.post('/login/admin', (req, res) => {
                                                 email:  user.user.email,
                                                 photo:  user.user.photoURL
                                             },
-                                            token: token
+                                            token: user._tokenResponse.idToken,
+                                            cToken: token
                             })
                         
                         } else {
