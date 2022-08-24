@@ -59,6 +59,7 @@ export const ClientIndex = () => {
                         <Button variant='contained' color='primary' startIcon={<Add/>} onClick={handleNewCustomer} sx={{minWidth:"20%"}}>
                             New Customer
                         </Button>
+                    
                         <Button variant='contained' color='primary' startIcon={<Add/>} onClick={handleNewOrder} sx={{minWidth:"20%"}}>
                             Example Button
                         </Button>

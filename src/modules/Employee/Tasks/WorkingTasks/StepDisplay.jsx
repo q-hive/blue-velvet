@@ -1,0 +1,36 @@
+import React, { useState } from 'react'
+
+//*MUI Components
+    // import { DataGrid } from '@mui/x-data-grid'
+import { Box, Button, Fab, Typography } from '@mui/material'
+
+//*UTILS
+
+import AddIcon from '@mui/icons-material/Add';
+//THEME
+import { BV_THEME } from '../../../../theme/BV-theme'
+
+import { HarvestingContent } from './HarvestingContent';
+
+export const StepDisplay = (props) => {
+    console.log(props.index)
+    let test = props.index;
+
+    if(props.type==="harvesting")
+    return(<>
+    <Typography variant="h3">Harvesting</Typography>
+    <HarvestingContent index={props.index}/> 
+    </> )
+
+    if(props.type==="growing")
+    return(<>
+    <Typography></Typography>
+    <HarvestingContent index={props.index}/> 
+    </> )
+    
+    
+    
+    
+    console.log("llamada hecha")
+
+}

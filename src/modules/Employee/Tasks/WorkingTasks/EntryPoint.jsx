@@ -1,6 +1,13 @@
-import React, { useEffect } from 'react'
+import { Add } from '@mui/icons-material'
+import { Box, Button, Container, Paper } from '@mui/material'
+import React, { useEffect, useState } from 'react'
+
+//*Netword and routing
+import { useNavigate } from 'react-router-dom'
 
 export const EntryPoint = () => {
+    const navigate = useNavigate()
+
     const [productionLines, setProductionLines] = useState([])
 
     
@@ -16,11 +23,15 @@ export const EntryPoint = () => {
                     </Paper>
 
 
-                    {/* TASKS FROM PRODUCTION LINES */}
+                    {/* TASKS FROM PRODUCTION LINES 
                     {tasks.map((task, idx) => {
                         
                     })
-                    }
+                    }*/}
+
+                    <Button variant='contained' color='primary' startIcon={<Add/>} onClick={navigate("./taskTest")} sx={{minWidth:"20%"}}>
+                        Dynatask
+                    </Button>
                 </Box>
             </Container>
        </Box>

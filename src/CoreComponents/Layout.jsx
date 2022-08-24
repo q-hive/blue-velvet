@@ -25,7 +25,7 @@ import AgricultureIcon from '@mui/icons-material/Agriculture';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import InventoryIcon from '@mui/icons-material/Inventory';
 //images
-import Logo from  '../assets/images/LOGO_WHITE_BG.jpg'
+import Logo from  '../assets/images/png-Logos/GreenBox-Logo_COCKPIT.png'
 
 //*ROUTER
 import { navigate } from '../utils/router'
