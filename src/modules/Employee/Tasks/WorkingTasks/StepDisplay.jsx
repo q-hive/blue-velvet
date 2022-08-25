@@ -16,15 +16,15 @@ export const StepDisplay = (props) => {
     console.log(props.index)
     let test = props.index;
 
-    if(props.type==="harvesting")
+    if(props.type==="?harvesting")
     return(<>
-    <Typography variant="h3">Harvesting</Typography>
+    <Typography variant="h3" color="primary">Harvesting</Typography>
     <HarvestingContent index={props.index}/> 
     </> )
 
-    if(props.type==="growing")
+    if(props.type==="?seeding")
     return(<>
-    <Typography></Typography>
+    <Typography variant="h3" color="primary">Seeding</Typography>
     <HarvestingContent index={props.index}/> 
     </> )
     
