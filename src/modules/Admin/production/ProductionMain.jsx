@@ -123,11 +123,13 @@ export const ProductionMain = () => {
             })
         })
     }, [])
+
     
 
   return (
-    <>
-        <Box width="100%">
+    <>  
+        {/*PRODUCTION MAIN BEGINS*/}
+        <Box width="100%" height="100%">
             <Container sx={{padding:"2%"}}>
                 <Box sx={
                     
@@ -162,6 +164,7 @@ export const ProductionMain = () => {
                             Add new product
                         </Button>
                     </Box>
+                    
                     <DataGrid
                         columns={columnsState}
                         rows={rows}
@@ -188,7 +191,15 @@ export const ProductionMain = () => {
                     />
                 </Box>
             </Container>
+
+
+            
         </Box>
+
+        
+
+
+        
     </>
   )
 }

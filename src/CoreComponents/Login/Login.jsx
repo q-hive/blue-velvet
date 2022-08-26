@@ -76,14 +76,14 @@ export const Login = () => {
                     user.role = "employee"
                     setPersistence(getAuth(), browserSessionPersistence)
                     .then(() => {
-                        setUser({user, token})
+                        setUser({...user, token})
                         // window.localStorage.setItem('usermeta', finalUser)
                         return signInWithCustomToken(getAuth(), token)
                     })
                     .then((Ucredential) => {
                         console.log('User with credential, setting session persistance...')
                         setCredential(() => Ucredential)
-                        navigate(`${user.uid}/${user.role}/dashboard`)
+                        navigate(`/${user.uid}/${user.role}/dashboard`)
                     })
                     .catch((err) => {
                         console.log(err)

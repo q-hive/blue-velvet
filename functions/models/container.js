@@ -34,3 +34,6 @@ const Container = new Schema({
 })
 
 export default Container
+
+//** Container has the products that manages, when order is received, insert a new production line into array
+//** Container tasks are in production. User must retrieve data from container production lines array */ 

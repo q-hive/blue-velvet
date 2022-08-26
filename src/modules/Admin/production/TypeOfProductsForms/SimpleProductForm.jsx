@@ -30,18 +30,19 @@ export const SimpleProductForm = ({editing, product}) => {
 
     //*DATA STATES
     const [productData, setProductData] = useState({
-        name:editing ? product.name : "",
-        label:editing ? product.img : "",
-        price:editing ? product.price : [{amount:undefined,packageSize:25}, {amount:undefined,packageSize:80}, {amount:undefined,packageSize:1000}],
-        seedId:editing ? product.seedId : "",
-        provider:editing ? product.provider : "",
-        providerSeedName:editing ? product.provider : "",
-        day:editing ? product.parameters.day : "",
-        night:editing ? product.parameters.night : "",
-        cycleType: "",
-        seeding:editing ? product.parameters.seedingRate : "",
-        harvest:editing ? product.parameters.harvestRate : "",
-        status:editing ? product.status : ""
+        name:               editing ? product.name : "",
+        label:              editing ? product.img : "",
+        price:              editing ? product.price : [{amount:undefined,packageSize:25}, {amount:undefined,packageSize:80}, {amount:undefined,packageSize:1000}],
+        seedId:             editing ? product.seedId : "",
+        provider:           editing ? product.provider : "",
+        providerSeedName:   editing ? product.provider : "",
+        day:                editing ? product.parameters.day : "",
+        night:              editing ? product.parameters.night : "",
+        //*HANDLE PRODUCSTS CYCLE TYPE
+        cycleType:          "",
+        seeding:            editing ? product.parameters.seedingRate : "",
+        harvest:            editing ? product.parameters.harvestRate : "",
+        status:             editing ? product.status : ""
     })
 
     //*Render states
@@ -414,14 +415,14 @@ export const SimpleProductForm = ({editing, product}) => {
         }>
             <Box sx={{ width: "90%", display:"flex", flexDirection:{xs:"column",sm:"row"} }}>
             
-            <Box sx={{ width: "90%", display:{xs:"flex", sm:"none"}}}>
-                <Stepper activeStep={activeStep} >
-                        {steps.map((step, index) => (
-                        <Step key={step.label}>
-                            <StepLabel sx={{fontSizeAdjust:"20px"}}>
-                                {step.label}
-                            </StepLabel>
-                        </Step>
+                <Box sx={{ width: "90%", display:{xs:"flex", sm:"none"}}}>
+                    <Stepper activeStep={activeStep} >
+                            {steps.map((step, index) => (
+                            <Step key={step.label}>
+                                <StepLabel sx={{fontSizeAdjust:"20px"}}>
+                                    {step.label}
+                                </StepLabel>
+                            </Step>
                         ))}
                     </Stepper>
                 </Box>

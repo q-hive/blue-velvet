@@ -18,7 +18,7 @@ const Production = new Schema({
             _id:        { type: ObjectId, required: true },
             name:       { type: String,   required: true },
             amount:     { type: Number,   required: true }, // * Measured in packages
-            surplus:    { type: Number,   required: true }, // * In tray numbers
+            surplus:    { type: Number,   required: true }, // * In tray numbers,used to manage 10% of unperiodic orders
             seed:       { type: Number,   required: true },
         }],
         required: true

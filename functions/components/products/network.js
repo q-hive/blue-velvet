@@ -10,7 +10,7 @@ import {isValidProductObject, relateOrdersAndTasks} from './controller.js'
 
 //*Store
 import {
-    createNewProduct,
+    newProduct,
     getAllProducts,
     insertManyProducts,
     updateProduct,
@@ -72,12 +72,12 @@ router.post('/', (req, res) => {
     
     if(isValidProductObject(req.body)){
         //*CREATE PRODUCT
-        createNewProduct(req.body)
-        //*promise message returned
-        .then(async product => {
+        newProduct(res.locals.organization,0, req.body)
+        .then(orgDoc => {
             //*Update container with the new products
-            const update = await updateContainer(res.locals.organization, undefined, {products:product})
-            success(req, res,201,update)
+            console.log(orgDoc)
+            // const update = await updateContainer(res.locals.organization, undefined, {products:product})
+            success(req, res,201,orgDoc)
         })
         .catch(err => {
             switch(err.name){

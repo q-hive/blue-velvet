@@ -2,6 +2,7 @@ import {mongoose} from '../../mongo.js'
 import Organization from '../../models/organization.js'
 import Task from '../../models/task.js'
 import { ObjectId } from 'mongodb'
+import TaskDetails from '../../models/taskDetails.js'
 
 export const createTask = (obj) => {
     return new Promise((resolve, reject) => {
@@ -53,4 +54,17 @@ export const getTaskByProdId = (orgId, id) => {
 
     })
 
+}
+
+export const insertManyTasks = (array) => {
+    return new Promise((resolve, reject) => {
+        const taskModel = mongoose.model("TasksDetails", TaskDetails)
+        console.log(array)
+        taskModel.insertMany(array, (err, data) =>{
+            if(err) return reject(err)
+
+            return resolve(data)
+        })
+    })
+    
 }

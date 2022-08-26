@@ -8,7 +8,8 @@ import { useNavigate } from "react-router-dom"
 import { UserDialog } from "../CoreComponents/UserFeedback/Dialog"
 
 import { BV_THEME } from "../theme/BV-theme"
-import { Button, Typography } from "@mui/material"
+import { Button, Typography, Box, Accordion, AccordionSummary, AccordionDetails, Divider } from "@mui/material"
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 export const productsColumns = [
     {
@@ -55,20 +56,33 @@ export const productsColumns = [
         headerClassName:"header-products-table",
         headerAlign:"center",
         align:"center",
-        headerName:"Prod. price",
-        width:150,
+        headerName:"Prod. Price",
+        minWidth:180,
         flex:1,
         renderCell:(params) => {
             return (
                 <>
-                    {params.formattedValue.map((obj) => {
-                        return (
-                            <p>
-                                <Typography>Package Size: {obj.packageSize}</Typography> 
-                                <Typography>Price: {obj.amount}</Typography> 
-                            </p>    
-                        )
-                    })}
+                    <Box display="flex" p={1}>
+                        <Accordion>
+                            <AccordionSummary
+                                expandIcon={<ExpandMoreIcon />}
+                                aria-controls="panel1a-content"
+                                id="panel1a-header"
+                            >
+                                <Typography>Price</Typography>
+                            </AccordionSummary>
+
+                            <AccordionDetails>
+                                    {params.formattedValue.map((obj) => {
+                                        return (
+                                            <>
+                                            <Typography align="center">Size {obj.packageSize}:  ${obj.amount} </Typography>
+                                            <Divider /> 
+                                            </>
+                                            )})}
+                            </AccordionDetails>
+                        </Accordion>
+                    </Box>
                 </>
             )
         }
@@ -106,7 +120,7 @@ export const productsColumns = [
 
             const [loading, setLoading] = useState(false)
 
-            const {user} = useAuth()
+            const {user, credential} = useAuth()
             const navigate = useNavigate()
             
             const handleModal = () => {
@@ -125,7 +139,12 @@ export const productsColumns = [
                                     ...modal,
                                     open:false
                                 })
-                                api.api.patch(`${api.apiVersion}/products/?id=${params.id}&field=status`,{value:"stopped"})
+                                api.api.patch(`${api.apiVersion}/products/?id=${params.id}&field=status`,{value:"stopped"},{
+                                    headers:{
+                                        authorization:credential._tokenResponse.idToken,
+                                        user:user
+                                    }
+                                })
                                 .then((res) => {
                                     setLoading(false)
                                     setDialog({
@@ -213,7 +232,12 @@ export const productsColumns = [
                                                 })
                                                 setLoading(true)
                                                 
-                                                api.api.delete(`${api.apiVersion}/products/?id=${params.id}`)
+                                                api.api.delete(`${api.apiVersion}/products/?id=${params.id}`,{
+                                                    headers:{
+                                                        authorization:credential._tokenResponse.idToken,
+                                                        user:user
+                                                    }
+                                                })
                                                 .then(() => {
                                                     console.log(params)
                                                 })
@@ -279,7 +303,6 @@ export const productsColumns = [
         field:"status",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Status",
         flex:1
     },
@@ -290,7 +313,6 @@ export const productsColumnsMobile = [
         field:"name",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Microgreen",
         minWidth:150,
         flex:1,
@@ -299,7 +321,6 @@ export const productsColumnsMobile = [
         field:"orders",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Orders",
         width:150,
         renderCell:(params) => {
@@ -312,7 +333,6 @@ export const productsColumnsMobile = [
         field:"tasks",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Options",
         width:150,
         flex:1
@@ -325,21 +345,18 @@ export const ProductionLinesColumns = [
         field:"start",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Start date"
     },
     {
         field:"end",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"End Date"
     },
     {
         field:"updated",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Updated",
         width:150
     },
@@ -347,7 +364,6 @@ export const ProductionLinesColumns = [
         field:"orders",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Orders",
         width:150,
         renderCell:(params) => {
@@ -358,7 +374,6 @@ export const ProductionLinesColumns = [
         field:"Active",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Active tasks",
         width:150
     },
@@ -366,10 +381,44 @@ export const ProductionLinesColumns = [
         field:"products",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
         headerName:"Products",
         renderCell:(params) => {
             return 35
         }
+    },
+]
+
+export const salesColumns = [
+    {
+        field:"customer",
+        headerName:"Customer",
+        headerAlign:"center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1
+    },
+    {
+        field:"date",
+        headerName:"Tuesday",
+        headerClassName:"header-sales-table",
+        headerAlign:"center",
+        minWidth:{xs:"25%",md:100},
+        flex:1
+    },
+    {
+        field:"date2",
+        headerName:"Friday",
+        headerClassName:"header-sales-table",
+        headerAlign:"center",
+        minWidth:{xs:"25%",md:100},
+        flex:1
+    },
+    {
+        field:"type",
+        headerName:"type",
+        headerClassName:"header-sales-table",
+        headerAlign:"center",
+        minWidth:{xs:"25%",md:130},
+        flex:1
     },
 ]

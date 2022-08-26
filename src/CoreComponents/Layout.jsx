@@ -1,7 +1,7 @@
 import React from 'react'
 
 //*MUI COMPONENTS
-import { Box, Button, Grid, Stack, useTheme, } from '@mui/material'
+import { Box, Button, Checkbox, FormControlLabel, FormGroup, Grid, Stack, useTheme, } from '@mui/material'
 //Appbar
 import { AppBar, Toolbar, IconButton, Typography, Menu, Container, Tooltip, Avatar, MenuItem} from '@mui/material'
 
@@ -20,6 +20,10 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import NearbyErrorIcon from '@mui/icons-material/NearbyError';
 import TollIcon from '@mui/icons-material/Toll';
+import GrassIcon from '@mui/icons-material/Grass';
+import AgricultureIcon from '@mui/icons-material/Agriculture';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import InventoryIcon from '@mui/icons-material/Inventory';
 
 //*ROUTER
 import { navigate } from '../utils/router'
@@ -42,7 +46,14 @@ const BV_Layout = (props) => {
     const navigate = useNavigate()
 
     const handleRedirect = (e) => {
-      navigate(`/${user.uid}/admin/${e.target.id}`)
+      console.log(user.role)
+      
+      navigate(`/${user.uid}/${user.role}/${e.target.id}`)
+    }
+
+  const handleShowTask = (e) => {
+    //Should redirect to a page section, but router doesn't support it. Looking for Alternatives
+    navigate(`/${user.uid}/employee/tasks/${e.target.id}`)
   }
     const { window } = props;
     const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -59,7 +70,16 @@ const BV_Layout = (props) => {
     const handleCloseUserMenu = () => {
       setAnchorElUser(null);
     };
+
+    const handleFinishTask = () => {
+
+      console.log("task finished");
+    };
     
+    
+    const handleSeeAllTasks = () => {
+        navigate(`/${user.uid}/employee/tasks`)
+    };
 
     //TASKS icons
     const importantTask = <NearbyErrorIcon large color="primary" />;
@@ -84,25 +104,29 @@ const BV_Layout = (props) => {
                       icon:<SupportAgentIcon color="primary"/>,
                     }
                   ];
+
+    // Options Drawer for Employees 
+    const employeeOptions = [
+      {
+        label:'Home',
+        icon:<GroupsIcon color="primary"/>,
+      }, 
+      {
+        label:'Production',
+        icon:<WorkspacesIcon color="primary"/>,
+      }, 
+    ];
     
     
     //Drawer Task array (TESTING PURPOSES)
     const employeeTasks = [
                     {
-                      label:'Task 1',
-                      icon:importantTask,
+                      label:'Harvesting',
+                      icon:<AgricultureIcon  color="primary" />,
                     }, 
                     {
-                      label:'Task 2',
-                      icon:normalTask,
-                    }, 
-                    {
-                      label:'Task 3',
-                      icon:importantTask,
-                    }, 
-                    {
-                      label:'Task 4',
-                      icon:normalTask,
+                      label:'Growing',
+                      icon:<GrassIcon  color="primary" />,
                     }
                   ];
 
@@ -132,7 +156,7 @@ const BV_Layout = (props) => {
     const drawer = (
         <>
           <Toolbar />
-          <Toolbar alignItems="center" sx={{backgroundColor: "#0E0C8F", p:2}}>
+          <Toolbar alignitems="center" sx={{backgroundColor: "#0E0C8F", p:2}}>
             <Typography 
                 variant="h6"  
                 component="div" 
@@ -141,7 +165,7 @@ const BV_Layout = (props) => {
                 display="block" 
                 sx={{margin:"7%",}}
             >
-                Administrator Options
+                {user.role === "employee" ?  "Employee Options" : "Administrator Options" }
             </Typography>
 
           </Toolbar>
@@ -150,13 +174,26 @@ const BV_Layout = (props) => {
 
           <Box sx={{display:"flex", flexDirection:"column", width:"auto", height:"auto", alignItems:"left", justifyContent:"left", p:2}}>
             {/* IF admin */}
-              {adminOptions.map((option) => (
-                  <Button sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
+            {user.role === "employee" ? 
+                employeeOptions.map((option) => (
+                  <Button key={option.label} sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
                     {option.label}
                   </Button>
                 ))
-              }
-            {/*ElSE Employee? */}
+                : 
+
+                /*ElSE Employee? */
+
+                  adminOptions.map((option) => (
+                    <Button key={option.label} sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
+                      {option.label}
+                    </Button>
+                  ))
+              
+            }
+              
+              
+            
           </Box> 
             
           <Divider />
@@ -176,20 +213,35 @@ const BV_Layout = (props) => {
                 display="block" 
                 sx={{marginLeft:"7%",margin:"3%"}}
             >
-                Tasks
+                Pending Tasks
             </Typography>
 
           </Toolbar>
           
           <Divider />
 
-          <Box sx={{display:"flex", flexDirection:"column", width:"auto", height:"auto", alignItems:"left", justifyContent:"left", p:2}}>
-            {employeeTasks.map((option) => (
-                <Button sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon}  >
-                  {option.label}
-                </Button>
-              ))
-            }
+          <Box display="flex" sx={{display:"flex", flexDirection:"column", width:"auto", height:"auto", p:2}}>
+            {employeeTasks.length != 0 ?
+            
+            employeeTasks.map((option) => (
+                
+              <FormGroup key={option.label} sx={{}}>
+                <Box display="flex" flexDirection="row">
+                  <Button sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleShowTask} >
+                    {option.label}
+                  </Button>
+                  <Button variant="outlined" sx={theme.button.task_done} onClick={handleFinishTask}>Done</Button>
+                </Box>
+              </FormGroup>
+          ))
+        
+            
+            : 
+            
+            <Typography>You currently don't have any pending tasks</Typography>}
+
+            <Button onClick={handleSeeAllTasks}>See all Tasks</Button>
+            
           </Box> 
             
           <Divider />
@@ -260,7 +312,7 @@ const BV_Layout = (props) => {
                       <IconButton
                           color="inherit"
                           aria-label="open drawer"
-                          edge="false"
+                          edge={false}
                           onClick={handleDrawerToggle}
                           sx={{ mr: 2, display: { md: 'none' } }}
                       >
@@ -300,9 +352,10 @@ const BV_Layout = (props) => {
                   
                 }}
               >
+                
                 {drawer}
-                {/* IF employee */}
-                {tasks}
+                {/* IF Employee */}
+                {user.role === "admin" ? "" : {...tasks}}
               </Drawer>
 
               <Drawer
@@ -315,12 +368,12 @@ const BV_Layout = (props) => {
               >
                 {drawer}
                 {/* IF Employee */}
-                {tasks}
+                {user.role === "admin" ? "" : {...tasks}}
               </Drawer>
             </Grid>
 
             {/*CHILDREN GRID ITEM (PRIVATE ROUTES)*/}
-            <Grid item xs={true} wrap>
+            <Grid item xs={true}>
               <Toolbar />
               {props.children}
             </Grid>

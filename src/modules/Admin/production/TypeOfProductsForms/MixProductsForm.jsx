@@ -84,31 +84,20 @@ export const MixProductsForm = ({edit, product}) => {
         } else {
             id = e.target.id
         }
-        
-        switch(r){
-            case "input":
-                setInputValue({
-                    ...inputValue,
-                    [id]:v
-                })
-                break;
-            case "selectOption":
-                setInputValue({
-                    ...inputValue,
-                    [id]:v
-                })
-                break;
-            case "clear":
-                setInputValue({
-                    ...inputValue,
-                    [id]:""
-                })
-                break;
-            default:
-                break;
-            
+
+        if(error[id].failed){
+            setError({
+                ...error,
+                [id]:{
+                    failed:false,
+                    message:""
+                }
+            })
         }
-    
+        setInputValue({
+            ...inputValue,
+            [id]:v
+        })
     }
 
     const mapErrors = (object) => {
@@ -143,7 +132,6 @@ export const MixProductsForm = ({edit, product}) => {
 
         let mappedErrors
         valuesMapped.forEach(err => {
-            console.log(err)
             mappedErrors = {
                 ...mappedErrors,
                 ...err
@@ -155,68 +143,34 @@ export const MixProductsForm = ({edit, product}) => {
     
     const handleAddToMixComb = () => {
         const {mappedErrors} = mapErrors(inputValue)
-        console.log(mappedErrors)
         setError({
             ...error,
             ...mappedErrors
         })
+
+
+        setMix({
+            ...mix,
+            products:[
+                ...mix.products,
+                {
+                    product:inputValue.strain,
+                    amount:inputValue.amount
+                }
+            ]
+        })
+        
+        // setMix((mix) => {
+        //     if(mix.products.length === 0){
+        //         return {[mix.products]:[...mix.products, {product:inputValue.strain, amount:inputValue.amount}]}
+        //     }
+            
+        //     mix.products.map((prod) => {
+        //         return {...prod, product:inputValue.strain, amount:inputValue.amount}
+        //     })
+        // })
         return
-        
-        if(actualValue.amount === null && actualValue.strain === ""){
-            setError(
-                {
-                    ...error,
-                    strain:{
-                        failed:true,
-                        message:"Empty values are not accepted"
-                    },
-                    amount:{
-                        failed:true,
-                        message:"Empty values are not accepted"
-                    },
-                }
-            )
-            return
-        }
-        
-        if(actualValue.strain === "" && actualValue.amount !== null){
-            setError(
-                {
-                    ...error,
-                    strain:{
-                        failed:true,
-                        message:"Empty values are not accepted"
-                    }, 
-                }
-            )
-            return
-        }
-
-        if(actualValue.strain !== "" && actualValue.amount === null){
-            setError(
-                {
-                    ...error,
-                    amount:{
-                        failed:true,
-                        message:"Empty values are not accepted"
-                    }, 
-                }
-            )
-            return
-        }
-
-
-        if(actualValue.strain !== "" && actualValue !== null){
-            ref.current.value = ""
-            setMix({
-                ...mix,
-                products:[...mix.products, actualValue]
-            })
-
-        }
-
     }
-
     const handleChangeFinalData = (e) => {
         setMix({
             ...mix,
@@ -279,7 +233,12 @@ export const MixProductsForm = ({edit, product}) => {
             model.label = label
         }
         
-        api.api.post(`${api.apiVersion}/products/`, model)
+        api.api.post(`${api.apiVersion}/products/`, model, {
+            headers:{
+                authorization:credential._tokenResponse.idToken,
+                user:user
+            }
+        })
         .then(response => {
             setDialog({
                 open:true,
@@ -365,17 +324,19 @@ export const MixProductsForm = ({edit, product}) => {
 
     useEffect(() => {
         if(mix.products.length >1){
+            console.log(mix.products)
             //*The limit sum of amounts should be 100%
             const total = mix.products.reduce((prev, curr) => {
                 let prevObj
                 if(typeof prev === "object"){
-                    prevObj = prev.amount
+                    prevObj = Number(prev.amount)
                 } else {
-                    prevObj = prev
+                    prevObj = Number(prev)
                 }
-                return curr.amount + prevObj
+                return Number(curr.amount) + prevObj
             })
-            if(total === 100){
+            console.log(total)
+            if(total >= 100){
                 //*Disable button
                 setCanAdd(false)
             }
@@ -397,47 +358,17 @@ export const MixProductsForm = ({edit, product}) => {
       
     const handleNext = () => {
         setShowFinal(true)
-        /*const {errors, errorMapped} = mapErrors()
-        if(errors.length > 0 ){
-            let failed
-            switch(activeStep){
-                case 0:
-                    if(errorMapped["name"]){
-                        setError({
-                            ...error,
-                            ...errorMapped
-                        })
-                        return
-                    }
-                    setActiveStep((prevActiveStep) => prevActiveStep + 1);
-                    break;
-                case 1:
-                    failed = errorMapped["seeding"] || errorMapped["harvest"] || errorMapped["day"] || errorMapped["night"] || errorMapped["price"]
-                    if(failed){
-                        setError({
-                            ...error,
-                            ...errorMapped
-                        })
-                        return
-                    }
-                    setActiveStep((prevActiveStep) => prevActiveStep + 1);
-                    break;
-                case 2:
-                    failed = errorMapped["seedId"] || errorMapped["provider"] || errorMapped["status"]
-                    if(failed){
-                        setError({
-                            ...error,
-                            ...errorMapped
-                        })
-                        return
-                    }
-                default:
-                    break;
-            }
+        const {mappedErrors} = mapErrors(inputValue)
+        console.log(mappedErrors)
+        console.log(Object.values(mappedErrors).some((obj) => obj.failed))
+        if(Object.values(mappedErrors).some((obj) => obj.failed)){
+            return setError({
+                    ...error,
+                    ...mappedErrors
+            })
+        }
 
-            return
-        }*/
-        setActiveStep((prevActiveStep) => prevActiveStep + 1)
+        setActiveStep((prevActiveStep) => prevActiveStep + 1);
         
     };
     
@@ -513,9 +444,6 @@ export const MixProductsForm = ({edit, product}) => {
 
     }
 
-    useEffect(() => {
-        console.log(error)
-    }, [error])
   return (
     <div style={{}}>
         <UserDialog
@@ -597,7 +525,7 @@ export const MixProductsForm = ({edit, product}) => {
                                 getOptionLabel={(option) => {
                                     return option.name
                                 }}
-                                onChange={handleInputChange}
+                                onChange={(e,v,r) => handleInputChange(e, v, r)}
                                 sx={theme.input.mobile.fullSize.desktop.halfSize}
                             />
 
@@ -605,7 +533,7 @@ export const MixProductsForm = ({edit, product}) => {
                                 id="amount"
                                 label="Amount %"
                                 ref={ref}
-                                onChange={handleInputChange}
+                                onChange={(e) => handleInputChange(e, e.target.value, "input")}
                                 sx={theme.input.mobile.twoThirds.desktop.quarterSize}
                                 error={error.amount.failed}
                                 helperText={error.amount.message}
@@ -673,11 +601,11 @@ export const MixProductsForm = ({edit, product}) => {
                                             alignItems:"center"
                                         }
                                     }>
-                                        <TextField label="Mix Name" id="name" onChange={handleInputChange} variant="outlined" sx={theme.input.mobile.fullSize.desktop.halfSize}>
+                                        <TextField label="Mix Name" id="name" onChange={(e) => handleInputChange(e, e.target.value, "input")} variant="outlined" sx={theme.input.mobile.fullSize.desktop.halfSize}>
                                             
                                         </TextField>
 
-                                        <TextField label="Mix Price" id="price" onChange={handleInputChange} variant="outlined" sx={theme.input.mobile.fullSize.desktop.halfSize}>
+                                        <TextField label="Mix Price" id="price" onChange={(e) => handleInputChange(e, e.target.id, "input")} variant="outlined" sx={theme.input.mobile.fullSize.desktop.halfSize}>
                                             
                                         </TextField>
 
