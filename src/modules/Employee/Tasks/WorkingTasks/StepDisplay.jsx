@@ -11,6 +11,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { BV_THEME } from '../../../../theme/BV-theme'
 
 import { HarvestingContent } from './HarvestingContent';
+import { SeedingContent } from './SeedingContent';
 
 export const StepDisplay = (props) => {
     console.log(props.index)
@@ -25,7 +26,7 @@ export const StepDisplay = (props) => {
     if(props.type==="?seeding")
     return(<>
     <Typography variant="h3" color="primary">Seeding</Typography>
-    <HarvestingContent index={props.index}/> 
+    <SeedingContent index={props.index}/> 
     </> )
     
     
