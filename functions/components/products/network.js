@@ -11,7 +11,7 @@ import {isValidProductObject, relateOrdersAndTasks} from './controller.js'
 //*Store
 import {
     newProduct,
-    getAllProducts,
+    getAllProductsByOrg,
     insertManyProducts,
     updateProduct,
     deleteProduct
@@ -41,7 +41,7 @@ router.get('/', (req, res) => {
         return
     }
 
-    getAllProducts(orgId)
+    getAllProductsByOrg(orgId)
     .then(data => {
         success(req, res, 200, "Request succeded", data)
     })

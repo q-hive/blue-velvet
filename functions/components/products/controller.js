@@ -1,7 +1,6 @@
-import Product from '../../models/product.js'
 import { getOrdersByProd } from '../orders/store.js'
 import { getTaskByProdId } from '../tasks/store.js'
-import { getAllProducts } from './store.js'
+import { getAllProductsByOrg } from './store.js'
 
 const hasEveryKey = (valid, current) => {
      //*Verificar que el objeto tenga todas las llaves del modelo
@@ -65,7 +64,7 @@ export const isValidProductObject = (json) => {
 export const relateOrdersAndTasks = (orgId) => {
     return new Promise(async (resolve, reject) => {
         //*ASK FOR PRODUCTS ARRAY
-        const products = await getAllProducts(orgId)
+        const products = await getAllProductsByOrg(orgId)
         if(products.length>0) {
             console.log("Has products")
             //* ITERATE ARRAY

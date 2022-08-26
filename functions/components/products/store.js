@@ -13,77 +13,76 @@ export const newProduct = (orgId, contId, product) => {
     return new Promise((resolve, reject) => {
         getOrganizationById(orgId)
         .then(org => {
-            //* Declare and initialize object id for required fields in product model
-            let prodId = new ObjectId()
-            let seedId = new ObjectId()
-            let provId
-
             // * Check for existing provider
-            let prov = await org.providers.findOne({ name: product.provider.name }).exec()
+            getProviderByName(product.provider.name).then(prov => {
+                //* Declare and initialize object id for required fields in product model
+                let prodId = new ObjectId()
+                let seedId = new ObjectId()
+                let provId
 
-            if (prov !== undefined) {
-                // * Provider was found
-                provId = prov._id
-            } else {
-                provId = new ObjectId()
-                let providerMapped = {
-                    _id:    provId,
-                    email:  product.provider.email,
-                    name:   product.provider.name,
-                    seeds:  []
+                if (prov !== undefined) {
+                    // * Provider was found
+                    provId = prov._id
+                } else {
+                    provId = new ObjectId()
+                    let providerMapped = {
+                        _id:    provId,
+                        email:  product.provider.email,
+                        name:   product.provider.name,
+                        seeds:  []
+                    }
+                    newProvider(orgId, providerMapped)
                 }
-                await newProvider(orgId, providerMapped)
-            }
-
-            let prodMapped = {
-                _id:        prodId,
-                name:       product.name,
-                image:      product.image,
-                desc:       product.desc,
-                status:     product.status,
-                seed:       seedId,
-                provider:   provId,
-                price:      product.price,
-                parameters: product.parameters
-            }
-
-            if (product.mix !== undefined && product.mix.isMix === true) 
-                prodMapped.mix = product.mix
-
-            let seedMapped = {
-                _id:        prodMapped.seed,
-                seedName:   product.seed.seedName,
-                product:    prodMapped._id,
-                batch:      product.seed.batch,
-                provider:   provId,
-                seedId:     product.seed.seedId
-            }
-
-            // * Check if provider exists and update whether it exists or not
-            if (prov !== undefined) {
-                // * Provider was found
-                seedMapped.provider = provId
-                newSeed(orgId, provId, seedMapped)
-            } else {
-                let providerMapped = {
-                    _id:    provId,
-                    email:  product.provider.email,
-                    name:   product.provider.name,
-                    seeds:  []
+    
+                let prodMapped = {
+                    _id:        prodId,
+                    name:       product.name,
+                    image:      product.image,
+                    desc:       product.desc,
+                    status:     product.status,
+                    seed:       seedId,
+                    provider:   provId,
+                    price:      product.price,
+                    parameters: product.parameters
                 }
-                await newProvider(orgId, providerMapped)
-                await newSeed(orgId, provId, seedMapped)
-
-            }  
-
-            // * Save product on specified container and save
-            org.containers[contId].products.push(prodMapped)
-            org.save((err, doc) => {
-                if (err) reject(err)
-                resolve(doc)  
-            })
+    
+                if (product.mix !== undefined && product.mix.isMix === true) 
+                    prodMapped.mix = product.mix
+    
+                let seedMapped = {
+                    _id:        prodMapped.seed,
+                    seedName:   product.seed.seedName,
+                    product:    prodMapped._id,
+                    batch:      product.seed.batch,
+                    provider:   provId,
+                    seedId:     product.seed.seedId
+                }
+    
+                // * Check if provider exists and update whether it exists or not
+                if (prov !== undefined) {
+                    // * Provider was found
+                    seedMapped.provider = provId
+                    newSeed(orgId, provId, seedMapped)
+                } else {
+                    let providerMapped = {
+                        _id:    provId,
+                        email:  product.provider.email,
+                        name:   product.provider.name,
+                        seeds:  []
+                    }
+                    newProvider(orgId, providerMapped)
+                    newSeed(orgId, provId, seedMapped)
+    
+                }  
+    
+                // * Save product on specified container and save
+                org.containers[contId].products.push(prodMapped)
+                org.save((err, doc) => {
+                    if (err) reject(err)
+                    resolve(doc)  
+                })
+            })            
         })
-
     })
 }
 
