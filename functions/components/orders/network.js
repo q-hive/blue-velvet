@@ -1,6 +1,6 @@
 import express from 'express'
 import { success, error } from '../../network/response.js'
-import { createNewOrder } from './store.js'
+import { createNewOrder, getAllOrders } from './store.js'
 import {modelsValidationError} from '../../utils/errorHandler.js'
 
 const router = express.Router()
@@ -15,6 +15,20 @@ router.post('/', (req, res) => {
         error(req, res, 500, "Error creating new order - GENERIC ERROR", err)
         
     })
+
+})
+
+router.get('/', (req, res) => {
+    getAllOrders(res.locals.organization)
+    .then((orders) => {
+        success(req, res, 200, "Orders obtained, succesfully", orders)
+    })
+    .catch(err => {
+        error(req, res, 500, "Error getting orders - GENERIC ERROR", err)
+    })    
+})
+
+router.get('/:id', (req, res) => {
 
 })
 

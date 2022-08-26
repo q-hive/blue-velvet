@@ -60,6 +60,7 @@ export const error = (req,res,code, message, error, processError = undefined) =>
                             "message":  `${err._message} in the following keys: ${Object.keys(err.errors)}`
                         })
                     default:
+                        console.log("Gettting here")
                         return res.status(code).send({
                             "success":  false,
                             "error":    OPERATION_FAILED,

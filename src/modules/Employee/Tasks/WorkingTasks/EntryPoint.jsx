@@ -7,12 +7,16 @@ import useAuth from '../../../../contextHooks/useAuthContext'
 import { useNavigate } from 'react-router-dom'
 import { TaskTest } from './TaskTest'
 import { BV_THEME } from '../../../../theme/BV-theme'
+import api from '../../../../axios.js'
 
 export const EntryPoint = () => {
 
     //*Auth context
     const {user, credential} = useAuth()
     const navigate = useNavigate()
+    
+    //*DATA STATES
+    const [orders, setOrders] = useState([])
 
     const handleViewTask = (type) => {
             if(type==="harvesting"){
@@ -134,7 +138,26 @@ export const EntryPoint = () => {
 
 
 
+useEffect(() => {
+    const getOrders = async ()=> {
+        const ordersData = await api.api.get(`${api.apiVersion}/orders/`,{
+            headers:{
+                "authorization":    credential._tokenResponse.idToken,
+                "user":             user
+            }
+        })
 
+        return ordersData.data
+    }
+
+    getOrders()
+    .then((response) => {
+        setOrders(response.data)
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}, [])
 
   return (
     <Box component="div" display="flex"  >
@@ -181,7 +204,7 @@ export const EntryPoint = () => {
                 {/* Not used yet */}
                 <Grid item xs={12}>
                     <Paper sx={fixedHeightPaper}>
-                        <Button variant='contained' color='primary' startIcon={<Add/>} onClick={navigate('taskTest')} sx={{minWidth:"20%"}}>
+                        <Button variant='contained' color='primary' startIcon={<Add/>} onClick={() => navigate('taskTest')} sx={{minWidth:"20%"}}>
                             Dynatask
                         </Button>
                     </Paper>

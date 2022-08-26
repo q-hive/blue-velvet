@@ -13,6 +13,34 @@ import { getAllProducts } from '../products/store.js'
 
 const orgModel = mongoose.model('organization', Organization)
 
+export const getAllOrders = (orgId) => {
+    return new Promise((resolve, reject) => {
+        const orgIDNotProvided = {
+            "message":  "Organization ID was not provided",
+            "status":   400
+        }
+        const errorFromOrg = {
+            "message":  "Error obtaining organization",
+            "status":    500
+        }
+        
+        if(!orgId){
+            return reject(new Error(JSON.stringify(orgIDNotProvided)))
+        }
+
+        getOrganizationById(orgId)
+        .then(org => {
+            resolve(org.orders)
+        })
+        .catch(err => {
+            errorFromOrg.processError = err.message
+            reject(new Error(JSON.stringify(errorFromOrg)))
+        })
+    
+    })
+    
+}
+
 export const createNewOrder = (orgId, order) => {
     return new Promise(async (resolve, reject) => {
         const errorFromOrg = {

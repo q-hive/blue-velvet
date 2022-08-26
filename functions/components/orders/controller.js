@@ -132,13 +132,13 @@ export const getOrderProdData = (order, dbproducts) => {
         })
 
         //*Total grams will define number of trays based on seedingRate
-        const totalToHarvest = prod.packages.reduce((prev, curr) => {
+        const harvest = prod.packages.reduce((prev, curr) => {
             return prev + curr.grams
         },0)
-        const totalToSeeding = totalToHarvest / (prod.harvestRate / prod.seedingRate)
-        const totalTrays = totalToSeeding / prod.seedingRate
+        const seeds = harvest / (prod.harvestRate / prod.seedingRate)
+        const trays = seeds / prod.seedingRate
         
-        prod["productionData"] = {totalToHarvest, totalToSeeding, totalTrays}
+        prod["productionData"] = {harvest, seeds, trays}
     })
     
     const productionData = order.products.map((prod) => {
