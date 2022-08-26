@@ -39,7 +39,9 @@ export const TaskTest = () => {
 
     if(taskType === "?seeding"){steps=[{step:0,assigned:"estempleado",status:"To-do",estimated:0},
     {step:1,assigned:"estempleado",status:"To-do",estimated:2},
-    {step:2,assigned:"estempleado",status:"To-do",estimated:5}]}
+    {step:2,assigned:"estempleado",status:"To-do",estimated:5},
+    {step:3,assigned:"estempleado",status:"To-do",estimated:5},
+    {step:4,assigned:"estempleado",status:"To-do",estimated:5}]}
 
 
     //* STEPPER
