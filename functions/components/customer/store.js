@@ -60,7 +60,7 @@ export const getAllCustomers = (orgId) => {
         })
         .catch(err => {
             console.log(err)
-            reject(new Error(JSON.stringify(errorFindingOrg)))
+            reject(new Error(JSON.stringify(errorFindingOrg)), err)
         })
     })
 }

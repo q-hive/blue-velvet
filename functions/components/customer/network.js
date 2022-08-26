@@ -7,8 +7,7 @@ const router = express.Router()
 
 router.get('/:id', (req, res) => {
     if(req.params.id){
-        console.log("Retrieve specific customer")
-        success(req, res, 200, "Customers obtained succesfully")
+        success(req, res, 200, "Specufic customer obtained succesfully")
         return
     }
 
@@ -22,7 +21,7 @@ router.get('/', (req, res) => {
         success(req, res, 200, "Customers obtained suiccesfully", docs)
     })
     .catch((err, processError) => {
-        console.log(processError)
+        console.log(processError) 
         error(req, res, 500, "Error retrieving customers - GENERIC ERROR", err, processError)
     })
     

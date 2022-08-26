@@ -35,17 +35,23 @@ export const NewOrder = () => {
     });
 
     const handleChangeInput = (e,v,r) => {
-        console.log(v)
-        
+        let id
+        id = e.target.id
+        if(r === "selectOption"){
+            id = e.target.id.split("-")[0]
+        }
         setInput({
             ...input,
-            [e.target.id]:v
+            [id]:v
         })
     }
     
 
     const handleChangeDate = (date) => {
-        console.log("Date changing")
+        setInput({
+            ...input,
+            date: date
+        })
         
     }
 
@@ -79,12 +85,11 @@ export const NewOrder = () => {
 
         getData()
         .then((data) => {
-            console.log(data)
             setOptions((options) => {
                 return ({
                     ...options,
                     products: data.products,
-                    customers: []
+                    customers: data.customers
                 })
             })
         })
@@ -117,7 +122,8 @@ export const NewOrder = () => {
                         label="Customer"
                     />
             }}
-            omChange={handleChangeInput}
+            onChange={handleChangeInput}
+            getOptionLabel={(opt) => opt.name}
         />
         
         <Autocomplete
@@ -130,9 +136,7 @@ export const NewOrder = () => {
                         label="Product"
                     />
             }}
-            getOptionLabel={(opt) => {
-                return opt.name
-            }}
+            getOptionLabel={(opt) => opt.name}
             onChange={handleChangeInput}
         />
         

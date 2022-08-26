@@ -6,21 +6,14 @@ import {modelsValidationError} from '../../utils/errorHandler.js'
 const router = express.Router()
 
 router.post('/', (req, res) => {
-    console.log(req.body)
-
-    createNewOrder(req.body)
-    .then(status => {
-        success(req, res, 201, 'New order created succesfully')
+    createNewOrder(res.locals.organization,req.body)
+    .then((order) => {
+        success(req, res, 201, 'New order created succesfully', order)
     })
-    .catch(err => {
-        switch(err.name){
-            case "ValidationError":
-                error(req, res, 400, modelsValidationError(err))
-                break;
-            default:
-                error(req, res, 500, "Error saving orders", err)
-                break;
-        }
+    .catch((err) => {
+        
+        error(req, res, 500, "Error creating new order - GENERIC ERROR", err)
+        
     })
 
 })

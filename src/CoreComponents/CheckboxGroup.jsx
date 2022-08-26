@@ -41,7 +41,7 @@ export const CheckBoxGroup = ({valueState, valueUpdate,children}) => {
                               dispatch({ id })
                               valueUpdate({
                                 ...valueState,
-                                size: id
+                                size: label
                               })
                             }} 
                             checked={state.checkedIds.includes(id)}/>
