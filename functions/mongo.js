@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 
 config()
 // * Set URI
-const URI = process.env.MONGODB_URI;
+const URI = process.env.MONGODB_URI_TEST;
 // * Config Object to Avoid Deprecation Warnings
 const configMongo = { useNewUrlParser: true, useUnifiedTopology: true };
 
