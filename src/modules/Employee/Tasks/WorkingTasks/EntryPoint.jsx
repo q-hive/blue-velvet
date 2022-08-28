@@ -32,7 +32,14 @@ export const EntryPoint = () => {
         display: "flex",
         overflow: "auto",
         flexDirection: "column",
-        height: 240}
+        height: 240
+    }
+
+     const productTasks = [ 
+        {name:"Task 1", type:"seeding"},
+        {name:"Task 2", type:"harvesting"},
+        {name:"Task 3", type:"packing"},
+    ]
 
     const DUMMY_Task = {
         assigned:true,
@@ -137,7 +144,6 @@ export const EntryPoint = () => {
     }
 
 
-
 useEffect(() => {
     const getOrders = async ()=> {
         const ordersData = await api.api.get(`${api.apiVersion}/orders/`,{
@@ -159,6 +165,10 @@ useEffect(() => {
     })
 }, [])
 
+console.log("aquí")
+console.log(orders)
+
+
   return (
     <Box component="div" display="flex"  >
 
@@ -173,9 +183,13 @@ useEffect(() => {
                 <Grid item xs={12} md={4} lg={3}>
                     <Paper sx={fixedHeightPaper}>
                         <Typography variant="h6" color="secondary">Assigned Orders</Typography>
-                        <Paper sx={{padding:1,margin:1}} variant="outlined">
-                            <Typography><b color="primary">Order:</b> {DUMMY_Order.id}</Typography>
-                        </Paper>
+                        {orders.map((order, index) => {
+                            return (
+                                <Paper sx={{padding:1,margin:1}} variant="outlined">
+                                    <Typography><b>Order {index + 1}:</b> {order._id}</Typography>
+                                </Paper>
+                            )
+                        })}
                     </Paper>
                 </Grid>
 
@@ -184,20 +198,34 @@ useEffect(() => {
                 <Grid item xs={12} md={4} lg={3}>
                     <Paper sx={fixedHeightPaper}>
                         <Typography variant="h6" color="secondary">Order's Tasks</Typography>
-                        {DUMMY_Order.tasks.map((task, index) => {
+                        {orders.map((order, index) => {
                             return (
-                                <Paper key={index} variant="outlined" sx={{padding:1,margin:1,}}>
-                                    <Box sx={{display:"flex",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
-                                        {task.details.title}{" "}
-                                        {task.type}
-                                        <Button variant="contained" sx={{alignSelf:"right"}} onClick={()=>handleViewTask(task.type)} color="primary" >
-                                            View
-                                        </Button>
-                                    </Box>
-                                </Paper>
+                            <>{order.products.map((product, index) => {
+                                console.log(product)
+                                return (
+                                    <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
+                                        <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
+                                            <Typography ><b>Product: {product.name}</b></Typography>
+                                            <Box key={index} sx={{display:"flex",flexDirection:"column", }}>
+
+                                            {productTasks.map((task,index) => { return(
+                                                    <Paper sx={{alignItems:"center",justifyContent:"space-between",paddingY:"3px",paddingX:"2px",marginTop:"2vh",display:"flex", flexDirection:"row"}}>
+                                                        <Typography><b>{task.name}</b>{" "}
+                                                        <i>{task.type}</i></Typography>
+                                                        <Button variant="contained" sx={{width:"34%"}} onClick={()=>handleViewTask(task.type,product,order.productionData)} color="primary" >
+                                                            View
+                                                        </Button>
+                                                    </Paper>
+                                                    
+                                                )
+                                            })}</Box> 
+                                            
+                                        </Box>
+                                    </Paper>
                             
                             )
-                        })}
+                        })}</>  )
+                    })} 
                     </Paper>
                 </Grid>
 
