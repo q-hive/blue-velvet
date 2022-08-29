@@ -29,16 +29,26 @@ const AuthContext = ({children}) => {
       if(u){
         auth.currentUser.getIdToken()
         .then((token) => {
+          
           setCredential(() => {
             return {
               _tokenResponse:{idToken:token}
             }
           })
+
+          setUser(() => u)
         })
-        return setUser(() => u)
+        .catch((err) => {
+          console.log("Error while getting token after reloading.")
+          console.log(err)
+        })
+        return 
       }
 
-      setLoading(() => true)
+      setLoading(() => false)
+      setTimeout(() => {
+        setLoading(() => false)
+      }, 10000)
     })
   }, [])
 
