@@ -18,6 +18,9 @@ export const EntryPoint = () => {
     //*DATA STATES
     const [orders, setOrders] = useState([])
 
+    //*Render states
+    const [orderSelected, setOrderSelected] = useState([])
+
     const handleViewTask = (type) => {
             if(type==="harvesting"){
               navigate('taskTest?harvesting')
@@ -25,6 +28,13 @@ export const EntryPoint = () => {
             if(type==="seeding"){
                 navigate('taskTest?seeding')
               }  
+    }
+
+    const handleShowTasks = (id) => {
+        if(orders.length !== 0) {
+            const found = orders.find(order => order._id === id)
+            setOrderSelected([...orderSelected, found])
+        }
     }
 
     const fixedHeightPaper = {
@@ -187,6 +197,7 @@ console.log(orders)
                             return (
                                 <Paper sx={{padding:1,margin:1}} variant="outlined">
                                     <Typography><b>Order {index + 1}:</b> {order._id}</Typography>
+                                    <Button onClick={() => handleShowTasks(order._id)}>View tasks</Button>
                                 </Paper>
                             )
                         })}
@@ -198,34 +209,42 @@ console.log(orders)
                 <Grid item xs={12} md={4} lg={3}>
                     <Paper sx={fixedHeightPaper}>
                         <Typography variant="h6" color="secondary">Order's Tasks</Typography>
-                        {orders.map((order, index) => {
-                            return (
-                            <>{order.products.map((product, index) => {
-                                console.log(product)
-                                return (
-                                    <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
-                                        <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
-                                            <Typography ><b>Product: {product.name}</b></Typography>
-                                            <Box key={index} sx={{display:"flex",flexDirection:"column", }}>
-
-                                            {productTasks.map((task,index) => { return(
-                                                    <Paper sx={{alignItems:"center",justifyContent:"space-between",paddingY:"3px",paddingX:"2px",marginTop:"2vh",display:"flex", flexDirection:"row"}}>
-                                                        <Typography><b>{task.name}</b>{" "}
-                                                        <i>{task.type}</i></Typography>
-                                                        <Button variant="contained" sx={{width:"34%"}} onClick={()=>handleViewTask(task.type,product,order.productionData)} color="primary" >
-                                                            View
-                                                        </Button>
-                                                    </Paper>
-                                                    
-                                                )
-                                            })}</Box> 
-                                            
-                                        </Box>
-                                    </Paper>
-                            
-                            )
-                        })}</>  )
-                    })} 
+                        {
+                            orderSelected.length !== 0
+                            ?
+                            <>
+                                {orderSelected.map((order, index) => {
+                                        return (
+                                        <>{order.products.map((product, index) => {
+                                            return (
+                                                <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
+                                                    <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
+                                                        <Typography ><b>Product: {product.name}</b></Typography>
+                                                        <Box key={index} sx={{display:"flex",flexDirection:"column", }}>
+            
+                                                        {productTasks.map((task,index) => { return(
+                                                                <Paper sx={{alignItems:"center",justifyContent:"space-between",paddingY:"3px",paddingX:"2px",marginTop:"2vh",display:"flex", flexDirection:"row"}}>
+                                                                    <Typography><b>{task.name}</b>{" "}
+                                                                    <i>{task.type}</i></Typography>
+                                                                    <Button variant="contained" sx={{width:"34%"}} onClick={()=>handleViewTask(task.type,product,order.productionData)} color="primary" >
+                                                                        View
+                                                                    </Button>
+                                                                </Paper>
+                                                                
+                                                            )
+                                                        })}</Box> 
+                                                        
+                                                    </Box>
+                                                </Paper>
+                                        
+                                        )
+                                    })}</>  )
+                                })} 
+                            </>
+                            :
+                            null
+                        }
+                        
                     </Paper>
                 </Grid>
 
