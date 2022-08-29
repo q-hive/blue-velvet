@@ -44,9 +44,10 @@ const AuthContext = ({children}) => {
             }
           })
           .then((response) => {
-            console.log(response.data.data)
             if(!response.data.data.isAdmin) {
               response.data.data.user.role = "employee"
+            } else {
+              response.data.data.user.role = "admin"
             }
             setUser((usr) => {
               return {...response.data.data.user}
