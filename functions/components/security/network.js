@@ -115,7 +115,37 @@ authRouter.post('/logout', (req, res) => {
 })
 //*TODO CREATE REFRESH
 authRouter.post('/refresh', (req, res) => {
-    validateBodyNotEmpty(req, res)
+    // validateBodyNotEmpty(req, res)
+    
+   adminAuth.verifyIdToken(req.headers.authorization)
+   .then((claims) => {
+    getOrganizationById(claims.organization)
+        .then(async org => {
+            const employee = org.employees.find((empl) => empl.uid === claims.uid)
+            let token
+            try {
+                if(employee){
+                    token = await adminAuth.createCustomToken(employee.uid)
+                    employee.role = "employee"
+                }
+            } catch(err){
+                console.log("Error trying to create token")
+            }
+
+            return success(req, res, 200, "User verified succesfully, re-auth done", {
+                isAdmin:false,
+                token:token,
+                user:employee
+            })
+        })
+        .catch(err => {
+            console.log("Error getting organization")
+        })
+    })
+   .catch(err => {
+        console.log("Error verifying ID token")
+        console.log(err)
+    }) 
 })
 
 authRouter.use('/create', isAuthenticated, isAuthorized(["admin"]), userCreationRouter)

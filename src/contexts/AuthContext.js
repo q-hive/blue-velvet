@@ -4,6 +4,8 @@ import {signOut} from 'firebase/auth'
 import auth from '../firebaseInit.js'
 import { useNavigate } from 'react-router-dom'
 
+import api from '../axios.js'
+
 const AuthContextProv = createContext()
 
 const AuthContext = ({children}) => {
@@ -26,17 +28,33 @@ const AuthContext = ({children}) => {
 
   useEffect(() => {
     return auth.onAuthStateChanged((u) => {
+      setLoading(() => true)
       if(u){
         auth.currentUser.getIdToken()
         .then((token) => {
-          
           setCredential(() => {
             return {
               _tokenResponse:{idToken:token}
             }
           })
 
-          setUser((usr) => { console.log(usr); return {...usr, u}})
+          api.api.post(`/auth/refresh`, {}, {
+            headers:{
+              authorization: token
+            }
+          })
+          .then((response) => {
+            console.log(response.data.data)
+            response.data.data.user.role = "employee"
+            setUser((usr) => {
+              return {...response.data.data.user}
+            })
+            setLoading(() => false)
+          })
+          .catch(err => {
+            console.log("Error getting data refreshed")
+          })
+          
         })
         .catch((err) => {
           console.log("Error while getting token after reloading.")
