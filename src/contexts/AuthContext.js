@@ -36,7 +36,7 @@ const AuthContext = ({children}) => {
             }
           })
 
-          setUser(() => u)
+          setUser((usr) => { console.log(usr); return {...usr, u}})
         })
         .catch((err) => {
           console.log("Error while getting token after reloading.")

@@ -34,16 +34,19 @@ router.get('/:id', (req, res) => {
 
 
 router.patch('/:id', (req, res) => {
+    if(!req.params){
+        return error(req, res, 400, "No order provided")
+    }
+    
     //*Send body to controller
-    console.log(req.params)
     updateOrder(res.locals.organization,req.params.id,req.body)
     .then(result => {
+        //*Succcess response
         success(req, res, 200, "Order updated succesfully", result)
     })
     .catch(err => {
+        //*Catch any error
         error(req, res, 500, "Error updating order - GENERIC ERROR", err)
     })
-    //*Succcess response
-    //*Catch any error
 })
 export default router
