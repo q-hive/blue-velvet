@@ -18,21 +18,25 @@ const taskCard_sx = {
     alignItems:"center"
 }
 
-const trays = 3
-const seeds = 35
-const product = "Radiesi"
+const product = "Cebolla"
+const packages =3
 
-export const SeedingContent = (props) => {
+export const PackingContent = (props) => {
 
     if(props.index===0)
         return (<>
             <Box sx={taskCard_sx}>
                 <Typography variant="h4" align='center' color="secondary">
                     Gather what you need: <br /><br/>
-                </Typography>
+                </Typography> 
                 
+
                 <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                    <b>{trays}</b> Trays <br/> <b>{trays}</b> pre-cut Hemp-Mat <br/> <b>{seeds}</b>grs of <b>{product}</b> Seeds <br/> Seeding-tools
+                     Dry-Products: <b>{product}</b> <br/> 
+                     Scale <br/> 
+                     <b>{packages}</b> pre-labeled Packages <br/> 
+                     Box for packed Products <br/>
+                     Date-Stamp 
                 </Typography>
             </Box>
 
@@ -42,7 +46,8 @@ export const SeedingContent = (props) => {
         return (<>
             <Box sx={taskCard_sx}>
                 <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                Place the {trays} Trays on the Seeding-Table, and fill each of them with a pre-cut Hemp-Mat
+                    Place the empty <b>Package</b> on the <b>Scale</b> and tare it to 0. <br/><br/>
+                    <i>This process should be repeated once in a while to ensure the scales calibration</i>  
                 </Typography>
             </Box>
 
@@ -52,7 +57,9 @@ export const SeedingContent = (props) => {
         return (<>
             <Box sx={taskCard_sx}>
                 <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                Staple them under the Table.
+                    Take a handful of product softly in your hand and let it fall into the package until it's reached the correct amount and close it.
+                    <br/><br/>
+                    <b><i>Make sure there are no greens on the side of the container when closing</i></b>
                 </Typography>
             </Box>
 
@@ -62,21 +69,13 @@ export const SeedingContent = (props) => {
         return (<>
             <Box sx={taskCard_sx}>
                 <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                Take the {seeds} grs of {product} seeds and spread them out in bulks. 
-                <br/><br/><i>Spread the seeds equally on the mats and softly spray them with the triangle-spray.</i>
+                    Place the packages in the <i>Boxes</i> for delivery or cooling.
+                    <br/><br/>
+                    Once you've finished packing the containers, check the delivery sheet to see if it's 
+                    correct and put the Harvest-Dates on.
                 </Typography>
             </Box>
 
         </>)
-
-    if(props.index===4) 
-    return (<>
-        <Box sx={taskCard_sx}>
-            <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-            Staple them slightly turned and bring them to the germination-shelves.  
-            </Typography>
-        </Box>
-
-    </>)
 
 }

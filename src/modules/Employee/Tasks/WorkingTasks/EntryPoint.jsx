@@ -22,12 +22,20 @@ export const EntryPoint = () => {
     const [orderSelected, setOrderSelected] = useState([])
 
     const handleViewTask = (type) => {
-            if(type==="harvesting"){
-              navigate('taskTest?harvesting')
+            
+            switch(type){
+                case "harvesting": navigate('taskTest?harvesting')
+                break;
+                
+                case "seeding": navigate('taskTest?seeding')
+                break;
+
+                case "packing": navigate('taskTest?packing')
+                break;
+
+                default: console.log("Oh no! wrong type")
+                break;
             }
-            if(type==="seeding"){
-                navigate('taskTest?seeding')
-              }  
     }
 
     const handleShowTasks = (id) => {
@@ -49,6 +57,13 @@ export const EntryPoint = () => {
         {name:"Task 1", type:"seeding"},
         {name:"Task 2", type:"harvesting"},
         {name:"Task 3", type:"packing"},
+    ]
+
+    const containerTasks = [ 
+        {name:"Cut mats", type:"maintenance"},
+        {name:"Waste and Control", type:"maintenance"},
+        {name:"Labelling", type:"maintenance"},
+        {name:"Cleaning", type:"maintenance"},
     ]
 
     const DUMMY_Task = {
@@ -154,29 +169,32 @@ export const EntryPoint = () => {
     }
 
 
-useEffect(() => {
-    const getOrders = async ()=> {
-        const ordersData = await api.api.get(`${api.apiVersion}/orders/`,{
-            headers:{
-                "authorization":    credential._tokenResponse.idToken,
-                "user":             user
-            }
+    useEffect(() => {
+        const getOrders = async ()=> {
+            const ordersData = await api.api.get(`${api.apiVersion}/orders/`,{
+                headers:{
+                    "authorization":    credential._tokenResponse.idToken,
+                    "user":             user
+                }
+            })
+
+            return ordersData.data
+        }
+
+        getOrders()
+        .then((response) => {
+            setOrders(response.data)
         })
-
-        return ordersData.data
-    }
-
-    getOrders()
-    .then((response) => {
-        setOrders(response.data)
-    })
-    .catch(err => {
-        console.log(err)
-    })
-}, [])
+        .catch(err => {
+            console.log(err)
+        })
+    }, [])
 
 console.log("aquí")
 console.log(orders)
+console.log(user)
+
+const status = "uncompleted"
 
 
   return (
@@ -184,7 +202,7 @@ console.log(orders)
 
 
         <Container maxWidth="lg" sx={{paddingTop:4,paddingBottom:4}}>
-            <Typography variant="h2" color="primary">Welcome, Juan!</Typography>
+            <Typography variant="h2" color="primary">Welcome, {user.displayName}</Typography>
             <Typography variant="h5" color="secondary">Here's your work</Typography>
 
             <Grid container spacing={3} marginTop={3}>
@@ -249,11 +267,20 @@ console.log(orders)
                 </Grid>
 
                 {/* Not used yet */}
-                <Grid item xs={12}>
+                <Grid item xs={12} sm={3}>
                     <Paper sx={fixedHeightPaper}>
-                        <Button variant='contained' color='primary' startIcon={<Add/>} onClick={() => navigate('taskTest')} sx={{minWidth:"20%"}}>
-                            Dynatask
-                        </Button>
+                        <Typography variant="h6" color="secondary">Container's Tasks</Typography>
+                        {containerTasks.map((task,index) => { 
+                            return(
+                                <Paper sx={{alignItems:"center",justifyContent:"space-between",paddingY:"3px",paddingX:"2px",marginTop:"2vh",display:"flex", flexDirection:"row"}}>
+                                    <Typography><b>{task.name}</b>{" "}
+                                    <i>{task.type}</i></Typography>
+                                    <Button variant="contained" sx={{width:"34%"}} onClick={()=>handleViewTask(task.type,product,order.productionData)} color="primary" >
+                                        View
+                                    </Button>
+                                </Paper>                             
+                            )
+                        })}
                     </Paper>
                 </Grid>
             </Grid>

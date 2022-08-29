@@ -20,9 +20,9 @@ import useAuth from '../../../../contextHooks/useAuthContext'
 
 
 ///tasks steps test
-import { StepDisplay } from './StepDisplay';
 import { SeedingContent } from './SeedingContent';
 import { HarvestingContent } from './HarvestingContent';
+import { PackingContent } from './PackingContent';
 
 //*Auth
 const amounts = ["25","30","40","50","60","70","80","90"]
@@ -33,21 +33,36 @@ export const TaskTest = () => {
     const taskType = window.location.search
     console.log(taskType)
 
-    let steps
-    if(taskType === "?harvesting"){steps=[{step:0,assigned:"estempleado",status:"To-do",estimated:0},
-    {step:1,assigned:"estempleado",status:"To-do",estimated:2},
-    {step:2,assigned:"estempleado",status:"To-do",estimated:5},
-    {step:3,assigned:"estempleado",status:"To-do",estimated:5}]}
-
-    if(taskType === "?seeding"){steps=[{step:0,assigned:"estempleado",status:"To-do",estimated:0},
-    {step:1,assigned:"estempleado",status:"To-do",estimated:2},
-    {step:2,assigned:"estempleado",status:"To-do",estimated:5},
-    {step:3,assigned:"estempleado",status:"To-do",estimated:5},
-    {step:4,assigned:"estempleado",status:"To-do",estimated:5}]}
-
-
     //* STEPPER
     const [activeStep, setActiveStep] = useState(0)
+
+    let steps
+    let contentTitle
+    let content
+
+    switch (taskType){
+        case "?seeding": {
+                contentTitle = "Seeding"
+                content = <SeedingContent index={activeStep}/>
+                steps=[{step:0},{step:1},{step:2},{step:3},{step:4},]
+            } break;
+            
+        case "?harvesting": 
+                {
+                contentTitle = "Harvesting"
+                content = <HarvestingContent index={activeStep}/>
+                steps=[{step:0},{step:1},{step:2},{step:3},]
+            } break;
+
+        case "?packing": 
+                {
+                contentTitle = "Packing"
+                content = <PackingContent index={activeStep}/>
+                steps=[{step:0},{step:1},{step:2},{step:3},]
+            } break;
+            
+    }
+    
 
     const DUMMY_Task = {}
 
@@ -229,22 +244,6 @@ export const TaskTest = () => {
 
     }
 
-    const displaySteps = (taskType, index) => {
-        switch (taskType){
-            case "?seeding": 
-                return(<>
-                    <Typography variant="h3" color="primary">Seeding</Typography>
-                    <SeedingContent index={index}/>
-                </>)
-
-            case "?harvesting": 
-                return(<>
-                    <Typography variant="h3" color="primary">Harvesting</Typography>
-                    <HarvestingContent index={index}/>
-                </>)
-        }
-    }
-
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     
@@ -297,11 +296,9 @@ export const TaskTest = () => {
                     )}
                 </Box>
                                     
-                <Box sx={{ width:{xs:"90%",sm:"65%"}, display:"flex", flexDirection:"column", padding:"5%", alignItems:"center" }}>
-                             
-                    {displaySteps(taskType,activeStep)
-                    
-                    }
+                <Box sx={{ width:{xs:"90%",sm:"65%"}, display:"flex", flexDirection:"column", padding:"5%", alignItems:"center" }}>          
+                    <Typography variant="h3" color="primary">{contentTitle}</Typography>
+                    {content}
                 </Box>
                         
 
