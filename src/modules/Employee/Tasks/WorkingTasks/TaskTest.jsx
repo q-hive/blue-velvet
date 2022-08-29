@@ -280,7 +280,6 @@ export const TaskTest = () => {
                 </Box>
                                     
                 <Box sx={{ width:{xs:"90%",sm:"65%"}, display:"flex", flexDirection:"column", padding:"5%", alignItems:"center" }}>
-                           
                     {<StepDisplay type={taskType} index={activeStep} /*task={DUMMY_Task}*//>}
                 </Box>
                         

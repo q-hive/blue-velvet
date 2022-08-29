@@ -137,3 +137,39 @@ export const getOrdersByProd = (orgId, id) => {
         resolve(orderByProd)
     })
 }
+
+export const updateOrder = (org, orderId, body) => {
+    return new Promise((resolve, reject) => {
+        orgModel.findById(org).exec()
+        .then((organization) => {
+            if(organization){
+                const dbOrder = organization.orders.find((order) => order._id.equals(orderId))
+    
+                if(!dbOrder) {
+                    return reject(new Error(JSON.stringify({"message":"No order found", "status":204})))
+                }
+
+                body.paths.forEach(({path, value}, index) => {
+                    // const isNested = /^[a-z]*.[a-z]$/
+
+                    dbOrder[path] = value
+                })
+
+                
+                organization.save((err, doc) => {
+                    if(err) reject(JSON.stringify({"message":"Error saving organization", "status": 500, "processError":err}))
+
+                    resolve(dbOrder)
+                })
+                return
+            }
+
+            return reject(new Error(JSON.stringify({"message":"No organization found", "status": 204})))
+            
+            
+        })
+        .catch((err) => {
+        
+        })
+    })
+}
