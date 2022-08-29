@@ -21,11 +21,12 @@ export const NewOrder = () => {
     //*Auth context
     const {user, credential} = useAuth()
     
+    
+    //*Data States
     const [options, setOptions] = useState({
         customers:  [],
         products:   []
     })
-
     const [input, setInput] = useState({
         customer:   {},
         product:    {},
@@ -33,6 +34,9 @@ export const NewOrder = () => {
         size:       undefined,
         date:       undefined
     });
+
+    //*Render states
+    const [productsInput, setProductsInput] = useState(false)
 
     const handleChangeInput = (e,v,r) => {
         let id
@@ -55,7 +59,12 @@ export const NewOrder = () => {
         
     }
 
-    const handleSetOrder = (date) => {
+    const handleSetOrder = (e) => {
+        if(e.target.id === "accept") {
+            setProductsInput(true)
+            return 
+        }
+        
         console.log("Order Set! (but not really)")
         console.log(input)
     }
@@ -97,6 +106,7 @@ export const NewOrder = () => {
             console.log(err)
         })
     },[])
+
   return (
     <>
     <Box sx={
@@ -110,66 +120,76 @@ export const NewOrder = () => {
     }>
         <Box sx={{ width: "90%", display:"flex", flexDirection:{xs:"column",sm:"column"}  }} alignItems="center" textAlign="center">
     
-        <Typography variant="h4" mb={{xs:"5vh",md:"3vh"}}>New order settings</Typography>
+        {
+            productsInput
+            ?
+            <>
+                <Autocomplete
+                id="product"
+                options={options.products}
+                sx={BV_THEME.input.mobile.fullSize.desktop.halfSize}
+                renderInput={(params) => { 
+                    return <TextField
+                            {...params}
+                            label="Product"
+                        />
+                }}
+                getOptionLabel={(opt) => opt.name}
+                onChange={handleChangeInput}
+                />
 
-        <Autocomplete
-            id="customer"
-            options={options.customers}
-            sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})}
-            renderInput={(params) => { 
-                return <TextField
-                        {...params}
-                        label="Customer"
+                <TextField
+                    id="packages"
+                    type="number"
+                    label="Number of packages"
+                    sx={BV_THEME.input.mobile.fullSize.desktop.halfSize}
+                    onChange={(e) => handleChangeInput(e, e.target.value, "input")}
+                />
+
+                <Typography variant="h6" mb="2vh" mt="4vh">Select size</Typography>
+                <CheckBoxGroup valueState={input} valueUpdate={setInput}>{checkboxOptions}</CheckBoxGroup>
+
+                <Button sx={{marginTop:"2vh"}}>
+                    Add more products
+                </Button>
+            
+            </>
+            :
+            <>
+                <Typography variant="h4" mb={{xs:"5vh",md:"3vh"}}>New order settings</Typography>
+
+                <Autocomplete
+                    id="customer"
+                    options={options.customers}
+                    sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})}
+                    renderInput={(params) => { 
+                        return <TextField
+                                {...params}
+                                label="Customer"
+                            />
+                    }}
+                    onChange={handleChangeInput}
+                    getOptionLabel={(opt) => opt.name}
+                />
+
+                <Typography variant="h6" mb="1vh" mt="4vh">Delivery date</Typography>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <DatePicker
+                        label="Select a date"
+                        onChange={handleChangeDate}
+                        renderInput={(params) => <TextField {...params} />}
+                        sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize,})}
                     />
-            }}
-            onChange={handleChangeInput}
-            getOptionLabel={(opt) => opt.name}
-        />
-        
-        <Autocomplete
-            id="product"
-            options={options.products}
-            sx={BV_THEME.input.mobile.fullSize.desktop.halfSize}
-            renderInput={(params) => { 
-                return <TextField
-                        {...params}
-                        label="Product"
-                    />
-            }}
-            getOptionLabel={(opt) => opt.name}
-            onChange={handleChangeInput}
-        />
-        
-        <TextField
-            id="packages"
-            type="number"
-            label="Number of packages"
-            sx={BV_THEME.input.mobile.fullSize.desktop.halfSize}
-            onChange={(e) => handleChangeInput(e, e.target.value, "input")}
-        />
+                </LocalizationProvider>
+                <Button variant="contained" id="accept" onClick={handleSetOrder} sx={{marginTop:"2vh", color:{...BV_THEME.palette.white_btn}}}>
+                    Select products
+                </Button>
+            </>
+            }
 
-        <Typography variant="h6" mb="2vh" mt="4vh">Select size</Typography>
-        <CheckBoxGroup valueState={input} valueUpdate={setInput}>{checkboxOptions}</CheckBoxGroup>
-
-        
-        <Typography variant="h6" mb="1vh" mt="4vh">Delivery date</Typography>
-        <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <DatePicker
-                label="Select a date"
-                onChange={handleChangeDate}
-                renderInput={(params) => <TextField {...params} />}
-                sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize,})}
-            />
-        </LocalizationProvider>
-        
-
-        <Button sx={{marginTop:"2vh"}}>
-            Add more products
-        </Button>
-
-        <Button variant="contained" onClick={handleSetOrder} sx={{marginTop:"2vh", color:{...BV_THEME.palette.white_btn}}}>
-            Set Order
-        </Button>
+            <Button variant="contained" onClick={handleSetOrder} sx={{marginTop:"2vh", color:{...BV_THEME.palette.white_btn}}}>
+                Set Order
+            </Button>
 
     
         </Box>
