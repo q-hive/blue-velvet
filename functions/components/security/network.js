@@ -120,13 +120,21 @@ authRouter.post('/refresh', (req, res) => {
    adminAuth.verifyIdToken(req.headers.authorization)
    .then((claims) => {
     getOrganizationById(claims.organization)
-        .then(async org => {
-            const employee = org.employees.find((empl) => empl.uid === claims.uid)
+    .then(async org => {
             let token
+            if(claims.role === "admin") {
+                const admin = await adminAuth.getUser(claims.uid)
+                token = await adminAuth.createCustomToken(claims.uid)
+                return success(res, res, 200, "User verified succesfully, re-auth done", {
+                    isAdmin:    true,
+                    token:      token,
+                    user:       admin
+                })
+            }
+            const employee = org.employees.find((empl) => empl.uid === claims.uid)
             try {
                 if(employee){
                     token = await adminAuth.createCustomToken(employee.uid)
-                    employee.role = "employee"
                 }
             } catch(err){
                 console.log("Error trying to create token")
@@ -140,6 +148,7 @@ authRouter.post('/refresh', (req, res) => {
         })
         .catch(err => {
             console.log("Error getting organization")
+            console.log(err)
         })
     })
    .catch(err => {
