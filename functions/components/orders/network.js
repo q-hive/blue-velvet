@@ -1,6 +1,6 @@
 import express from 'express'
 import { success, error } from '../../network/response.js'
-import { createNewOrder, getAllOrders } from './store.js'
+import { createNewOrder, getAllOrders, updateOrder } from './store.js'
 import {modelsValidationError} from '../../utils/errorHandler.js'
 
 const router = express.Router()
@@ -32,4 +32,21 @@ router.get('/:id', (req, res) => {
 
 })
 
+
+router.patch('/:id', (req, res) => {
+    if(!req.params){
+        return error(req, res, 400, "No order provided")
+    }
+    
+    //*Send body to controller
+    updateOrder(res.locals.organization,req.params.id,req.body)
+    .then(result => {
+        //*Succcess response
+        success(req, res, 200, "Order updated succesfully", result)
+    })
+    .catch(err => {
+        //*Catch any error
+        error(req, res, 500, "Error updating order - GENERIC ERROR", err)
+    })
+})
 export default router

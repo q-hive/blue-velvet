@@ -37,7 +37,7 @@ export const error = (req,res,code, message, error, processError = undefined) =>
         return res.status(code).send({
             "success":  false,
             "error":    OPERATION_FAILED,
-            "message":  message,
+            "message":  (JSON.parse(error.message).message || message),
         })
     
     } catch(err) {
