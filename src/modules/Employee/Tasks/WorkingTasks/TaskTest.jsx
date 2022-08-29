@@ -21,6 +21,8 @@ import useAuth from '../../../../contextHooks/useAuthContext'
 
 ///tasks steps test
 import { StepDisplay } from './StepDisplay';
+import { SeedingContent } from './SeedingContent';
+import { HarvestingContent } from './HarvestingContent';
 
 //*Auth
 const amounts = ["25","30","40","50","60","70","80","90"]
@@ -227,6 +229,22 @@ export const TaskTest = () => {
 
     }
 
+    const displaySteps = (taskType, index) => {
+        switch (taskType){
+            case "?seeding": 
+                return(<>
+                    <Typography variant="h3" color="primary">Seeding</Typography>
+                    <SeedingContent index={index}/>
+                </>)
+
+            case "?harvesting": 
+                return(<>
+                    <Typography variant="h3" color="primary">Harvesting</Typography>
+                    <HarvestingContent index={index}/>
+                </>)
+        }
+    }
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     
@@ -280,8 +298,10 @@ export const TaskTest = () => {
                 </Box>
                                     
                 <Box sx={{ width:{xs:"90%",sm:"65%"}, display:"flex", flexDirection:"column", padding:"5%", alignItems:"center" }}>
-                           
-                    {<StepDisplay type={taskType} index={activeStep} /*task={DUMMY_Task}*//>}
+                             
+                    {displaySteps(taskType,activeStep)
+                    
+                    }
                 </Box>
                         
 
