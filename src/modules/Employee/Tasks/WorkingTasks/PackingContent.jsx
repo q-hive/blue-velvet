@@ -47,7 +47,7 @@ export const PackingContent = (props) => {
             <Box sx={taskCard_sx}>
                 <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
                     Place the empty <b>Package</b> on the <b>Scale</b> and tare it to 0. <br/><br/>
-                    <i>This process should be repeated once in a while to ensure the scales calibration</i>  
+                    <i>This process should be repeated once in a while to ensure the scale's calibration</i>  
                 </Typography>
             </Box>
 
