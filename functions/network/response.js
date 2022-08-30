@@ -21,24 +21,30 @@ export const processing = (req, res, code, message, status, data) => {
 
 //*ERROR PARAMETER IS THE CUSTOM ERROR OBJECT, PROCESS ERROR COMES FROM SYSTEM ERRORS OR UNHANDLED REJECTIONS
 export const error = (req,res,code, message, error, processError = undefined) => {
+    console.group("Error")
+    console.log(error)
+    console.groupEnd()
+
+    console.group("System error")
+    console.log(processError)
+    console.groupEnd()
+    
     try {
-        console.log(error.message)
         //*If a JSON is provided in the error helper then it will be parsed
-        if(JSON.parse(error.message).processError){
-            processError = JSON.parse(error.message).processError
+        if(error){
             
             return res.status(JSON.parse(error.message).status).send({
                 "success": false,
                 "error": OPERATION_FAILED,
-                message: processError
+                message: JSON.parse(error).message
             })
         }
 
-        return res.status(code).send({
-            "success":  false,
-            "error":    OPERATION_FAILED,
-            "message":  (JSON.parse(error.message).message || message),
-        })
+        // return res.status(code).send({
+        //     "success":  false,
+        //     "error":    OPERATION_FAILED,
+        //     "message":  (JSON.parse(error.message).message || message),
+        // })
     
     } catch(err) {
         console.group("Failure in parsing custom error, processing system error...")
