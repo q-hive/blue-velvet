@@ -1,19 +1,16 @@
 import { getOrganizationById } from "../organization/store.js"
 
 export const newSeed = (orgId, provId, seedObj) => {
-    return new Promise((resolve, reject) => {
-        
+    return new Promise((resolve, reject) => {   
         getOrganizationById(orgId)
         .then(org => {
-            org.providers.findOne(provId).exec()
-            .then(prov => {
-                prov.seeds.push(seedObj)
-
-                org.save((err, doc) => {
-                    if (err) reject(err)
-
-                    resolve(seedObj)
-                })
+            org.providers.findOneAndUpdate(
+                { _id: provId }, 
+                { $push: { seeds: seedObj } }, 
+                { new: true })
+            .exec((err, doc) => {
+                if (err) reject(err)
+                resolve(doc)
             })
         })
 

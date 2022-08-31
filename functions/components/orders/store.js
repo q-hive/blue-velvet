@@ -9,7 +9,7 @@ import { getProductionForOrder } from '../production/store.js'
 import { addTimeToDate } from '../../utils/time.js'
 import { getOrganizationById } from '../organization/store.js'
 import { getOrdersPrice, getOrderProdData } from './controller.js'
-import { getAllProducts } from '../products/store.js'
+import { getAllProductsByOrg } from '../products/store.js'
 
 const orgModel = mongoose.model('organization', Organization)
 
@@ -75,7 +75,7 @@ export const createNewOrder = (orgId, order) => {
             }
         })
 
-        const allProducts = await getAllProducts(orgId)
+        const allProducts = await getAllProductsByOrg(orgId)
 
         if(allProducts && allProducts.length >0){
             let orderMapped = {

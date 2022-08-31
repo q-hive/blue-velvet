@@ -1,5 +1,4 @@
-import mongoose from "mongoose"
-import Provider from "../../models/provider.js"
+import { getOrganizationById } from '../organization/store.js'
 
 export const newProvider = (orgId, prov) => {
     return new Promise((resolve, reject) => {
@@ -31,6 +30,18 @@ export const getProviderById = (orgId, provId) => {
         getOrganizationById(orgId)
         .then(org => {
             org.providers.findOneById(provId).exec((err, doc) => {
+                if (err) reject(err)
+                resolve(doc)  
+            })
+        })
+    })
+}
+
+export const updateProvider = (orgId, provId, edit) => {
+    return new Promise((resolve, reject) => {
+        getOrganizationById(orgId)
+        .then(org => {
+            org.providers.findOneAndUpdate(provId, edit, { new: true }).exec((err, doc) => {
                 if (err) reject(err)
                 resolve(doc)  
             })

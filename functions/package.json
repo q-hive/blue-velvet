@@ -6,11 +6,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
-
+    "start": "nodemon index.js"
   },
-  "engines":{
-    "node":"16.16.0"
+  "engines": {
+    "node": "16.16.0"
   },
   "keywords": [
     "functions",
@@ -33,5 +32,9 @@
     "mongoose": "^6.4.2",
     "morgan": "^1.10.0",
     "nodemon": "^2.0.18"
+  },
+  "devDependencies": {
+    "jest": "^29.0.1",
+    "supertest": "^6.2.4"
   }
 }

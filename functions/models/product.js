@@ -22,7 +22,7 @@ const Product = new Schema({
             isMix:  { type: Boolean, required: true },
             products: {
                 type: [{
-                    strain: { type: ObjectId, required: true },
+                    strain: { type: ObjectId, required: true }, // * Reference to seed object
                     amount: { type: Number,   required: true }, // * Measured in trays
                 }], 
                 required: false 
