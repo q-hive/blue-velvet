@@ -35,8 +35,7 @@ export const EntryPoint = () => {
     const handleStartWork = () => {
         navigate('./../tasks/work',
         {state: {
-            type: "uncompleted",
-            order: orderSelected
+            orders: orders
         }}
     )
     }
@@ -223,7 +222,7 @@ console.log(user)
   return (
     <Box component="div" display="flex"  >
 
-        <Container maxWidth="lg" sx={{paddingTop:4,paddingBottom:4}}>
+        <Container maxWidth="lg" sx={{paddingTop:4,paddingBottom:4,marginX:{xs:4,md:"auto"},marginTop:{xs:4,md:3}}}>
             <Typography variant="h2" color="primary">Welcome, {user.name}</Typography>
             <Typography variant="h5" color="secondary">Here's your work</Typography>
 
@@ -281,9 +280,9 @@ console.log(user)
                                                                                 <b>{task.name}</b>{" "}
                                                                                 <i>{task.type}</i>
                                                                             </Typography>
-                                                                            <Button variant="contained" sx={{width:"34%"}} onClick={()=>handleViewTask(task.type,product,order.productionData)} color="primary" >
+                                                                            {/*<Button variant="contained" sx={{width:"34%"}} onClick={()=>handleViewTask(task.type)} color="primary" >
                                                                                 View
-                                                                            </Button>
+                                                                            </Button>*/}
                                                                         </Paper>
                                                                         
                                                                     )

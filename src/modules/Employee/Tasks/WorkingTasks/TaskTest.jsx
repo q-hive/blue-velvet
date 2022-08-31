@@ -237,7 +237,7 @@ export const TaskTest = (props) => {
                     )}
                 </Box>
                                     
-                <Box sx={{ width:{xs:"90%",sm:"65%"}, display:"flex", flexDirection:"column", padding:"5%", alignItems:"center" }}>          
+                <Box sx={{ width:{xs:"100%",sm:"65%"}, display:"flex", flexDirection:"column", padding:"5%", alignItems:"center" }}>          
                     <Typography variant="h3" color="primary">{contentTitle}</Typography>
                     {content}
                 </Box>

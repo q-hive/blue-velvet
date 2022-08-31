@@ -26,7 +26,7 @@ export const SeedingContent = (props) => {
 
     const products=props.products
 
-    const totalTrays =Math.ceil(sumAllTrays())
+    const totalTrays =5//Math.ceil(sumAllTrays())
 
     function sumAllTrays() {
         var i;
@@ -51,7 +51,7 @@ export const SeedingContent = (props) => {
                 </Typography>
                 {products.map((product,index)=>{return(
                     <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                        <b>{product.productionData.seeds}</b> grs of <b>{product.name}</b> Seeds <br/>
+                        <b>{/*product.productionData.seeds*/}</b> grs of <b>{product.name}</b> Seeds <br/>
                     </Typography>
                 )})}
                 

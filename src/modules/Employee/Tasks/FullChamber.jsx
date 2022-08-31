@@ -10,7 +10,7 @@ import { Add } from '@mui/icons-material'
 import {BV_THEME} from '../../../theme/BV-theme'
 
 //*Netword and routing
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import { Carousel } from 'react-responsive-carousel'
 import "react-responsive-carousel/lib/styles/carousel.min.css";
@@ -28,27 +28,10 @@ export const FullChamber = () => {
     //*Netword and router
     const navigate = useNavigate()
 
-    let productTasks
+    
+    const {state}= useLocation();
 
-    const setOrderTasks = (status) =>{
-        
-        switch(status){
-            case "uncompleted": productTasks = [{name:"Task 1", type:"seeding"}];
-            break;
-            case "growing": productTasks = [];
-            break;
-            case "ready to harvest": productTasks = [{name:"Task 2", type:"harvesting"}];
-            break;
-            case "harvested" : productTasks = [{name:"Task 3", type:"packing"}];
-            break;
-            case "packed" : productTasks = [{name:"Task 4", type:"delivery"}];
-            break;
-            case "done" : productTasks = [];
-            break;
-            default: console.log("no tasks monica")
-         }
-
-     }
+    const {orders} = state
 
     const getTaskType=(status) =>{
         switch(status){
@@ -58,6 +41,27 @@ export const FullChamber = () => {
             default: console.log("no tasks monica")
          }
     }
+
+    const carouselButtonSX = {
+            position: 'absolute',
+            zIndex: 2,
+            top:{xs:"80%", md:'calc(70% - 15px)'}
+        }
+
+    const arrowNext = (onClickHandler, hasNext, label) =>
+    hasNext && (
+        <Button variant="contained" onClick={onClickHandler} title={"next task"} 
+                sx={()=>({...carouselButtonSX,right:"25%"})}>
+            {">"}
+        </Button>
+    )
+    const arrowPrev = (onClickHandler, hasPrev, label) =>
+    hasPrev && (
+        <Button variant="contained" onClick={onClickHandler} title={"previous task"} 
+                sx={()=>({...carouselButtonSX,left:{xs:"25%", md:"25%"} })}>
+            {"<"}
+        </Button>
+    )
 
     
      
@@ -108,11 +112,21 @@ export const FullChamber = () => {
         status:"ready to harvest"
         
     }
-    const ordersList=[order1,order2]
+    const ordersList=orders
+    
+    const ordersList2=[order1,order2]
+    console.log(ordersList)
     
   return (
-    <Carousel showThumbs={false} showArrows={true} >
-        {ordersList.map((order,index)=>{ 
+    <Carousel 
+        emulatetouch={true} 
+        showThumbs={false} 
+        showArrows={true}
+        showStatus={false}
+        renderArrowNext={arrowNext}
+        renderArrowPrev={arrowPrev} 
+    >
+        {ordersList2.map((order,index)=>{ 
             return(
                 <Box height="80vh" component={"div"}>
                     <TaskTest type={getTaskType(order.status)} order={order}/>
