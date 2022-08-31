@@ -159,4 +159,5 @@ authRouter.post('/refresh', (req, res) => {
 
 authRouter.use('/create', isAuthenticated, isAuthorized(["admin"]), userCreationRouter)
 
+
 export default authRouter

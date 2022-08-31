@@ -28,8 +28,10 @@ export const getAllOrders = (orgId) => {
             return reject(new Error(JSON.stringify(orgIDNotProvided)))
         }
 
+        console.log(orgId)
         getOrganizationById(orgId)
         .then(org => {
+            if(!org) reject(new Error(errorFromOrg))
             resolve(org.orders)
         })
         .catch(err => {
@@ -76,7 +78,6 @@ export const createNewOrder = (orgId, order) => {
         })
 
         const allProducts = await getAllProducts(orgId)
-
         if(allProducts && allProducts.length >0){
             let orderMapped = {
                 _id:            id,
