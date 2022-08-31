@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 
 //*Router
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
@@ -13,7 +13,7 @@ import { PrivateRoutes } from './CoreComponents/PrivateRoutes'
 import { AppRoutes } from './routes.js'
 
 export const App = () => {
-    
+
   return (
     
         

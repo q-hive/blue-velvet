@@ -8,60 +8,112 @@ import Order from '../../models/order.js'
 import { getProductionForOrder } from '../production/store.js'
 import { addTimeToDate } from '../../utils/time.js'
 import { getOrganizationById } from '../organization/store.js'
+import { getOrdersPrice, getOrderProdData } from './controller.js'
+import { getAllProducts } from '../products/store.js'
 
 const orgModel = mongoose.model('organization', Organization)
 
-export const createNewOrder = (order) => {
+export const getAllOrders = (orgId) => {
+    return new Promise((resolve, reject) => {
+        const orgIDNotProvided = {
+            "message":  "Organization ID was not provided",
+            "status":   400
+        }
+        const errorFromOrg = {
+            "message":  "Error obtaining organization",
+            "status":    500
+        }
+        
+        if(!orgId){
+            return reject(new Error(JSON.stringify(orgIDNotProvided)))
+        }
+
+        getOrganizationById(orgId)
+        .then(org => {
+            resolve(org.orders)
+        })
+        .catch(err => {
+            errorFromOrg.processError = err.message
+            reject(new Error(JSON.stringify(errorFromOrg)))
+        })
+    
+    })
+    
+}
+
+export const createNewOrder = (orgId, order) => {
     return new Promise(async (resolve, reject) => {
-        // TODO: CHRIS TEST
+        const errorFromOrg = {
+            "message":  "Error obtaining organization",
+            "status":    500
+        }
+
+        const errorSaving = {
+            "message": "Error saving organization",
+            "status":   400
+        }
+        const emptyOrgs = {
+            "message":  "Organizations DB empty",
+            "status":    204
+        }
+
+        const noProducts = {
+            "message":  "No products in DB",
+            "status":   204
+        }
+        
         // * Id for order
         let id = new ObjectId()
 
-        // * 1- Check for suitable production lines
-        // * 2- If production line is available to fulfill order, 
-        // *        assign order and perform updates
-        let prodLines = await getProductionForOrder(order.products, order.organization, {
-            started: new Date(),
+        const mappedProducts = order.products.map((prod) => {
+            return {
+                _id:        prod._id,
+                name:       prod.name,
+                status:     prod.status,
+                seedId:     prod.seedId,
+                packages:   prod.packages
+            }
         })
 
-        // * Save products on production
-        prodLines.forEach(pLine => {
-            pLine.orders.push(id)
-            pLine.products.push(order.products)
+        const allProducts = await getAllProducts(orgId)
+
+        if(allProducts && allProducts.length >0){
+            let orderMapped = {
+                _id:            id,
+                organization:   orgId,
+                customer:       order.customer._id,
+                price:          getOrdersPrice(order, allProducts),
+                date:           order.date,
+                end:            addTimeToDate(new Date(), { w: 2 }),
+                productionData: getOrderProdData(order, allProducts),
+                products:       mappedProducts,
+                status:         order.status
+            }
             
-            // TODO: Update Tasks data
-            
-
-            pLine.save((err, doc) => {
-                if (err) reject(err)
-            })
-        })
-        
-        let orderMapped = {
-            _id:        id,
-            client:     order.client,
-            customer:   order.customer,
-            type:       order.type,
-            packages:   order.packages,
-            price:      order.price,
-            end:        addTimeToDate(new Date(), { w: 2 }),
-            production: prod,
-            produts:    order.products
-        }
-        
-
-        getOrganizationById(res.locals.organization)
-        .then(organization => {
-
-            organization.orders.push(orderMapped)
-            organization.production.push(id)
-
-            organization.save((err, org) => {
-                if(err) reject(err)
+            getOrganizationById(orgId)
+            .then(organization => {
+                if(!organization){
+                    return reject(new Error(JSON.stringify(emptyOrgs)))
+                }
+                
+                organization.orders.push(orderMapped)
     
-                resolve(org)
+                organization.save((err, org) => {
+                    if(err) {
+                        errorSaving.processError = err
+                        reject(new Error(JSON.stringify(errorSaving)))
+                    }
+        
+                    resolve(orderMapped)
+                })
             })
-        })        
+            .catch(err => {
+                errorFromOrg.processError =  err
+                reject(new Error(JSON.stringify(errorFromOrg)))
+            })    
+        } else {
+            reject(new Error(JSON.stringify(noProducts)))
+        }
     })
 }
 
@@ -83,5 +135,41 @@ export const getOrdersByProd = (orgId, id) => {
         const orderByProd = orders.products.id(id)
 
         resolve(orderByProd)
+    })
+}
+
+export const updateOrder = (org, orderId, body) => {
+    return new Promise((resolve, reject) => {
+        orgModel.findById(org).exec()
+        .then((organization) => {
+            if(organization){
+                const dbOrder = organization.orders.find((order) => order._id.equals(orderId))
+    
+                if(!dbOrder) {
+                    return reject(new Error(JSON.stringify({"message":"No order found", "status":204})))
+                }
+
+                body.paths.forEach(({path, value}, index) => {
+                    // const isNested = /^[a-z]*.[a-z]$/
+
+                    dbOrder[path] = value
+                })
+
+                
+                organization.save((err, doc) => {
+                    if(err) reject(JSON.stringify({"message":"Error saving organization", "status": 500, "processError":err}))
+
+                    resolve(dbOrder)
+                })
+                return
+            }
+
+            return reject(new Error(JSON.stringify({"message":"No organization found", "status": 204})))
+            
+            
+        })
+        .catch((err) => {
+        
+        })
     })
 }

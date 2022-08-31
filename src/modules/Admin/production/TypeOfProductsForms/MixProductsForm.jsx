@@ -208,7 +208,6 @@ export const MixProductsForm = ({edit, product}) => {
     }
     
     const handleSendMixData = () => {
-        console.log(mix)
         const model = {
             name:   mix.name,
             price:   Number(mix.price), // * Cost per tray,
@@ -233,7 +232,7 @@ export const MixProductsForm = ({edit, product}) => {
             model.label = label
         }
         
-        api.api.post(`${api.apiVersion}/products/`, model, {
+        api.api.post(`${api.apiVersion}/products?mix=true`, model, {
             headers:{
                 authorization:credential._tokenResponse.idToken,
                 user:user

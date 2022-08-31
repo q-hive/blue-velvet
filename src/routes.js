@@ -13,10 +13,13 @@ import { NewProduct } from "./modules/Admin/production/NewProduct";
     import { DeliveryTask } from "./modules/Employee/Tasks/StandaloneTasks/Delivery";
     import { MaintenanceTask } from "./modules/Employee/Tasks/StandaloneTasks/Maintenance";
     import { GrowingTask } from "./modules/Employee/Tasks/StandaloneTasks/Growing";
+    import {TaskTest} from "./modules/Employee/Tasks/WorkingTasks/TaskTest";
 
 import { SalesIndex } from "./modules/Admin/Sales/SalesIndex";
 import { NewOrder } from "./modules/Admin/Sales/newOrders/NewOrder";
-import { NewCustomer } from "./modules/Admin/Sales/newCustomer";
+import { NewCustomer } from "./modules/Admin/Client/NewCustomer";
+import { ClientIndex } from "./modules/Admin/Client/ClientIndex";
+import { EntryPoint } from "./modules/Employee/Tasks/WorkingTasks/EntryPoint";
 
 
 
@@ -50,13 +53,20 @@ export const AppRoutes  = [
         component:<NewOrder/>
     },
     {
-        path:"/:uid/admin/sales/newCustomer",
+        path:"/:uid/admin/client",
+        component:<ClientIndex/>
+    },
+    {
+        path:"/:uid/admin/client/NewCustomer",
         component:<NewCustomer/>
     },
-
     {
         path:"/:uid/employee/dashboard",
-        component:<ContainerEmployeeComponent/>
+        component:<EntryPoint/>
+    },
+    {
+        path:"/:uid/employee/dashboard/taskTest",
+        component:<TaskTest/>
     },
     {
         path:"/:uid/employee/home",

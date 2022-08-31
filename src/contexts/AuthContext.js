@@ -1,50 +1,78 @@
 import React, {createContext, useEffect, useState} from 'react'
 import '../firebaseInit.js'
-import {getAuth,signInWithCustomToken,setPersistence, browserSessionPersistence, signOut} from 'firebase/auth'
+import {signOut} from 'firebase/auth'
 import auth from '../firebaseInit.js'
 import { useNavigate } from 'react-router-dom'
+
+import api from '../axios.js'
 
 const AuthContextProv = createContext()
 
 const AuthContext = ({children}) => {
-    const [user, setUser] = useState(undefined)
-    const [loading, setLoading] = useState(true)
-    const [credential, setCredential] = useState(undefined)
-    const navigate = useNavigate()
+  const [user, setUser] = useState(undefined)
+  const [loading, setLoading] = useState(true)
+  const [credential, setCredential] = useState(undefined)
+  const navigate = useNavigate()
 
-    const logout = () => {
-        signOut(auth)
-        .then(() => {
-          setUser(null)
-          window.localStorage.clear()
-          navigate('/')
+  const logout = () => {
+      signOut(auth)
+      .then(() => {
+        setUser(null)
+        window.localStorage.clear()
+        navigate('/')
+      })
+      .catch(err => {
+        console.log(err)
+      })
+  }
+
+  useEffect(() => {
+    return auth.onAuthStateChanged((u) => {
+      setLoading(() => true)
+      if(u){
+        auth.currentUser.getIdToken()
+        .then((token) => {
+          setCredential(() => {
+            return {
+              _tokenResponse:{idToken:token}
+            }
+          })
+
+          api.api.post(`/auth/refresh`, {}, {
+            headers:{
+              authorization: token
+            }
+          })
+          .then((response) => {
+            if(!response.data.data.isAdmin) {
+              response.data.data.user.role = "employee"
+            } else {
+              response.data.data.user.role = "admin"
+            }
+            setUser((usr) => {
+              return {...response.data.data.user}
+            })
+            setLoading(() => false)
+          })
+          .catch(err => {
+            console.log("Error getting data refreshed")
+          })
+          
         })
-        .catch(err => {
+        .catch((err) => {
+          console.log("Error while getting token after reloading.")
           console.log(err)
         })
-    }
-    
-    useEffect(() => {
-      auth.onAuthStateChanged(async (User) => {
-        if(User && !user){
-          const lastUser = JSON.parse(window.localStorage.getItem('usermeta'))
-          setUser(lastUser)
-          const newToken = await User.getIdToken()
-          setLoading(false)
-          setCredential({_tokenResponse:{idToken:newToken}})
-          return
-        }
+        return 
+      }
 
-        if(User && user){
-          const newToken = await auth.currentUser.getIdToken()
-          setLoading(false)
-          setCredential({_tokenResponse:{idToken:newToken}})
-          return
-        }
+      setLoading(() => false)
+      setTimeout(() => {
+        setLoading(() => false)
+      }, 10000)
+    })
+  }, [])
 
-        setLoading(false)
-      })
-    }, [])
   return (
     <AuthContextProv.Provider value={{user, setUser, loading, logout, credential, setCredential}}>
         {children}

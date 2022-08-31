@@ -5,11 +5,12 @@ const shadow = "0px 3px 1px -6px rgba(0,0,0,0.2),0px 2px 2px 0px rgba(0,0,0,0.14
 export const BV_THEME = createTheme({
     palette: {
         primary: {
-            main: "#0E0C8F",
+            main: "#93cf0f",
+            contrastText: "#fff",
             light: "#312ef0"
         },
         secondary: {
-            main:"#FF0000",
+            main:"#0E0C8F",
         },
         white_btn:{
             main:"#F9F9F9"

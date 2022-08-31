@@ -14,7 +14,8 @@ import {
     getAllProductsByOrg,
     insertManyProducts,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    createNewMix
 } from './store.js'
 import { getContainerById, updateContainer } from '../container/store.js'
 
@@ -69,13 +70,32 @@ router.post('/', (req, res) => {
         })
         return
     }
-    
+
+    if(Boolean(req.query.mix)){
+        createNewMix(res.locals.organization,0,req.body)
+        .then(doc => {
+            success(req, res, 201, "Product mix created succesfully", doc)
+        })
+        .catch(err => {
+            switch(err.name){
+                case "MongooseError":
+                    error(req, res,500, err.message, err)    
+                    break;
+                case "ValidationError":
+                    error(req, res, 400, `${err._message} in the following keys: ${Object.keys(err.errors)}`, err)
+                    break;
+                default:
+                    error(req, res, 500, "Internal server error", err)
+                    break;
+            }
+        })
+        return
+    }
     if(isValidProductObject(req.body)){
         //*CREATE PRODUCT
         newProduct(res.locals.organization,0, req.body)
         .then(orgDoc => {
             //*Update container with the new products
-            console.log(orgDoc)
             // const update = await updateContainer(res.locals.organization, undefined, {products:product})
             success(req, res,201,orgDoc)
         })

@@ -1,3 +1,5 @@
+import { error } from "../../network/response.js"
+
 const roles = ["admin", "cockpit", "employee"]
 
 const isEmailValid = (email) => {
@@ -6,8 +8,11 @@ const isEmailValid = (email) => {
 }
 
 const validateBodyNotEmpty = (req, res) => {
-    if (!req.body || req.body === {}) 
+    if (!Object.keys(req.body).length>0){
         error(req, res, 400, "Payload is incosistent", new Error("The body is empty"))
+        return true
+    } 
+    return false    
 }
 
 export { roles, isEmailValid, validateBodyNotEmpty }

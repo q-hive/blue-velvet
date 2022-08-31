@@ -34,6 +34,8 @@ authRouter.post('/login', (req, res) => {
                 return success(req, res, 200, "Authentication succeed", { isAdmin: true, token:userRegister._tokenResponse.idToken, user:userRegister })
             } else if (claims.role === 'employee') {
                 // * Obtain organization info to query for employee data
+                console.group("Auth logs")
+                console.log(claims)
                 getOrganizationById(claims.organization)
                 .then(async organization => {
                     const employee = organization.employees.find(employee => employee.uid === userRegister.user.uid) 
@@ -76,26 +78,27 @@ authRouter.post('/login/admin', (req, res) => {
                     let token
                     try {
                         token = await adminAuth.createCustomToken(user.user.uid)
+                        if (data.passphrase == hashPassphrase(req.body.passphrase)) {
+    
+                            return success(req, res, 200, "Successfully logged as admin", {                                                                                                  
+                                            user: {
+                                                id:     data._id,
+                                                role:   claims.role,
+                                                uid:    user.user.uid,
+                                                email:  user.user.email,
+                                                photo:  user.user.photoURL
+                                            },
+                                            token: user._tokenResponse.idToken,
+                                            cToken: token
+                            })
+                        
+                        } else {
+                            return error(req, res, 403, "Forbidden: Wrong passphrase", { "error": "Wrong passphrase"})
+                        }
                     } catch (err) {
                         return error(req, res, 500, "Error trying to create custom token", err)
                     }
                     
-                    if (data.passphrase == hashPassphrase(req.body.passphrase)) {
-
-                        return success(req, res, 200, "Successfully logged as admin", {                                                                                                  
-                                        user: {
-                                            id:     data._id,
-                                            role:   claims.role,
-                                            uid:    user.user.uid,
-                                            email:  user.user.email,
-                                            photo:  user.user.photoURL
-                                        },
-                                        token: token
-                        })
-                    
-                    } else {
-                        return error(req, res, 403, "Forbidden: Wrong passphrase", { "error": "Wrong passphrase"})
-                    }
                 })
             } else {
                 return error(req, res, 403, "Forbidden: Not admin", { "error": "Not admin role"})
@@ -112,7 +115,46 @@ authRouter.post('/logout', (req, res) => {
 })
 //*TODO CREATE REFRESH
 authRouter.post('/refresh', (req, res) => {
-    validateBodyNotEmpty(req, res)
+    // validateBodyNotEmpty(req, res)
+    
+   adminAuth.verifyIdToken(req.headers.authorization)
+   .then((claims) => {
+    getOrganizationById(claims.organization)
+    .then(async org => {
+            let token
+            if(claims.role === "admin") {
+                const admin = await adminAuth.getUser(claims.uid)
+                token = await adminAuth.createCustomToken(claims.uid)
+                return success(res, res, 200, "User verified succesfully, re-auth done", {
+                    isAdmin:    true,
+                    token:      token,
+                    user:       admin
+                })
+            }
+            const employee = org.employees.find((empl) => empl.uid === claims.uid)
+            try {
+                if(employee){
+                    token = await adminAuth.createCustomToken(employee.uid)
+                }
+            } catch(err){
+                console.log("Error trying to create token")
+            }
+
+            return success(req, res, 200, "User verified succesfully, re-auth done", {
+                isAdmin:false,
+                token:token,
+                user:employee
+            })
+        })
+        .catch(err => {
+            console.log("Error getting organization")
+            console.log(err)
+        })
+    })
+   .catch(err => {
+        console.log("Error verifying ID token")
+        console.log(err)
+    }) 
 })
 
 authRouter.use('/create', isAuthenticated, isAuthorized(["admin"]), userCreationRouter)

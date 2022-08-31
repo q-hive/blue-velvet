@@ -24,6 +24,8 @@ import GrassIcon from '@mui/icons-material/Grass';
 import AgricultureIcon from '@mui/icons-material/Agriculture';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import InventoryIcon from '@mui/icons-material/Inventory';
+//images
+import Logo from  '../assets/images/png-Logos/GreenBox-Logo_COCKPIT.png'
 
 //*ROUTER
 import { navigate } from '../utils/router'
@@ -156,7 +158,7 @@ const BV_Layout = (props) => {
     const drawer = (
         <>
           <Toolbar />
-          <Toolbar alignitems="center" sx={{backgroundColor: "#0E0C8F", p:2}}>
+          <Toolbar alignitems="center" sx={{backgroundColor: "#93cf0f" , p:2}}>
             <Typography 
                 variant="h6"  
                 component="div" 
@@ -265,10 +267,18 @@ const BV_Layout = (props) => {
                   >
                     <Toolbar sx={{alignItems:"space-between"}}>
                       
+                      <Box component="a" href="#" sx={{flexGrow: 1 }}>
+                        <Box
+                          component="img"
+                          sx={{
+                            maxHeight: { xs: 80, md: 80 },
+                          }}
+                          alt="GreenBox by Blue Velvet"
+                          src={Logo}
+                        />
+                      </Box>
                       
-                      <Typography variant="h6"  component="a" href="#" color="primary" sx={{flexGrow: 1, textDecoration: "none",}}>
-                        Blue Velvet
-                      </Typography>
+                      
                       
                       <IconButton
                         size="large" edge={false}

@@ -9,7 +9,7 @@ export const getPassphraseByUid = (uid) => {
         const passModel = mongoose.model('passphrase', Passphrase)
 
         passModel.findOne({uid:uid}).exec()
-        .then(  (pass) => {
+        .then((pass) => {
             resolve(pass)
         })
         .catch(err => {
@@ -58,7 +58,7 @@ export const isAuthenticated = (req, res, next) => {
     })
     .catch( err => {
         let expired = err.errorInfo.code === "auth/id-token-expired"
-
+        
         return error(
             req, res,
             expired ? 403 : 500, 
