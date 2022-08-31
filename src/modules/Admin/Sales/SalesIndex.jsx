@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 //*MUI Components
 import { DataGrid } from '@mui/x-data-grid'
@@ -12,6 +12,8 @@ import {BV_THEME} from '../../../theme/BV-theme'
 
 //*Netword and routing
 import { useNavigate } from 'react-router-dom'
+import api from '../../../axios.js'
+import useAuth from '../../../contextHooks/useAuthContext'
 
 
 
@@ -19,6 +21,8 @@ import { useNavigate } from 'react-router-dom'
 
 
 export const SalesIndex = () => {
+    const {user, credential} = useAuth()
+    
     //*DATA STATES
     const [orders, setOrders] = useState([])
 
@@ -30,6 +34,24 @@ export const SalesIndex = () => {
         navigate('new')
     } 
     
+    useEffect(() => {
+        api.api.get(`${api.apiVersion}/orders/`, {
+            headers: {
+                authorization:  credential._tokenResponse.idToken,
+                user:           user
+            }
+        })
+        .then(response => {
+            setOrders((o) => {
+                return (
+                    response.data.data    
+                )
+            })
+        })
+        .catch(err => {
+            console.log("Error getting orders")
+        })
+    }, [])
   return (
     <>
 
@@ -63,6 +85,9 @@ export const SalesIndex = () => {
                         columns={salesColumns}
                         rows={orders}
                         sx={{marginY:"2vh",}}
+                        getRowId={(params) => {
+                            return params._id
+                        }}
                     />
                 </Box>
 
