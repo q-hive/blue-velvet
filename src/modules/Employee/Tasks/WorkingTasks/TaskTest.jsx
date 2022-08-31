@@ -20,12 +20,23 @@ import { HarvestingContent } from './HarvestingContent';
 import { PackingContent } from './PackingContent';
 import { DeliveryContent } from './DeliveryContent';
 
-export const TaskTest = () => {
+export const TaskTest = (props) => {
     const theme = useTheme(BV_THEME);
 
     const {state}= useLocation();
 
-    const {type, order} = state;
+    let type, order
+
+    if(state != null){
+        ({type, order} = state);
+    }
+    
+
+    if(props != null){
+        type=props.type
+        order=props.order
+    }
+
     console.log(type)
     console.log(order)
 
@@ -44,7 +55,7 @@ export const TaskTest = () => {
     switch (type){
         case "seeding": {
                 contentTitle = "Seeding"
-                content = <SeedingContent index={activeStep}/>
+                content = <SeedingContent products={order.products} index={activeStep}/>
                 steps=[{step:0},{step:1},{step:2},{step:3},{step:4},]
             } break;
             
@@ -70,9 +81,6 @@ export const TaskTest = () => {
             } break;
             
     }
-    
-
-    const DUMMY_Task = {}
 
     //*RENDER STATES
    

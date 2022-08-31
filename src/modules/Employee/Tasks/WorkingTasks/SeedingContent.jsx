@@ -24,16 +24,37 @@ const product = "Radiesi"
 
 export const SeedingContent = (props) => {
 
+    const products=props.products
+
+    const totalTrays =Math.ceil(sumAllTrays())
+
+    function sumAllTrays() {
+        var i;
+        var ttrays = 0;
+        for (i = 0; i < products.length; i++) {
+          ttrays += products[i].productionData.trays
+        }
+        return ttrays;
+      }
+    
+    console.log(totalTrays)
+    console.log(products)
+
     if(props.index===0)
         return (<>
             <Box sx={taskCard_sx}>
                 <Typography variant="h4" align='center' color="secondary">
                     Gather what you need: <br /><br/>
                 </Typography>
-                
                 <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                    <b>{trays}</b> Trays <br/> <b>{trays}</b> pre-cut Hemp-Mat <br/> <b>{seeds}</b>grs of <b>{product}</b> Seeds <br/> Seeding-tools
+                    Seeding-tools<br/><b>{totalTrays}</b> Trays <br/> <b>{totalTrays}</b> pre-cut Hemp-Mats <br/>
                 </Typography>
+                {products.map((product,index)=>{return(
+                    <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+                        <b>{product.productionData.seeds}</b> grs of <b>{product.name}</b> Seeds <br/>
+                    </Typography>
+                )})}
+                
             </Box>
 
         </>);
@@ -42,7 +63,7 @@ export const SeedingContent = (props) => {
         return (<>
             <Box sx={taskCard_sx}>
                 <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                Place the {trays} Trays on the Seeding-Table, and fill each of them with a pre-cut Hemp-Mat
+                Place the {totalTrays} Trays on the Seeding-Table, and fill each of them with a pre-cut Hemp-Mat
                 </Typography>
             </Box>
 
@@ -62,7 +83,7 @@ export const SeedingContent = (props) => {
         return (<>
             <Box sx={taskCard_sx}>
                 <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                Take the {seeds} grs of {product} seeds and spread them out in bulks. 
+                Take the seeds and spread them out in bulks. 
                 <br/><br/><i>Spread the seeds equally on the mats and softly spray them with the triangle-spray.</i>
                 </Typography>
             </Box>
@@ -73,7 +94,7 @@ export const SeedingContent = (props) => {
     return (<>
         <Box sx={taskCard_sx}>
             <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-            Staple them slightly turned and bring them to the germination-shelves.  
+            Staple them slightly turned and bring them to the germination shelves.  
             </Typography>
         </Box>
 

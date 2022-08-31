@@ -32,6 +32,15 @@ export const EntryPoint = () => {
                     )
     }
 
+    const handleStartWork = () => {
+        navigate('./../tasks/work',
+        {state: {
+            type: "uncompleted",
+            order: orderSelected
+        }}
+    )
+    }
+
     
     const status = "uncompleted"
 
@@ -218,10 +227,15 @@ console.log(user)
             <Typography variant="h2" color="primary">Welcome, {user.name}</Typography>
             <Typography variant="h5" color="secondary">Here's your work</Typography>
 
+            <Box pt={4}>
+                <Typography variant="h6" >Pending Orders: {orders.length}</Typography>
+                <Button variant="contained" size="large" onClick={handleStartWork}>Start</Button>
+            </Box>
+
             <Grid container spacing={3} marginTop={3}>
 
-                {/*Orders */}
-                <Grid item xs={12} md={4} lg={3}>
+                {/*Orders 
+                <Grid item xs={12} md={4} lg={4}>
                     <Paper sx={fixedHeightPaper}>
                         <Typography variant="h6" color="secondary">Assigned Orders</Typography>
                         {orders.map((order, index) => {
@@ -229,7 +243,7 @@ console.log(user)
                                 <Paper sx={{padding:1,margin:1}} variant="outlined">
                                     <Typography>
                                         <b>Order {index + 1}:</b> {order._id}<br/>
-                                        <i>{order.status}</i>
+                                        <i>Status: {order.status}</i>
                                     </Typography>
                                     <Button onClick={() => handleShowTasks(order._id)}>
                                         View tasks
@@ -239,18 +253,17 @@ console.log(user)
                         })}
                     </Paper>
                 </Grid>
+                */}
 
 
                 {/* Tasks */}
-                <Grid item xs={12} md={4} lg={3}>
+                <Grid item xs={12} md={4} lg={4}>
                     <Paper sx={fixedHeightPaper}>
-                        <Typography variant="h6" color="secondary">Order's Tasks</Typography>
-                        {
-                            orderSelected.length !== 0
-                            ?
+                        <Typography variant="h6" color="secondary">Tasks</Typography>
+                        
                             <>
-                                {orderSelected.map((order, index) => {
-                                    {setOrderTasks("packed"/*order.status*/)}
+                                {orders.map((order, index) => {
+                                    {setOrderTasks(order.status)}
                                     if(productTasks.length > 0){
                                         return (
                                             <>{order.products.map((product, index) => {
@@ -286,15 +299,13 @@ console.log(user)
                                     }
                                 })} 
                             </>
-                            :
-                            null
-                        }
+                           
                         
                     </Paper>
                 </Grid>
 
                 {/* Not used yet */}
-                <Grid item xs={12} sm={3}>
+                <Grid item xs={12} md={4}>
                     <Paper sx={fixedHeightPaper}>
                         <Typography variant="h6" color="secondary">Container's Tasks</Typography>
                         {containerTasks.map((task,index) => { 
@@ -311,9 +322,6 @@ console.log(user)
                     </Paper>
                 </Grid>
             </Grid>
-            <Box pt={4}>
-                test
-            </Box>
         </Container>
     </Box>
   )
