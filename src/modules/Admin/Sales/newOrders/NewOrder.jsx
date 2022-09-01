@@ -31,6 +31,37 @@ export const NewOrder = () => {
     //*Auth context
     const {user, credential} = useAuth()
 
+    //*Dialog
+
+    const [dialog, setDialog] = useState({
+        open:false,
+        title:"",
+        message:"",
+        actions:[]
+    })
+    const uGood =()=>{
+    setDialog({
+        ...dialog,
+        open:true,
+        title:"Is a mix?",
+        actions:[ {
+            label:"Yes",
+            btn_color:"primary",
+            execute:() => {
+                navigate("newProduct?mix=true")
+            }
+            },
+            {
+                label:"No",
+                btn_color:"secondary",
+                execute: () => {
+                    navigate("newProduct")
+                }
+            }
+        ]
+        
+    })}
+
     
     //*Data States
     const [options, setOptions] = useState({
@@ -41,6 +72,9 @@ export const NewOrder = () => {
         customer:   {},
         product:    {},
         packages:   undefined,
+        smallPackages:   undefined,
+        mediumPackages:   undefined,
+        largePackages:   undefined,
         size:       undefined,
         date:       undefined
     });
@@ -69,6 +103,18 @@ export const NewOrder = () => {
             message:"Please correct or fill the number of packages.",
             active: false
         },
+        smallPackages:{
+            message:"Please correct or fill the number of small packages.",
+            active: false
+        },
+        mediumPackages:{
+            message:"Please correct or fill the number of medium packages.",
+            active: false
+        },
+        largePackages:{
+            message:"Please correct or fill the number of large packages.",
+            active: false
+        }
     })
     
     const handleChangeInput = (e,v,r) => {
@@ -93,7 +139,7 @@ export const NewOrder = () => {
 
         value = v
 
-        if(id === "packages"){
+        if(id === "smallPackages" || id === "mediumPackages" || id === "largePackages"  ){
             value = Number(v)
         }
 
@@ -257,7 +303,7 @@ export const NewOrder = () => {
         }
     
     
-        return mappedData
+        return (uGood(),mappedData)
     }
         
 
@@ -354,7 +400,7 @@ export const NewOrder = () => {
                 value={Object.keys(input.product) !== 0 ? input.product : undefined}
                 />
 
-                <TextField
+                {/* <TextField
                     id="packages"
                     type="number"
                     label="Number of packages"
@@ -365,14 +411,53 @@ export const NewOrder = () => {
                     value={input.packages ? input.packages : ""}
                 />
 
-                <Typography variant="h6" mb="2vh" mt="4vh">Select size</Typography>
+                 <Typography variant="h6" mb="2vh" mt="4vh">Select size</Typography>
                 
                 <CheckBoxGroup valueState={input} valueUpdate={setInput}>{checkboxOptions}</CheckBoxGroup>
-                {/* //*TODO MANAGE ERROR FOR CHECKBOXGROUP */}
+                 //*TODO MANAGE ERROR FOR CHECKBOXGROUP 
                 
                 <Button id="packages" onClick={handleAddToOrder}>
                     Add packages
-                </Button>
+                </Button> */}
+
+                <Typography variant="h5" color="secondary" marginY={3}>No. of Packages</Typography>
+                
+                <Box>
+
+                    <TextField
+                        id="smallPackages"
+                        type="number"
+                        label="Small"
+                        placeholder="Quantity"
+                        sx={BV_THEME.input.mobile.thirdSize.desktop.quarterSize}
+                        onChange={(e) => handleChangeInput(e, e.target.value, "input")}
+                        helperText={error.smallPackages.active ? error.smallPackages.message : ""}
+                        error={error.smallPackages.active}
+                        value={input.packages ? input.packages : ""}
+                    />
+                    <TextField
+                        id="mediumPackages"
+                        type="number"
+                        label="Medium"
+                        placeholder="Quantity"
+                        sx={BV_THEME.input.mobile.thirdSize.desktop.quarterSize}
+                        onChange={(e) => handleChangeInput(e, e.target.value, "input")}
+                        helperText={error.mediumPackages.active ? error.mediumPackages.message : ""}
+                        error={error.mediumPackages.active}
+                        value={input.packages ? input.packages : ""}
+                    />
+                    <TextField
+                        id="largePackages"
+                        type="number"
+                        label="Large"
+                        placeholder="Quantity"
+                        sx={BV_THEME.input.mobile.thirdSize.desktop.quarterSize}
+                        onChange={(e) => handleChangeInput(e, e.target.value, "input")}
+                        helperText={error.largePackages.active ? error.largePackages.message : ""}
+                        error={error.largePackages.active}
+                        value={input.packages ? input.packages : ""}
+                    />
+                </Box>
                 
                 <Button id="product" sx={{marginTop:"2vh"}} onClick={handleAddToOrder}>
                     Add product
