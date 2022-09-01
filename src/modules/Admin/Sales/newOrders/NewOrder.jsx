@@ -72,9 +72,6 @@ export const NewOrder = () => {
         customer:   {},
         product:    {},
         packages:   undefined,
-        smallPackages:   undefined,
-        mediumPackages:   undefined,
-        largePackages:   undefined,
         size:       undefined,
         date:       undefined
     });
@@ -103,18 +100,6 @@ export const NewOrder = () => {
             message:"Please correct or fill the number of packages.",
             active: false
         },
-        smallPackages:{
-            message:"Please correct or fill the number of small packages.",
-            active: false
-        },
-        mediumPackages:{
-            message:"Please correct or fill the number of medium packages.",
-            active: false
-        },
-        largePackages:{
-            message:"Please correct or fill the number of large packages.",
-            active: false
-        }
     })
     
     const handleChangeInput = (e,v,r) => {
@@ -139,7 +124,7 @@ export const NewOrder = () => {
 
         value = v
 
-        if(id === "smallPackages" || id === "mediumPackages" || id === "largePackages"  ){
+        if(id === "packages" ){
             value = Number(v)
         }
 
@@ -430,10 +415,10 @@ export const NewOrder = () => {
                         label="Small"
                         placeholder="Quantity"
                         sx={BV_THEME.input.mobile.thirdSize.desktop.quarterSize}
-                        onChange={(e) => handleChangeInput(e, e.target.value, "input")}
+                        /*onChange={(e) => handleChangeInput(e, e.target.value, "input")}
                         helperText={error.smallPackages.active ? error.smallPackages.message : ""}
                         error={error.smallPackages.active}
-                        value={input.packages ? input.packages : ""}
+                        value={input.packages ? input.packages : ""}*/
                     />
                     <TextField
                         id="mediumPackages"
@@ -441,10 +426,10 @@ export const NewOrder = () => {
                         label="Medium"
                         placeholder="Quantity"
                         sx={BV_THEME.input.mobile.thirdSize.desktop.quarterSize}
-                        onChange={(e) => handleChangeInput(e, e.target.value, "input")}
+                        /*onChange={(e) => handleChangeInput(e, e.target.value, "input")}
                         helperText={error.mediumPackages.active ? error.mediumPackages.message : ""}
                         error={error.mediumPackages.active}
-                        value={input.packages ? input.packages : ""}
+                        value={input.packages ? input.packages : ""}*/
                     />
                     <TextField
                         id="largePackages"
@@ -452,10 +437,10 @@ export const NewOrder = () => {
                         label="Large"
                         placeholder="Quantity"
                         sx={BV_THEME.input.mobile.thirdSize.desktop.quarterSize}
-                        onChange={(e) => handleChangeInput(e, e.target.value, "input")}
+                        /*onChange={(e) => handleChangeInput(e, e.target.value, "input")}
                         helperText={error.largePackages.active ? error.largePackages.message : ""}
                         error={error.largePackages.active}
-                        value={input.packages ? input.packages : ""}
+                        value={input.packages ? input.packages : ""}*/
                     />
                 </Box>
                 
