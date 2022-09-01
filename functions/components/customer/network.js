@@ -1,18 +1,30 @@
 import express from 'express'
 import { error, success } from '../../network/response.js'
 import { validateBodyNotEmpty } from '../security/secureHelpers.js'
-import { createNewCustomer, getAllCustomers } from './store.js'
+import { createNewCustomer, getAllCustomers, getCustomerById } from './store.js'
 
 const router = express.Router()
 
 router.get('/:id', (req, res) => {
     if(req.params.id){
-        success(req, res, 200, "Specufic customer obtained succesfully")
+        getCustomerById(res.locals.organization, req.params.id)
+        .then(customer => {
+            success(req, res, 200, "Specufic customer obtained succesfully", customer)
+        })
+        .catch(err => {
+            console.log(err)
+            
+            const error = {
+                message: "There was an internal problem getting customer",
+                status: 500,
+                processError: err.message
+            }
+            error(req, res, 500, "Error getting customer - GENERIC ERROR",JSON.stringify(error), err)
+        })
+        
+        
         return
     }
-
-    console.log("Get all customers")
-    
 })
 
 router.get('/', (req, res) => {
