@@ -6,7 +6,11 @@ const Customer = new Schema({
     name:               { type: String,   required: false, unique: false },
     email:              { type: String,   required: false, unique: false },
     image:              { type: String,   required: false               },
-    address:            { type: Address,  required: false               }
+    address:            { type: Address,  required: false               },
+    businessData:       { type: {
+        name:           String,
+        bankAccount:    String
+    },  required: false               },
 },
 {
     timestamps: {

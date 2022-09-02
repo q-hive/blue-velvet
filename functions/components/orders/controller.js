@@ -13,6 +13,10 @@ const sortProductsPrices = (order,products) => {
         const prodFound = products.find(prod => {
             return prod._id.equals(element.prodId)
         })
+        if(!prodFound){
+            console.log("Product not found from data provided")
+            return
+        }
         //*Bubble sort algorithm
         prodFound.price.forEach((price, idx) => {
             //*If next element of prices in product found from DB is undefined
@@ -93,7 +97,7 @@ export const getOrdersPrice = (order, products) => {
     return orderTotal
 }
 
-export const getOrderProdData = (order, dbproducts) => {
+export const getOrderProdData = (order, dbproducts, perProduct = false) => {
     //*SORT PRICES IN DBPRODUCTS
     const sortedProductPrices = sortProductsPrices(order, dbproducts)
     //*Add grams per size to order product packages
@@ -140,6 +144,14 @@ export const getOrderProdData = (order, dbproducts) => {
         
         prod["productionData"] = {harvest, seeds, trays}
     })
+
+    if(perProduct){
+        const productionData = order.products.map((prod) => {
+            return {...prod.productionData, id:prod._id}
+        })    
+        
+        return productionData
+    }
     
     const productionData = order.products.map((prod) => {
         return {product:prod.name,...prod.productionData}

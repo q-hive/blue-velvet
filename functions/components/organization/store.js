@@ -42,8 +42,16 @@ export const getOrganizations = () => {
     })   
 }
 
-export const getOrganizationById = (id) => {
+export const getOrganizationById = (id, clean=false) => {
     return new Promise((resolve, reject) => {
+        // if(clean) {
+        //     orgModel.find({_id:id}, {lean:true}).exec((err, doc) => {
+        //         if (err) reject(err)
+    
+        //         resolve(doc)
+        //     })
+        // }
+        
         orgModel.findById(id).exec((err, doc) => {
             if (err) reject(err)
 
