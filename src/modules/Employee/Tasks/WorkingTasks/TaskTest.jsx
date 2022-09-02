@@ -37,6 +37,17 @@ export const TaskTest = (props) => {
         order=props.order
     }
 
+    
+    let done = false
+    const isDone = () => {
+        return( done===true ? true : false)
+    }
+
+    if(props.done === "done" ){
+        return isDone()
+
+    }
+
     console.log(type)
     console.log(order)
 
@@ -101,9 +112,12 @@ export const TaskTest = (props) => {
     
     
     const handleCompleteTask = () => {
+        done=true
         console.log("Finish")
         
     }
+
+    
 
 
     //*********** STEPPER

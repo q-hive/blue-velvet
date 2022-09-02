@@ -36,6 +36,7 @@ export const FullChamber = () => {
     const getTaskType=(status) =>{
         switch(status){
             case "uncompleted": return("seeding");
+            case "unpaid": return("seeding");
             case "growing": return(null);
             case "ready to harvest": return("harvesting");
             default: console.log("no tasks monica")
@@ -126,10 +127,11 @@ export const FullChamber = () => {
         renderArrowNext={arrowNext}
         renderArrowPrev={arrowPrev} 
     >
-        {ordersList2.map((order,index)=>{ 
+        {ordersList.map((order,index)=>{ 
             return(
-                <Box height="80vh" component={"div"}>
-                    <TaskTest type={getTaskType(order.status)} order={order}/>
+                <Box key={order.id} height="80vh" component={"div"}>
+                    {TaskTest({ type: getTaskType(order.status), order:order })}
+                    {console.log("caliz", TaskTest({done:"done"}))}
                 </Box>
             )
         })}
