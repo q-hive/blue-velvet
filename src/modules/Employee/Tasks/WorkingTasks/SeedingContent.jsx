@@ -51,7 +51,7 @@ export const SeedingContent = (props) => {
                 </Typography>
                 {products.map((product,index)=>{return(
                     <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                        <b>{/*product.productionData.seeds*/}</b> grs of <b>{product.name}</b> Seeds <br/>
+                        <b>{product.productionData.seeds}</b> grs of <b>{product.name}</b> Seeds <br/>
                     </Typography>
                 )})}
                 
@@ -83,8 +83,16 @@ export const SeedingContent = (props) => {
         return (<>
             <Box sx={taskCard_sx}>
                 <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                Take the seeds and spread them out in bulks. 
-                <br/><br/><i>Spread the seeds equally on the mats and softly spray them with the triangle-spray.</i>
+                Spread the seeds equally on the mats and softly spray them with the <i><b>triangle-spray.</b></i> <br/><br/>
+                <b>Max seeds per tray:</b><br/>
+                {products.map((product,index)=>{return(
+                    <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+                        <b>{product.name}</b> :  <b>{parseFloat(product.productionData.seeds/product.productionData.trays).toFixed(2)}</b> grs of seeds <br/>
+                    </Typography>
+                )})}
+
+                
+                <br/>
                 </Typography>
             </Box>
 
