@@ -20,7 +20,7 @@ export const processing = (req, res, code, message, status, data) => {
 }
 
 //*ERROR PARAMETER IS THE CUSTOM ERROR OBJECT, PROCESS ERROR COMES FROM SYSTEM ERRORS OR UNHANDLED REJECTIONS
-export const error = (req,res,code, message, error, processError = undefined) => {
+export const error = (req, res, code, message, error, processError = undefined) => {
     try {
         console.log(error.message)
         //*If a JSON is provided in the error helper then it will be parsed

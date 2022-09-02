@@ -19,7 +19,7 @@ export const LoginInputs = ({
 
     const [adminLogin, setAdminLogin] = useState(false)
 
-    let { email, password, passphrase} = loginData
+    let { email, password, passphrase } = loginData
 
     return (
         <div sx={{alignItems:"center"}}>
@@ -46,7 +46,7 @@ export const LoginInputs = ({
                 onChange={handleLoginData}
                 sx={theme.input.mobile.fullSize.desktop.fullSize}
             />
-            <TextValidator 
+            <TextValidator
                 label="Password"
                 variant="outlined"
                 type="password"

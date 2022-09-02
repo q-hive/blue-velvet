@@ -46,18 +46,37 @@ export const getOrganizationById = (id) => {
     return new Promise((resolve, reject) => {
         orgModel.findById(id).exec((err, doc) => {
             if (err) reject(err)
-
             resolve(doc)
         })
     }) 
+}
+
+export const getOrganizationByOwner = (owner) => {
+    return new Promise((resolve, reject) => {
+        orgModel.findOne({ owner: owner }).exec((err, doc) => {
+            if (err) reject(err)
+            resolve(doc)
+        })
+    }) 
+
 }
 
 export const updateOrganization = (id, edit) => {
     return new Promise((resolve, reject) => {
         orgModel.findOneAndUpdate({ _id: id }, edit, { new: true }).exec((err, doc) => {
             if (err) reject(err)
-            
             resolve(doc)
         })
     })
 }
+export const deleteOrganization = (id) => {
+    // * This method is aimed to be used bolh at client account deletion
+    // * as well as only organization deletion
+    return new Promise((resolve, reject) => {
+        orgModel.deleteOne({ _id: id }).exec((err, doc) => {
+            if (err) reject(err)
+            resolve(doc)
+        })
+    })
+}
+

@@ -17,7 +17,6 @@ import { signInWithEmailAndPassword } from 'firebase/auth'
 import adminAuth from '../../firebaseAdmin.js'
 import { hashPassphrase } from '../admin/helper.js'
 import mongoose from 'mongoose'
-import Employee from '../../models/employee.js'
 
 const authRouter = express.Router()
 
@@ -31,14 +30,14 @@ authRouter.post('/login', (req, res) => {
         .then(claims => {
             console.log("Id token verified")
             if (claims.role === 'admin') {
-                return success(req, res, 200, "Authentication succeed", { isAdmin: true, token:userRegister._tokenResponse.idToken, user:userRegister })
+                return success(req, res, 200, "Admin first-step authentication succeed", { isAdmin: true })
             } else if (claims.role === 'employee') {
                 // * Obtain organization info to query for employee data
                 console.group("Auth logs")
                 console.log(claims)
                 getOrganizationById(claims.organization)
                 .then(async organization => {
-                    const employee = organization.employees.find(employee => employee.uid === userRegister.user.uid) 
+                    const employee = organization.employees.findOne(employee => employee.uid === userRegister.user.uid) 
                     let token
                     if(employee) {
                         try {
@@ -78,6 +77,8 @@ authRouter.post('/login/admin', (req, res) => {
                     let token
                     try {
                         token = await adminAuth.createCustomToken(user.user.uid)
+                        console.log(req.body.passphrase)
+                        
                         if (data.passphrase == hashPassphrase(req.body.passphrase)) {
     
                             return success(req, res, 200, "Successfully logged as admin", {                                                                                                  

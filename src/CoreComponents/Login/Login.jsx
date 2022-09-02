@@ -17,19 +17,21 @@ import { LoginInputs } from './LoginInputs'
 
 // * Auth context
 import useAuth from '../../contextHooks/useAuthContext.js'
-import {getAuth,signInWithCustomToken,setPersistence, browserSessionPersistence, signOut} from 'firebase/auth'
+import { 
+    getAuth, signInWithCustomToken,
+    setPersistence, browserSessionPersistence, signOut 
+} from 'firebase/auth'
 
 
 // * Images
 import LoginImage from  '../../assets/images/login.jpeg'
-import api  from        '../../axios.js'
+import axios  from    '../../axios.js'
 
 
 export const Login = () => {
-
     const navigate = useNavigate()
     const { setUser, setCredential } = useAuth()
-
+    
     const [tabContext, setTabContext] = useState('0')
     const [loading, setLoading] = useState(false)
     const [openPassphrase, setOpenPassphrase] = useState(false)
@@ -45,7 +47,7 @@ export const Login = () => {
         slide:false,
         slideMessage:''
     })
-
+    
     
     const handleCloseAlert = () => {
         setAlert({
@@ -64,7 +66,7 @@ export const Login = () => {
         e.preventDefault()
 
         setLoading(true)
-        api.api.post('/auth/login', loginData)
+        api.post('/auth/login', loginData)
         .then(response => {
             if (response.data.data.isAdmin) {
                 // * Load passphrase modal
@@ -110,9 +112,9 @@ export const Login = () => {
                         slideMessage:"The data you entered is invalid, please verify the format."
                     })
                     break;
-                default:
-                    setAlert({
-                        ...alert,
+                    default:
+                        setAlert({
+                            ...alert,
                         status:"error",
                         slide:true,
                         slideMessage:"Something went wrong, please try again."
@@ -130,7 +132,7 @@ export const Login = () => {
 
         setLoading(true)
 
-        api.api.post('/auth/login/admin', loginData)
+        api.post('/auth/login/admin', loginData)
         .then(response => {
             if (response.data.data.user.role == 'admin'){
                 const { cToken, user } = response.data.data
@@ -169,9 +171,9 @@ export const Login = () => {
                         slideMessage:"The data you entered is invalid, please verify the format."
                     })
                     break;
-                default:
-                    setAlert({
-                        ...alert,
+                    default:
+                        setAlert({
+                            ...alert,
                         status:"error",
                         slide:true,
                         slideMessage:"The data you entered is invalid, please verify the format."
@@ -183,19 +185,21 @@ export const Login = () => {
             setLoading(false)
         })
     }
-
+    
     const handleLoginData = (e) => {
-        setLoginData({
-            ...loginData,
-            [e.target.id]:e.target.value
-        })
+        setLoginData(logData => { return {
+            ...logData,
+            [e.target.id]: e.target.value
+        } })
     }
-
+    
     const closePassModal = () => {
         setOpenPassphrase(false)
     }
     
-  return (
+    let { api } = axios
+    
+    return (
         <div style={{width:"100%",height:"100vh", display:"flex", alignItems:"center", justifyContent:"center", margin:"-8px"}}>
             {
                 alert.open

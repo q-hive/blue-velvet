@@ -1,8 +1,12 @@
 import path from "path";
 import { createHmac } from 'crypto'
 import { readFileSync } from "fs";
-
+import adminAuth from '../../firebaseAdmin.js'
 import { generate } from '../passphrase/generator.js'
+
+import { deletePassphrase } from '../passphrase/store.js'
+import { deleteOrganization } from '../organization/store.js'
+import { deleteClient } from './store.js'
 
 const sourcePath = path.resolve(process.cwd(), "components/passphrase/files/(1) The Hunger Games.txt");
 const source = readFileSync(sourcePath);
@@ -20,4 +24,24 @@ export async function genPassphrase(length) {
         sampleSize: 3,
         source,
     });
+}
+
+export async function rollBackClient(params) {
+    // * Go through the params to check what should be deleted
+    
+    // * reached untill Firebase Authentication - contains the uid
+    if (params.auth) 
+        await adminAuth.deleteUser(params.auth)
+    
+    // * reached until Passphrase - contains the passphrase ObjectId
+    if (params.pass)
+        await deletePassphrase(params.pass)
+    
+    // * reached until Organization - contains the organization ObjectId
+    if (params.org)
+        await deleteOrganization(params.org)
+
+    // * reached until Client - contains the client ObjectId
+    if (params.client)
+        await deleteClient(params.client)
 }
