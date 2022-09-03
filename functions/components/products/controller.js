@@ -13,6 +13,10 @@ const hasEveryKey = (valid, current) => {
         for (const key of Object.keys(valid)) {
             if(typeof valid[key] === "object"){
                 console.log("Validating nested object")
+                // TODO: Checa la logica aqui 
+                // porque si existe un primer objeto valido va a retornar siempre true
+                // aun cuando el objeto pueda contener otros objectos invalidos no los va a leer
+                // ? Tal vez añadiendo todos los resultados de los hijos a una lista y revisando que la lista solo contenga trues
                 return hasEveryKey(valid[key], current[key])
             }
         }

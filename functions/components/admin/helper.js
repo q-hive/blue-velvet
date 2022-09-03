@@ -4,6 +4,7 @@ import { readFileSync } from "fs";
 import adminAuth from '../../firebaseAdmin.js'
 import { generate } from '../passphrase/generator.js'
 
+
 import { deletePassphrase } from '../passphrase/store.js'
 import { deleteOrganization } from '../organization/store.js'
 import { deleteClient } from './store.js'
