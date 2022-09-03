@@ -26,19 +26,20 @@ export const SeedingContent = (props) => {
 
     const products=props.products
 
-    const totalTrays =5//Math.ceil(sumAllTrays())
+    const totalTrays =Math.ceil(sumAllTrays())
 
     function sumAllTrays() {
         var i;
         var ttrays = 0;
         for (i = 0; i < products.length; i++) {
-          ttrays += products[i].productionData.trays
+          ttrays += Math.ceil(products[i].productionData.trays)
         }
         return ttrays;
       }
     
-    console.log(totalTrays)
+    
     console.log(products)
+    console.log(totalTrays)
 
     if(props.index===0)
         return (<>
@@ -47,11 +48,12 @@ export const SeedingContent = (props) => {
                     Gather what you need: <br /><br/>
                 </Typography>
                 <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                    Seeding-tools<br/><b>{totalTrays}</b> Trays <br/> <b>{totalTrays}</b> pre-cut Hemp-Mats <br/>
+                    Seeding-tools<br/><b>{totalTrays}</b> {totalTrays>1 ? "Trays": "Tray"} <br/> 
+                    <b>{totalTrays}</b> pre-cut {totalTrays>1 ? "Hemp-Mats": "Hemp-Mat"} <br/>
                 </Typography>
                 {products.map((product,index)=>{return(
-                    <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                        <b>{product.productionData.seeds}</b> grs of <b>{product.name}</b> Seeds <br/>
+                    <Typography key={product.id} variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+                        <b>{parseFloat(product.productionData.seeds).toFixed(2)}</b> grs of <b>{product.name}</b> Seeds <br/>
                     </Typography>
                 )})}
                 
@@ -84,16 +86,16 @@ export const SeedingContent = (props) => {
             <Box sx={taskCard_sx}>
                 <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
                 Spread the seeds equally on the mats and softly spray them with the <i><b>triangle-spray.</b></i> <br/><br/>
-                <b>Max seeds per tray:</b><br/>
-                {products.map((product,index)=>{return(
-                    <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+                <b>Max seeds per tray:</b><br/></Typography>
+                {products.map((product,index)=>{console.log("amen",product); return(
+                    <Typography key={product.id+"2"} variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
                         <b>{product.name}</b> :  <b>{parseFloat(product.productionData.seeds/product.productionData.trays).toFixed(2)}</b> grs of seeds <br/>
                     </Typography>
                 )})}
 
                 
                 <br/>
-                </Typography>
+                
             </Box>
 
         </>)

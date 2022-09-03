@@ -26,7 +26,7 @@ export const EntryPoint = () => {
     const handleViewTask = (type) => {
             navigate('taskTest',
                         {state: {
-                            type: type,
+                            type: "seeding",
                             order: orderSelected
                         }}
                     )
