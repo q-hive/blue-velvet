@@ -17,7 +17,7 @@ import useAuth from '../../../../contextHooks/useAuthContext'
 //*Network and API
 import api from '../../../../axios.js'
 
-// const order = {
+// const order = {uGo
 //     "customer": {
 //         "_id": ""
 //     },
@@ -69,11 +69,13 @@ export const NewOrder = () => {
         products:   []
     })
     const [input, setInput] = useState({
-        customer:   {},
-        product:    {},
-        packages:   undefined,
-        size:       undefined,
-        date:       undefined
+        customer:           {},
+        product:            {},
+        smallPackages:      undefined,
+        mediumPackages:    undefined,
+        largePackages:      undefined,
+        size:               undefined,
+        date:               undefined
     });
 
     //*Render states
@@ -96,7 +98,15 @@ export const NewOrder = () => {
             message:"Please correct or fill the size.",
             active: false
         },
-        packages:{
+        smallPackages:{
+            message:"Please correct or fill the number of packages.",
+            active: false
+        },
+        mediumPackages:{
+            message:"Please correct or fill the number of packages.",
+            active: false
+        },
+        largePackages:{
             message:"Please correct or fill the number of packages.",
             active: false
         },
@@ -107,9 +117,27 @@ export const NewOrder = () => {
         let value
         id = e.target.id
         
-        
-        if(r === "selectOption"){
-            id = e.target.id.split("-")[0]
+        switch(r){
+            case "input":
+                value = v
+                switch(id){
+                    case "smallPackages":
+                        value = Number(v)
+                        break;
+                    case "mediumPackages":
+                        value = Number(v)
+                        break;
+                    case "largePackages":
+                        value = Number(v)
+                        break;
+                }
+                break;
+            case "selectOption":
+                id = e.target.id.split("-")[0]
+                value = v
+                break;
+            default:
+                break;
         }
         
         if(error[id].active){
@@ -122,13 +150,11 @@ export const NewOrder = () => {
             })
         }
 
-        value = v
-
-        if(id === "packages" ){
-            value = Number(v)
-        }
-
         
+        // const newRgexp =  /^*packages/
+        
+        console.log(id)
+        console.log(value)
         setInput({
             ...input,
             [id]:value
@@ -156,7 +182,6 @@ export const NewOrder = () => {
     }
     
     const thereErrors = (input) => {
-        console.log(input)
         setError({
             ...error,
             product:{
@@ -177,10 +202,11 @@ export const NewOrder = () => {
     }
 
     const handleAddToOrder = (e) => {
+        console.log(e.target.id)
         if(e){
             switch(e.target.id){
                 //*Validate if there are empty inputs if true show error
-                case "packages":
+                case "":
                     //*Map actual data and modify input state so can receive packages
                     if(thereErrors(input)){
                         console.log("Errors should be activated")
@@ -238,7 +264,9 @@ export const NewOrder = () => {
     }
     
     const handleSetOrder = async (e) => {
+        console.log(e.target.id)
         if(e.target.id === "accept") {
+            console.log(input.customer)
             setError({
                 ...error,
                 date:{
@@ -261,12 +289,43 @@ export const NewOrder = () => {
         console.log(input)
         console.log(products)
 
-        const mappedInput = () => {
+        const mapInput = () => {
             let mappedData
+            let useProducts = false
 
+            const mappedInput = {
+                "name": input.product.name,
+                "status": "production",
+                "seedId": input.product.seed,
+                "provider": input.product.provider,
+                "_id": input.product._id,
+                "packages": [
+                    {
+                        "number":input.smallPackages,
+                        "size": "small"
+                    },
+                    {
+                        "number":input.mediumPackages,
+                        "size": "medium"
+                    },
+                    ]
+                } 
+
+            //*If the size is larger, then the actual mappedProduct should change
+            if(input.product.price.length === 3){
+                mappedProduct["packages"].push({number:input.largePackages, size:"large"})
+
+            }
+            
+            if(products.length>0){
+                useProducts = true
+            }
+
+            
+            
             mappedData = {
                 "customer": input.customer,
-                "products": products,
+                "products": useProducts ? products : [mappedInput],
                 "status":"uncompleted",
                 "date": input.date
             }
@@ -275,7 +334,7 @@ export const NewOrder = () => {
         }
             
         try {
-            const response = await api.api.post(`${api.apiVersion}/orders/`, mappedInput(), {
+            const response = await api.api.post(`${api.apiVersion}/orders/`, mapInput(), {
                 headers: {
                     authorization:  credential._tokenResponse.idToken,
                     user:           user
@@ -283,12 +342,16 @@ export const NewOrder = () => {
             })
 
             console.log(response)
+
+            if(response.status === 201){
+                uGood()
+            }
         } catch (err) {
             console.log(err)
         }
     
     
-        return (uGood(),mappedData)
+        return
     }
         
 
@@ -331,18 +394,25 @@ export const NewOrder = () => {
     },[])
 
     useEffect(() => {
-        const validProduct = Object.keys(input.product) !== 0
-        const validSize = input.size !== undefined
-        const validPackages = input.packages !== undefined
-        
+        const validatePackages = () => {
+            if(input.smallPackages && input.mediumPackages && input.largePackages){
+                return true
+            }
 
-        if(validProduct && validSize && validPackages){
+            return false
+        }
+        
+        const validProduct = Object.keys(input.product) !== 0
+        const validPackages = validatePackages()
+        
+        console.log(validPackages)
+        if(validProduct && validPackages){
             setCanSendOrder(() => {
-                return (true)
+                return true
             })
         }
     
-    }, [input.product, input.packages, input.size])
+    }, [input.product, input.smallPackages,input.mediumPackages,input.largePackages, input.size])
 
   return (
     <>
@@ -415,10 +485,10 @@ export const NewOrder = () => {
                         label="Small"
                         placeholder="Quantity"
                         sx={BV_THEME.input.mobile.thirdSize.desktop.quarterSize}
-                        /*onChange={(e) => handleChangeInput(e, e.target.value, "input")}
+                        onChange={(e) => handleChangeInput(e, e.target.value, "input")}
                         helperText={error.smallPackages.active ? error.smallPackages.message : ""}
                         error={error.smallPackages.active}
-                        value={input.packages ? input.packages : ""}*/
+                        value={input.smallPackages ? input.smallPackages : ""}
                     />
                     <TextField
                         id="mediumPackages"
@@ -426,10 +496,10 @@ export const NewOrder = () => {
                         label="Medium"
                         placeholder="Quantity"
                         sx={BV_THEME.input.mobile.thirdSize.desktop.quarterSize}
-                        /*onChange={(e) => handleChangeInput(e, e.target.value, "input")}
+                        onChange={(e) => handleChangeInput(e, e.target.value, "input")}
                         helperText={error.mediumPackages.active ? error.mediumPackages.message : ""}
                         error={error.mediumPackages.active}
-                        value={input.packages ? input.packages : ""}*/
+                        value={input.mediumPackages ? input.mediumPackages : ""}
                     />
                     <TextField
                         id="largePackages"
@@ -437,14 +507,14 @@ export const NewOrder = () => {
                         label="Large"
                         placeholder="Quantity"
                         sx={BV_THEME.input.mobile.thirdSize.desktop.quarterSize}
-                        /*onChange={(e) => handleChangeInput(e, e.target.value, "input")}
+                        onChange={(e) => handleChangeInput(e, e.target.value, "input")}
                         helperText={error.largePackages.active ? error.largePackages.message : ""}
                         error={error.largePackages.active}
-                        value={input.packages ? input.packages : ""}*/
+                        value={input.largePackages ? input.largePackages : ""}
                     />
                 </Box>
                 
-                <Button id="product" sx={{marginTop:"2vh"}} onClick={handleAddToOrder}>
+                <Button id="add" sx={{marginTop:"2vh"}} onClick={handleAddToOrder}>
                     Add product
                 </Button>
             
