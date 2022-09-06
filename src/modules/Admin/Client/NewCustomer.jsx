@@ -8,12 +8,16 @@ import {
 import { BV_THEME } from '../../../theme/BV-theme'
 
 import CameraIcon from '@mui/icons-material/AddPhotoAlternate';
-
+import useAuth from '../../../contextHooks/useAuthContext';
+import api from '../../../axios.js'
 
 
 
 
 export const NewCustomer = () => {
+    //*Contexts
+    const {user, credential} = useAuth()
+    
     const [input, setInput] = useState({
         name:           undefined,
         email:          undefined,
@@ -38,6 +42,44 @@ export const NewCustomer = () => {
     const handleSaveCustomer = () => {
         console.log("Saving Customer")
         console.log(input)
+
+        const mappedCustomer = {
+            "name":               input.name,
+            "role":               input.role,
+            "email":              input.email,
+            "image":              "N/A",
+            "address":            {
+                "stNumber":   input.number,   
+                "street":     input.street,
+                "zip":        input.ZipCode,
+                "city":       input.city,
+                "state":      input.state,
+                "country":    input.country,
+                "references": input.references,
+            },
+            "businessData": {
+                "name":         input.businessName,
+                "bankAccount":  input.bnkAcc
+            }
+        }
+        
+        api.api.post(`${api.apiVersion}/customers/`, mappedCustomer, {
+            headers:{
+                authorization:  credential._tokenResponse.idToken,
+                user:           user
+            }
+        })
+        .then((response) => {
+            //*TODO Give user feedback if response.status === 201
+
+            console.log(response.status)
+            if(response.status === 201){
+                window.location.reload()
+            }
+        })
+        .catch(err => {
+            console.log(err)
+        })
     }
 
     const handleChangeLabel = (date) => {

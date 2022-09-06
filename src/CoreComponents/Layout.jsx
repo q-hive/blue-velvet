@@ -267,7 +267,7 @@ const BV_Layout = (props) => {
                   >
                     <Toolbar sx={{alignItems:"space-between"}}>
                       
-                      <Box component="a" href="#" sx={{flexGrow: 1 }}>
+                      <Box component="a" href="dashboard" sx={{flexGrow: 1 }}>
                         <Box
                           component="img"
                           sx={{
