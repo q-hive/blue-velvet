@@ -7,7 +7,7 @@ import TaskDetails from '../../models/taskDetails.js'
 export const createTask = (obj) => {
     return new Promise((resolve, reject) => {
         obj._id = new ObjectId()
-        
+
         const taskModel = new mongoose.model('tasks', Task)
 
         const taskDoc = new taskModel(obj)
@@ -30,28 +30,38 @@ export const generateTasks = (product) => {
 export const getTaskByProdId = (orgId, id) => {
     return new Promise(async (resolve, reject) => {
         const orgModel = mongoose.model('organizations', Organization)
-        
+
         const org = await orgModel.findById(orgId)
         if(!org){
             return reject("No org found")
         }
 
-        const cont  = org.containers
+        const orders  = org.orders
 
-        if(!cont) {
-            return reject("No containers found")
+        if(!orders) {
+            return reject("No orders found")
         }
 
-        const prodLine = cont[0].production
+        const taskByProd = orders.map((order) => {
+            const status = order.status !== "delivered"
+            const hasTheProduct = order.products.find((prod) => prod._id.equals(id))
+            if(status && (hasTheProduct !== undefined && hasTheProduct !== null)){
+                return order
+            }
+        })
+        let count = 0
+        const indexes = []
+        taskByProd.forEach((task, idx) => {
+            if(task === undefined || task === null){
+                count++
+                indexes.push(idx)
+            }
+        })
         
-        if(!prodLine || prodLine.length === 0) {
-            return resolve(prodLine)
-        }
-
-        const taskByProd  = prodLine.tasks.id(id)
-
-        resolve(taskByProd)
-
+        taskByProd.splice(indexes[0], indexes.length)
+        
+        resolve(taskByProd.length)
+        
     })
 
 }
@@ -66,5 +76,5 @@ export const insertManyTasks = (array) => {
             return resolve(data)
         })
     })
-    
+
 }

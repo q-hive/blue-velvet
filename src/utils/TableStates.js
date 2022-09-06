@@ -47,7 +47,13 @@ export const productsColumns = [
         headerName:"Orders",
         width:150,
         renderCell:(params) => {
-            return '5'
+            params.value.forEach((order, idx) => {
+                if(!order){
+                    params.value.splice(idx, 1)
+                }
+                return
+            })
+            return params.value.length
         },
         flex:1
     },

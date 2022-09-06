@@ -15,10 +15,10 @@ import useAuth from '../../../../contextHooks/useAuthContext'
 
 
 ///tasks steps test
-import { SeedingContent } from './SeedingContent';
-import { HarvestingContent } from './HarvestingContent';
-import { PackingContent } from './PackingContent';
-import { DeliveryContent } from './DeliveryContent';
+import { SeedingContent } from './SeedingContent.jsx';
+import { HarvestingContent } from './HarvestingContent.jsx';
+import { PackingContent } from './PackingContent.jsx';
+import { DeliveryContent } from './DeliveryContent.jsx';
 
 export const TaskTest = (props) => {
     const theme = useTheme(BV_THEME);

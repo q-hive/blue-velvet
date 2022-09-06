@@ -105,6 +105,7 @@ export const ProductionMain = () => {
                     })
                 })
             }
+            console.log(products.data)
             setRows(products.data)
         })
         .catch(err => {

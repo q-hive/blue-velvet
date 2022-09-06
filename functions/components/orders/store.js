@@ -165,7 +165,14 @@ export const getOrdersByProd = (orgId, id) => {
             return resolve(orders)
         }
 
-        const orderByProd = orders.products.id(id)
+        const orderByProd = orders.map((order) => {
+            const hasProd = order.products.find((prod) => prod._id.equals(id))
+            if(hasProd !== undefined && hasProd !== null){
+                return order
+            }
+
+            return false
+        })
 
         resolve(orderByProd)
     })
@@ -206,3 +213,19 @@ export const updateOrder = (org, orderId, body) => {
         })
     })
 }
+
+//* production status
+//* seeding
+//* microgreen growing -- 2 days p/w 7am
+//* ready to harvest
+//* harvested
+//* packaged
+//* ready to deliver
+//* delivered
+
+
+//* payment status
+//* unpaid
+//* paid
+
+//*TODO Add products to orders table
