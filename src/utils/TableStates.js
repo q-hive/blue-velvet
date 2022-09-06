@@ -452,3 +452,142 @@ export const salesColumns = [
         flex:1
     },
 ]
+
+export const CustomerColumns = [
+    {
+        field:"_id",
+        headerName: "ID",
+        headerAlign: "center",
+    },
+    {
+        field:"name",
+        headerName: "Name",
+        headerAlign: "center",
+    },
+    {
+        field:"sales",
+        headerName: "$ Sales",
+        headerAlign: "center",
+    },
+    {
+        field:"orders",
+        headerName: "Pending Orders",
+        headerAlign: "center",
+        renderCell:(params) => {
+            return params.value.length
+        }
+    },
+    {
+        field: "actions",
+        headerName:"Actions",
+        headerAlign:"center",
+        renderCell:() => {
+            const editCustomer = () => console.log("Edit customer")
+            const deleteCustomer = () => console.log("Deleting customer")
+            
+            const actions = [{label:"Delete", execute:deleteCustomer}, {label:"Edit", execute:editCustomer}]
+
+            const [modal,setModal] = useState({
+                open:false,
+                title:"",
+                content:"",
+                actions:[]
+            })
+            const [dialog, setDialog] = useState({
+                open:false,
+                title:"",
+                message:"",
+                actions:[]
+            })
+
+            const [loading, setLoading] = useState(false)
+
+            const {user, credential} = useAuth()
+            const navigate = useNavigate()
+            
+            const handleModal = () => {
+                setModal({
+                    ...modal,
+                    open:true,
+                    title:"Select an action",
+                    actions: [
+                        {
+                            label:"Edit customer",
+                            btn_color:"white_btn",
+                            type:"privileged",
+                            execute:() => {
+                                editCustomer()
+                                // navigate(`/${user.uid}/${user.role}/production/editProduct/?id=${params.id}`)
+                            }
+                        },
+                        {
+                            label:"Delete customer",
+                            type:"dangerous",
+                            btn_color:"secondary",
+                            execute:() => {
+                                setModal({
+                                    ...modal,
+                                    open:false
+                                })
+                                setDialog({
+                                    ...dialog,
+                                    open:true,
+                                    title:"Are you sure you want to delete a customer?",
+                                    message:"The customer and its orders will be deleted. Production management may be affected.",
+                                    actions:[
+                                        {
+                                            label:"Yes",
+                                            btn_color:"primary",
+                                            execute:() => {
+                                                setDialog({
+                                                    ...dialog,
+                                                    open:false,
+                                                })
+                                                setLoading(true)
+                                            }
+                                        },
+                                        {
+                                            label:"No",
+                                            btn_color:"primary",
+                                            execute:() => {
+                                                setDialog({
+                                                    ...dialog,
+                                                    open:false,
+                                                })
+                                            }
+                                        },
+                                    ]
+                                })
+                            }
+                        },
+                    ]
+                })
+
+            }
+            
+            return (
+                <>
+                    <UserModal
+                    modal={modal}
+                    setModal={setModal}
+                    title={modal.title}
+                    content={modal.content}
+                    actions={modal.actions}
+                    />
+
+                    <UserDialog
+                    title={dialog.title}
+                    content={dialog.message}
+                    dialog={dialog}
+                    setDialog={setDialog}
+                    actions={dialog.actions}
+                    open={dialog.open}
+                    />
+                    <Button onClick={handleModal}>View</Button>
+                </>
+
+                
+            )
+        }
+    }
+]

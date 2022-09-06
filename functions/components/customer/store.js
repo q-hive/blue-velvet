@@ -53,7 +53,19 @@ export const getAllCustomers = (orgId) => {
         orgModel.findById(orgId).exec()
         .then(orgDoc => {
             if(orgDoc.customers.length > 0){
-                return resolve(orgDoc.customers)
+                const mappedCustomers = orgDoc.customers.map(customer => {
+                    const allOrders = orgDoc.orders.filter((order) => (order.customer.equals(customer._id) && order.status !== "delivered"))
+                    let totalSales = 0
+                    if(allOrders.length>0){
+                        totalSales = allOrders.reduce((prev, current) => {
+                            return prev + current.price
+                        }, 0)
+                    }
+                    const mutableCustomer = customer.toObject()
+                    return {...mutableCustomer, orders:allOrders, sales:totalSales}
+                })
+                
+                return resolve(mappedCustomers)
             }
 
             return reject(new Error(JSON.stringify(emptyDbError)))
