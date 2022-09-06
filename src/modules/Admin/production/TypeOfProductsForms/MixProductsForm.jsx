@@ -443,6 +443,10 @@ export const MixProductsForm = ({edit, product}) => {
 
     }
 
+    const getPrices = () => {
+        
+    }
+
   return (
     <div style={{}}>
         <UserDialog
@@ -604,7 +608,7 @@ export const MixProductsForm = ({edit, product}) => {
                                             
                                         </TextField>
 
-                                        <TextField label="Mix Price" id="price" onChange={(e) => handleInputChange(e, e.target.id, "input")} variant="outlined" sx={theme.input.mobile.fullSize.desktop.halfSize}>
+                                        <TextField label="Mix Price" id="price" value={getPrices()} onChange={(e) => handleInputChange(e, e.target.id, "input")} variant="outlined" sx={theme.input.mobile.fullSize.desktop.halfSize}>
                                             
                                         </TextField>
 

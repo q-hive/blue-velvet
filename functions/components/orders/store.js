@@ -28,11 +28,32 @@ export const getAllOrders = (orgId) => {
             return reject(new Error(JSON.stringify(orgIDNotProvided)))
         }
 
-        getOrganizationById(orgId)
+        getOrganizationById(orgId, true)
         .then(org => {
-            resolve(org.orders)
+            if(!org) reject(new Error(errorFromOrg))
+            const orgOrders = org.orders
+            const mappedOrders = orgOrders.map((order, orderIndex) => {
+                const production = getOrderProdData(order, org.containers[0].products, true)
+
+                const mutableOrder = order.toObject()
+
+                const mappedProds = mutableOrder.products.map((product, index, thisArr) => {
+                    let found = production.find((prod) => {
+                        return prod.id.equals(product._id)
+                    })
+                    return {productionData:found, ...product}
+                })
+
+                mappedProds.forEach(prod => delete prod.productionData.id)
+                mutableOrder.products = mappedProds
+
+                return mutableOrder
+            })
+            
+            resolve(mappedOrders)
         })
         .catch(err => {
+            console.log(err)
             errorFromOrg.processError = err.message
             reject(new Error(JSON.stringify(errorFromOrg)))
         })
@@ -65,27 +86,39 @@ export const createNewOrder = (orgId, order) => {
         // * Id for order
         let id = new ObjectId()
 
+        
+        const priceFailure = {
+            "message": "There was an error calculating the price",
+            "status":   500
+        }
+        
         const mappedProducts = order.products.map((prod) => {
             return {
-                _id:        prod._id,
-                name:       prod.name,
-                status:     prod.status,
-                seedId:     prod.seedId,
-                packages:   prod.packages
+                _id:            prod._id,
+                name:           prod.name,
+                status:         prod.status,
+                seedId:         prod.seedId,
+                packages:       prod.packages,
             }
         })
-
         const allProducts = await getAllProducts(orgId)
-
+        let prc = getOrdersPrice(order, allProducts)
+        if(prc === undefined || prc === null){
+            return reject(new Error(JSON.stringify(priceFailure)))
+        }
+        let end = addTimeToDate(new Date(), { w: 2 })
+        let prodData = getOrderProdData(order, allProducts)
+        
+        
         if(allProducts && allProducts.length >0){
             let orderMapped = {
                 _id:            id,
                 organization:   orgId,
                 customer:       order.customer._id,
-                price:          getOrdersPrice(order, allProducts),
+                price:          prc,
                 date:           order.date,
-                end:            addTimeToDate(new Date(), { w: 2 }),
-                productionData: getOrderProdData(order, allProducts),
+                end:            end,
+                productionData: prodData,
                 products:       mappedProducts,
                 status:         order.status
             }
@@ -132,7 +165,14 @@ export const getOrdersByProd = (orgId, id) => {
             return resolve(orders)
         }
 
-        const orderByProd = orders.products.id(id)
+        const orderByProd = orders.map((order) => {
+            const hasProd = order.products.find((prod) => prod._id.equals(id))
+            if(hasProd !== undefined && hasProd !== null){
+                return order
+            }
+
+            return false
+        })
 
         resolve(orderByProd)
     })
@@ -173,3 +213,19 @@ export const updateOrder = (org, orderId, body) => {
         })
     })
 }
+
+//* production status
+//* seeding
+//* microgreen growing -- 2 days p/w 7am
+//* ready to harvest
+//* harvested
+//* packaged
+//* ready to deliver
+//* delivered
+
+
+//* payment status
+//* unpaid
+//* paid
+
+//*TODO Add products to orders table

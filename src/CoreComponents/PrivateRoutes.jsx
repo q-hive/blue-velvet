@@ -24,7 +24,9 @@ export const PrivateRoutes = (props) => {
               {
               
                 loading && (
-                  <CircularProgress/>  
+                  <div style={{width:"100vw", height:"100vh", display:"flex", alignItems:"center", justifyContent:"center"}}>
+                    <CircularProgress/>  
+                  </div>
                 )
               }
 

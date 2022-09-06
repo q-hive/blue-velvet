@@ -35,22 +35,74 @@ export const SalesIndex = () => {
     } 
     
     useEffect(() => {
-        api.api.get(`${api.apiVersion}/orders/`, {
-            headers: {
-                authorization:  credential._tokenResponse.idToken,
-                user:           user
-            }
-        })
-        .then(response => {
-            setOrders((o) => {
-                return (
-                    response.data.data    
-                )
+        const getData = () => {
+            api.api.get(`${api.apiVersion}/orders/`, {
+                headers: {
+                    authorization:  credential._tokenResponse.idToken,
+                    user:           user
+                }
             })
-        })
-        .catch(err => {
-            console.log("Error getting orders")
-        })
+            .then(response => {
+                const getCustomer = response.data.data.map(async (order, idx) => {
+                    const customer = await api.api.get(`${api.apiVersion}/customers/${order.customer}`, {
+                        headers: {
+                            authorization:  credential._tokenResponse.idToken,
+                            user:           user
+                        }
+                    })
+                    
+                    return {...order, fullCustomer:customer.data.data}
+                })
+                
+                Promise.all(getCustomer)
+                .then((newResponse) => {
+                    newResponse.forEach((order, idx) => {
+                        const dayOfOrder = new Date(order.date).getDay()
+                        switch(dayOfOrder){
+                            case 2:
+                                newResponse[idx].date1 = order.date 
+                                newResponse[idx].date2 = null 
+                                
+                            break;
+                            case 5:
+                                newResponse[idx].date2 = order.date
+                                newResponse[idx].date1 = null
+                            break;
+                            default:
+                                break;
+                        }
+                    })
+                    const mappedRow = newResponse.map((order) => {
+                        console.log(order)
+                        
+                        return {
+                            "customer": order.fullCustomer.name,
+                            "date1":    order.date1,
+                            "date2":    order.date2,
+                            "type":     "No type",
+                            "income":   order.price,
+                            "status":   "unpaid",
+                            "id":       order._id
+                        }
+                    })
+                    setOrders((o) => {
+                        return (
+                            mappedRow    
+                        )
+                    })
+                })
+                .catch((err) => {
+                    console.log("Error executing request for customers name")
+                    console.log(err)
+                })
+            })
+            .catch(err => {
+                console.log("Error getting orders")
+            })
+        }
+
+        getData()
+        
     }, [])
   return (
     <>
@@ -85,9 +137,6 @@ export const SalesIndex = () => {
                         columns={salesColumns}
                         rows={orders}
                         sx={{marginY:"2vh",}}
-                        getRowId={(params) => {
-                            return params._id
-                        }}
                     />
                 </Box>
 

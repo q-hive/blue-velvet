@@ -64,3 +64,33 @@ export const getAllCustomers = (orgId) => {
         })
     })
 }
+
+export const getCustomerById = (orgId, customerId) => {
+    return new Promise(async (resolve, reject) => {
+        const organization = await orgModel.findById(orgId).exec()
+
+        if(!organization){
+            const emptyOrg = {
+                message:    "There is no org related to ID",
+                status:     400,
+                processError: new Error("There is no organization related")
+            }
+            
+            reject(emptyOrg)
+        }
+
+        const customer = organization.customers.id(customerId)
+
+        if(!customer){
+            const noCustomer = {
+                message: "There is no customer with that ID",
+                status:  400,
+                processError: new Error("There is no customer")   
+            }
+            
+            reject(noCustomer)
+        }
+
+        resolve(customer)
+    })
+}

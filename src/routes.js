@@ -20,6 +20,7 @@ import { NewOrder } from "./modules/Admin/Sales/newOrders/NewOrder";
 import { NewCustomer } from "./modules/Admin/Client/NewCustomer";
 import { ClientIndex } from "./modules/Admin/Client/ClientIndex";
 import { EntryPoint } from "./modules/Employee/Tasks/WorkingTasks/EntryPoint";
+import { FullChamber } from "./modules/Employee/Tasks/FullChamber";
 
 
 
@@ -100,6 +101,10 @@ export const AppRoutes  = [
     {
         path:"/:uid/employee/tasks/settingup",
         component:<MaintenanceTask/>
+    },
+    {
+        path:"/:uid/employee/tasks/work",
+        component:<FullChamber/>
     },
     
 ]

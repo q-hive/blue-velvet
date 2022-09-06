@@ -63,31 +63,41 @@ export const isValidProductObject = (json) => {
 
 
 export const relateOrdersAndTasks = (orgId) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
         //*ASK FOR PRODUCTS ARRAY
-        const products = await getAllProducts(orgId)
-        if(products.length>0) {
-            console.log("Has products")
-            //* ITERATE ARRAY
-            const tasksByProducts = products.map(async (prod) => {
-                //* AND SEARCH IN TASKS BY PRODUCTS
-                const tasks = await getTaskByProdId(orgId ,prod._id)
-                //*SEARCH IN ORDERS BY PRODUCT ID
-                const orders = await getOrdersByProd(orgId, prod._id)
-                prod.tasks = [...tasks]
-                prod.orders = [...orders]
-    
-                return prod
-            })
-            return Promise.all(tasksByProducts)
-            .then((data) => {
-                resolve(data)
-            })
-            .catch((err) => {
-                reject(err)
-            })
+
+        const getAndRelateData = async () => {
+            const products = await getAllProducts(orgId)
+            if(products.length>0) {
+                // products.forEach((prod) => prod.toObject())
+                //* ITERATE ARRAY
+                const mappedProd = products.map(async (prod) => {
+                    const mutableProd = prod.toObject()
+                    //* AND SEARCH IN TASKS BY PRODUCTS
+                    const tasks = await getTaskByProdId(orgId ,prod._id)
+                    //*This function returns the orders, that have a different status of delivered and that includes the products we are asking for
+                    //*SEARCH IN ORDERS BY PRODUCT ID
+                    const orders = await getOrdersByProd(orgId, prod._id)
+
+                    mutableProd.tasks = tasks
+                    mutableProd.orders = orders
+                    return {...mutableProd}
+                })
+                const mappedData = await Promise.all(mappedProd)
+
+                return mappedData
+            }
+            reject("No products added")
         }
 
-        reject("No products added")
+        getAndRelateData()
+        .then((data) => {
+            // console.log(data)
+            resolve(data)
+        })
+        .catch(err => {
+            console.log(err)
+        })
+
     })
 }

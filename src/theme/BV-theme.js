@@ -84,6 +84,16 @@ export const BV_THEME = createTheme({
                 },
                 
             },
+            thirdSize:{
+                desktop:{
+                    halfSize:       { width:{xs:"32%",sm:"48%"},marginX:"1%",marginY:"2%"},
+                    fullSize:       { width:{xs:"32%",sm:"98%"},marginX:"1%",marginY:"2%"},
+                    quarterSize:    { width:{xs:"32%",sm:"23%"},marginX:"1%",marginY:"2%"},
+                    thirdSize:      { width:{xs:"32%",sm:"33%"},marginX:"1%",marginY:"2%"},
+                    twoThirdsSize:  { width:{xs:"32%",sm:"66%"},marginX:"1%",marginY:"2%"},
+                },
+                
+            },
                 
 
         }

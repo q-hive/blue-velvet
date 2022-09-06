@@ -47,7 +47,13 @@ export const productsColumns = [
         headerName:"Orders",
         width:150,
         renderCell:(params) => {
-            return '5'
+            params.value.forEach((order, idx) => {
+                if(!order){
+                    params.value.splice(idx, 1)
+                }
+                return
+            })
+            return params.value.length
         },
         flex:1
     },
@@ -390,6 +396,14 @@ export const ProductionLinesColumns = [
 
 export const salesColumns = [
     {
+        field:"id",
+        headerName:"ID",
+        headerAlign:"center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1
+    },
+    {
         field:"customer",
         headerName:"Customer",
         headerAlign:"center",
@@ -398,7 +412,7 @@ export const salesColumns = [
         flex:1
     },
     {
-        field:"date",
+        field:"date1",
         headerName:"Tuesday",
         headerClassName:"header-sales-table",
         headerAlign:"center",
@@ -416,6 +430,22 @@ export const salesColumns = [
     {
         field:"type",
         headerName:"type",
+        headerClassName:"header-sales-table",
+        headerAlign:"center",
+        minWidth:{xs:"25%",md:130},
+        flex:1
+    },
+    {
+        field:"income",
+        headerName:"Income",
+        headerClassName:"header-sales-table",
+        headerAlign:"center",
+        minWidth:{xs:"25%",md:130},
+        flex:1
+    },
+    {
+        field:"status",
+        headerName:"Status",
         headerClassName:"header-sales-table",
         headerAlign:"center",
         minWidth:{xs:"25%",md:130},

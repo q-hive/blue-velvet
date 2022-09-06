@@ -234,6 +234,7 @@ export const SimpleProductForm = ({editing, product}) => {
         }
 
         console.log(productData)
+        productData.price.forEach((size, idx) => productData.price[idx].amount = Number(productData.price[idx].amount))
         //*Request if is creating product
         const mappedProduct = {
             name:       productData.name,

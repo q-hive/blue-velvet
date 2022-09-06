@@ -2,52 +2,96 @@ import React, { useState, useEffect, useRef } from 'react'
 
 //*COMPONENTS FROM MUI
 import { 
-    Autocomplete, Box, Button, 
-    TextField, Typography, useTheme, 
-    Fab,
+     Box, Button, 
+     Typography, useTheme,
     Stepper, Step, StepLabel, StepContent, Paper, 
 } from '@mui/material'
-import AddIcon from '@mui/icons-material/Add';
-import CameraIcon from '@mui/icons-material/AddPhotoAlternate';
 
 //*THEME
 import { BV_THEME } from '../../../../theme/BV-theme'
-import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog'
 //*NETWORK AND API
-import api from '../../../../axios'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import useAuth from '../../../../contextHooks/useAuthContext'
 
 
 ///tasks steps test
-import { StepDisplay } from './StepDisplay';
+import { SeedingContent } from './SeedingContent.jsx';
+import { HarvestingContent } from './HarvestingContent.jsx';
+import { PackingContent } from './PackingContent.jsx';
+import { DeliveryContent } from './DeliveryContent.jsx';
 
-//*Auth
-const amounts = ["25","30","40","50","60","70","80","90"]
-
-export const TaskTest = () => {
+export const TaskTest = (props) => {
     const theme = useTheme(BV_THEME);
 
+    const {state}= useLocation();
+
+    let type, order
+
+    if(state != null){
+        ({type, order} = state);
+    }
+    
+
+    if(props != null){
+        type=props.type
+        order=props.order
+    }
+
+    
+    let done = false
+    const isDone = () => {
+        return( done===true ? true : false)
+    }
+
+    if(props.done === "done" ){
+        return isDone()
+
+    }
+
+    console.log(type)
+    console.log(order)
+
+    /*
     const taskType = window.location.search
     console.log(taskType)
-
-    let steps
-    if(taskType === "?harvesting"){steps=[{step:0,assigned:"estempleado",status:"To-do",estimated:0},
-    {step:1,assigned:"estempleado",status:"To-do",estimated:2},
-    {step:2,assigned:"estempleado",status:"To-do",estimated:5},
-    {step:3,assigned:"estempleado",status:"To-do",estimated:5}]}
-
-    if(taskType === "?seeding"){steps=[{step:0,assigned:"estempleado",status:"To-do",estimated:0},
-    {step:1,assigned:"estempleado",status:"To-do",estimated:2},
-    {step:2,assigned:"estempleado",status:"To-do",estimated:5},
-    {step:3,assigned:"estempleado",status:"To-do",estimated:5},
-    {step:4,assigned:"estempleado",status:"To-do",estimated:5}]}
-
+    */
 
     //* STEPPER
     const [activeStep, setActiveStep] = useState(0)
 
-    const DUMMY_Task = {}
+    let steps
+    let contentTitle
+    let content
+
+    switch (type){
+        case "seeding": {
+                contentTitle = "Seeding"
+                content = <SeedingContent products={order.products} index={activeStep}/>
+                steps=[{step:0},{step:1},{step:2},{step:3},{step:4},]
+            } break;
+            
+        case "harvesting": 
+                {
+                contentTitle = "Harvesting"
+                content = <HarvestingContent index={activeStep}/>
+                steps=[{step:0},{step:1},{step:2},{step:3},]
+            } break;
+
+        case "packing": 
+                {
+                contentTitle = "Packing"
+                content = <PackingContent index={activeStep}/>
+                steps=[{step:0},{step:1},{step:2},{step:3},]
+            } break;
+
+        case "delivery": 
+                    {
+                contentTitle = "Delivery"
+                content = <DeliveryContent index={activeStep}/>
+                steps=[{step:0}]
+            } break;
+            
+    }
 
     //*RENDER STATES
    
@@ -68,84 +112,12 @@ export const TaskTest = () => {
     
     
     const handleCompleteTask = () => {
+        done=true
         console.log("Finish")
-        {/*const model = {
-            name:   mix.name,
-            price:   Number(mix.price), // * Cost per tray,
-            mix: {
-                isMix:true,
-                name:mix.name,
-                products:mix.products
-            },
-            status:"stopped"
-        }
-        const hasLabel = mix.label !== null
-        let label
-        if(hasLabel){
-            label = new FormData()
-
-            label.append(
-                "label",
-                mix.label[0],
-                mix.label[0].name
-            )
-
-            model.label = label
-        }
         
-        api.api.post(`${api.apiVersion}/products/`, model, {
-            headers:{
-                authorization:credential._tokenResponse.idToken,
-                user:user
-            }
-        })
-        .then(response => {
-            setDialog({
-                open:true,
-                title:"Mix created succesfuly",
-                message:"The mix was added to the DB, what you would like to do?",
-                actions:[
-                    {
-                        label:"Create another",
-                        btn_color:"primary",
-                        execute: () => {
-                            navigate(`/${user.uid}/${user.role}/production`)
-                        }
-                        
-                    },
-                    {
-                        label:"End",
-                        btn_color:"secondary",
-                        execute:() => {
-                            navigate(`/${user.uid}/${user.role}/dashboard`)
-                        }
-                    }
-                ]
-            })
-        })
-        .catch(err => {
-            console.log(err.response)
-            setDialog({
-                open:true,
-                title:"Error adding new product",
-                message:"There was an error sending the data, please try again",
-                actions:[
-                    {
-                        label:"Try again",
-                        execute: () => {
-                            window.location.reload()
-                        }
-                    },
-                    {
-                        label:"Cancel",
-                        execute:() => {
-                            navigate('/')
-                        }
-                    }
-                ]
-            })
-        })}  */}
     }
+
+    
 
 
     //*********** STEPPER
@@ -279,8 +251,9 @@ export const TaskTest = () => {
                     )}
                 </Box>
                                     
-                <Box sx={{ width:{xs:"90%",sm:"65%"}, display:"flex", flexDirection:"column", padding:"5%", alignItems:"center" }}>
-                    {<StepDisplay type={taskType} index={activeStep} /*task={DUMMY_Task}*//>}
+                <Box sx={{ width:{xs:"100%",sm:"65%"}, display:"flex", flexDirection:"column", padding:"5%", alignItems:"center" }}>          
+                    <Typography variant="h3" color="primary">{contentTitle}</Typography>
+                    {content}
                 </Box>
                         
 
