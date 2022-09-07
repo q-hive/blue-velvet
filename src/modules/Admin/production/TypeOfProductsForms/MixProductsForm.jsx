@@ -30,18 +30,18 @@ export const MixProductsForm = ({editing, product}) => {
     const [strains, setStrains] = useState([])
     const [mix, setMix] = useState({
         products:[],
-        name:"",
         label:null,
         cost:0
     })
 
     //*RENDER STATES
     const [inputValue, setInputValue] = useState({
-        strain:"",
-        amount:"",
-        label:"",
-        smallPrice:"",
-        mediumPrice:""
+        strain:         "",
+        amount:         "",
+        label:          "",
+        smallPrice:     "",
+        mediumPrice:    "",
+        name:           ""
     })
     const [showFinal, setShowFinal] = useState(false)
     const [canAdd, setCanAdd] = useState(true)
@@ -97,10 +97,13 @@ export const MixProductsForm = ({editing, product}) => {
         switch(id){
             case "25":
                 id = "smallPrice"
+                console.log(v)
                 break;
             case "80":
                 id = "mediumPrice"
                 break;
+            case "name":
+
             default:
                 break;
         }
@@ -231,13 +234,30 @@ export const MixProductsForm = ({editing, product}) => {
     }
     
     const handleSendMixData = () => {
+        let mappedProducts
+        if(mix.products.length>0){
+            mappedProducts = mix.products.map((prod) => {
+                return {strain:prod.product._id, amount: Number(prod.amount)}
+            })
+        } else {
+            return
+        }
+        
         const model = {
-            name:   mix.name,
-            price:   Number(mix.price), // * Cost per tray,
+            name:   inputValue.name,
+            price:   [
+                {
+                    amount:inputValue.smallPrice,
+                    packageSize: 25
+                },
+                {
+                    amount:inputValue.mediumPrice,
+                    packageSize: 80
+                },
+            ], // * Cost per tray,
             mix: {
-                isMix:true,
-                name:mix.name,
-                products:mix.products
+                isMix:      true,
+                products:   mappedProducts
             },
             status:"stopped"
         }

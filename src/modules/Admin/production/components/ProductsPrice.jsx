@@ -18,7 +18,7 @@ export const ProductsPrice = ({productData, handleChangeProductData,editing,erro
             value={productData.smallPrice} 
             helperText={error.smallPrice.message} 
             error={error.smallPrice.failed} 
-            onChange={mix ? (e) => handleChangeProductData(e,e.target.id, "input") : handleChangeProductData} 
+            onChange={mix ? (e) => handleChangeProductData(e,e.target.value,"input") : handleChangeProductData} 
             label="Price - 25grs"   
             sx={BV_THEME.input.mobile.halfSize.desktop.halfSize}
         />
