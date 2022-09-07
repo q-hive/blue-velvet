@@ -1,13 +1,13 @@
 import { Add } from '@mui/icons-material'
 import { Box, Button, Container, Grid, Paper, Typography } from '@mui/material'
 import React, { useEffect, useState } from 'react'
-import useAuth from '../../../../contextHooks/useAuthContext'
+import useAuth from '../../contextHooks/useAuthContext'
 
 //*Netword and routing
 import { useNavigate } from 'react-router-dom'
-import { TaskTest } from './TaskTest'
-import { BV_THEME } from '../../../../theme/BV-theme'
-import api from '../../../../axios.js'
+import { TaskTest } from './Tasks/WorkingTasks/TaskTest'
+import { BV_THEME } from '../../theme/BV-theme'
+import api from '../../axios.js'
 import { intlFormat } from 'date-fns'
 
 export const EntryPoint = () => {
@@ -89,108 +89,6 @@ export const EntryPoint = () => {
         {name:"Cleaning", type:"maintenance"},
     ]
 
-    const DUMMY_Task = {
-        assigned:true,
-        currentStep:0,
-        completed:false,
-        orders:["GENERADA-80085"],
-        details:{title:"TASK 1", description: "Task 1 Description",steps:"",tools:"",admin:"El gf"},
-        product:[
-            {
-                name:"",
-                image:"",
-                desc:"",
-                status:"",
-                seed:"",
-                provider:"",
-                price:{amount:1,packageSize:25},
-                mix:{isMix:true,
-                products:{strain:"",amount:.5}},
-                parameters:{day:3,night:4,seedingRate:1.35,harvestRate:5}
-            },
-            {
-                name:"",
-                image:"",
-                desc:"",
-                status:"",
-                seed:"",
-                provider:"",
-                price:{amount:1,packageSize:25},
-                mix:{isMix:true,
-                products:{strain:"",amount:.5}},
-                parameters:{day:3,night:4,seedingRate:1.35,harvestRate:5}
-            },
-        ],
-        steps:[
-            {step:0,assigned:"estempleado",status:"To-do",estimated:0},
-            {step:1,assigned:"estempleado",status:"To-do",estimated:2},
-            {step:2,assigned:"estempleado",status:"To-do",estimated:5},
-            {step:3,assigned:"estempleado",status:"To-do",estimated:5}
-        ],
-        type:"harvesting",
-
-    }
-    const DUMMY_Task2 = {
-        assigned:true,
-        currentStep:0,
-        completed:false,
-        orders:["GENERADA-80085"],
-        details:{title:"TASK 2", description: "Task 2 Description",steps:"",tools:"",admin:"El gf"},
-        product:[
-            {
-                name:"PRODUCT 1",
-                image:"",
-                desc:"",
-                status:"",
-                seed:"",
-                provider:"",
-                price:{amount:1,packageSize:25},
-                mix:{isMix:true,
-                products:{strain:"",amount:.5}},
-                parameters:{day:3,night:4,seedingRate:1.35,harvestRate:5}
-            },
-            {
-                name:"",
-                image:"",
-                desc:"",
-                status:"",
-                seed:"",
-                provider:"",
-                price:{amount:1,packageSize:25},
-                mix:{isMix:true,
-                products:{strain:"",amount:.5}},
-                parameters:{day:3,night:4,seedingRate:1.35,harvestRate:5}
-            },
-        ],
-        steps:[
-            {step:0,assigned:"estempleado",status:"To-do",estimated:0},
-            {step:1,assigned:"estempleado",status:"To-do",estimated:2},
-            {step:2,assigned:"estempleado",status:"To-do",estimated:5},
-            {step:3,assigned:"estempleado",status:"To-do",estimated:5}
-        ],
-        type:"seeding",
-
-    }
-    const DUMMY_Order = {
-        id:"GENERADA-80085",
-        organization:"ourClients",
-        customer:"theirClient",
-        type:"idk",
-        packages:3,
-        price:5,
-        end:"30/08/22",      
-        tasks:[DUMMY_Task,DUMMY_Task2],       
-        products: [{
-                _id:    "",
-                status: "",
-                trays:  .5,
-                seedId: "lasemilla",
-                batch:  "huh"
-            }],
-        status:"incomplete"
-
-    }
-
 
     useEffect(() => {
         const getOrders = async ()=> {
@@ -206,14 +104,22 @@ export const EntryPoint = () => {
 
         getOrders()
         .then((response) => {
+            let indexes =[]
+            console.log(response.data)
             response.data.forEach((order, idx) => {
-                if(order.status !== "delivered"){
-                    return
-                }
-
-                response.data.splice(idx, 1)
+                order.status === "delivered"?
+                    indexes.push(idx) :""
+                
+                console.log(indexes)
             })
+
+        for (var i = indexes.length -1; i >= 0; i--)
+            response.data.splice(indexes[i],1);
+
+
+            console.log("fuera",indexes)
             setOrders(response.data)
+            console.log(response.data)
         })
         .catch(err => {
             console.log(err)
