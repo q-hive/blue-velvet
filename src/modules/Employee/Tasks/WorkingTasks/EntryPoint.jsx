@@ -206,14 +206,21 @@ export const EntryPoint = () => {
 
         getOrders()
         .then((response) => {
-            response.data.forEach((order, idx) => {
-                if(order.status !== "delivered"){
+            const indexes = []
+
+            const iterableResponse = response.data
+
+
+            const mappedResponse = iterableResponse.map((order, idx) => {
+                if(order.status === "delivered"){
                     return
                 }
-
-                response.data.splice(idx, 1)
+                
+                return {...order}
             })
-            setOrders(response.data)
+
+
+            setOrders(() => mappedResponse)
         })
         .catch(err => {
             console.log(err)
