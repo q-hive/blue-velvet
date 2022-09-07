@@ -5,7 +5,7 @@ import {
     Autocomplete, Box, Button, 
     TextField, Typography, useTheme, 
     Fab,
-    Stepper, Step, StepLabel, StepContent, Paper, 
+    Stepper, Step, StepLabel, StepContent, Paper, InputAdornment, 
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add';
 import CameraIcon from '@mui/icons-material/AddPhotoAlternate';
@@ -16,12 +16,12 @@ import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog'
 //*NETWORK AND API
 import api from '../../../../axios'
 import { useNavigate } from 'react-router-dom'
-import useAuth from '../../../../contextHooks/useAuthContext'
-
 //*Auth
-const amounts = ["25","30","40","50","60","70","80","90"]
+import useAuth from '../../../../contextHooks/useAuthContext'
+//*App components
+import { ProductsPrice } from '../components/ProductsPrice';
 
-export const MixProductsForm = ({edit, product}) => {
+export const MixProductsForm = ({editing, product}) => {
     const theme = useTheme(BV_THEME);
     //* STEPPER
     const [activeStep, setActiveStep] = useState(0)
@@ -40,7 +40,8 @@ export const MixProductsForm = ({edit, product}) => {
         strain:"",
         amount:"",
         label:"",
-        cost:""
+        smallPrice:"",
+        mediumPrice:""
     })
     const [showFinal, setShowFinal] = useState(false)
     const [canAdd, setCanAdd] = useState(true)
@@ -72,6 +73,14 @@ export const MixProductsForm = ({edit, product}) => {
             failed:false,
             message:""
         },
+        smallPrice:{
+            failed:false,
+            message:""
+        },
+        mediumPrice:{
+            failed:false,
+            message:""
+        }
     })
 
     const {user, credential} = useAuth()
@@ -85,6 +94,17 @@ export const MixProductsForm = ({edit, product}) => {
             id = e.target.id
         }
 
+        switch(id){
+            case "25":
+                id = "smallPrice"
+                break;
+            case "80":
+                id = "mediumPrice"
+                break;
+            default:
+                break;
+        }
+        
         if(error[id].failed){
             setError({
                 ...error,
@@ -101,9 +121,13 @@ export const MixProductsForm = ({edit, product}) => {
     }
 
     const mapErrors = (object) => {
+        const errors = []
+        
         const valuesMapped = Object.entries(object).map((entry, idx) => {
             if(activeStep === 0) {
                 if(entry[0] === "strain" && (entry[1] === "" || entry[1] === null || entry[1] === undefined)){
+                    errors.push(entry[0])
+                    
                     return {
                         [entry[0]]:{
                             failed:true,
@@ -112,6 +136,7 @@ export const MixProductsForm = ({edit, product}) => {
                     }
                 }
                 if(entry[0] === "amount" && (entry[1] === "" || entry[1] === null || entry[1] === undefined || entry[1] === 0)){
+                    errors.push(entry[0])
                     return {
                         [entry[0]]:{
                             failed:true,
@@ -119,7 +144,6 @@ export const MixProductsForm = ({edit, product}) => {
                         }
                     }
                 }
-
                 return {
                     [entry[0]]:{
                         failed:false,
@@ -138,17 +162,19 @@ export const MixProductsForm = ({edit, product}) => {
             }
         })
 
-        return {mappedErrors}
+        return {errors, mappedErrors}
     }
     
     const handleAddToMixComb = () => {
-        const {mappedErrors} = mapErrors(inputValue)
-        setError({
-            ...error,
-            ...mappedErrors
-        })
-
-
+        const {errors, mappedErrors} = mapErrors(inputValue)
+        if(errors.length >0) {
+            setError({
+                ...error,
+                ...mappedErrors
+            })
+            return
+        }
+        
         setMix({
             ...mix,
             products:[
@@ -160,23 +186,20 @@ export const MixProductsForm = ({edit, product}) => {
             ]
         })
         
-        // setMix((mix) => {
-        //     if(mix.products.length === 0){
-        //         return {[mix.products]:[...mix.products, {product:inputValue.strain, amount:inputValue.amount}]}
-        //     }
-            
-        //     mix.products.map((prod) => {
-        //         return {...prod, product:inputValue.strain, amount:inputValue.amount}
-        //     })
-        // })
+
+        setInputValue({
+            ...inputValue,
+            strain: "",
+            amount: ""
+        })
         return
     }
-    const handleChangeFinalData = (e) => {
-        setMix({
-            ...mix,
-            [e.target.id]:e.target.value            
-        })
-    }
+    // const handleChangeFinalData = (e) => {
+    //     setMix({
+    //         ...mix,
+    //         [e.target.id]:e.target.value            
+    //     })
+    // }
 
     const handleChangeLabel = (e) => {
         console.log(e.target.files)
@@ -357,16 +380,6 @@ export const MixProductsForm = ({edit, product}) => {
       
     const handleNext = () => {
         setShowFinal(true)
-        const {mappedErrors} = mapErrors(inputValue)
-        console.log(mappedErrors)
-        console.log(Object.values(mappedErrors).some((obj) => obj.failed))
-        if(Object.values(mappedErrors).some((obj) => obj.failed)){
-            return setError({
-                    ...error,
-                    ...mappedErrors
-            })
-        }
-
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
         
     };
@@ -441,10 +454,6 @@ export const MixProductsForm = ({edit, product}) => {
             </Box>
         )
 
-    }
-
-    const getPrices = () => {
-        
     }
 
   return (
@@ -526,20 +535,34 @@ export const MixProductsForm = ({edit, product}) => {
                                     return <TextField helperText={error.strain.message} error={error.strain.failed} {...params} label="Strain"/>
                                 }}
                                 getOptionLabel={(option) => {
+                                    if(!option.name){
+                                        return ""
+                                    }
                                     return option.name
+                                }}
+                                isOptionEqualToValue={(o,v) => {
+                                    if(v === ""){
+                                        return true
+                                    }
+
+                                    return o.name === v.name
                                 }}
                                 onChange={(e,v,r) => handleInputChange(e, v, r)}
                                 sx={theme.input.mobile.fullSize.desktop.halfSize}
+                                value={inputValue.strain}   
                             />
 
                             <TextField
                                 id="amount"
-                                label="Amount %"
+                                label="Percentage"
                                 ref={ref}
+                                type="number"
+                                InputProps={{endAdornment: <InputAdornment position="end">%</InputAdornment>}}
                                 onChange={(e) => handleInputChange(e, e.target.value, "input")}
                                 sx={theme.input.mobile.twoThirds.desktop.quarterSize}
                                 error={error.amount.failed}
                                 helperText={error.amount.message}
+                                value={inputValue.amount}
                             />
                             <Typography align='center' color={theme.textColor.lightGray}>Minimum Strains : 2</Typography>
                         </Box>
@@ -608,10 +631,13 @@ export const MixProductsForm = ({edit, product}) => {
                                             
                                         </TextField>
 
-                                        <TextField label="Mix Price" id="price" value={getPrices()} onChange={(e) => handleInputChange(e, e.target.id, "input")} variant="outlined" sx={theme.input.mobile.fullSize.desktop.halfSize}>
-                                            
-                                        </TextField>
-
+                                        <ProductsPrice
+                                        productData={inputValue}
+                                        handleChangeProductData={handleInputChange}
+                                        editing={editing} 
+                                        error={error}
+                                        mix={true}
+                                        />    
                                 </Box>
                                 <Box sx={
                                     {

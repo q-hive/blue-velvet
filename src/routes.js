@@ -21,14 +21,11 @@ import { NewCustomer } from "./modules/Admin/Client/NewCustomer";
 import { ClientIndex } from "./modules/Admin/Client/ClientIndex";
 import { EntryPoint } from "./modules/Employee/Tasks/WorkingTasks/EntryPoint";
 import { FullChamber } from "./modules/Employee/Tasks/FullChamber";
+import { EmployeeIndex } from "./modules/Admin/Employee/EmployeeIndex";
 
 
 
 export const AppRoutes  = [
-    // {
-    //     path:"/:uid/admin",
-    //     component:<SecurityPhraseComponent/>
-    // },
     {
         path:"/:uid/admin/dashboard",
         component:<Dashboard/>
@@ -39,7 +36,7 @@ export const AppRoutes  = [
     },
     {
         path:"/:uid/admin/production/newProduct",
-        component:<NewProduct/>
+        component:<NewProduct edit={false}/>
     },
     {
         path:"/:uid/admin/production/editProduct",
@@ -61,6 +58,12 @@ export const AppRoutes  = [
         path:"/:uid/admin/client/NewCustomer",
         component:<NewCustomer/>
     },
+    {
+        path:"/:uid/admin/employees",   
+        component:<EmployeeIndex/>
+    },
+
+    //EMPLOYEE ROUTES
     {
         path:"/:uid/employee/dashboard",
         component:<EntryPoint/>
