@@ -35,15 +35,17 @@ export const FullChamber = () => {
 
     const[canSeeNextTask,setCanSeeNexttask] = useState({value:false,counter:0})
 
-    const getTaskType=(status) =>{
-        switch(status){
-            case "uncompleted": return("seeding");
-            case "unpaid": return("seeding");
-            case "growing": return(null);
-            case "ready to harvest": return("harvesting");
-            default: console.log("no tasks monica")
-         }
-    }
+    // const getTaskType=(status) => {
+    //     switch(status){
+    //         case "seeding": return("seeding");
+    //         case "growing": return("growing");
+    //         case "harvestReady": return("harvesting");
+    //         case "harvested": return("packing");
+    //         case "ready": return("delivery");
+    //         case "delivered": return(null);
+    //         default: console.log("no tasks monica")
+    //      }
+    // }
 
     const carouselChange=(item,index)=>{
         {item<canSeeNextTask.counter ?
@@ -73,8 +75,7 @@ export const FullChamber = () => {
 
     
     const ordersList=orders
-    console.log(ordersList)
-    
+
   return (
     <Carousel
         emulatetouch={true} 
@@ -91,19 +92,13 @@ export const FullChamber = () => {
             return(
                 <Box key={order.id} height="80vh" component={"div"}>
                     {TaskTest({ 
-                        type: getTaskType(order.status), 
+                        type: order.status, 
                         order:order,
                         counter:canSeeNextTask.counter, 
                         setFinished:setCanSeeNexttask,
-
-
                     })}
                 </Box>
             )
         })}
     </Carousel>
-
-
-
-
   )}

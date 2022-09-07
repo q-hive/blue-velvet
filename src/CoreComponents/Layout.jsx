@@ -42,7 +42,6 @@ import { BV_THEME } from '../theme/BV-theme';
 
 const BV_Layout = (props) => {
     const {user, logout} = useAuth()
-    console.log(user)
     const theme = useTheme(BV_THEME)
 
     const navigate = useNavigate()
@@ -110,7 +109,7 @@ const BV_Layout = (props) => {
     // Options Drawer for Employees 
     const employeeOptions = [
       {
-        label:'Home',
+        label:'Dashboard',
         icon:<GroupsIcon color="primary"/>,
       }, 
       {
@@ -267,7 +266,7 @@ const BV_Layout = (props) => {
                   >
                     <Toolbar sx={{alignItems:"space-between"}}>
                       
-                      <Box component="a" href="dashboard" sx={{flexGrow: 1 }}>
+                      <Box component="a" href={`/${user.uid}/${user.role}/dashboard`} sx={{flexGrow: 1 }}>
                         <Box
                           component="img"
                           sx={{

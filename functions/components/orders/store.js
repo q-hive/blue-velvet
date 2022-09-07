@@ -190,8 +190,6 @@ export const updateOrder = (org, orderId, body) => {
                 }
 
                 body.paths.forEach(({path, value}, index) => {
-                    // const isNested = /^[a-z]*.[a-z]$/
-
                     dbOrder[path] = value
                 })
 
@@ -216,11 +214,10 @@ export const updateOrder = (org, orderId, body) => {
 
 //* production status
 //* seeding
-//* microgreen growing -- 2 days p/w 7am
-//* ready to harvest
+//* growing -- 2 days p/w 7am
+//* harvestReady
 //* harvested
 //* packaged
-//* ready to deliver
 //* delivered
 
 

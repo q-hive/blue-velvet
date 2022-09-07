@@ -63,17 +63,17 @@ export const EntryPoint = () => {
      const setOrderTasks = (status) =>{
         
         switch(status){
-            case "uncompleted": productTasks = [{name:"Task 1", type:"seeding"}];
+            case "seeding": productTasks = [{name:"Task 1", type:"seeding"}];
             break;
             case "growing": productTasks = [];
             break;
-            case "ready to harvest": productTasks = [{name:"Task 2", type:"harvesting"}];
+            case "harvestReady": productTasks = [{name:"Task 2", type:"harvesting"}];
             break;
             case "harvested" : productTasks = [{name:"Task 3", type:"packing"}];
             break;
-            case "packed" : productTasks = [{name:"Task 4", type:"delivery"}];
+            case "ready" : productTasks = [{name:"Task 4", type:"delivery"}];
             break;
-            case "done" : productTasks = [];
+            case "delivered" : productTasks = [];
             break;
             default: console.log("no tasks monica")
          }
@@ -206,18 +206,19 @@ export const EntryPoint = () => {
 
         getOrders()
         .then((response) => {
+            response.data.forEach((order, idx) => {
+                if(order.status !== "delivered"){
+                    return
+                }
+
+                response.data.splice(idx, 1)
+            })
             setOrders(response.data)
         })
         .catch(err => {
             console.log(err)
         })
     }, [])
-
-console.log("aquí")
-console.log(orders)
-console.log(user)
-
-
 
   return (
     <Box component="div" display="flex"  >

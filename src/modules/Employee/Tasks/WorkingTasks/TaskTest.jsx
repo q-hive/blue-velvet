@@ -13,6 +13,8 @@ import { BV_THEME } from '../../../../theme/BV-theme'
 import { useLocation, useNavigate } from 'react-router-dom'
 import useAuth from '../../../../contextHooks/useAuthContext'
 
+import api from '../../../../axios.js'
+
 
 ///tasks steps test
 import { SeedingContent } from './SeedingContent.jsx';
@@ -22,12 +24,16 @@ import { DeliveryContent } from './DeliveryContent.jsx';
 
 export const TaskTest = (props) => {
     const theme = useTheme(BV_THEME);
-
+    
+    const {user, credential} = useAuth()
+    
     const {state}= useLocation();
 
 
     let type, order
     const [isFinished,setIsFinished] = useState(false)
+    //* STEPPER
+    const [activeStep, setActiveStep] = useState(0)
 
 
     if(state != null){
@@ -41,17 +47,6 @@ export const TaskTest = (props) => {
     }
 
 
-    console.log(type)
-    console.log(order)
-
-    /*
-    const taskType = window.location.search
-    console.log(taskType)
-    */
-
-    //* STEPPER
-    const [activeStep, setActiveStep] = useState(0)
-
     let steps
     let contentTitle
     let content
@@ -62,7 +57,12 @@ export const TaskTest = (props) => {
                 content = <SeedingContent products={order.products} index={activeStep}/>
                 steps=[{step:0},{step:1},{step:2},{step:3},{step:4},]
             } break;
-            
+        case "growing": {
+            contentTitle = "Growing"
+            content = <Typography>The order is in growing status, please wait until the products are ready to harvest</Typography>
+            steps=[{step:0}]
+            }
+            break;
         case "harvesting": 
                 {
                 contentTitle = "Harvesting"
@@ -86,37 +86,81 @@ export const TaskTest = (props) => {
             
     }
 
-    //*RENDER STATES
-   
-    const [showFinal, setShowFinal] = useState(false)
-    const ref = useRef(null)
+//     //*RENDER STATES
+//     const [showFinal, setShowFinal] = useState(false)
+//     const ref = useRef(null)
     
 
-   //*USER FEEDBACK STATES 
-    const [dialog, setDialog] = useState({
-        open:false,
-        title:"",
-        message:"",
-        actions:[]
-    })
+//    //*USER FEEDBACK STATES 
+//     const [dialog, setDialog] = useState({
+//         open:false,
+//         title:"",
+//         message:"",
+//         actions:[]
+//     })
 
-    const {user, credential} = useAuth()
-    const navigate = useNavigate()
+    // const navigate = useNavigate()
     
     
-    console.log("antes",isFinished)
     const handleCompleteTask = () => {
         props.setFinished({value:true,counter:props.counter+1});
         setIsFinished(true)
-        console.log("despues",isFinished)
-        console.log("despues")
-        console.log("Finish")
+
+        const updateTask = async () => {
+            let path = {path:"status", value:undefined}
+            let response
+            switch(type){
+                case "seeding":
+                    //*Growing
+                    response = await api.api.patch(`${api.apiVersion}/orders/${order._id}`, {paths:[{...path, value:"growing"}]}, {
+                        headers:{
+                            authorization: credential._tokenResponse.idToken,
+                            user:          user
+                        }
+                    })
+                    return response
+                case "harvesting":
+                    //*Harvested
+                    response = await api.api.patch(`${api.apiVersion}/orders/${order._id}`, {paths:[{...path, value:"harvested"}]}, {
+                        headers:{
+                            authorization: credential._tokenResponse.idToken,
+                            user:          user
+                        }
+                    })
+                    return response
+                case "packing":
+                    //*ready
+                    response = await api.api.patch(`${api.apiVersion}/orders/${order._id}`, {paths:[{...path, value:"ready"}]}, {
+                        headers:{
+                            authorization: credential._tokenResponse.idToken,
+                            user:          user
+                        }
+                    })
+                    return response
+                case "delivery":
+                    //*delivered
+                    response = await api.api.patch(`${api.apiVersion}/orders/${order._id}`, {paths:[{...path, value:"delivered"}]}, {
+                        headers:{
+                            authorization: credential._tokenResponse.idToken,
+                            user:          user
+                        }
+                    })
+                    return response
+                default:
+                    response = ""
+                    return response
+            }
         
+        }
+
+        updateTask()
+        .then((response) => {
+            console.log(response)
+        })
+        .catch(err => {
+            console.log(err)
+        })
     }
-
-    
-
-
     //*********** STEPPER
 
     const handleNext = () => {

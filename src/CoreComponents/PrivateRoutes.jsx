@@ -35,9 +35,6 @@ export const PrivateRoutes = (props) => {
         )
     }
 
-    useEffect(() => {
-      console.log(props.children)
-    }, [])
   return (
     <>
       <BV_Layout>
