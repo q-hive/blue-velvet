@@ -63,22 +63,22 @@ export const TaskTest = (props) => {
             steps=[{step:0}]
             }
             break;
-        case "harvesting": 
+        case "harvestReady": 
                 {
                 contentTitle = "Harvesting"
                 content = <HarvestingContent index={activeStep}/>
                 steps=[{step:0},{step:1},{step:2},{step:3},]
             } break;
 
-        case "packing": 
+        case "harvested": 
                 {
                 contentTitle = "Packing"
                 content = <PackingContent index={activeStep}/>
                 steps=[{step:0},{step:1},{step:2},{step:3},]
             } break;
 
-        case "delivery": 
-                    {
+        case "ready": 
+                {
                 contentTitle = "Delivery"
                 content = <DeliveryContent index={activeStep}/>
                 steps=[{step:0}]
