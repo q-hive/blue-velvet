@@ -383,7 +383,7 @@ const BV_Layout = (props) => {
             </Grid>
 
             {/*CHILDREN GRID ITEM (PRIVATE ROUTES)*/}
-            <Grid item xs={true}>
+            <Grid item xs={true} md={9} lg={10}>
               <Toolbar />
               {props.children}
             </Grid>
