@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 
 //*MUI Components
     // import { DataGrid } from '@mui/x-data-grid'
-import { Box, Button, Container, Stack, Typography } from '@mui/material'
+import { Alert, Box, Button, Container, Snackbar, Stack, Typography } from '@mui/material'
 
 //*UTILS
 import { Add } from '@mui/icons-material'
@@ -34,6 +34,21 @@ export const FullChamber = () => {
     const {orders} = state
 
     const[canSeeNextTask,setCanSeeNexttask] = useState({value:false,counter:0})
+
+    //Snackbar
+    const [open, setOpen] = useState(false);
+
+        const handleClick = () => {
+            setOpen(true);
+        };
+
+        const handleClose = (event, reason) => {
+            if (reason === 'clickaway') {
+            return;
+            }
+
+            setOpen(false);
+        };
 
     // const getTaskType=(status) => {
     //     switch(status){
@@ -77,6 +92,7 @@ export const FullChamber = () => {
     const ordersList=orders
 
   return (
+    <>
     <Carousel
         emulatetouch={true} 
         showThumbs={false} 
@@ -96,9 +112,16 @@ export const FullChamber = () => {
                         order:order,
                         counter:canSeeNextTask.counter, 
                         setFinished:setCanSeeNexttask,
+                        setOpen:setOpen
                     })}
                 </Box>
             )
         })}
     </Carousel>
+    <Snackbar  anchorOrigin={{vertical: "bottom",horizontal: "center" }} open={open} autoHideDuration={5000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+            Task finished!
+        </Alert>
+    </Snackbar>
+    </>
   )}
