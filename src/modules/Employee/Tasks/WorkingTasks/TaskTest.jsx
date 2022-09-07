@@ -29,23 +29,20 @@ export const TaskTest = (props) => {
     
     const {state}= useLocation();
 
-
-    let type, order
     const [isFinished,setIsFinished] = useState(false)
+    
     //* STEPPER
     const [activeStep, setActiveStep] = useState(0)
 
+    let type, order
 
     if(state != null){
         ({type, order} = state);
     }
-    
-
     if(props != null){
         type=props.type
         order=props.order
     }
-
 
     let steps
     let contentTitle
@@ -55,53 +52,53 @@ export const TaskTest = (props) => {
         case "seeding": {
                 contentTitle = "Seeding"
                 content = <SeedingContent products={order.products} index={activeStep}/>
-                steps=[{step:0},{step:1},{step:2},{step:3},{step:4},]
+                steps=[
+                    {step:"Tools"},
+                    {step:"Setup trays"},
+                    {step:"Staple trays"},
+                    {step:"Spray Seeds"},
+                    {step:"Shelf"},
+                ]
             } break;
+
         case "growing": {
             contentTitle = "Growing"
             content = <Typography>The order is in growing status, please wait until the products are ready to harvest</Typography>
-            steps=[{step:0}]
+            steps=[{step:"Growing"}]
             }
             break;
-        case "harvestReady": 
-                {
+
+        case "harvestReady":{
                 contentTitle = "Harvesting"
                 content = <HarvestingContent index={activeStep}/>
-                steps=[{step:0},{step:1},{step:2},{step:3},]
+                steps=[
+                    {step:"Setup"},
+                    {step:"Recolection"},
+                    {step:"Dry Rack"},
+                    {step:"Dry Station"},
+                ]
             } break;
 
-        case "harvested": 
-                {
+        case "harvested":{
                 contentTitle = "Packing"
                 content = <PackingContent index={activeStep}/>
-                steps=[{step:0},{step:1},{step:2},{step:3},]
+                steps=[
+                    {step:"Tools"},
+                    {step:"Calibration"},
+                    {step:"Packing Greens"},
+                    {step:"Boxing"},
+                ]
             } break;
 
-        case "ready": 
-                {
+        case "ready":{
                 contentTitle = "Delivery"
                 content = <DeliveryContent index={activeStep}/>
-                steps=[{step:0}]
+                steps=[{step:"Delivery"}]
             } break;
             
     }
-
-//     //*RENDER STATES
-//     const [showFinal, setShowFinal] = useState(false)
-//     const ref = useRef(null)
     
-
-//    //*USER FEEDBACK STATES 
-//     const [dialog, setDialog] = useState({
-//         open:false,
-//         title:"",
-//         message:"",
-//         actions:[]
-//     })
-
-    // const navigate = useNavigate()
-    
-    
+    //Finish Task
     const handleCompleteTask = () => {
         props.setFinished({value:true,counter:props.counter+1});
         setIsFinished(true)
@@ -111,7 +108,7 @@ export const TaskTest = (props) => {
             let response
             switch(type){
                 case "seeding":
-                    //*Growing
+                    //*  ->Growing
                     response = await api.api.patch(`${api.apiVersion}/orders/${order._id}`, {paths:[{...path, value:"growing"}]}, {
                         headers:{
                             authorization: credential._tokenResponse.idToken,
@@ -120,7 +117,7 @@ export const TaskTest = (props) => {
                     })
                     return response
                 case "harvesting":
-                    //*Harvested
+                    //*  ->Harvested
                     response = await api.api.patch(`${api.apiVersion}/orders/${order._id}`, {paths:[{...path, value:"harvested"}]}, {
                         headers:{
                             authorization: credential._tokenResponse.idToken,
@@ -129,7 +126,7 @@ export const TaskTest = (props) => {
                     })
                     return response
                 case "packing":
-                    //*ready
+                    //*  ->ready
                     response = await api.api.patch(`${api.apiVersion}/orders/${order._id}`, {paths:[{...path, value:"ready"}]}, {
                         headers:{
                             authorization: credential._tokenResponse.idToken,
@@ -137,8 +134,8 @@ export const TaskTest = (props) => {
                         }
                     })
                     return response
-                case "delivery":
-                    //*delivered
+                case "ready":
+                    //*  ->delivered
                     response = await api.api.patch(`${api.apiVersion}/orders/${order._id}`, {paths:[{...path, value:"delivered"}]}, {
                         headers:{
                             authorization: credential._tokenResponse.idToken,
@@ -160,18 +157,19 @@ export const TaskTest = (props) => {
         .catch(err => {
             console.log(err)
         })
-    }
-    //*********** STEPPER
 
+        props.setOpen(true)
+    }
+
+
+    //*********** STEPPER Functionality
     const handleNext = () => {
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
         
     };
-    
     const handleBack = () => {
         setActiveStep((prevActiveStep) => prevActiveStep - 1);
     };
-    
     const handleReset = () => {
         setActiveStep(0);
     };
@@ -181,7 +179,7 @@ export const TaskTest = (props) => {
     };
 
     
-
+    // Stepper Navigation buttons
     const getStepContent = (step,index) => {
         return ( 
             <>
@@ -230,13 +228,12 @@ export const TaskTest = (props) => {
                         variant="contained"
                         onClick={isLastStep(index) ? handleCompleteTask : handleNext}
                         sx={()=>({...BV_THEME.button.standard})}
+                        disabled={isLastStep(index) && isFinished }
                         
                     >
                         {isLastStep(index) ? 'Finish Task' : 'Continue'}
                     </Button>
                     
-                    
-                
             </Box>
         )
 
@@ -250,9 +247,9 @@ export const TaskTest = (props) => {
         
         <Box sx={{display:"flex", width:"100%", marginTop:"5vh",justifyContent:"center",justifyItems:"center", alignItems:"center", flexDirection:"column"}}>
         
-        
             <Box sx={{ width: {xs:"100%",sm:"90%"}, display:"flex", flexDirection:{xs:"column",sm:"row"} }}>
 
+                 
                  {/*MOBILE STEPPER (HORIZONTAL)*/}           
                 <Box justifyContent={"space-evenly"} flexDirection="column" alignItems={"center"} sx={{ width: {xs:"100%",sm:"90%"}, display:{xs:"flex", sm:"none"}}}>
                     <Stepper activeStep={activeStep} >
@@ -268,14 +265,16 @@ export const TaskTest = (props) => {
                     {getMobileStepperButtons(activeStep)}
                 </Box>
 
+                
+                
+                
                 {/* DESKTOP STEPPER (VERTICAL) */}
-
                 <Box sx={{ width: "35%", display:{xs:"none", sm:"inline-block"}}}>
                     <Stepper activeStep={activeStep} orientation="vertical">
                         {steps.map((step, index) => (
                             <Step key={step.step + 1}>
                                 <StepLabel sx={{fontSizeAdjust:"20px"}}>
-                                    {"Step " + (step.step+1)}
+                                    {step.step}
                                 </StepLabel>
                                 <StepContent>
                                     {getStepContent(step,index)}
@@ -293,7 +292,8 @@ export const TaskTest = (props) => {
                         
                     )}
                 </Box>
-                                    
+
+                {/*Specific task instructions*/}
                 <Box sx={{ width:{xs:"100%",sm:"65%"}, display:"flex", flexDirection:"column", padding:"5%", alignItems:"center" }}>          
                     <Typography variant="h3" color="primary">{contentTitle}</Typography>
                     {content}
