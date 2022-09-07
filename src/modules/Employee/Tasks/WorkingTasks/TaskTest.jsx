@@ -25,7 +25,10 @@ export const TaskTest = (props) => {
 
     const {state}= useLocation();
 
+
     let type, order
+    const [isFinished,setIsFinished] = useState(false)
+
 
     if(state != null){
         ({type, order} = state);
@@ -37,16 +40,6 @@ export const TaskTest = (props) => {
         order=props.order
     }
 
-    
-    let done = false
-    const isDone = () => {
-        return( done===true ? true : false)
-    }
-
-    if(props.done === "done" ){
-        return isDone()
-
-    }
 
     console.log(type)
     console.log(order)
@@ -111,8 +104,12 @@ export const TaskTest = (props) => {
     const navigate = useNavigate()
     
     
+    console.log("antes",isFinished)
     const handleCompleteTask = () => {
-        done=true
+        props.setFinished({value:true,counter:props.counter+1});
+        setIsFinished(true)
+        console.log("despues",isFinished)
+        console.log("despues")
         console.log("Finish")
         
     }
@@ -148,12 +145,14 @@ export const TaskTest = (props) => {
             <Box sx={{ mb: 2 }}>
                 <div>
                     <Button
+                        
                         variant="contained"
                         onClick={isLastStep(index) ? handleCompleteTask : handleNext}
                         sx={()=>({...BV_THEME.button.standard,mt: 1, mr: 1,})}
+                        disabled={isLastStep(index) && isFinished }
                         
                     >
-                        {isLastStep(index) ? 'Finish Task' : 'Continue'}
+                        {isLastStep(index) ? 'Finish Task' :'Continue'}
                     </Button>
                     
                     <Button

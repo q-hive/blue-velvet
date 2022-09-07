@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 //*MUI Components
     // import { DataGrid } from '@mui/x-data-grid'
@@ -33,6 +33,8 @@ export const FullChamber = () => {
 
     const {orders} = state
 
+    const[canSeeNextTask,setCanSeeNexttask] = useState({value:false,counter:0})
+
     const getTaskType=(status) =>{
         switch(status){
             case "uncompleted": return("seeding");
@@ -43,95 +45,59 @@ export const FullChamber = () => {
          }
     }
 
+    const carouselChange=(item,index)=>{
+        {item<canSeeNextTask.counter ?
+        setCanSeeNexttask({...canSeeNextTask,value:true}):setCanSeeNexttask({...canSeeNextTask,value:false})}
+    }
+
     const carouselButtonSX = {
             position: 'absolute',
             zIndex: 2,
-            top:{xs:"80%", md:'calc(70% - 15px)'}
+            top:{xs:"80%", md:'calc(95% - 15px)'}
         }
 
     const arrowNext = (onClickHandler, hasNext, label) =>
     hasNext && (
-        <Button variant="contained" onClick={onClickHandler} title={"next task"} 
-                sx={()=>({...carouselButtonSX,right:"25%"})}>
-            {">"}
+        <Button disabled={canSeeNextTask.value == false} variant="contained" onClick={onClickHandler} title={"next task"} 
+                sx={()=>({...carouselButtonSX,right:"5%"})}>
+            {"Next Task"}
         </Button>
     )
     const arrowPrev = (onClickHandler, hasPrev, label) =>
     hasPrev && (
         <Button variant="contained" onClick={onClickHandler} title={"previous task"} 
-                sx={()=>({...carouselButtonSX,left:{xs:"25%", md:"25%"} })}>
-            {"<"}
+                sx={()=>({...carouselButtonSX,left:{xs:"5%", md:"5%"} })}>
+            {"Prev Task"}
         </Button>
     )
 
     
-     
-
-    const order1={
-        id:"test",
-        products:[
-            {
-                name:"cebolla",
-                packages:[
-                    {size:"m",number:3,grams:3*75},
-                    {size:"l",number:2,grams:2*100}
-                ],
-                productionData:{seeds:"75",harvest:"300",trays:1.5}
-            },
-            {
-                name:"radiesi",
-                packages:[
-                    {size:"s",number:2,grams:2*50},
-                    {size:"l",number:1,grams:100}
-                ],
-                productionData:{seeds:"50",harvest:"600",trays:2.3}
-            }
-        ],
-        status:"uncompleted"
-        
-    }
-    const order2={
-        id:"test2",
-        products:[
-            {
-                name:"lechuga",
-                packages:[
-                    {size:"m",number:3,grams:3*75},
-                    {size:"l",number:2,grams:2*100}
-                ],
-                productionData:{seeds:"75",harvest:"300",trays:"1.5"}
-            },
-            {
-                name:"maní",
-                packages:[
-                    {size:"s",number:2,grams:2*50},
-                    {size:"l",number:1,grams:100}
-                ],
-                productionData:{seeds:"50",harvest:"600",trays:"2.3"}
-            }
-        ],
-        status:"ready to harvest"
-        
-    }
     const ordersList=orders
-    
-    const ordersList2=[order1,order2]
     console.log(ordersList)
     
   return (
-    <Carousel 
+    <Carousel
         emulatetouch={true} 
         showThumbs={false} 
         showArrows={true}
         showStatus={false}
         renderArrowNext={arrowNext}
-        renderArrowPrev={arrowPrev} 
+        renderArrowPrev={arrowPrev}
+        renderIndicator={false}
+        selectedItem={canSeeNextTask.counter}
+        onChange={carouselChange}
     >
         {ordersList.map((order,index)=>{ 
             return(
                 <Box key={order.id} height="80vh" component={"div"}>
-                    {TaskTest({ type: getTaskType(order.status), order:order })}
-                    {console.log("caliz", TaskTest({done:"done"}))}
+                    {TaskTest({ 
+                        type: getTaskType(order.status), 
+                        order:order,
+                        counter:canSeeNextTask.counter, 
+                        setFinished:setCanSeeNexttask,
+
+
+                    })}
                 </Box>
             )
         })}
