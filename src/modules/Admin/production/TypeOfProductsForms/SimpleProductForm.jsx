@@ -32,7 +32,8 @@ export const SimpleProductForm = ({editing, product}) => {
     const [productData, setProductData] = useState({
         name:               editing ? product.name : "",
         label:              editing ? product.img : "",
-        price:              editing ? product.price : [{amount:undefined,packageSize:25}, {amount:undefined,packageSize:80}, {amount:undefined,packageSize:1000}],
+        smallPrice:         editing ? product.price.find((price) => price.packageSize === 25).amount      : "",     
+        mediumPrice:        editing ? product.price.find((price) => price.packageSize === 80).amount      : "",
         seedId:             editing ? product.seedId : "",
         provider:           editing ? product.provider : "",
         providerSeedName:   editing ? product.provider : "",
@@ -65,7 +66,11 @@ export const SimpleProductForm = ({editing, product}) => {
             failed:false,
             message:""
         },
-        price:{
+        smallPrice:{
+            failed:false,
+            message:""
+        },
+        mediumPrice:{
             failed:false,
             message:""
         },
@@ -111,27 +116,34 @@ export const SimpleProductForm = ({editing, product}) => {
             })
         }
         
-        if(e.target.id === "price"){
-            // Array.prototype.findIndex
-            const index = productData.price.findIndex((obj) => {
-                return obj.packageSize === selectedPackage.packageSize
-            })
-            setProductData(current => {
-                const price = current.price.map((obj, idx) => {
-                    if(idx === index) {
-                        return {...obj, amount:e.target.value}
-                    }
-                    return obj
-                })
-                return {...current, price:price} 
-            })
-            return
-        }
 
-        setProductData({
-            ...productData,
-            [e.target.id]:e.target.value
-        })
+        switch(e.target.id){
+            case "25":
+                setProductData({
+                    ...productData,
+                    smallPrice:Number(e.target.value)
+                })
+                break;
+            case "80":
+                setProductData({
+                    ...productData,
+                    mediumPrice:Number(e.target.value)
+                })
+                break;
+            case "1000":
+                setProductData({
+                    ...productData,
+                    largePrice:Number(e.target.value)
+                })
+                break;
+            default:
+                setProductData({
+                    ...productData,
+                    [e.target.id]:e.target.value
+                })
+                break;
+
+        }
     }
     
     const handleChangeLabel = (e) => {
@@ -163,7 +175,6 @@ export const SimpleProductForm = ({editing, product}) => {
     }
 
     const saveProduct = (mappedProduct) => {
-        console.log(credential)
         api.api.post(`${api.apiVersion}/products/`, mappedProduct, {
             headers:{
                 authorization:credential._tokenResponse.idToken,
@@ -233,8 +244,6 @@ export const SimpleProductForm = ({editing, product}) => {
             return
         }
 
-        console.log(productData)
-        productData.price.forEach((size, idx) => productData.price[idx].amount = Number(productData.price[idx].amount))
         //*Request if is creating product
         const mappedProduct = {
             name:       productData.name,
@@ -250,7 +259,20 @@ export const SimpleProductForm = ({editing, product}) => {
                         email:          productData.provider, 
                         name:           productData.provider
             }, //* SEND THE PROVIDER DATA AND CREATE FIRST IN DB
-            price:      productData.price, 
+            price:      [
+                {
+                    amount:         productData.smallPrice,
+                    packageSize:    25
+                },
+                {
+                    amount:         productData.mediumPrice,
+                    packageSize:    80
+                },
+                {
+                    amount:         productData.smallPrice,
+                    packageSize:    25
+                },
+            ], 
             mix:        { isMix:        false},
             parameters: {
                          day:            Number(productData.day),       // * In days check email
@@ -476,8 +498,6 @@ export const SimpleProductForm = ({editing, product}) => {
                         <ProductsPrice
                         productData={productData} 
                         handleChangeProductData={handleChangeProductData}
-                        setSelectedPackage={setSelectedPackage}
-                        selectedPackage={selectedPackage}
                         editing={editing}
                         product={product}
                         error={error}

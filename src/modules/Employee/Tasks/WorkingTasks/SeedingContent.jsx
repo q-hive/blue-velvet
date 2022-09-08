@@ -38,9 +38,6 @@ export const SeedingContent = (props) => {
       }
     
     
-    console.log(products)
-    console.log(totalTrays)
-
     if(props.index===0)
         return (<>
             <Box sx={taskCard_sx}>

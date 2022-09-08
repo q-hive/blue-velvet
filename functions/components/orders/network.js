@@ -15,7 +15,6 @@ router.post('/', (req, res) => {
         error(req, res, 500, "Error creating new order - GENERIC ERROR", err)
         
     })
-
 })
 
 router.get('/', (req, res) => {
@@ -37,7 +36,13 @@ router.patch('/:id', (req, res) => {
     if(!req.params){
         return error(req, res, 400, "No order provided")
     }
-    
+    if(typeof !req.body === "object" && !Object.keys(req.body).includes("paths")){
+        const bodyError = {
+            message:"The body received is invalid",
+            status: 400,
+        }
+        return error(req, res, 400,"The body is invalid",new Error(JSON.stringify(bodyError)))
+    }
     //*Send body to controller
     updateOrder(res.locals.organization,req.params.id,req.body)
     .then(result => {

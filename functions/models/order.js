@@ -54,4 +54,12 @@ const Order = new Schema({
     }
 })
 
+//STATUS
+//* Seeding
+//* GROWING -- 2 days p/w 7am
+//* harvestReady
+//* harvested
+//* packaged
+//* ready
+//* delivered
 export default Order

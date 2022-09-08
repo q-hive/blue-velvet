@@ -114,7 +114,12 @@ router.post('/', (req, res) => {
         })
         return
     }
-    error(req, res, 400, "The data received is invalid.",new Error("Invalid data"))
+
+    const invalidDataErrorJson = {
+        message:"The data received is Invalid",
+        status: 400,
+    }
+    error(req, res, 400, "The data received is invalid.",new Error(JSON.stringify(invalidDataErrorJson)))
 })
 
 router.patch('/', (req, res) => {
