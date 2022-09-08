@@ -87,6 +87,8 @@ export const FullChamber = () => {
     
     const ordersList=orders
 
+    // console.log(ordersList)
+
   return (
     <>
     <Carousel
@@ -104,7 +106,7 @@ export const FullChamber = () => {
             return(
                 <Box key={order.id} height="80vh" component={"div"}>
                     {TaskTest({ 
-                        type: order.status, 
+                        type: order.status || null, 
                         order:order,
                         counter:canSeeNextTask.counter, 
                         setFinished:setCanSeeNexttask,
