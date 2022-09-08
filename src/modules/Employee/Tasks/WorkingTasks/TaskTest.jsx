@@ -49,6 +49,22 @@ export const TaskTest = (props) => {
     let content
 
     switch (type){
+        
+
+                case "unpaid": {
+                contentTitle = "Unpaid"
+                content = <Typography>The order is in UNPAID status, please wait until the Order is Ready</Typography>
+                steps=[{step:"Unpaid"}]
+                }
+                break;
+
+                case "uncompleted": {
+                contentTitle = "Unpaid"
+                content = <Typography>The order is in UNPAID status, please wait until the Order is Ready</Typography>
+                steps=[{step:"Unpaid"}]
+                }
+                break;
+
         case "seeding": {
                 contentTitle = "Seeding"
                 content = <SeedingContent products={order.products} index={activeStep}/>

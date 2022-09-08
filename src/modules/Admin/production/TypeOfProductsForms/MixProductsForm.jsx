@@ -493,7 +493,8 @@ export const MixProductsForm = ({editing, product}) => {
         
         
             <Box sx={{ width: "90%", display:"flex", flexDirection:{xs:"column",sm:"row"} }}>
-                            
+                
+                {/*Mobile Stepper controls */}            
                 <Box justifyContent={"space-evenly"} sx={{ width: "90%", display:{xs:"flex", sm:"none"}}}>
                     <Stepper activeStep={activeStep} >
                         {steps.map((step, index) => (
@@ -506,6 +507,7 @@ export const MixProductsForm = ({editing, product}) => {
                     </Stepper>
                 </Box>
 
+                {/*Desktop Stepper controls */}
                 <Box sx={{ width: "35%", display:{xs:"none", sm:"inline-block"}}}>
                     <Stepper activeStep={activeStep} orientation="vertical">
                         {steps.map((step, index) => (
@@ -529,7 +531,8 @@ export const MixProductsForm = ({editing, product}) => {
                         
                     )}
                 </Box>
-                                    
+
+                {/* Forms */}  
                 <Box sx={{ width:{xs:"90%",sm:"65%"}, display:"flex", flexDirection:"column", padding:"5%", alignItems:"center" }}>
                     {getMobileStepperButtons(activeStep)}
                             
