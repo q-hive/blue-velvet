@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react'
 //*MUI Components
 import { 
     Autocomplete, TextField, 
-    Typography, Button, Box, FormHelperText, getInputUtilityClass 
+    Typography, Button, Box, FormHelperText, getInputUtilityClass, Snackbar, Alert 
 } from '@mui/material'
 import {DatePicker, LocalizationProvider} from '@mui/x-date-pickers'
 import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns'
@@ -17,50 +17,12 @@ import useAuth from '../../../../contextHooks/useAuthContext'
 //*Network and API
 import api from '../../../../axios.js'
 
-// const order = {uGo
-//     "customer": {
-//         "_id": ""
-//     },
-//     "products":[],
-//     "status":"",
-//     "date": ""
-// }
+
 const products = []
 
 export const NewOrder = () => {
     //*Auth context
     const {user, credential} = useAuth()
-
-    //*Dialog
-
-    const [dialog, setDialog] = useState({
-        open:false,
-        title:"",
-        message:"",
-        actions:[]
-    })
-    const uGood =()=>{
-    setDialog({
-        ...dialog,
-        open:true,
-        title:"Is a mix?",
-        actions:[ {
-            label:"Yes",
-            btn_color:"primary",
-            execute:() => {
-                navigate("newProduct?mix=true")
-            }
-            },
-            {
-                label:"No",
-                btn_color:"secondary",
-                execute: () => {
-                    navigate("newProduct")
-                }
-            }
-        ]
-        
-    })}
 
     
     //*Data States
@@ -111,6 +73,17 @@ export const NewOrder = () => {
             active: false
         },
     })
+    //Snackbar
+    const [open, setOpen] = useState(false);
+
+        const handleClose = (event, reason) => {
+            if (reason === 'clickaway') {
+            return;
+            }
+
+            setOpen(false);
+        };
+    //
     
     const handleChangeInput = (e,v,r) => {
         let id
@@ -289,6 +262,7 @@ export const NewOrder = () => {
         console.log(input)
         console.log(products)
 
+
         const mapInput = () => {
             let mappedData
             let useProducts = false
@@ -341,10 +315,10 @@ export const NewOrder = () => {
                 }
             })
 
-            console.log(response)
+            console.log("response",response)
 
             if(response.status === 201){
-                uGood()
+                setOpen(true);
             }
         } catch (err) {
             console.log(err)
@@ -570,6 +544,11 @@ export const NewOrder = () => {
     
         </Box>
     </Box>
+    <Snackbar open={open} anchorOrigin={{vertical: "bottom",horizontal: "center" }} autoHideDuration={5000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+            Order generated succesfully!
+        </Alert>
+    </Snackbar>
     </>
 
   )
