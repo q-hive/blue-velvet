@@ -446,8 +446,8 @@ export const salesColumns = [
     {
         field:"status",
         headerName:"Status",
-        headerClassName:"header-sales-table",
         headerAlign:"center",
+        headerClassName:"header-sales-table",
         minWidth:{xs:"25%",md:130},
         flex:1
     },
@@ -458,21 +458,33 @@ export const CustomerColumns = [
         field:"_id",
         headerName: "ID",
         headerAlign: "center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1
     },
     {
         field:"name",
         headerName: "Name",
         headerAlign: "center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1
     },
     {
         field:"sales",
         headerName: "$ Sales",
         headerAlign: "center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1
     },
     {
         field:"orders",
         headerName: "Pending Orders",
         headerAlign: "center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1,
         renderCell:(params) => {
             return params.value.length
         }
@@ -480,7 +492,9 @@ export const CustomerColumns = [
     {
         field: "actions",
         headerName:"Actions",
-        headerAlign:"center",
+        headerAlign:"center",headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1,
         renderCell:() => {
             const editCustomer = () => console.log("Edit customer")
             const deleteCustomer = () => console.log("Deleting customer")
