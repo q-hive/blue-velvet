@@ -22,6 +22,7 @@ import { ClientIndex } from "./modules/Admin/Client/ClientIndex";
 import { EntryPoint } from "./modules/Employee/Tasks/WorkingTasks/EntryPoint";
 import { FullChamber } from "./modules/Employee/Tasks/FullChamber";
 import { EmployeeIndex } from "./modules/Admin/Employee/EmployeeIndex";
+import { NewEmployee } from "./modules/Admin/Employee/NewEmployee";
 
 
 
@@ -61,6 +62,10 @@ export const AppRoutes  = [
     {
         path:"/:uid/admin/employees",   
         component:<EmployeeIndex/>
+    },
+    {
+        path:"/:uid/admin/employees/new",   
+        component:<NewEmployee/>
     },
 
     //EMPLOYEE ROUTES
