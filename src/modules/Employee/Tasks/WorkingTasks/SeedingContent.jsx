@@ -18,13 +18,23 @@ const taskCard_sx = {
     alignItems:"center"
 }
 
-const trays = 3
-const seeds = 35
-const product = "Radiesi"
 
 export const SeedingContent = (props) => {
 
     const products=props.products
+    
+
+    //Filtering Mix products and displaying them proposal
+    {/*products.forEach((product,index) => {
+
+        if(product.isMix && product.products.lenght != 0){
+            product.products.forEach((mixProduct,idx)=>{
+                products.push(mixProduct)
+            })
+            products.splice(index)
+        }
+    })*/}
+        
 
     const totalTrays =Math.ceil(sumAllTrays())
 

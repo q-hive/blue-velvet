@@ -10,6 +10,7 @@ import { BV_THEME } from '../../../theme/BV-theme'
 import CameraIcon from '@mui/icons-material/AddPhotoAlternate';
 import useAuth from '../../../contextHooks/useAuthContext';
 import api from '../../../axios.js'
+import { UserDialog } from '../../../CoreComponents/UserFeedback/Dialog';
 
 
 
@@ -37,6 +38,14 @@ export const NewCustomer = () => {
     const [options, setOptions] = useState({
         roles: ["El chido", "El mero mero", "Steve"]
 
+    })
+
+    //Dialog
+    const [dialog, setDialog] = useState({
+        open:false,
+        title:"",
+        message:"",
+        actions:[]
     })
 
     
@@ -75,11 +84,48 @@ export const NewCustomer = () => {
             }
         })
         .then((response) => {
-            //*TODO Give user feedback if response.status === 201
 
-            console.log(response.status)
+            console.log("status",response.status)
+            if(response.status === 500){
+                setDialog({
+                    ...dialog,
+                    open:true,
+                    title:"Customer could not be added",
+                    actions:[ 
+                        {
+                            label:"Retry",
+                            btn_color:"primary",
+                            execute:() => {
+                                setDialog({...dialog,open:false}),
+                                setActiveStep(0)
+                            }
+                        },
+                        {
+                            label:"Close",
+                            btn_color:"secondary",
+                            execute:() => {
+                                setDialog({...dialog,open:false})
+                            }
+                        }
+                    ]
+                    
+                }) }
             if(response.status === 201){
-                window.location.reload()
+                setDialog({
+                    ...dialog,
+                    open:true,
+                    title:"Customer Added",
+                    actions:[ {
+                        label:"Ok",
+                        btn_color:"primary",
+                        execute:() => {
+                            window.location.reload()
+                        }
+                        }
+                    ]
+                    
+                })
+                
             }
         })
         .catch(err => {
@@ -109,19 +155,19 @@ export const NewCustomer = () => {
     //*********** STEPPER
     const steps = [
         {
-          label: 'Details',
-          description: `Please enter the customer's information`,
+            label: 'Details',
+            description: `Please enter the customer's information`,
         },
         {
-          label: 'Address',
-          description:
+            label: 'Address',
+            description:
             "Please enter the customer's Address",
         },
         {
             label: 'Business Information',
             description:
             "Please enter the customer's billing details",
-          },
+        },
     ];
       
     const handleNext = () => {
@@ -358,6 +404,14 @@ export const NewCustomer = () => {
         </Box>
     </Box>
     </Box>
+    <UserDialog
+        setDialog={setDialog}
+        dialog={dialog}
+        open={dialog.open}
+        title={dialog.title}
+        content={dialog.message}
+        actions={dialog.actions}
+    />
     </>
 
   )

@@ -320,6 +320,29 @@ export const NewOrder = () => {
             if(response.status === 201){
                 setOpen(true);
             }
+            if(response.status === 500){
+                setDialog({
+                    ...dialog,
+                    open:true,
+                    title:"Order could not be created",
+                    actions:[ 
+                        {
+                            label:"Retry",
+                            btn_color:"primary",
+                            execute:() => {
+                                window.location.reload()
+                            }
+                        },
+                        {
+                            label:"Close",
+                            btn_color:"secondary",
+                            execute:() => {
+                                setDialog({...dialog,open:false})
+                            }
+                        }
+                    ]
+                    
+                }) }
         } catch (err) {
             console.log(err)
         }
