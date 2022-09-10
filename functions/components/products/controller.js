@@ -3,20 +3,21 @@ import { getTaskByProdId } from '../tasks/store.js'
 import { getAllProductsByOrg } from './store.js'
 
 const hasEveryKey = (valid, current) => {
-     //*Verificar que el objeto tenga todas las llaves del modelo
+     // * Verificar que el objeto tenga todas las llaves del modelo
 
-     //*iterate valid object if some key isnt included reject
-     //*If a value is and object then iterate the object in valid and compare keys of nested object in current 
-    //* if al keys are included, validate the data types (mongoose does it automatically)
+     // * iterate valid object if some key isnt included reject
+     // * If a value is and object then iterate the object in valid and compare keys of nested object in current 
+     // * if al keys are included, validate the data types (mongoose does it automatically)
     if(Object.keys(valid).every(key => Object.keys(current).includes(key))){
         console.log("Has all keys")
         for (const key of Object.keys(valid)) {
             if(typeof valid[key] === "object"){
                 console.log("Validating nested object")
-                // TODO: Checa la logica aqui 
+                // TODO -esq: Checa la logica aqui 
                 // porque si existe un primer objeto valido va a retornar siempre true
                 // aun cuando el objeto pueda contener otros objectos invalidos no los va a leer
                 // ? Tal vez añadiendo todos los resultados de los hijos a una lista y revisando que la lista solo contenga trues
+                // Investiga un poco sobre Depth-First-Search y Breath-First-Search
                 return hasEveryKey(valid[key], current[key])
             }
         }

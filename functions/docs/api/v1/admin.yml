@@ -1,0 +1,813 @@
+info:
+  title: Q-Hive
+  description: REST API's by Q-Hive
+  contact:
+    - name: chrortegita@gmail.com
+    - name: luismtzesq@gmail.com
+  version: '1.0'
+servers:
+  - url: 'https://localhost:9999/'
+  #TODO: Add server URL's from the deployed 
+tags:
+  - name:         Admin Actions
+    description:  Endpoint for all Admin posible interactions
+paths:
+  /api/v1/admin/client:
+    post:
+      tags:
+        - Client operations
+        - Client creation
+      summary:  Creates all registries of a new client
+      desc:     Route for creating new client account with its respective organization and containers
+      operationId: POST-create-client
+      payload:
+        email:      string
+        password:   string 
+        passphrase: string 
+        name:   string 
+        lname:  string
+        phone:  string
+        image:  URL string 
+        organization: 
+          name: string
+          containers: 
+            - name:     number
+              capacity: number
+              address: # * optional: if no address for container, shall take the organization's one
+                $ref: '#/components/schemas/address-schema'
+        customers: 
+          - email:   string
+            name:    string
+            image:   URL string
+            address:
+              $ref: '#/components/schemas/address-schema'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/POST-create-client-schema'
+        401:
+          description: Unauthorized
+          cohtent: {}
+        403:
+          description: Forbidden
+          cohtent: {}
+        404:
+          description: Not Found
+          cohtent: {}
+      deprecated: false
+    get:  
+      tags:
+        - Client operations
+        - Client data access
+      summary:  Get the data for the logged client
+      desc:     Route for obtaining logged client's data along with its respective organization and containers references
+      operationId: GET-client-data
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GET-client-data-schema'
+        401:
+          description: Unauthorized
+          cohtent: {}
+        403:
+          description: Forbidden
+          cohtent: {}
+        404:
+          description: Not Found
+          cohtent: {}
+      deprecated: false
+    put:  
+      tags:
+        - Client operations
+        - Client data update
+      summary:  Update data for the logged client
+      desc:     Route for updating client's data
+      operationId: PUT-update-client-data
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PUT-update-client-data-schema'
+        401:
+          description: Unauthorized
+          cohtent: {}
+        403:
+          description: Forbidden
+          cohtent: {}
+        404:
+          description: Not Found
+          cohtent: {}
+      deprecated: false
+  /api/v1/admin/client/:clientId:
+    post:
+      tags:
+        - Client operations
+        - Client data update
+      summary:  Update data for the specificied client
+      desc:     Route for updating specific client's data
+      operationId: POST-update-client-data-with-id
+      payload: # * All fields are optional
+        name:       string 
+        lname:      string
+        phone:      string
+        image:      URL string 
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/POST-update-client-data-with-id-schema'
+        401:
+          description: Unauthorized
+          cohtent: {}
+        403:
+          description: Forbidden
+          cohtent: {}
+        404:
+          description: Not Found
+          cohtent: {}
+      deprecated: false
+    get:  
+      tags:
+        - Client operations
+        - Client data access
+      summary:  Get the data for the specified client
+      desc:     Route for obtaining specified client's data along with its respective organization and containers references
+      operationId: GET-client-data-with-id
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GET-client-data-with-id-schema'
+        401:
+          description: Unauthorized
+          cohtent: {}
+        403:
+          description: Forbidden
+          cohtent: {}
+        404:
+          description: Not Found
+          cohtent: {}
+      deprecated: false
+    delete:  
+      tags:
+        - Client operations
+        - Client data deletion
+      summary:  Delete the data for the specified client
+      desc:     Route for deleting the specified client's data along with its respective organization and containers references
+      operationId: DELETE-client-data-with-id
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DELETE-client-data-with-id-schema'
+        401:
+          description: Unauthorized
+          cohtent: {}
+        403:
+          description: Forbidden
+          cohtent: {}
+        404:
+          description: Not Found
+          cohtent: {}
+      deprecated: false
+  /api/v1/admin/employee:
+    post:
+      tags:
+        - Employee operations
+        - Employee creation
+      summary:  Creates registries of a new employee at the logged client's organization
+      desc:     Route for creating new employee account with its respective organization registrie
+      operationId: POST-create-employee
+      payload:
+        email:      string
+        password:   string 
+        name:       string 
+        lname:      string
+        phone:      string
+        image:      URL string 
+        containers: [ ObjectId ]  # * optional: if no containers are specified, then shall be asssigned to all at the organization
+        address:                  # * optional: if no address for container, shall take the organization's one
+          $ref: '#/components/schemas/address-schema'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/POST-create-client-schema'
+        401:
+          description: Unauthorized
+          cohtent: {}
+        403:
+          description: Forbidden
+          cohtent: {}
+        404:
+          description: Not Found
+          cohtent: {}
+      deprecated: false
+    get:  
+      tags:
+        - Employee operations
+        - Employee creation
+      summary:  Get the data for the logged employee
+      desc:     Route for obtaining logged employee's data along with its respective organization and containers references
+      operationId: GET-employee-data
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GET-employee-data-schema'
+        401:
+          description: Unauthorized
+          cohtent: {}
+        403:
+          description: Forbidden
+          cohtent: {}
+        404:
+          description: Not Found
+          cohtent: {}
+      deprecated: false
+    put:  
+      tags:
+        - Employee operations
+        - Employee data update
+      summary:  Update data for the logged employee
+      desc:     Route for updating the logged employee's data
+      operationId: PUT-update-employee-data
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PUT-update-employee-data-schema'
+        401:
+          description: Unauthorized
+          cohtent: {}
+        403:
+          description: Forbidden
+          cohtent: {}
+        404:
+          description: Not Found
+          cohtent: {}
+      deprecated: false
+  /api/v1/admin/employee/:employeeId:
+    post:
+      tags:
+        - Employee operations
+        - Employee data update
+      summary:  Update data for the specificied employee
+      desc:     Route for updating specific employee's data
+      operationId: POST-update-employee-data-with-id
+      payload: # * All fields are optional
+        name:       string 
+        lname:      string
+        phone:      string
+        image:      URL string
+        containers: [ ObjectId ]
+        address:
+          $ref: '#/components/schemas/address-schema'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/POST-update-employee-data-with-id'
+        401:
+          description: Unauthorized
+          cohtent: {}
+        403:
+          description: Forbidden
+          cohtent: {}
+        404:
+          description: Not Found
+          cohtent: {}
+      deprecated: false
+    get:  
+      tags:
+        - Employee operations
+        - Employee data access
+      summary:  Get the data for the specified employee
+      desc:     Route for obtaining specified employee's data along with its respective organization and containers references
+      operationId: GET-employee-data-with-id
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GET-employee-data-with-id-schema'
+        401:
+          description: Unauthorized
+          cohtent: {}
+        403:
+          description: Forbidden
+          cohtent: {}
+        404:
+          description: Not Found
+          cohtent: {}
+      deprecated: false
+    delete:  
+      tags:
+        - Employee operations
+        - Employee data deletion
+      summary:  Delete the data for the specified employee
+      desc:     Route for deleting the specified employee's data 
+      operationId: DELETE-employee-data-with-id
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DELETE-employee-data-with-id-schema'
+        401:
+          description: Unauthorized
+          cohtent: {}
+        403:
+          description: Forbidden
+          cohtent: {}
+        404:
+          description: Not Found
+          cohtent: {}
+      deprecated: false
+components:
+  schemas:
+    address-schema:
+      title: Address schema
+      type:  object
+      properties:
+        stNumber:
+          type: string
+          required: true
+        street:
+          type: string
+          required: true
+        zip:
+          type: string
+          required: true
+        city:
+          type: string
+          required: true
+        state:
+          type: string
+          required: true
+        country:
+          type: string
+          required: true
+        references:
+          type: string
+          required: false
+        coords:
+          type: object
+          required: false
+          properties:
+            latitude:
+              type: number
+              required: true
+            longitude:
+              type: number
+              required: true
+    client-schema:
+      title: Client's data schema
+      type:  object
+      properties:
+        uid:
+          type:     string
+          required: true
+        email:
+          type:     string 
+          required: true
+        passphrase:   
+          type:     ObjectId
+          required: true
+        organization:   
+          type:     ObjectId
+          required: true
+        name:
+          type:     string
+          required: true
+        lname:
+          type:     string 
+          required: true
+        phone:
+          type:     string 
+          required: true
+        image:
+          type:     string 
+          required: true
+        businessName:
+          type:     string 
+          required: true
+        socialInsurance:
+          type:     string 
+          required: true
+        bankAccount:
+          type:     string 
+          required: true
+        address:
+          $ref: '#/components/schemas/address-schema'
+          required: true
+    organization-schema:
+      title: Organization's data schema
+      type:  object
+      properties:
+        name:
+          type:     string
+          required: true
+        owner:
+          type:     ObjectId
+          required: true
+        employees: 
+          $ref: '#/components/schemas/container-schema' 
+        containers:
+          type: array
+          items: 
+            $ref: '#/components/schemas/container-schema'  
+        customers:  
+          type: array
+          items: 
+            $ref: '#/components/schemas/customer-schema' 
+        providers:
+          type: array
+          items: 
+            $ref: '#/components/schemas/provider-schema' 
+        orders:
+          type: array
+          items: 
+            $ref: '#/components/schemas/order-schema' 
+        address:
+          $ref: '#/components/schemas/address-schema'
+    passphrase-schema:
+      title: Passphrase's data schema
+      type:  object
+      properties:
+        client:
+          type: ObjectId
+          required: true 
+          unique: true
+        uid:
+          type: string
+          required: true
+          unique: true
+        passphrase:
+          type: string
+          required: true
+        organization:
+          type: ObjectId
+          required: true
+    employee-schema:
+      title: Employee's data schema
+      type:  object
+      properties:
+        uid:     
+          type: string,     
+          required: true 
+        email:   
+          type: string,     
+          required: true 
+        name:    
+          type: string,     
+          required: true 
+        lname:   
+          type: string,     
+          required: false 
+        phone:   
+          type: string,     
+          required: true 
+        image:   
+          type: string,     
+          required: true 
+        salary:  
+          type: Number,     
+          required: true    
+        address: 
+          type: Address,    
+          required: true 
+    container-schema:
+      title: Container's data schema
+      type:  object
+      properties:
+        name:      
+          type: String
+          required: false
+          unique: false
+        capacity:  
+          type:     number
+          required: true                
+        available: 
+          type:     number
+          required: true
+        employees: 
+          type:     array
+          items:    ObjectId
+          required: true                
+        production:
+          type:     array
+          items:    
+            $ref:   '#/components/schemas/production-schema'
+          required: true                
+        products:  
+          type:     array
+          items: 
+            $ref:   '#/components/schemas/product-schema'
+          required: true                
+        address:   
+          $ref:     '#/components/schemas/address-schema'
+          required: false               
+    customer-schema:
+      title: Customer's data schema
+      type:  object
+      properties:
+    provider-schema:
+      title: Provider's data schema
+      type:  object
+      properties:
+        email: 
+          type:     string 
+          required: true
+        name:  
+          type:     string 
+          required: true
+        seeds: 
+          type: array
+          items:
+            $ref: '#/components/schemas/seed-schema' 
+          required: true
+    order-schema:
+      title: Order's data schema
+      type:  object
+      properties:
+        organization: 
+          type: ObjectId,   
+          required: true
+        customer: 
+          type: ObjectId,   
+          required: true
+        type: # * REPETEAD ORDERS HAVE A START AND END DATE
+          type: string,     
+          required: true
+        price: 
+          type: number
+          required: true
+        date: 
+          type: date      
+          required: true
+        end: 
+          type: date       
+          required: true
+        products:   
+            type: array
+            items: 
+              _id:
+                type:     ObjectId
+                required: true
+              name:
+                type:     string
+                required: true
+              packages:
+                type: array
+                items:
+                  size:   string,
+                  number: number,
+                  grams:  number
+                required: true
+              status:
+                type:     string
+                required: true
+              seedId:
+                type:     string
+                required: false
+            required: true
+        productionData:
+          type:   array
+          items:
+            product:    string,
+            seeds:      number,
+            harvest:    number,
+            trays:      number
+        required: true
+        status:
+          type:     string
+          required: true
+    product-schema:
+      title: Product's data schema
+      type:  object
+      properties:
+        name:
+          type:     string
+          required: true
+        image: # * BASE 64 PARSED PHOTO
+          type:     string
+          required: false
+        desc:
+          type:     string
+          required: false
+        status:
+          type:     string
+          required: true
+          default:  'on hold'
+        # * ID of quality of the seeds - track the seeds origin - metadata 
+        seed:
+          type: ObjectId
+          required: false 
+        provider:
+          type: ObjectId
+          required: false
+        price: # * Cost per package 
+          type: array
+          items:
+            amount:       # * Package price
+              type:     number
+              required: true 
+            packageSize:  # * PACKAGE SIZE IN GRAMS
+              type:     number
+              required: true
+          required: true  
+        mix:
+          type: object
+          properties:
+            isMix:  
+              type:     boolean
+              required: true
+            products:
+              type: array
+              items:
+                strain: # * Reference to seed object
+                  type:     ObjectId 
+                  required: true 
+                amount: # * Measured in trays
+                  type:     number   
+                  required: true 
+              required: false 
+          required: false
+        parameters:
+          type: object
+          properties:
+            day: # * In days check email
+              type: number
+              required: true 
+            night: # * In days check email
+              type: number
+              required: true 
+            seedingRate: # * Per tray
+              type: number
+              required: true 
+            harvestRate: # * Per tray
+              type: number
+              required: true 
+          required:   false
+    production-schema:
+      title: Production's data schema
+      type:  object
+      properties:
+        end:
+          type:     date
+          required: true
+          default:  data within 2 weeks,
+        orders:
+          type:     array
+          items:    ObjectId
+          required: true
+          default:  []
+        tasks:
+          type:     array
+          items:
+            $ref:   '#/components/schemas/task-schema'
+          required: true
+        completed:
+          type:     array
+          items:    ObjectId
+          default:  []
+        products: 
+          type: array
+          items: 
+            _id:
+              type:     ObjectId
+              required: true
+            name:
+              type:     string  
+              required: true
+            amount: # * Measured in packages
+              type:     number   
+              required: true 
+            surplus: # * In tray numbers,used to manage 10% of unperiodic orders
+              type:     number   
+              required: true 
+            seed:
+              type:     number   
+              required: true
+          required: true
+    seed-schema:
+      title: Seed's data schema
+      type:  object
+      properties:
+        seedId:   # * User fed
+          type:     string
+          required: true 
+        seedName: # * Name provided by provider xd
+          type:     string   
+          required: true 
+        product:
+          type:     ObjectId 
+          required: true
+        batch:
+          type:     string   
+          required: false
+    task-schema:
+      title: Task's data schema
+      type:  object
+      properties:
+        assigned:
+          type:     array
+          items:    ObjectId
+          required: true
+          default:  []   
+        currentStep:
+          type:     number
+          required: true
+          default:  0    
+        completed:
+          type:     boolean
+          required: true
+          default:  false
+        # * IN CASE OF PRODUCTION TASKS
+        orders:
+          type:     array
+          items:    ObjectId
+          required: false
+        details:
+          type:     ObjectId
+          required: false
+        # * IN CASE OF PRODUCTION TASKS
+        product:
+          type: array
+          items: ObjectId 
+          required: false
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/step-schema'     
+          required: true
+    step-schema:
+      type: object
+      properties:
+        step:
+          type:     number    
+          required: true
+        assigned:
+          type:     array
+          items:    ObjectId
+          required: true
+          default:  []
+        status:
+          type:     string,    
+          required: true
+          default: "To-do"
+        estimated: # * Measured in hours
+          type:     number,    
+          required: true
+          default:  0
+    POST-create-client-schema:
+      title: Client creation return schema
+      type:  object
+      properties:
+        client: 
+          $ref: '#/components/client-schema'
+        organization:
+          $ref: '#/components/organization-schema'
+        passphrase:
+          $ref: '#/components/passphrase-schema'      
+    GET-client-data-schema:
+    PUT-update-client-data-schema:
+    POST-update-client-data-with-id-schema:
+    GET-client-data-with-id-schema:
+    DELETE-client-data-with-id-schema:
+    POST-create-employee-schema:
+    GET-employee-data-schema:
+    PUT-update-employee-data-schema:
+    POST-update-employee-data-with-id-schema:
+    GET-employee-data-with-id-schema:
+    DELETE-employee-data-with-id-schema:
+
+
+
+
+

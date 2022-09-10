@@ -12,7 +12,7 @@ export const updateClient = (id, edit) => {
     })
 }
 
-export const newClient = (data) => {
+export const addClient = (data) => {
     return new Promise((resolve, reject) => {
         let clientDoc = new clientModel(data)
 

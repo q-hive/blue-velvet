@@ -6,11 +6,11 @@ import adminAuth from '../../firebaseAdmin.js'
 import { hashPassphrase, genPassphrase, rollBackClient } from './helper.js'
 import { getOrganizationById, newOrganization, deleteOrganization } from '../organization/store.js'
 import { newPassphrase, deletePassphrase } from '../passphrase/store.js'
-import { newClient } from '../client/store.js'
+import { addClient } from '../client/store.js'
 import { getPassphraseByUid } from '../security/controller.js'
 
 
-export function newEmployee(res,data) {
+export function newEmployee(res, data) {
     return new Promise((resolve, reject) => {
         // * Create account on firebase
         adminAuth.createUser({
@@ -63,7 +63,7 @@ export function newEmployee(res,data) {
     })
 }
 
-export function newAdmin(data) {
+export function newClient(data) {
     return new Promise((resolve, reject) => {
         // * Create account on firebase
         adminAuth.createUser({
@@ -82,6 +82,10 @@ export function newAdmin(data) {
             let passId =   new ObjectId()
             
             .// * Update customUserClaims
+            // ? Pära evitar confundirnos, cambiamos a cliente refiriendonos al administrador de 
+            // ? la organizacion y sus contenedores pero para prevenir problemas de versiones 
+            // ? Y cuentas viejas, usaremos 'admin' en firebaseClaims para el cliente
+            // ? mientras que para las cuentas nuestras de pruebna podemos usar 'developer'
             adminAuth.setCustomUserClaims(userRecord.uid, { role: "admin", organization: org._id })
                     
             // * Generate hashed passphrase mongo record
@@ -113,7 +117,7 @@ export function newAdmin(data) {
                     address:            org.address
                 }
 
-                newClient(clientData)
+                addClient(clientData)
                 .then(client => {
                     // * Register organization
                     // * It's impoertant to do this step first to avoid 
@@ -126,32 +130,37 @@ export function newAdmin(data) {
                     
                     newOrganization(orgData)
                     .then(org => {
-                        
                         resolve({
-                            client: client,
-                            organization: org,
-                            passphrase: pass
+                            client:         client,
+                            organization:   org,
+                            passphrase:     pass
                         })
                     })
                     .catch(err => {
                         console.log('Error creating new organization on MongoDB:', err)
                         // * Delete account from firebase as rollback
-                        adminAuth.deleteUser(userRecord.uid)
+                        rollBackClient({ 
+                            auth: userRecord.uid, 
+                            pass: pass._id,
+                            client: client._id 
+                        })
                         reject(err)
                     })
                 })
                 .catch(err => {
                     console.log('Error creating new client on MongoDB:', err)
                     // * Delete account from firebase as rollback
-                    adminAuth.deleteUser(userRecord.uid)
+                    rollBackClient({ 
+                        auth: userRecord.uid, 
+                        pass: pass._id 
+                    })
                     reject(err)
                 })
             })
             .catch(err => {
                 console.log('Error creating new passphrase on MongoDB:', err)
                 // * Delete account from firebase as rollback
-                rollBackClient()
-                adminAuth.deleteUser(userRecord.uid)
+                rollBackClient({ auth: userRecord.uid })
                 reject(err)
             })  
         })

@@ -12,6 +12,8 @@
                         "passphrase":   "String",
                         "name":         "String",
                         "lname":        "String",
+                        "phone":        "String",
+                        "image":        "URL String",
                         "organization": {
                             "name": "String",
                             "containers": [{
@@ -20,26 +22,12 @@
                                 "address": "ADDRESS_STRUCTURE"
                             }],
                             "customers": [{
-                                "email": "chris@gmail.com",
-                                "name":"Chris",
-                                "image":"https://cdn-icons-png.flaticon.com/512/147/147144.png"
+                                "email": "String",
+                                "name":  "String",
+                                "image": "URL String"
                             }],
-                            "address": {
-                                "stNumber":   "666",
-                                "street":     "Fierro Pariente",
-                                "zip":        "69420",
-                                "city":       "Guanatos",
-                                "state":      "Jalisco",
-                                "country":    "MX",
-                                "references": "Rancho custodiado",
-                                "coords": {
-                                    "latitude": 34.29,
-                                    "longitude": -11.06
-                                }
-                            }
-                        },
-                        "phone": "+523111228981",
-                        "image": "https://cdn-icons-png.flaticon.com/512/147/147144.png"
+                            "address": "ADDRESS_STRUCTURE"
+                        }
                     }
                 }
             },

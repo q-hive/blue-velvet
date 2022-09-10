@@ -8,7 +8,14 @@ export const newOrganization = (orgData) => {
 
         // * Fill the 'available' field on the data
         let contMapped = orgData.containers.map(container => {
-            return {...container, available: container.capacity}
+            return {
+                // * if no address is passed to the container it shall take the organization's one
+                address: container.address != undefined 
+                            ? container.address 
+                            : orgData.adddress,
+                available: container.capacity,
+                ...container
+            }
         })
 
         let orgMapped = {
@@ -26,7 +33,6 @@ export const newOrganization = (orgData) => {
 
         orgDoc.save((err, org) => {
             if (err) reject(err)
-
             resolve(org)
         })
     })
