@@ -8,6 +8,8 @@ import { EmployeeColumns } from '../../../utils/TableStates'
 
 export const EmployeeIndex = () => {
     const [rows, setRows] = useState([])
+    const [loading, setLoading] = useState(false)
+
     const navigate = useNavigate()
     const handleNewEmployee = () => {
         navigate('new')
@@ -38,14 +40,22 @@ export const EmployeeIndex = () => {
                             New Employee
                         </Button>
                     </Box>
-                    <DataGrid
-                    columns={EmployeeColumns}
-                    rows={rows}
-                    sx={{width:"100%", height:"80%"}}
-                    getRowId={(row) => {
-                        return row._id
-                    }}
-                    />
+                    {
+                        loading
+                        ?   
+                        <LinearProgress color="primary" sx={{marginY:"2vh"}}/>
+                        :   
+                        <>
+                            <DataGrid
+                            columns={EmployeeColumns}
+                            rows={rows}
+                            sx={{width:"100%", height:"80%"}}
+                            getRowId={(row) => {
+                                return row._id
+                            }}
+                            />
+                        </>
+                    }
                 </Box>
             </Box>
         </Container>  

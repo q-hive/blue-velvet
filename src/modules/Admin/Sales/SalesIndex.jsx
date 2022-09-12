@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 
 //*MUI Components
 import { DataGrid } from '@mui/x-data-grid'
-import { Box, Button, Container, Stack, Typography } from '@mui/material'
+import { Box, Button, Container, LinearProgress, Stack, Typography } from '@mui/material'
 
 //*UTILS
 import { salesColumns } from '../../../utils/TableStates'
@@ -25,6 +25,7 @@ export const SalesIndex = () => {
     
     //*DATA STATES
     const [orders, setOrders] = useState([])
+    const [loading, setLoading] = useState(false)
 
     //*Netword and router
     const navigate = useNavigate()
@@ -41,7 +42,8 @@ export const SalesIndex = () => {
                     authorization:  credential._tokenResponse.idToken,
                     user:           user
                 }
-            })
+            
+            },setLoading(true))
             .then(response => {
                 const getCustomer = response.data.data.map(async (order, idx) => {
                     const customer = await api.api.get(`${api.apiVersion}/customers/${order.customer}`, {
@@ -90,6 +92,7 @@ export const SalesIndex = () => {
                             mappedRow    
                         )
                     })
+                    setLoading(false)
                 })
                 .catch((err) => {
                     console.log("Error executing request for customers name")
@@ -128,16 +131,21 @@ export const SalesIndex = () => {
                 
                 
                 <Box sx={{display:"flex", justifyContent:"space-between"}} >
-                        <Button variant='contained' color='primary' startIcon={<Add/>} onClick={handleNewOrder} sx={{minWidth:"20%"}}>
-                            New order
-                        </Button>
-                    </Box>
-                    
+                    <Button variant='contained' color='primary' startIcon={<Add/>} onClick={handleNewOrder} sx={{minWidth:"20%"}}>
+                        New order
+                    </Button>
+                </Box>
+                {
+                    loading
+                    ?   
+                    <LinearProgress color="primary" sx={{marginY:"2vh"}}/>
+                    :   
                     <DataGrid
                         columns={salesColumns}
                         rows={orders}
                         sx={{marginY:"2vh",}}
                     />
+                }
                 </Box>
 
             </Box>
