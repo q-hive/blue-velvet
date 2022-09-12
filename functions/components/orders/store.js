@@ -91,13 +91,13 @@ export const createNewOrder = (orgId, order) => {
             "message": "There was an error calculating the price",
             "status":   500
         }
-        
+
         const mappedProducts = order.products.map((prod) => {
             return {
                 _id:            prod._id,
                 name:           prod.name,
                 status:         prod.status,
-                seedId:         prod.seedId,
+                seedId:         prod?.seedId,
                 packages:       prod.packages,
             }
         })
