@@ -73,8 +73,10 @@ authRouter.post('/login/admin', (req, res) => {
         adminAuth.verifyIdToken(user._tokenResponse.idToken)
         .then(claims => {
             if (claims.role === 'admin') {
+                console.log(user.user)
                 getPassphraseByUid(user.user.uid)
                 .then(async data => {
+                    console.log(data)
                     let token
                     try {
                         token = await adminAuth.createCustomToken(user.user.uid)
@@ -96,7 +98,12 @@ authRouter.post('/login/admin', (req, res) => {
                             return error(req, res, 403, "Forbidden: Wrong passphrase", { "error": "Wrong passphrase"})
                         }
                     } catch (err) {
-                        return error(req, res, 500, "Error trying to create custom token", err)
+                        const errorJSON = {
+                            "message":  "Error trying to create custom token",
+                            "status":   500,
+                            "processError": err.message
+                        }
+                        return error(req, res, 500, "Error trying to create custom token - GENERIC ERROR", new Error(JSON.stringify(errorJSON)), err)
                     }
                     
                 })
