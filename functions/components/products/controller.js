@@ -84,7 +84,7 @@ export const relateOrdersAndTasks = (orgId) => {
 
                 return mappedData
             }
-            reject("No products added")
+            resolve(products)
         }
 
         getAndRelateData()
