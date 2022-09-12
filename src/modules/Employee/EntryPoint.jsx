@@ -1,5 +1,5 @@
 import { Add } from '@mui/icons-material'
-import { Box, Button, Container, Grid, Paper, Typography } from '@mui/material'
+import { Alert, Box, Button, Container, Grid, Paper, Snackbar, Typography } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import useAuth from '../../contextHooks/useAuthContext'
 
@@ -23,6 +23,16 @@ export const EntryPoint = () => {
     //*Render states
     const [orderSelected, setOrderSelected] = useState([])
 
+    //Snackbar
+    const [snackState, setSnackState] = useState({open:false,label:"",severity:""});
+
+        const handleClose = (event, reason) => {
+            if (reason === 'clickaway') {
+            return;
+            }
+            setSnackState({...snackState,open:false});
+        };
+
     const handleViewTask = (type) => {
             navigate('taskTest',
                         {state: {
@@ -33,11 +43,14 @@ export const EntryPoint = () => {
     }
 
     const handleStartWork = () => {
+        orders.length != 0 ?
         navigate('./../tasks/work',
         {state: {
             orders: orders
-        }}
-    )
+        }})
+        :
+        setSnackState({open:true,label:"There are no orders!",severity:"success"})
+         
     }
 
     
@@ -65,7 +78,7 @@ export const EntryPoint = () => {
         switch(status){
             case "seeding": productTasks = [{name:"Task 1", type:"seeding"}];
             break;
-            case "growing": productTasks = [];
+            case "growing": productTasks = [{name:"Status:", type:"growing"}];
             break;
             case "harvestReady": productTasks = [{name:"Task 2", type:"harvesting"}];
             break;
@@ -75,6 +88,10 @@ export const EntryPoint = () => {
             break;
             case "delivered" : productTasks = [];
             break;
+                case "unpaid" : productTasks = [];
+                break;
+                case "uncompleted" : productTasks = [];
+                break;
             default: console.log("no tasks monica")
          }
 
@@ -126,7 +143,7 @@ export const EntryPoint = () => {
         })
     }, [])
 
-  return (
+  return (<>
     <Box component="div" display="flex"  >
 
         <Container maxWidth="lg" sx={{paddingTop:4,paddingBottom:4,marginX:{xs:4,md:"auto"},marginTop:{xs:4,md:3}}}>
@@ -230,5 +247,11 @@ export const EntryPoint = () => {
             </Grid>
         </Container>
     </Box>
+    <Snackbar  anchorOrigin={{vertical: "top",horizontal: "center" }} open={snackState.open} autoHideDuration={1500} onClose={handleClose} sx={{marginTop:"8vh"}}>
+        <Alert onClose={handleClose} severity={snackState.severity} sx={{ width: '100%' }}>
+            {snackState.label}
+        </Alert>
+    </Snackbar>
+    </>
   )
 }
