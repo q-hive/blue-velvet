@@ -610,26 +610,41 @@ export const EmployeeColumns = [
         field:"_id",
         headerName: "ID",
         headerAlign: "center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1
     },
     {
         field:"name",
         headerName: "Name",
         headerAlign: "center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1
     },
     {
         field:"tasks",
         headerName: "Pending tasks",
         headerAlign: "center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1
     },
     {
         field:"salary",
         headerName: "Salary",
         headerAlign: "center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1
     },
     {
         field: "actions",
         headerName:"Actions",
         headerAlign:"center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1,
         renderCell:() => {
             const editCustomer = () => console.log("Edit customer")
             const deleteCustomer = () => console.log("Deleting customer")

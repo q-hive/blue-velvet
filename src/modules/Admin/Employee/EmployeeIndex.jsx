@@ -33,7 +33,7 @@ export const EmployeeIndex = () => {
                 </Typography>
 
                 <Box sx={{width:"100%", height:"100%"}}>
-                    <Box sx={{display:"flex", justifyContent:"space-between"}} >
+                    <Box sx={{display:"flex", justifyContent:"space-between",marginBottom:"3vh"}} >
                         <Button variant='contained' color='primary' startIcon={<Add/>} onClick={handleNewEmployee} sx={{minWidth:"20%"}}>
                             New Employee
                         </Button>

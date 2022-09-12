@@ -13,7 +13,7 @@ import { getAllProducts } from '../products/store.js'
 
 const orgModel = mongoose.model('organization', Organization)
 
-export const getAllOrders = (orgId) => {
+export const getAllOrders = (orgId, req) => {
     return new Promise((resolve, reject) => {
         const orgIDNotProvided = {
             "message":  "Organization ID was not provided",
@@ -32,6 +32,63 @@ export const getAllOrders = (orgId) => {
         .then(org => {
             if(!org) reject(new Error(errorFromOrg))
             const orgOrders = org.orders
+            const mappedOrders = orgOrders.map((order, orderIndex) => {
+                const production = getOrderProdData(order, org.containers[0].products, true)
+
+                const mutableOrder = order.toObject()
+
+                const mappedProds = mutableOrder.products.map((product, index, thisArr) => {
+                    let found = production.find((prod) => {
+                        return prod.id.equals(product._id)
+                    })
+                    return {productionData:found, ...product}
+                })
+
+                mappedProds.forEach(prod => delete prod.productionData.id)
+                mutableOrder.products = mappedProds
+
+                return mutableOrder
+            })
+            
+            resolve(mappedOrders)
+        })
+        .catch(err => {
+            console.log(err)
+            errorFromOrg.processError = err.message
+            reject(new Error(JSON.stringify(errorFromOrg)))
+        })
+    
+    })
+    
+}
+export const getFilteredOrders = (orgId, req) => {
+    return new Promise((resolve, reject) => {
+        const orgIDNotProvided = {
+            "message":  "Organization ID was not provided",
+            "status":   400
+        }
+        const errorFromOrg = {
+            "message":  "Error obtaining organization",
+            "status":    500
+        }
+        
+        if(!orgId){
+            return reject(new Error(JSON.stringify(orgIDNotProvided)))
+        }
+
+        getOrganizationById(orgId, true)
+        .then(org => {
+            if(!org) reject(new Error(errorFromOrg))
+            let filter = req.params.status
+
+            const orgOrders = org.orders.filter((orders) => {
+                    if(filter === "uncompleted"){
+                        return orders.status != "delivered"
+                    }
+
+                    return orders.status === filter
+            })
+            
             const mappedOrders = orgOrders.map((order, orderIndex) => {
                 const production = getOrderProdData(order, org.containers[0].products, true)
 
@@ -91,13 +148,13 @@ export const createNewOrder = (orgId, order) => {
             "message": "There was an error calculating the price",
             "status":   500
         }
-        
+
         const mappedProducts = order.products.map((prod) => {
             return {
                 _id:            prod._id,
                 name:           prod.name,
                 status:         prod.status,
-                seedId:         prod.seedId,
+                seedId:         prod?.seedId,
                 packages:       prod.packages,
             }
         })

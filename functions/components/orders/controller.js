@@ -31,6 +31,28 @@ const sortProductsPrices = (order,products) => {
                 prodFound.price[idx] = prodFound.price[idx+1].packageSize
             }
         })
+
+        const mixProducts = []
+        if(prodFound.mix.isMix){
+            prodFound.mix.products.forEach((strain) => {
+               let mixProd = products.find((prod) => prod._id.equals(strain.strain))
+               
+                mixProd.price.forEach((prc, idx) => {
+                    //*If next element of prices in product found from DB is undefined
+                    //*Then we are in the last element, finish algorithm
+                    if(mixProd.price[idx+1] === undefined){
+                        return
+                    }
+                    
+                    //*If package from actual index is bigger than the next package size
+                    if(prc.packageSize > mixProd.price[idx+1].packageSize) {
+                        //*We swap actual product price with next product price
+                        mixProd.price[idx] = mixProd.price[idx+1].packageSize
+                    }
+                })
+                sortedProducts.push(mixProd)
+            })
+        }
         //*Insert sorted products prices in reference
         return sortedProducts.push(prodFound)
     });
@@ -102,14 +124,26 @@ export const getOrderProdData = (order, dbproducts, perProduct = false) => {
     const sortedProductPrices = sortProductsPrices(order, dbproducts)
     //*Add grams per size to order product packages
     order.products.forEach((prod, pidx) => {
-        const prodFound = sortedProductPrices.find((prod) => prod._id.equals(prod._id))
+        const prodFound = sortedProductPrices.find((fprod) => fprod._id.equals(prod._id))
         if(prodFound){
-            //* Get seedingRate (in grams) per tray
-            prod["seedingRate"] = prodFound.parameters.seedingRate
-            //* Get harvestRate (in grams) per tray
-            prod["harvestRate"] = prodFound.parameters.harvestRate
+            if(prodFound.mix.isMix){
+                const mixProds = prodFound.mix.products
+                prod["products"] = []
+                mixProds.forEach((mprod) => {
+                    const mixFound = sortedProductPrices.find((fprod) => fprod._id.equals(mprod.strain))
+                    prod.products.push(mixFound)
+
+                    mixFound.packages.forEach((pkg, idx) => {
+                        
+                    })
+                })
+            } else {
+                //* Get seedingRate (in grams) per tray
+                prod["seedingRate"] = prodFound.parameters.seedingRate
+                //* Get harvestRate (in grams) per tray
+                prod["harvestRate"] = prodFound.parameters.harvestRate
+            }
         }
-        
         prod.packages.forEach((pkg, idx) => {
             switch(pkg.size){
                 case "small":
