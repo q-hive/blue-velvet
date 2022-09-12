@@ -88,9 +88,10 @@ export const ProductionMain = () => {
 
         requests()
         .then(products => {
+            let test = 0
             window.localStorage.setItem('products', JSON.stringify(products.data))
             if(products.data.length === 0){
-                return setDialog((dialog) => {
+                return setDialog((...dialog) => {
                     return ({
                         ...dialog,
                         open:   true,
