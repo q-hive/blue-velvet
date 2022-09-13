@@ -48,7 +48,7 @@ export const Dashboard = () => {
     <Box component="div" display="flex"  >
 
         <Container maxWidth="lg" sx={{paddingTop:4,paddingBottom:4,marginX:{xs:4,md:"auto"},marginTop:{xs:4,md:3}}}>
-            <Typography variant="h2" color="primary">Welcome, {user.name}</Typography>
+            <Typography variant="h2" color="primary">Welcome, Admin</Typography>
             <Typography variant="h5" color="secondary">Here's your dashboard</Typography>
 
 
@@ -65,7 +65,7 @@ export const Dashboard = () => {
                     </Paper>
                 </Grid>
 
-                {/* Tasks */}
+                {/* Capacity */}
                 <Grid item xs={12} md={4} lg={4}>
                     <Paper sx={fixedHeightPaper}>
                         <Typography variant="h6" color="secondary">Containers' capacity</Typography>
@@ -90,7 +90,7 @@ export const Dashboard = () => {
                     </Paper>
                 </Grid>
 
-                {/* Not used yet */}
+                {/* Employee Performance */}
                 <Grid item xs={12} md={4}>
                     <Paper sx={{...fixedHeightPaper,height:400,
                         "& .header-sales-table":{

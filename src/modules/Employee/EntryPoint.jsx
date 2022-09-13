@@ -106,6 +106,13 @@ export const EntryPoint = () => {
         {name:"Cleaning", type:"maintenance"},
     ]
 
+    const completedTasks = [ 
+        {name:"Seeding", time:"5:04"},
+        {name:"Harvesting", time:"6:04"},
+        {name:"Seeding", time:"5:04"},
+        {name:"Harvesting", time:"6:04"},
+    ]
+
 
     useEffect(() => {
         const getOrders = async ()=> {
@@ -227,7 +234,7 @@ export const EntryPoint = () => {
                     </Paper>
                 </Grid>
 
-                {/* Not used yet */}
+                {/* Container's tasks */}
                 <Grid item xs={12} md={4}>
                     <Paper sx={fixedHeightPaper}>
                         <Typography variant="h6" color="secondary">Container's Tasks</Typography>
@@ -239,6 +246,22 @@ export const EntryPoint = () => {
                                     <Button variant="contained" sx={{width:"34%"}} onClick={()=>handleViewTask(task.type,product,order.productionData)} color="primary" >
                                         View
                                     </Button>
+                                </Paper>                             
+                            )
+                        })}
+                    </Paper>
+                </Grid>
+
+                {/*Completed tasks */}
+                <Grid item xs={12} md={4}>
+                    <Paper sx={fixedHeightPaper}>
+                        <Typography variant="h6" color="secondary">Your Completed Tasks</Typography>
+                        {completedTasks.map((task,index) => { 
+                            return(
+                                <Paper variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"3px",paddingX:"2px",marginTop:"2vh",display:"flex", flexDirection:"row"}}>
+                                    <Typography><b>{task.name}</b>{" "}<br/>
+                                    Completion time: <i>{task.time}</i></Typography>
+                                    
                                 </Paper>                             
                             )
                         })}
