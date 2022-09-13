@@ -270,7 +270,7 @@ const BV_Layout = (props) => {
                         <Box
                           component="img"
                           sx={{
-                            maxHeight: { xs: 80, md: 80 },
+                            maxHeight: { xs: 65, md: 80 },
                           }}
                           alt="GreenBox by Blue Velvet"
                           src={Logo}

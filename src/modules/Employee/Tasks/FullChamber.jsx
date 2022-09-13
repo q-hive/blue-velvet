@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 
 //*MUI Components
     // import { DataGrid } from '@mui/x-data-grid'
-import { Alert, Box, Button, Container, Snackbar, Stack, Typography } from '@mui/material'
+import { Alert, Box, Button, Container, Fab, Snackbar, Stack, Typography } from '@mui/material'
 
 //*UTILS
 import { Add } from '@mui/icons-material'
@@ -16,6 +16,7 @@ import { Carousel } from 'react-responsive-carousel'
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { TaskTest } from './WorkingTasks/TaskTest'
 
+import LocalCafeIcon from '@mui/icons-material/LocalCafe';
 
 
 
@@ -46,17 +47,8 @@ export const FullChamber = () => {
             setOpen(false);
         };
 
-    // const getTaskType=(status) => {
-    //     switch(status){
-    //         case "seeding": return("seeding");
-    //         case "growing": return("growing");
-    //         case "harvestReady": return("harvesting");
-    //         case "harvested": return("packing");
-    //         case "ready": return("delivery");
-    //         case "delivered": return(null);
-    //         default: console.log("no tasks monica")
-    //      }
-    // }
+    
+    const ordersList=orders
 
     const carouselChange=(item,index)=>{
         {item<canSeeNextTask.counter ?
@@ -76,6 +68,7 @@ export const FullChamber = () => {
             {"Next Task"}
         </Button>
     )
+    
     const arrowPrev = (onClickHandler, hasPrev, label) =>
     hasPrev && (
         <Button variant="contained" onClick={onClickHandler} title={"previous task"} 
@@ -84,13 +77,27 @@ export const FullChamber = () => {
         </Button>
     )
 
+
+    useEffect(() => {
+        
+            canSeeNextTask.counter >= ordersList.length && (
+                <Button variant="contained" onClick={console.log("temevas")} title={"huh"} 
+                        sx={()=>({...carouselButtonSX,right:"5%"})}>
+                    {"Back to Dashboard"}
+                </Button>
+            )
     
-    const ordersList=orders
+        
+     })
+
+    
+    
 
     // console.log(ordersList)
 
   return (
     <>
+    
     <Carousel
         emulatetouch={true} 
         showThumbs={false} 
@@ -121,5 +128,15 @@ export const FullChamber = () => {
             Task finished!
         </Alert>
     </Snackbar>
+            <Fab 
+            color="primary" 
+            size="medium"
+            aria-label="take a break"
+            sx={{position:"absolute",bottom: 30,
+            right: {xs:30,md:"40%"},}}
+            
+        >
+            <LocalCafeIcon />
+        </Fab>
     </>
   )}
