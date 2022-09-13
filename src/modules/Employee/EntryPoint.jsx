@@ -26,6 +26,18 @@ export const EntryPoint = () => {
     //Snackbar
     const [snackState, setSnackState] = useState({open:false,label:"",severity:""});
 
+    //Time
+    const [isOnTime, setIsOnTime] = useState(false)
+
+    const getTime = () => {
+        var today = new Date()
+     
+        if(today.getHours() >= 4 && today.getHours() < 9){
+            setIsOnTime(true);
+            console.log("testDate",today.getHours())
+        }
+    };
+
         const handleClose = (event, reason) => {
             if (reason === 'clickaway') {
             return;
@@ -43,13 +55,20 @@ export const EntryPoint = () => {
     }
 
     const handleStartWork = () => {
-        orders.length != 0 ?
-        navigate('./../tasks/work',
-        {state: {
-            orders: orders
-        }})
+        
+        isOnTime ? 
+            {
+                ...orders.length != 0 ?
+                    navigate('./../tasks/work',
+                        {state: {
+                        orders: orders
+                        }}
+                    )
+                :
+                setSnackState({open:true,label:"There are no orders!",severity:"success"})
+            }
         :
-        setSnackState({open:true,label:"There are no orders!",severity:"success"})
+        setSnackState({open:true,label:"You can't start working right now",severity:"error"})
          
     }
 
@@ -148,6 +167,7 @@ export const EntryPoint = () => {
         .catch(err => {
             console.log(err)
         })
+        getTime()
     }, [])
 
   return (<>
@@ -155,7 +175,8 @@ export const EntryPoint = () => {
 
         <Container maxWidth="lg" sx={{paddingTop:4,paddingBottom:4,marginX:{xs:4,md:"auto"},marginTop:{xs:4,md:3}}}>
             <Typography variant="h2" color="primary">Welcome, {user.name}</Typography>
-            <Typography variant="h5" color="secondary">Here's your work</Typography>
+            <Typography variant="h5" color="secondary">Here's your work</Typography><br/>
+            <Typography variant="h6" color="secondary">You'll need aproximately TIME to finish your Tasks</Typography>
 
             <Box pt={4}>
                 <Typography variant="h6" >Pending Orders: {orders.length}</Typography>
