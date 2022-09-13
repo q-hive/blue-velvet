@@ -78,9 +78,11 @@ export const getOrdersPrice = (order, products) => {
         //*If we found the actual product in the sorted array from DB then
         if(dbSortedProd){
             //*Iterate over the product order packages
+            console.log(dbSortedProd.price[0])
             prod.packages.forEach((pkg, idx) => {
+                console.log(pkg)
                 switch(pkg.size){
-                    //*we have 3 types of sizes and with the sorted products we can access based on index
+                    //*we have 2 types of sizes and with the sorted products we can access based on index
                     case "small":
                         //*Total per product will be the number of determined package size
                         //* multiplied by amount(price) of corresponding size y productFromDB
@@ -88,9 +90,6 @@ export const getOrdersPrice = (order, products) => {
                         break;
                     case "medium":
                         prod.packages[idx] = {...prod.packages[idx], total: dbSortedProd.price[1].amount * pkg.number}
-                        break;
-                    case "large":
-                        prod.packages[idx] = {...prod.packages[idx], total: dbSortedProd.price[2].amount * pkg.number}
                         break;
                 }
             })
@@ -124,26 +123,8 @@ export const getOrderProdData = (order, dbproducts, perProduct = false) => {
     const sortedProductPrices = sortProductsPrices(order, dbproducts)
     //*Add grams per size to order product packages
     order.products.forEach((prod, pidx) => {
+        //*Find the product in database
         const prodFound = sortedProductPrices.find((fprod) => fprod._id.equals(prod._id))
-        if(prodFound){
-            if(prodFound.mix.isMix){
-                const mixProds = prodFound.mix.products
-                prod["products"] = []
-                mixProds.forEach((mprod) => {
-                    const mixFound = sortedProductPrices.find((fprod) => fprod._id.equals(mprod.strain))
-                    prod.products.push(mixFound)
-
-                    mixFound.packages.forEach((pkg, idx) => {
-                        
-                    })
-                })
-            } else {
-                //* Get seedingRate (in grams) per tray
-                prod["seedingRate"] = prodFound.parameters.seedingRate
-                //* Get harvestRate (in grams) per tray
-                prod["harvestRate"] = prodFound.parameters.harvestRate
-            }
-        }
         prod.packages.forEach((pkg, idx) => {
             switch(pkg.size){
                 case "small":
@@ -158,21 +139,49 @@ export const getOrderProdData = (order, dbproducts, perProduct = false) => {
                         grams: prodFound.price[1].packageSize * pkg.number
                     }
                     break;
-                case "large":
-                    prod.packages[idx] = {
-                        ...prod.packages[idx], 
-                        grams: prodFound.price[2].packageSize * pkg.number
-                    }
-                    break;
                 default:
                     break;
             }
         })
-
+        
         //*Total grams will define number of trays based on seedingRate
         const harvest = prod.packages.reduce((prev, curr) => {
             return prev + curr.grams
         },0)
+
+        if(prodFound){
+            if(prodFound.mix.isMix){
+                
+                prod.mix = {isMix: true}
+                const mixProds = prodFound.toObject().mix.products
+                
+                const mappedMixComposition = mixProds.map((mprod) => {
+                    const mixFound = sortedProductPrices.find((fprod) => fprod._id.equals(mprod.strain)).toObject()
+                    
+                    delete mixFound.mix
+                    delete mixFound.price
+                    delete mprod.strain
+                    mixFound.productionData = {
+                        name:   mixFound.name,
+                        harvest: harvest * (mprod.amount/100),
+                        seeds: harvest * (mixFound.parameters.seedingRate/mixFound.parameters.harvestRate),
+                        trays:  (harvest * (mixFound.parameters.seedingRate/mixFound.parameters.harvestRate)) / mixFound.parameters.seedingRate
+                    }
+
+                    return {...mprod, ...mixFound, mix:true}
+                })
+
+                prod.products = mappedMixComposition
+                
+            } else {
+                prod.mix = {isMix: false}
+                //* Get seedingRate (in grams) per tray
+                prod["seedingRate"] = prodFound.parameters.seedingRate
+                //* Get harvestRate (in grams) per tray
+                prod["harvestRate"] = prodFound.parameters.harvestRate
+            }
+        }
+        
         const seeds = harvest / (prod.harvestRate / prod.seedingRate)
         const trays = seeds / prod.seedingRate
         
@@ -180,14 +189,33 @@ export const getOrderProdData = (order, dbproducts, perProduct = false) => {
     })
 
     if(perProduct){
-        const productionData = order.products.map((prod) => {
+        let productionData
+
+        productionData = order.products.map((prod) => {
+            if(prod.mix){
+                return prod.products.map((mxprod) => {
+                    return {id:mxprod._id,mixId:prod._id,orderId:order._id, ...mxprod.productionData, mix:true}
+                })
+            }
+            
             return {...prod.productionData, id:prod._id}
-        })    
+        })
         
+        if(order.products.some((product) => product.mix)){
+            return productionData[0]
+        }
         return productionData
     }
     
     const productionData = order.products.map((prod) => {
+        if(prod.mix.isMix){
+            const mappedProducionData = prod.products.map((mxprod) => {
+                return {product:mxprod.name, ...mxprod.productionData}
+            })
+
+            return mappedProducionData
+        }
+        
         return {product:prod.name,...prod.productionData}
     })
 

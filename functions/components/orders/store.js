@@ -13,7 +13,7 @@ import { getAllProducts } from '../products/store.js'
 
 const orgModel = mongoose.model('organization', Organization)
 
-export const getAllOrders = (orgId, req) => {
+export const getAllOrders = (orgId, req, filtered=false, filter=undefined) => {
     return new Promise((resolve, reject) => {
         const orgIDNotProvided = {
             "message":  "Organization ID was not provided",
@@ -31,20 +31,53 @@ export const getAllOrders = (orgId, req) => {
         getOrganizationById(orgId, true)
         .then(org => {
             if(!org) reject(new Error(errorFromOrg))
-            const orgOrders = org.orders
+            let orgOrders = org.orders
+
+            if(filtered && filter){
+                orgOrders = orgOrders.filter((order) => {
+                    if(filter === "uncompleted"){
+                        return order.status !== "delivered"
+                    }
+
+                    return order.status === filter
+                })    
+            }
+
+
             const mappedOrders = orgOrders.map((order, orderIndex) => {
                 const production = getOrderProdData(order, org.containers[0].products, true)
-
                 const mutableOrder = order.toObject()
-
                 const mappedProds = mutableOrder.products.map((product, index, thisArr) => {
+                    if(product.mix){
+                        const correspondingMixProducts = production.filter((prodData) => {
+                            const sameOrder = prodData.orderId.equals(order._id)
+                            const sameMix =  prodData.mixId.equals(product._id)
+                            return sameOrder && sameMix && prodData.mix
+                        })
+
+                        product.products = correspondingMixProducts
+                        return {...product}
+                    }
+
                     let found = production.find((prod) => {
                         return prod.id.equals(product._id)
                     })
                     return {productionData:found, ...product}
                 })
 
-                mappedProds.forEach(prod => delete prod.productionData.id)
+                mappedProds.forEach(prod => {
+
+                    if(prod.mix){
+                        prod.products.forEach((mixProd) => {
+                            delete mixProd.mixId
+                            delete mixProd.orderId
+                            delete mixProd.mix
+                        })
+                    } else {
+                        delete prod.productionData.id
+                    }
+                    
+                })
                 mutableOrder.products = mappedProds
 
                 return mutableOrder
@@ -63,60 +96,14 @@ export const getAllOrders = (orgId, req) => {
 }
 export const getFilteredOrders = (orgId, req) => {
     return new Promise((resolve, reject) => {
-        const orgIDNotProvided = {
-            "message":  "Organization ID was not provided",
-            "status":   400
-        }
-        const errorFromOrg = {
-            "message":  "Error obtaining organization",
-            "status":    500
-        }
-        
-        if(!orgId){
-            return reject(new Error(JSON.stringify(orgIDNotProvided)))
-        }
-
-        getOrganizationById(orgId, true)
-        .then(org => {
-            if(!org) reject(new Error(errorFromOrg))
-            let filter = req.params.status
-
-            const orgOrders = org.orders.filter((orders) => {
-                    if(filter === "uncompleted"){
-                        return orders.status != "delivered"
-                    }
-
-                    return orders.status === filter
-            })
-            
-            const mappedOrders = orgOrders.map((order, orderIndex) => {
-                const production = getOrderProdData(order, org.containers[0].products, true)
-
-                const mutableOrder = order.toObject()
-
-                const mappedProds = mutableOrder.products.map((product, index, thisArr) => {
-                    let found = production.find((prod) => {
-                        return prod.id.equals(product._id)
-                    })
-                    return {productionData:found, ...product}
-                })
-
-                mappedProds.forEach(prod => delete prod.productionData.id)
-                mutableOrder.products = mappedProds
-
-                return mutableOrder
-            })
-            
-            resolve(mappedOrders)
+        getAllOrders(orgId, req, true, req.params.filter)
+        .then((orders) => {
+            resolve(orders)
         })
-        .catch(err => {
-            console.log(err)
-            errorFromOrg.processError = err.message
-            reject(new Error(JSON.stringify(errorFromOrg)))
+        .catch((err) => {
+            return reject("Error getting filtered orders")
         })
-    
     })
-    
 }
 
 export const createNewOrder = (orgId, order) => {
@@ -148,17 +135,23 @@ export const createNewOrder = (orgId, order) => {
             "message": "There was an error calculating the price",
             "status":   500
         }
+        const allProducts = await getAllProducts(orgId)
 
         const mappedProducts = order.products.map((prod) => {
+            const isMix = allProducts.find((product) => {
+                return product._id.equals(prod._id)
+            }).mix.isMix
+
             return {
                 _id:            prod._id,
                 name:           prod.name,
                 status:         prod.status,
                 seedId:         prod?.seedId,
                 packages:       prod.packages,
+                mix:            isMix
             }
         })
-        const allProducts = await getAllProducts(orgId)
+
         let prc = getOrdersPrice(order, allProducts)
         if(prc === undefined || prc === null){
             return reject(new Error(JSON.stringify(priceFailure)))
@@ -281,5 +274,3 @@ export const updateOrder = (org, orderId, body) => {
 //* payment status
 //* unpaid
 //* paid
-
-//*TODO Add products to orders table
