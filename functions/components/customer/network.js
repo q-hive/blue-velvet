@@ -14,12 +14,12 @@ router.get('/:id', (req, res) => {
         .catch(err => {
             console.log(err)
             
-            const error = {
+            const errorObject = {
                 message: "There was an internal problem getting customer",
                 status: 500,
                 processError: err.message
             }
-            error(req, res, 500, "Error getting customer - GENERIC ERROR",JSON.stringify(error), err)
+            error(req, res, 500, "Error getting customer - GENERIC ERROR",JSON.stringify(errorObject), err)
         })
         
         

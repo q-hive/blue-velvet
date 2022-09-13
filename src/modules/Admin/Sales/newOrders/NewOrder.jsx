@@ -34,8 +34,7 @@ export const NewOrder = () => {
         customer:           {},
         product:            {},
         smallPackages:      undefined,
-        mediumPackages:    undefined,
-        largePackages:      undefined,
+        mediumPackages:     undefined,
         size:               undefined,
         date:               undefined
     });
@@ -68,10 +67,6 @@ export const NewOrder = () => {
             message:"Please correct or fill the number of packages.",
             active: false
         },
-        largePackages:{
-            message:"Please correct or fill the number of packages.",
-            active: false
-        },
     })
     //Snackbar
     const [open, setOpen] = useState(false);
@@ -98,9 +93,6 @@ export const NewOrder = () => {
                         value = Number(v)
                         break;
                     case "mediumPackages":
-                        value = Number(v)
-                        break;
-                    case "largePackages":
                         value = Number(v)
                         break;
                 }
@@ -175,69 +167,49 @@ export const NewOrder = () => {
     }
 
     const handleAddToOrder = (e) => {
-        console.log(e.target.id)
+        let packages
         if(e){
-            switch(e.target.id){
-                //*Validate if there are empty inputs if true show error
-                case "":
-                    //*Map actual data and modify input state so can receive packages
-                    if(thereErrors(input)){
-                        console.log("Errors should be activated")
-                        return
-                    }
-                    if(input.product.packages){
-                        setInput({
-                            ...input,
-                            product:{
-                                ...input.product,
-                                packages: [...input.product.packages, {number:input.packages, size:input.size}]
-                            },
-                            packages: undefined,
-                            size: undefined
-                        })
-                        return
-                    }
-
-                    setInput({
-                        ...input,
-                        product:{
-                            ...input.product,
-                            packages: [{number:input.packages, size:input.size}]
+            if(e.target.id === "add"){
+                if(input.smallPackages && input.mediumPackages){
+                    packages = [
+                        {
+                            "number":input.smallPackages,
+                            "size": "small"
                         },
-                        packages: undefined,
-                        size: undefined
-                    })
-                    break;
-                case "product":
-                    if(input.product?.packages){
-                        products.push(input.product)
-                    } else {
-                        products.push(
-                            {
-                                ...input.product,
-                                "packages":[{number: input.packages, size:input.size}]
-                            }
-                        )
-                    }
+                        {
+                            "number":input.mediumPackages,
+                            "size": "medium"
+                        }
+                    ]
+                } else {
+                    packages = [
+                        {
+                            "number": input.smallPackages || input.mediumPackages,
+                            "size": input.smallPackages ? "small" : input.mediumPackages ? "medium" : "small"
+                        }
+                    ]
+                }
+                
+                products.push({
+                    "name": input.product.name,
+                    "status": "production",
+                    "seedId": input.product?.seed,
+                    "provider": input.product?.provider,
+                    "_id": input.product._id,
+                    "packages": packages
+                })
 
-                    
-                    //*IF there is already a value in input.product check if completed and clean input
-                    //* clear input product, packages, size
-                    setInput({
-                        ...input,
-                        product:    {},
-                        packages:   undefined,
-                        size:       undefined
-                    })
-                    break;
-                default:
-                    break;
+                setInput({
+                    ...input,
+                    product:        {},
+                    smallPackages:  undefined,
+                    mediumPackages: undefined,
+                })
             }
         }
     }
     
     const handleSetOrder = async (e) => {
-        console.log(e.target.id)
         if(e.target.id === "accept") {
             console.log(input.customer)
             setError({
@@ -258,22 +230,13 @@ export const NewOrder = () => {
             return 
         }
         
-        console.log("Order Set! (but not really)")
-        console.log(input)
-        console.log(products)
-
 
         const mapInput = () => {
             let mappedData
             let useProducts = false
-
-            const mappedInput = {
-                "name": input.product.name,
-                "status": "production",
-                "seedId": input.product.seed,
-                "provider": input.product.provider,
-                "_id": input.product._id,
-                "packages": [
+            let packages
+            if(input.smallPackages && input.mediumPackages){
+                packages = [
                     {
                         "number":input.smallPackages,
                         "size": "small"
@@ -281,18 +244,35 @@ export const NewOrder = () => {
                     {
                         "number":input.mediumPackages,
                         "size": "medium"
-                    },
-                    ]
-                } 
-
-            //*If the size is larger, then the actual mappedProduct should change
-            if(input.product.price.length === 3){
-                mappedProduct["packages"].push({number:input.largePackages, size:"large"})
-
+                    }
+                ]
+            } else {
+                packages = [
+                    {
+                        "number": input.smallPackages || input.mediumPackages,
+                        "size": input.smallPackages ? "small" : input.mediumPackages ? "medium" : "small"
+                    }
+                ]
             }
+
+            
+            const mappedInput = {
+                "name": input.product.name,
+                "status": "production",
+                "seedId": input.product.seed,
+                "provider": input.product.provider,
+                "_id": input.product._id,
+                "packages": packages
+            }
+            // //*If the size is larger, then the actual mappedProduct should change
+            // if(input.product.price.length === 3){
+            //     mappedProduct["packages"].push({number:input.largePackages, size:"large"})
+
+            // }
             
             if(products.length>0){
                 useProducts = true
+                console.log(products)
             }
 
             
@@ -351,13 +331,6 @@ export const NewOrder = () => {
         return
     }
         
-
-    const checkboxOptions = [
-        { id: "option1", label: "small" },
-        { id: "option2", label: "medium" },
-        { id: "option3", label: "large" },   
-    ]
-
     useEffect(() => {
         const getData = async () => {
             const customers = await api.api.get(`${api.apiVersion}/customers/`, {
@@ -392,24 +365,19 @@ export const NewOrder = () => {
 
     useEffect(() => {
         const validatePackages = () => {
-            if(input.smallPackages && input.mediumPackages && input.largePackages){
-                return true
-            }
-
-            return false
+            return Boolean(input.smallPackages) || Boolean(input.mediumPackages)
         }
         
         const validProduct = Object.keys(input.product) !== 0
         const validPackages = validatePackages()
         
-        console.log(validPackages)
         if(validProduct && validPackages){
             setCanSendOrder(() => {
                 return true
             })
         }
     
-    }, [input.product, input.smallPackages,input.mediumPackages,input.largePackages, input.size])
+    }, [input.product, input.smallPackages,input.mediumPackages, input.size])
 
   return (
     <>
@@ -498,7 +466,7 @@ export const NewOrder = () => {
                         error={error.mediumPackages.active}
                         value={input.mediumPackages ? input.mediumPackages : ""}
                     />
-                    <TextField
+                    {/* <TextField
                         id="largePackages"
                         type="number"
                         label="Large"
@@ -508,7 +476,7 @@ export const NewOrder = () => {
                         helperText={error.largePackages.active ? error.largePackages.message : ""}
                         error={error.largePackages.active}
                         value={input.largePackages ? input.largePackages : ""}
-                    />
+                    /> */}
                 </Box>
                 
                 <Button id="add" sx={{marginTop:"2vh"}} onClick={handleAddToOrder}>
