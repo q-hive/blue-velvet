@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react'
 
 //*MUI Components
-import { Box, Button, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography, useTheme } from '@mui/material'
+import { Box, Button, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, LinearProgress, Typography, useTheme } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 //*THEME
 import {BV_THEME} from '../../../theme/BV-theme'
@@ -28,6 +28,7 @@ export const ProductionMain = () => {
     //*Render states
     const [columnsState, setColumnsState] = useState(productsColumns)
     const [rows, setRows] = useState([])
+    const [loading, setLoading] = useState(false)
     const [dialog, setDialog] = useState({
         open:false,
         title:"",
@@ -86,6 +87,7 @@ export const ProductionMain = () => {
             return productsRequest.data
         }
 
+        setLoading(true)
         requests()
         .then(products => {
             let test = 0
@@ -108,6 +110,7 @@ export const ProductionMain = () => {
             }
             console.log(products.data)
             setRows(products.data)
+            setLoading(false)
         })
         .catch(err => {
             console.log(err)
@@ -167,30 +170,39 @@ export const ProductionMain = () => {
                         </Button>
                     </Box>
                     
-                    <DataGrid
-                        columns={columnsState}
-                        rows={rows}
-                        getRowId={(row) => {
-                            return row._id
-                        }}
-                        getRowHeight={() => 'auto'}
-                        sx={{marginY:"2vh", display:() => theme.mobile.hidden}}
-                    />
-
-                    <DataGrid
-                        columns={productsColumnsMobile}
-                        rows={rows}
-                        getRowId={(row) => {
-                            return row._id
-                        }}
-                        onStateChange={(s,e,d) => {
-                            // console.log(s)
-                            // console.log(e)
-                            // console.log(d)
-                        }}
-                        
-                        sx={{marginY:"2vh", display:() => theme.mobile.only}}
-                    />
+                    {
+                        loading
+                        ?   
+                        <LinearProgress color="primary" sx={{marginY:"2vh"}}/>
+                        :   
+                        <>
+                            <DataGrid
+                                columns={columnsState}
+                                rows={ rows
+                                }
+                                getRowId={(row) => {
+                                    return row._id
+                                }}
+                                getRowHeight={() => 'auto'}
+                                sx={{marginY:"2vh", display:() => theme.mobile.hidden}}
+                            />
+                            <DataGrid
+                                columns={productsColumnsMobile}
+                                rows={rows}
+                                getRowId={(row) => {
+                                    return row._id
+                                }}
+                                onStateChange={(s,e,d) => {
+                                    // console.log(s)
+                                    // console.log(e)
+                                    // console.log(d)
+                                }}
+                                
+                                sx={{marginY:"2vh", display:() => theme.mobile.only}}
+                            />
+                        </>
+                    }
+                    
                 </Box>
             </Container>
 

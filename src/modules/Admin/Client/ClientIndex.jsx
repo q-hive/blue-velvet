@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import useAuth from '../../../contextHooks/useAuthContext'
 //*MUI Components
 // import { DataGrid } from '@mui/x-data-grid'
-import { Box, Button, Container, Stack, Typography } from '@mui/material'
+import { Box, Button, Container, LinearProgress, Stack, Typography } from '@mui/material'
 
 //*UTILS
 import { Add } from '@mui/icons-material'
@@ -23,6 +23,7 @@ import api from '../../../axios.js'
 export const ClientIndex = () => {
     //*CONTEXTS
     const {user, credential} = useAuth()
+    const [loading, setLoading] = useState(false)
     
     //*DATA STATES
     const [rows, setRows] = useState([])
@@ -49,10 +50,11 @@ export const ClientIndex = () => {
 
             return response.data.data
         }
-        
+        setLoading(true)
         getCustomers()
         .then((data) => {
             setRows(data)
+            setLoading(false)
         })
         .catch(err => {
             console.log(err)
@@ -86,6 +88,12 @@ export const ClientIndex = () => {
                         New Customer
                     </Button>
                 </Box>
+
+                {
+                    loading
+                    ?   
+                    <LinearProgress color="primary" sx={{marginY:"2vh"}}/>
+                    : 
                     <DataGrid
                     columns={CustomerColumns}
                     rows={rows}
@@ -94,6 +102,7 @@ export const ClientIndex = () => {
                         return row._id
                     }}
                     />
+                }
                 </Box>
 
 
