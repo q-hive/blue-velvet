@@ -1,6 +1,6 @@
 import express from 'express'
 import { success, error } from '../../network/response.js'
-import { createNewOrder, getAllOrders, getFilteredOrders, updateOrder } from './store.js'
+import { createNewOrder, deleteOrders, getAllOrders, getFilteredOrders, updateOrder } from './store.js'
 import {modelsValidationError} from '../../utils/errorHandler.js'
 
 const router = express.Router()
@@ -37,8 +37,34 @@ router.get('/:status', (req, res) => {
     })    
 })
 
-router.get('/:id', (req, res) => {
-
+router.delete('/', (req, res) => {
+    getAllOrders(res.locals.organization, req)
+    .then((orders) => {
+        deleteOrders(res.locals.organization, orders)
+        .then((status) => {
+            success(req, res, 200, "Orders deleted")
+            if(status === 1){
+            }
+        })
+    })
+    .catch((err) => {
+        error(req , res, 500, "ERROR GETING THE ORDERS TO BE DELETED - GENERIC ERROR", err)
+    })
+})
+router.delete('/:status', (req, res) => {
+    console.log(res.locals)
+    getFilteredOrders(res.locals.organization, req)
+    .then((orders) => {
+        deleteOrders(res.locals.organization, orders)
+        .then((status) => {
+            success(req, res, 200, "Orders deleted")
+            if(status === 1){
+            }
+        })
+    })
+    .catch((err) => {
+        error(req , res, 500, "ERROR GETING THE ORDERS TO BE DELETED - GENERIC ERROR", err)
+    })
 })
 
 

@@ -30,17 +30,36 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined) => {
 
         getOrganizationById(orgId, true)
         .then(org => {
-            if(!org) reject(new Error(errorFromOrg))
-            let orgOrders = org.orders
+            if(!Boolean(org)) return reject(new Error(errorFromOrg))
 
+            let orgOrders = org.orders
+            if(!orgOrders) return resolve([])
             if(filtered && filter){
                 const {key, value} = filter
+                const param = req.params.status
                 orgOrders = orgOrders.filter((order) => {
-                    if(value === "pending" && key === "status"){
-                        return order.status !== "delivered"
-                    }
-                    return order[key] === value
+                    if(param && key && value){
+                        let prm = order.status === param
 
+                        if(key === "_id"){
+                            return prm && order[key].equals(value)        
+                        }
+                        
+                        
+                        return prm && order[key] === value
+                    }
+
+                    if(!param && key && value){
+                        if(key === "_id"){
+                            return order[key].equals(value)
+                        }
+                        
+                        return order[key] === value
+                    }
+
+                    if(param && !key && !value){
+                        return order.status === param
+                    }
                 })
                 
             }
@@ -105,11 +124,6 @@ export const getFilteredOrders = (orgId, req) => {
             value = req.query.value
         }
 
-        if(req.params?.status){
-            key = "status"
-            value = req.params.status
-        }
-        
         getAllOrders(orgId, req, true, {key, value})
         .then((orders) => {
             resolve(orders)
@@ -117,6 +131,42 @@ export const getFilteredOrders = (orgId, req) => {
         .catch((err) => {
             return reject("Error getting filtered orders")
         })
+    })
+}
+
+export const deleteOrders = (orgId, orders) => {
+    return new Promise(async(resolve, reject) => {
+        const org = await getOrganizationById(orgId)
+        const find = await orders.map(async(order) => {
+            const found = await org.orders.find((ordr)=> ordr._id.equals(order._id))
+
+            return found
+        })
+
+        Promise.all(find)
+        .then((found) => {
+            const operations = found.map(async(order) => {
+                const operation = await orgModel.updateOne({_id:orgId},{"$pull":{
+                    "orders": {
+                        "_id":order._id
+                    }
+                }})
+                return operation
+            })
+
+            Promise.all(operations)
+            .then((result) => {
+                resolve(result)
+            })
+            .catch(err => {
+                reject(err)
+            })
+            
+        })
+        .catch((err) => {
+            console.log(err)
+        })
+        
     })
 }
 
