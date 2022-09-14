@@ -69,15 +69,25 @@ export const getContainerById = (id, orgId) => {
     return contModel.findById(ObjectId(id))
 }
 
-export const updateContainer = async (orgId,id, edit) => { 
-    //*TODO: Change to one query because is updateContainer not updateProductInContainer
-    let org = await orgModel.findById(orgId)
-    console.log(org.containers[0])
-    console.log(Object.keys(edit))
-    org.containers[0][Object.keys(edit)[0]].push(edit[Object.keys(edit)[0]])
-    await org.save()
+export const updateContainer = (orgId,id, edit) => { 
+    return new Promise(async (resolve, reject) => {
+        const stringForNestedDoc = edit
 
-    return org
+        console.log(stringForNestedDoc)
+        
+        resolve("Container updated")
+        
+        // //*TODO: Change to one query because is updateContainer not updateProductInContainer
+        // let org = await orgModel.updateOne({_id:orgId}, {"$set": {
+            
+        // }})
+
+        
+        // org.containers[0][Object.keys(edit)[0]].push(edit[Object.keys(edit)[0]])
+        // await org.save()
+        // return org
+        
+    })
 }
 
 export const updateContainers = async (ids, edit) => {
