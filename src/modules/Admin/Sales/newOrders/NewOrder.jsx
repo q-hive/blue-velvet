@@ -272,7 +272,6 @@ export const NewOrder = () => {
             
             if(products.length>0){
                 useProducts = true
-                console.log(products)
             }
 
             
@@ -280,7 +279,7 @@ export const NewOrder = () => {
             mappedData = {
                 "customer": input.customer,
                 "products": useProducts ? products : [mappedInput],
-                "status":"uncompleted",
+                "status":"pending",
                 "date": input.date
             }
 
@@ -295,10 +294,9 @@ export const NewOrder = () => {
                 }
             })
 
-            console.log("response",response)
-
             if(response.status === 201){
                 setOpen(true);
+                products.splice(0, products.length-1)
             }
             if(response.status === 500){
                 setDialog({

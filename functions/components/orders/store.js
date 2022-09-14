@@ -34,13 +34,15 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined) => {
             let orgOrders = org.orders
 
             if(filtered && filter){
+                const {key, value} = filter
                 orgOrders = orgOrders.filter((order) => {
-                    if(filter === "uncompleted"){
+                    if(value === "pending" && key === "status"){
                         return order.status !== "delivered"
                     }
+                    return order[key] === value
 
-                    return order.status === filter
-                })    
+                })
+                
             }
 
 
@@ -96,7 +98,19 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined) => {
 }
 export const getFilteredOrders = (orgId, req) => {
     return new Promise((resolve, reject) => {
-        getAllOrders(orgId, req, true, req.params.filter)
+        let key
+        let value
+        if(req.query){
+            key = req.query.key
+            value = req.query.value
+        }
+
+        if(req.params?.status){
+            key = "status"
+            value = req.params.status
+        }
+        
+        getAllOrders(orgId, req, true, {key, value})
         .then((orders) => {
             resolve(orders)
         })
@@ -259,6 +273,23 @@ export const updateOrder = (org, orderId, body) => {
         .catch((err) => {
         
         })
+    })
+}
+
+const deleteOrder = (orgId,orderId,req,filter=undefined) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const org = await getOrganizationById(orgId)
+        } catch (err){
+            console.log(err)
+        }        
+
+        if(org) {
+            const order = org.orders.id(orderId)
+            let filter = "id"
+            let value = orderId
+            org.orders.delteOne({[filter]:{"eq":{value}}})
+        }
     })
 }
 
