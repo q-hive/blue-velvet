@@ -56,6 +56,7 @@ const Order = new Schema({
 })
 
 //STATUS
+//* pending
 //* Seeding
 //* GROWING -- 2 days p/w 7am
 //* harvestReady

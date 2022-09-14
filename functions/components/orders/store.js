@@ -30,17 +30,38 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined) => {
 
         getOrganizationById(orgId, true)
         .then(org => {
-            if(!org) reject(new Error(errorFromOrg))
-            let orgOrders = org.orders
+            if(!Boolean(org)) return reject(new Error(errorFromOrg))
 
+            let orgOrders = org.orders
+            if(!orgOrders) return resolve([])
             if(filtered && filter){
+                const {key, value} = filter
+                const param = req.params.status
                 orgOrders = orgOrders.filter((order) => {
-                    if(filter === "uncompleted"){
-                        return order.status !== "delivered"
+                    if(param && key && value){
+                        let prm = order.status === param
+
+                        if(key === "_id"){
+                            return prm && order[key].equals(value)        
+                        }
+                        
+                        
+                        return prm && order[key] === value
                     }
 
-                    return order.status === filter
-                })    
+                    if(!param && key && value){
+                        if(key === "_id"){
+                            return order[key].equals(value)
+                        }
+                        
+                        return order[key] === value
+                    }
+
+                    if(param && !key && !value){
+                        return order.status === param
+                    }
+                })
+                
             }
 
 
@@ -96,13 +117,56 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined) => {
 }
 export const getFilteredOrders = (orgId, req) => {
     return new Promise((resolve, reject) => {
-        getAllOrders(orgId, req, true, req.params.filter)
+        let key
+        let value
+        if(req.query){
+            key = req.query.key
+            value = req.query.value
+        }
+
+        getAllOrders(orgId, req, true, {key, value})
         .then((orders) => {
             resolve(orders)
         })
         .catch((err) => {
             return reject("Error getting filtered orders")
         })
+    })
+}
+
+export const deleteOrders = (orgId, orders) => {
+    return new Promise(async(resolve, reject) => {
+        const org = await getOrganizationById(orgId)
+        const find = await orders.map(async(order) => {
+            const found = await org.orders.find((ordr)=> ordr._id.equals(order._id))
+
+            return found
+        })
+
+        Promise.all(find)
+        .then((found) => {
+            const operations = found.map(async(order) => {
+                const operation = await orgModel.updateOne({_id:orgId},{"$pull":{
+                    "orders": {
+                        "_id":order._id
+                    }
+                }})
+                return operation
+            })
+
+            Promise.all(operations)
+            .then((result) => {
+                resolve(result)
+            })
+            .catch(err => {
+                reject(err)
+            })
+            
+        })
+        .catch((err) => {
+            console.log(err)
+        })
+        
     })
 }
 
@@ -137,20 +201,26 @@ export const createNewOrder = (orgId, order) => {
         }
         const allProducts = await getAllProducts(orgId)
 
-        const mappedProducts = order.products.map((prod) => {
-            const isMix = allProducts.find((product) => {
+        const mappedProducts = order.products.map(async (prod) => {
+            const product = allProducts.find((product) => {
                 return product._id.equals(prod._id)
-            }).mix.isMix
+            })
 
+            await orgModel.updateOne({_id:orgId,"containers.0.products":{"$elemMatch":{_id:product._id}}},{"$set":{
+                "containers.0.products.$.status":"production"
+            }})
+        
             return {
                 _id:            prod._id,
                 name:           prod.name,
                 status:         prod.status,
                 seedId:         prod?.seedId,
                 packages:       prod.packages,
-                mix:            isMix
+                mix:            product.mix.isMix
             }
         })
+
+        const mappedAndUpdatedProducts = await Promise.all(mappedProducts)
 
         let prc = getOrdersPrice(order, allProducts)
         if(prc === undefined || prc === null){
@@ -169,7 +239,7 @@ export const createNewOrder = (orgId, order) => {
                 date:           order.date,
                 end:            end,
                 productionData: prodData,
-                products:       mappedProducts,
+                products:       mappedAndUpdatedProducts,
                 status:         order.status
             }
             
@@ -259,6 +329,23 @@ export const updateOrder = (org, orderId, body) => {
         .catch((err) => {
         
         })
+    })
+}
+
+const deleteOrder = (orgId,orderId,req,filter=undefined) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const org = await getOrganizationById(orgId)
+        } catch (err){
+            console.log(err)
+        }        
+
+        if(org) {
+            const order = org.orders.id(orderId)
+            let filter = "id"
+            let value = orderId
+            org.orders.delteOne({[filter]:{"eq":{value}}})
+        }
     })
 }
 

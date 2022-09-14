@@ -67,7 +67,7 @@ server.on('listening', onListening)
 
 function normalizePort(num){
     const port = parseInt(num, 10)
-    
+    const val = 3000
     if(isNaN(port)){
         return val
     }

@@ -81,7 +81,7 @@ export const NewEmployee = () => {
         })
         .then((res) => {
             if(res.status === 201){
-                navigate(`${user.uid}/${user.role}/dashboard`)
+                navigate(`/${user.uid}/${user.role}/dashboard`)
             }
         })
         .catch((err) => {

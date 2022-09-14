@@ -268,10 +268,6 @@ export const SimpleProductForm = ({editing, product}) => {
                     amount:         productData.mediumPrice,
                     packageSize:    80
                 },
-                {
-                    amount:         productData.smallPrice,
-                    packageSize:    25
-                },
             ], 
             mix:        { isMix:        false},
             parameters: {

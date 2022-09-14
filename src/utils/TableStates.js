@@ -297,7 +297,7 @@ export const productsColumns = [
                     open={dialog.open}
                     />    
                 
-                    <Button variant='contained' onClick={handleModal} disabled={loading} sx={BV_THEME.button.table}> {loading ? 'Loading...' : 'View'} </Button>    
+                    <Button variant='contained' onClick={handleModal} disabled={loading || (user.role === "employee")} sx={BV_THEME.button.table}> {loading ? 'Loading...' : 'View'} </Button>    
                 
                 </>
                 

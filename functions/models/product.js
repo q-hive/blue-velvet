@@ -28,7 +28,7 @@ const Product = new Schema({
                 required: false 
             }
         },
-        required: false
+        required: true
     },
     parameters: {
         type: {
