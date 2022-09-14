@@ -165,7 +165,7 @@ export const ProductionMain = () => {
                             display:"flex", 
                             justifyContent:{xs:"center",sm:"flex-end"}
                             }}>
-                        <Button variant="contained" startIcon={<Add/>} onClick={handleNewProduct} color="primary"  >
+                        <Button variant="contained" startIcon={<Add/>} onClick={handleNewProduct} color="primary" disabled={user.role === "employee"} >
                             Add new product
                         </Button>
                     </Box>

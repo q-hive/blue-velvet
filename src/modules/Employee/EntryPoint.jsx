@@ -96,22 +96,24 @@ export const EntryPoint = () => {
         
         switch(status){
             case "seeding": productTasks = [{name:"Task 1", type:"seeding"}];
-            break;
+                break;
             case "growing": productTasks = [{name:"Status:", type:"growing"}];
-            break;
+                break;
             case "harvestReady": productTasks = [{name:"Task 2", type:"harvesting"}];
-            break;
+                break;
             case "harvested" : productTasks = [{name:"Task 3", type:"packing"}];
-            break;
+                break;
             case "ready" : productTasks = [{name:"Task 4", type:"delivery"}];
-            break;
+                break;
             case "delivered" : productTasks = [];
-            break;
-                case "unpaid" : productTasks = [];
                 break;
-                case "uncompleted" : productTasks = [];
+            case "unpaid" : productTasks = [];
                 break;
-            default: console.log("no tasks monica")
+            case "uncompleted" : productTasks = [];
+                break;
+            case "pending" : productTasks = [];
+                break;
+            default:  productTasks = [];
          }
 
      }

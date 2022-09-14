@@ -13,8 +13,9 @@ export const EmployeeIndex = () => {
     const navigate = useNavigate()
     const handleNewEmployee = () => {
         navigate('new')
-        console.log("Redirecting to create employee")
     }
+
+    
     
   return (
     <>
