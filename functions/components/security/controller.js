@@ -7,7 +7,7 @@ import { error } from '../../network/response.js'
 export const getPassphraseByUid = (uid) => {
     return new Promise(async (resolve, reject) => {
         const passModel = mongoose.model('passphrase', Passphrase)
-
+        console.log(uid)
         passModel.findOne({uid:uid}).exec()
         .then((pass) => {
             resolve(pass)
@@ -15,7 +15,6 @@ export const getPassphraseByUid = (uid) => {
         .catch(err => {
             reject(err)
         })
-    
     })
 }
 export const isAuthenticated = (req, res, next) => {

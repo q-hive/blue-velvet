@@ -201,20 +201,26 @@ export const createNewOrder = (orgId, order) => {
         }
         const allProducts = await getAllProducts(orgId)
 
-        const mappedProducts = order.products.map((prod) => {
-            const isMix = allProducts.find((product) => {
+        const mappedProducts = order.products.map(async (prod) => {
+            const product = allProducts.find((product) => {
                 return product._id.equals(prod._id)
-            }).mix.isMix
+            })
 
+            await orgModel.updateOne({_id:orgId,"containers.0.products":{"$elemMatch":{_id:product._id}}},{"$set":{
+                "containers.0.products.$.status":"production"
+            }})
+        
             return {
                 _id:            prod._id,
                 name:           prod.name,
                 status:         prod.status,
                 seedId:         prod?.seedId,
                 packages:       prod.packages,
-                mix:            isMix
+                mix:            product.mix.isMix
             }
         })
+
+        const mappedAndUpdatedProducts = await Promise.all(mappedProducts)
 
         let prc = getOrdersPrice(order, allProducts)
         if(prc === undefined || prc === null){
@@ -233,7 +239,7 @@ export const createNewOrder = (orgId, order) => {
                 date:           order.date,
                 end:            end,
                 productionData: prodData,
-                products:       mappedProducts,
+                products:       mappedAndUpdatedProducts,
                 status:         order.status
             }
             
