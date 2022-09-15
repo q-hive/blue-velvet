@@ -55,8 +55,10 @@ export const EntryPoint = () => {
     }
 
     const handleStartWork = () => {
-        
-        isOnTime ? 
+        //Change to 'true' to test Full Chamber
+        //isOnTime 
+        true
+        ? 
             {
                 ...orders.length != 0 ?
                     navigate('./../tasks/work',

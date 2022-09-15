@@ -57,6 +57,12 @@ export const TaskTest = (props) => {
                 steps=[{step:"Unpaid"}]
                 }
                 break;
+                case "pending": {
+                    contentTitle = "Pending"
+                    content = <Typography>The order is in PENDING status, please wait until the Order is Ready</Typography>
+                    steps=[{step:"Pending"}]
+                    }
+                    break;
 
                 case "uncompleted": {
                 contentTitle = "Unpaid"
@@ -76,6 +82,7 @@ export const TaskTest = (props) => {
                     {step:"Shelf"},
                 ]
             } break;
+            
 
         case "growing": {
             contentTitle = "Growing"

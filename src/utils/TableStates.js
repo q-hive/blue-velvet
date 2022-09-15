@@ -309,6 +309,7 @@ export const productsColumns = [
         field:"status",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"Status",
         flex:1
     },
@@ -319,6 +320,7 @@ export const productsColumnsMobile = [
         field:"name",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"Microgreen",
         minWidth:150,
         flex:1,
@@ -327,6 +329,7 @@ export const productsColumnsMobile = [
         field:"orders",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"Orders",
         width:150,
         renderCell:(params) => {
@@ -339,6 +342,7 @@ export const productsColumnsMobile = [
         field:"tasks",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"Options",
         width:150,
         flex:1
@@ -351,18 +355,21 @@ export const ProductionLinesColumns = [
         field:"start",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"Start date"
     },
     {
         field:"end",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"End Date"
     },
     {
         field:"updated",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"Updated",
         width:150
     },
@@ -370,6 +377,7 @@ export const ProductionLinesColumns = [
         field:"orders",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"Orders",
         width:150,
         renderCell:(params) => {
@@ -380,6 +388,7 @@ export const ProductionLinesColumns = [
         field:"Active",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"Active tasks",
         width:150
     },
@@ -387,6 +396,7 @@ export const ProductionLinesColumns = [
         field:"products",
         headerClassName:"header-products-table",
         headerAlign:"center",
+        align:"center",
         headerName:"Products",
         renderCell:(params) => {
             return 35
@@ -399,6 +409,7 @@ export const salesColumns = [
         field:"id",
         headerName:"ID",
         headerAlign:"center",
+        align:"center",
         headerClassName:"header-sales-table",
         minWidth:{xs:"25%",md:130},
         flex:1
@@ -407,6 +418,7 @@ export const salesColumns = [
         field:"customer",
         headerName:"Customer",
         headerAlign:"center",
+        align:"center",
         headerClassName:"header-sales-table",
         minWidth:{xs:"25%",md:130},
         flex:1
@@ -416,6 +428,7 @@ export const salesColumns = [
         headerName:"Tuesday",
         headerClassName:"header-sales-table",
         headerAlign:"center",
+        align:"center",
         minWidth:{xs:"25%",md:100},
         flex:1
     },
@@ -424,6 +437,7 @@ export const salesColumns = [
         headerName:"Friday",
         headerClassName:"header-sales-table",
         headerAlign:"center",
+        align:"center",
         minWidth:{xs:"25%",md:100},
         flex:1
     },
@@ -432,6 +446,7 @@ export const salesColumns = [
         headerName:"type",
         headerClassName:"header-sales-table",
         headerAlign:"center",
+        align:"center",
         minWidth:{xs:"25%",md:130},
         flex:1
     },
@@ -440,6 +455,7 @@ export const salesColumns = [
         headerName:"Income",
         headerClassName:"header-sales-table",
         headerAlign:"center",
+        align:"center",
         minWidth:{xs:"25%",md:130},
         flex:1
     },
@@ -447,10 +463,127 @@ export const salesColumns = [
         field:"status",
         headerName:"Status",
         headerAlign:"center",
+        align:"center",
         headerClassName:"header-sales-table",
         minWidth:{xs:"25%",md:130},
         flex:1
     },
+    {
+        field:"actions",
+        headerName:"Actions",
+        headerAlign:"center",
+        align:"center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1,
+        renderCell:() => {
+            const editOrder = () => console.log("Update Order")
+            const deleteOrder = () => console.log("Deleting Order")
+            
+            const actions = [{label:"Delete", execute:deleteOrder}, {label:"Update", execute:editOrder}]
+
+            const [modal,setModal] = useState({
+                open:false,
+                title:"",
+                content:"",
+                actions:[]
+            })
+            const [dialog, setDialog] = useState({
+                open:false,
+                title:"",
+                message:"",
+                actions:[]
+            })
+
+            const [loading, setLoading] = useState(false)
+
+            const {user, credential} = useAuth()
+            const navigate = useNavigate()
+            
+            const handleModal = () => {
+                setModal({
+                    ...modal,
+                    open:true,
+                    title:"Select an action",
+                    actions: [
+                        {
+                            label:"Update order",
+                            btn_color:"white_btn",
+                            type:"privileged",
+                            execute:() => {
+                                editOrder()
+                                // navigate(`/${user.uid}/${user.role}/production/editProduct/?id=${params.id}`)
+                            }
+                        },
+                        {
+                            label:"Delete order",
+                            type:"dangerous",
+                            btn_color:"secondary",
+                            execute:() => {
+                                setModal({
+                                    ...modal,
+                                    open:false
+                                })
+                                setDialog({
+                                    ...dialog,
+                                    open:true,
+                                    title:"Are you sure you want to delete this order?",
+                                    actions:[
+                                        {
+                                            label:"Yes",
+                                            btn_color:"primary",
+                                            execute:() => {
+                                                setDialog({
+                                                    ...dialog,
+                                                    open:false,
+                                                })
+                                                setLoading(true)
+                                            }
+                                        },
+                                        {
+                                            label:"No",
+                                            btn_color:"primary",
+                                            execute:() => {
+                                                setDialog({
+                                                    ...dialog,
+                                                    open:false,
+                                                })
+                                            }
+                                        },
+                                    ]
+                                })
+                            }
+                        },
+                    ]
+                })
+
+            }
+            
+            return (
+                <>
+                    <UserModal
+                    modal={modal}
+                    setModal={setModal}
+                    title={modal.title}
+                    content={modal.content}
+                    actions={modal.actions}
+                    />
+
+                    <UserDialog
+                    title={dialog.title}
+                    content={dialog.message}
+                    dialog={dialog}
+                    setDialog={setDialog}
+                    actions={dialog.actions}
+                    open={dialog.open}
+                    />
+                    <Button variant="contained" onClick={handleModal} disabled={loading} sx={BV_THEME.button.table}>View</Button>
+                </>
+
+                
+            )
+        } 
+    }
 ]
 
 export const CustomerColumns = [
@@ -458,6 +591,7 @@ export const CustomerColumns = [
         field:"_id",
         headerName: "ID",
         headerAlign: "center",
+        align:"center",
         headerClassName:"header-sales-table",
         minWidth:{xs:"25%",md:130},
         flex:1
@@ -466,6 +600,7 @@ export const CustomerColumns = [
         field:"name",
         headerName: "Name",
         headerAlign: "center",
+        align:"center",
         headerClassName:"header-sales-table",
         minWidth:{xs:"25%",md:130},
         flex:1
@@ -474,6 +609,7 @@ export const CustomerColumns = [
         field:"sales",
         headerName: "$ Sales",
         headerAlign: "center",
+        align:"center",
         headerClassName:"header-sales-table",
         minWidth:{xs:"25%",md:130},
         flex:1
@@ -482,6 +618,7 @@ export const CustomerColumns = [
         field:"orders",
         headerName: "Pending Orders",
         headerAlign: "center",
+        align:"center",
         headerClassName:"header-sales-table",
         minWidth:{xs:"25%",md:130},
         flex:1,
@@ -492,7 +629,9 @@ export const CustomerColumns = [
     {
         field: "actions",
         headerName:"Actions",
-        headerAlign:"center",headerClassName:"header-sales-table",
+        headerAlign:"center",
+        align:"center",
+        headerClassName:"header-sales-table",
         minWidth:{xs:"25%",md:130},
         flex:1,
         renderCell:() => {
@@ -597,7 +736,7 @@ export const CustomerColumns = [
                     actions={dialog.actions}
                     open={dialog.open}
                     />
-                    <Button onClick={handleModal}>View</Button>
+                    <Button variant="contained" onClick={handleModal} disabled={loading} sx={BV_THEME.button.table}>View</Button>
                 </>
 
                 
@@ -610,6 +749,7 @@ export const EmployeeColumns = [
         field:"_id",
         headerName: "ID",
         headerAlign: "center",
+        align:"center",
         headerClassName:"header-sales-table",
         minWidth:{xs:"25%",md:130},
         flex:1
@@ -618,6 +758,7 @@ export const EmployeeColumns = [
         field:"name",
         headerName: "Name",
         headerAlign: "center",
+        align:"center",
         headerClassName:"header-sales-table",
         minWidth:{xs:"25%",md:130},
         flex:1
@@ -626,6 +767,7 @@ export const EmployeeColumns = [
         field:"tasks",
         headerName: "Pending tasks",
         headerAlign: "center",
+        align:"center",
         headerClassName:"header-sales-table",
         minWidth:{xs:"25%",md:130},
         flex:1
@@ -634,6 +776,7 @@ export const EmployeeColumns = [
         field:"salary",
         headerName: "Salary",
         headerAlign: "center",
+        align:"center",
         headerClassName:"header-sales-table",
         minWidth:{xs:"25%",md:130},
         flex:1
@@ -642,6 +785,7 @@ export const EmployeeColumns = [
         field: "actions",
         headerName:"Actions",
         headerAlign:"center",
+        align:"center",
         headerClassName:"header-sales-table",
         minWidth:{xs:"25%",md:130},
         flex:1,
@@ -747,7 +891,7 @@ export const EmployeeColumns = [
                     actions={dialog.actions}
                     open={dialog.open}
                     />
-                    <Button onClick={handleModal}>View</Button>
+                    <Button variant="contained" onClick={handleModal} disabled={loading} sx={BV_THEME.button.table}>View</Button>
                 </>
 
                 
