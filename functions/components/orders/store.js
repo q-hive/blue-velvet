@@ -10,6 +10,7 @@ import { addTimeToDate } from '../../utils/time.js'
 import { getOrganizationById } from '../organization/store.js'
 import { getOrdersPrice, getOrderProdData } from './controller.js'
 import { getAllProducts } from '../products/store.js'
+import { updateContainer } from '../container/store.js'
 
 const orgModel = mongoose.model('organization', Organization)
 
@@ -250,7 +251,8 @@ export const createNewOrder = (orgId, order) => {
                 }
                 
                 organization.orders.push(orderMapped)
-    
+                
+                updateContainer(orgId, 0, "containers.capacity", value)
                 organization.save((err, org) => {
                     if(err) {
                         errorSaving.processError = err
