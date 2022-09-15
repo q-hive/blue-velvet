@@ -103,6 +103,7 @@ export const Dashboard = () => {
                             field:"col1",
                             headerName:"Employee",
                             headerAlign:"center",
+                            align:"center",
                             headerClassName:"header-sales-table",
                             minWidth:{xs:"25%",md:130},
                             flex:1
@@ -110,6 +111,7 @@ export const Dashboard = () => {
                             field:"col2",
                             headerName:"Performance rate",
                             headerAlign:"center",
+                            align:"center",
                             headerClassName:"header-sales-table",
                             minWidth:{xs:"25%",md:130},
                             flex:1

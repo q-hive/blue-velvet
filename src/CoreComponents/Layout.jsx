@@ -219,8 +219,6 @@ const BV_Layout = (props) => {
 
           </Toolbar>
           
-          <Divider />
-
           <Box display="flex" sx={{display:"flex", flexDirection:"column", width:"auto", height:"auto", p:2}}>
             {employeeTasks.length != 0 ?
             
