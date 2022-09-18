@@ -16,6 +16,7 @@ import useAuth from '../../../../contextHooks/useAuthContext'
 
 //*Network and API
 import api from '../../../../axios.js'
+import { useNavigate } from 'react-router-dom'
 
 
 const products = []
@@ -24,7 +25,7 @@ export const NewOrder = () => {
     //*Auth context
     const {user, credential} = useAuth()
 
-    
+    const navigate = useNavigate()
     //*Data States
     const [options, setOptions] = useState({
         customers:  [],
@@ -279,7 +280,7 @@ export const NewOrder = () => {
             mappedData = {
                 "customer": input.customer,
                 "products": useProducts ? products : [mappedInput],
-                "status":"pending",
+                "status":"seeding",
                 "date": input.date
             }
 
@@ -297,6 +298,7 @@ export const NewOrder = () => {
             if(response.status === 201){
                 setOpen(true);
                 products.splice(0, products.length-1)
+                navigate(`/${user.uid}/${user.role}/sales`)
             }
             if(response.status === 500){
                 setDialog({

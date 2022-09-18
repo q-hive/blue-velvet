@@ -47,32 +47,35 @@ export const TaskTest = (props) => {
     let steps
     let contentTitle
     let content
-
+    let expectedtTime
+    const trays = order.productionData.reduce((prev, curr) => {
+        return prev + curr.trays
+    },0)
     switch (type){
-        
-
-                case "unpaid": {
+            case "unpaid": {
                 contentTitle = "Unpaid"
+                expectedtTime = 0
                 content = <Typography>The order is in UNPAID status, please wait until the Order is Ready</Typography>
                 steps=[{step:"Unpaid"}]
-                }
+            }
                 break;
-                case "pending": {
-                    contentTitle = "Pending"
-                    content = <Typography>The order is in PENDING status, please wait until the Order is Ready</Typography>
-                    steps=[{step:"Pending"}]
-                    }
-                    break;
-
-                case "uncompleted": {
+            case "pending": {
+                contentTitle = "Pending"
+                expectedtTime = 0
+                content = <Typography>The order is in PENDING status, please wait until the Order is Ready</Typography>
+                steps=[{step:"Pending"}]
+            }
+                break;
+            case "uncompleted": {
                 contentTitle = "Unpaid"
+                expectedtTime = 0
                 content = <Typography>The order is in UNPAID status, please wait until the Order is Ready</Typography>
                 steps=[{step:"Unpaid"}]
-                }
+            }
                 break;
-
-        case "seeding": {
+            case "seeding": {
                 contentTitle = "Seeding"
+                expectedtTime = Number(Math.ceil(trays) * 2).toFixed(2)
                 content = <SeedingContent products={order.products} index={activeStep}/>
                 steps=[
                     {step:"Tools"},
@@ -81,7 +84,7 @@ export const TaskTest = (props) => {
                     {step:"Spray Seeds"},
                     {step:"Shelf"},
                 ]
-            } break;
+            }   break;
             
 
         case "growing": {
@@ -93,7 +96,8 @@ export const TaskTest = (props) => {
 
         case "harvestReady":{
                 contentTitle = "Harvesting"
-                content = <HarvestingContent index={activeStep}/>
+                expectedtTime = Number(Math.ceil(trays) * 2).toFixed(2)
+                content = <HarvestingContent products={order.products} index={activeStep}/>
                 steps=[
                     {step:"Setup"},
                     {step:"Recolection"},
@@ -104,6 +108,16 @@ export const TaskTest = (props) => {
 
         case "harvested":{
                 contentTitle = "Packing"
+                // expectedtTime = Number(Math.ceil(trays) * 2).toFixed(2)
+                const totalPacks = order.products.map((product) => {
+                    const total = product.packages.reduce((prev, curr) => {
+                        return prev + curr.number
+                    },0)
+
+                    return total
+                })
+
+                expectedtTime = Number((0.5*totalPacks[0])).toFixed(2)
                 content = <PackingContent index={activeStep}/>
                 steps=[
                     {step:"Tools"},
@@ -125,7 +139,9 @@ export const TaskTest = (props) => {
     const handleCompleteTask = () => {
         props.setFinished({value:true,counter:props.counter+1});
         setIsFinished(true)
-
+        //*save (set context) task name with completion time and order id relation
+        
+        
         const updateTask = async () => {
             let path = {path:"status", value:undefined}
             let response
@@ -319,7 +335,9 @@ export const TaskTest = (props) => {
                 {/*Specific task instructions*/}
                 <Box sx={{ width:{xs:"100%",sm:"65%"}, display:"flex", flexDirection:"column", padding:"5%", alignItems:"center" }}>          
                     <Typography variant="h3" color="primary">{contentTitle}</Typography>
+                    <Typography>Expected time: {expectedtTime} Minutes</Typography>
                     {content}
+                    
                 </Box>
                         
 

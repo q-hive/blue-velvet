@@ -129,13 +129,15 @@ export const getOrderProdData = (order, dbproducts, perProduct = false) => {
             switch(pkg.size){
                 case "small":
                     prod.packages[idx] = {
-                        ...prod.packages[idx], 
+                        ...prod.packages[idx],
+                        number:pkg.number, 
                         grams: prodFound.price[0].packageSize * pkg.number,
                     }
                     break;
                 case "medium":
                     prod.packages[idx] = {
                         ...prod.packages[idx], 
+                        number:pkg.number,
                         grams: prodFound.price[1].packageSize * pkg.number
                     }
                     break;

@@ -9,6 +9,7 @@ import { TaskTest } from './Tasks/WorkingTasks/TaskTest'
 import { BV_THEME } from '../../theme/BV-theme'
 import api from '../../axios.js'
 import { intlFormat } from 'date-fns'
+import { Timer } from '../../CoreComponents/Timer'
 
 export const EntryPoint = () => {
 
@@ -139,7 +140,7 @@ export const EntryPoint = () => {
 
     useEffect(() => {
         const getOrders = async ()=> {
-            const ordersData = await api.api.get(`${api.apiVersion}/orders/`,{
+            const ordersData = await api.api.get(`${api.apiVersion}/orders/uncompleted`,{
                 headers:{
                     "authorization":    credential._tokenResponse.idToken,
                     "user":             user
@@ -181,7 +182,6 @@ export const EntryPoint = () => {
             <Typography variant="h2" color="primary">Welcome, {user.name}</Typography>
             <Typography variant="h5" color="secondary">Here's your work</Typography><br/>
             <Typography variant="h6" color="secondary">You'll need aproximately TIME to finish your Tasks</Typography>
-
             <Box pt={4}>
                 <Typography variant="h6" >Pending Orders: {orders.length}</Typography>
                 <Button variant="contained" size="large" onClick={handleStartWork}>Start</Button>
