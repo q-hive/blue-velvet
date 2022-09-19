@@ -3,6 +3,7 @@ import Container from '../../models/container.js'
 import Organization from '../../models/organization.js'
 import {updateUser} from '../admin/store.js'
 import { updateOrganization } from '../organization/store.js'
+import { getAllOrders } from '../orders/store.js'
 
 const { ObjectId } = mongoose.Types
 const contModel = mongoose.model('containers', Container)
@@ -69,15 +70,38 @@ export const getContainerById = (id, orgId) => {
     return contModel.findById(ObjectId(id))
 }
 
-export const updateContainer = async (orgId,id, edit) => { 
-    //*TODO: Change to one query because is updateContainer not updateProductInContainer
-    let org = await orgModel.findById(orgId)
-    console.log(org.containers[0])
-    console.log(Object.keys(edit))
-    org.containers[0][Object.keys(edit)[0]].push(edit[Object.keys(edit)[0]])
-    await org.save()
+export const updateContainer = (orgId,id, edit) => { 
+    return new Promise(async (resolve, reject) => {
+        const stringForNestedDoc = edit
 
-    return org
+                
+        //*In order to update multiple containers, is necesary to check if the element share ordere
+        //*This is because orders define behavior on producction and tasks
+        const organization =  await orgModel.findOne({_id:orgId})
+        
+        const orders = organization.orders 
+        
+        const mappedOrders = organization.orders.map(async (order, idx) => {
+            const orders =  await getAllOrders(orgId, id, {key:"orders._id", value:order._id})
+            orgModel.updateOne({"$elemMatch":{_id:orgId, "orders":{"$elementMatch":{}}}})
+        })
+
+        Promise.all(mappedOrders)
+
+        
+        resolve("Container updated")
+        
+        // //*TODO: Change to one query because is updateContainer not updateProductInContainer
+        // let org = await orgModel.updateOne({_id:orgId}, {"$set": {
+            
+        // }})
+
+        
+        // org.containers[0][Object.keys(edit)[0]].push(edit[Object.keys(edit)[0]])
+        // await org.save()
+        // return org
+        
+    })
 }
 
 export const updateContainers = async (ids, edit) => {

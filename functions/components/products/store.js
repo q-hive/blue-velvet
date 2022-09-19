@@ -27,7 +27,8 @@ export const newProduct = (orgId, contId, product) => {
                 seed:       seedId,
                 provider:   provId,
                 price:      product.price,
-                parameters: product.parameters
+                parameters: product.parameters,
+                mix:        product.mix
             }
 
             

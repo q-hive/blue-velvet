@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 //*MUI COMPONENTS
 import { Box, Button, Checkbox, FormControlLabel, FormGroup, Grid, Stack, useTheme, } from '@mui/material'
@@ -38,12 +38,14 @@ import { useNavigate } from "react-router-dom";
 
 //Theme
 import { BV_THEME } from '../theme/BV-theme';
+import { useEffect } from 'react';
+import { Clock } from './Clock';
+import { Timer } from './Timer';
 
 
 const BV_Layout = (props) => {
     const {user, logout} = useAuth()
     const theme = useTheme(BV_THEME)
-
     const navigate = useNavigate()
 
     const handleRedirect = (e) => {
@@ -275,7 +277,7 @@ const BV_Layout = (props) => {
                         />
                       </Box>
                       
-                      
+                      <Clock/>
                       
                       <IconButton
                         size="large" edge={false}
@@ -332,8 +334,7 @@ const BV_Layout = (props) => {
               )
 
     const container = window !== undefined ? () => window().document.body : undefined;
-
-
+                            
     return (
         <>
           <Grid container spacing={1}>

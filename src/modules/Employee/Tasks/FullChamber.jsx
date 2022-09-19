@@ -17,6 +17,8 @@ import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { TaskTest } from './WorkingTasks/TaskTest'
 
 import LocalCafeIcon from '@mui/icons-material/LocalCafe';
+import { Timer } from '../../../CoreComponents/Timer.jsx'
+import { Clock } from '../../../CoreComponents/Clock'
 
 
 
@@ -76,28 +78,9 @@ export const FullChamber = () => {
             {"Prev Task"}
         </Button>
     )
-
-
-    useEffect(() => {
-        
-            canSeeNextTask.counter >= ordersList.length && (
-                <Button variant="contained" onClick={console.log("temevas")} title={"huh"} 
-                        sx={()=>({...carouselButtonSX,right:"5%"})}>
-                    {"Back to Dashboard"}
-                </Button>
-            )
-    
-        
-     })
-
-    
-    
-
-    // console.log(ordersList)
-
   return (
     <>
-    
+
     <Carousel
         emulatetouch={true} 
         showThumbs={false} 
@@ -108,7 +91,7 @@ export const FullChamber = () => {
         renderIndicator={false}
         selectedItem={canSeeNextTask.counter}
         onChange={carouselChange}
-    >
+        >
         {ordersList.map((order,index)=>{ 
             return(
                 <Box key={order.id} height="80vh" component={"div"}>
@@ -123,20 +106,24 @@ export const FullChamber = () => {
             )
         })}
     </Carousel>
+
+    <Timer/>
+    
     <Snackbar  anchorOrigin={{vertical: "bottom",horizontal: "center" }} open={open} autoHideDuration={5000} onClose={handleClose}>
         <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
             Task finished!
         </Alert>
     </Snackbar>
-            <Fab 
-            color="primary" 
-            size="medium"
-            aria-label="take a break"
-            sx={{position:"absolute",bottom: 30,
-            right: {xs:30,md:"40%"},}}
-            
-        >
-            <LocalCafeIcon />
-        </Fab>
+
+    
+    <Fab 
+    color="primary" 
+    size="medium"
+    aria-label="take a break"
+    sx={{position:"absolute",bottom: 30,
+    right: {xs:30,md:"40%"},}}
+    >
+        <LocalCafeIcon />
+    </Fab>
     </>
   )}

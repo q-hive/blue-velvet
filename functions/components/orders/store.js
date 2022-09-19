@@ -10,6 +10,7 @@ import { addTimeToDate } from '../../utils/time.js'
 import { getOrganizationById } from '../organization/store.js'
 import { getOrdersPrice, getOrderProdData } from './controller.js'
 import { getAllProducts } from '../products/store.js'
+import { updateContainer } from '../container/store.js'
 
 const orgModel = mongoose.model('organization', Organization)
 
@@ -58,6 +59,10 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined) => {
                     }
 
                     if(param && !key && !value){
+                        if(param === "uncompleted") {
+                            return order.status !== "delivered"
+                        }
+                        
                         return order.status === param
                     }
                 })
@@ -87,7 +92,6 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined) => {
                 })
 
                 mappedProds.forEach(prod => {
-
                     if(prod.mix){
                         prod.products.forEach((mixProd) => {
                             delete mixProd.mixId
@@ -103,7 +107,7 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined) => {
 
                 return mutableOrder
             })
-            
+
             resolve(mappedOrders)
         })
         .catch(err => {
@@ -250,10 +254,10 @@ export const createNewOrder = (orgId, order) => {
                 }
                 
                 organization.orders.push(orderMapped)
-    
+                
+                // updateContainer(orgId, 0, "containers.capacity", value)
                 organization.save((err, org) => {
                     if(err) {
-                        errorSaving.processError = err
                         reject(new Error(JSON.stringify(errorSaving)))
                     }
         
@@ -261,7 +265,7 @@ export const createNewOrder = (orgId, order) => {
                 })
             })
             .catch(err => {
-                errorFromOrg.processError =  err
+                console.log(err)
                 reject(new Error(JSON.stringify(errorFromOrg)))
             })    
         } else {
