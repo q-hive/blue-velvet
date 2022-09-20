@@ -22,11 +22,17 @@ function useInterval(cb, delay) {
 
 export const Clock = ({withTimer}) => {
     const [time, setTime] = useState(new Date())
+    
+    function addZero(i) {
+      if (i < 10) {i = "0" + i}
+      return i;
+    }
+
     const normalizeDate = (date) => {
         let newDate
 
         //*HH:MM:SS
-        newDate = date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds()
+        newDate = addZero(date.getHours()) + ':' + addZero(date.getMinutes()) + ':' + addZero(date.getSeconds())
                     
         
         return newDate

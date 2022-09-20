@@ -24,9 +24,17 @@ export const Timer = () => {
     const updateTime = () => {
       setTime(time+1000)
     }
+    function addZero(i) {
+      if (i < 10) {i = "0" + i}
+      return i;
+    }
+    let h = addZero(Math.floor((time/(60000*60))%60));
+    let m = addZero(Math.floor((time/60000)%60));
+    let s = addZero((time/1000)%60);
+    let formattedTime = h + ":" + m + ":" + s;
     
     useInterval(updateTime, 1000)
   return (
-    <Typography>Current Time {Math.floor((time/(60000*60))%60)}:{Math.floor((time/60000)%60)}:{(time/1000)}</Typography>
+    <Typography>Elapsed Time {formattedTime}</Typography>
   )
 }
