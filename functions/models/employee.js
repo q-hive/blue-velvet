@@ -13,6 +13,10 @@ const Employee = new Schema({
     image:          { type: String,     required: true              },
     salary:         { type: Number,     required: true              },   
     address:        { type: Address,    required: true              },
+    performance:    { type: {
+        // tasksCompleted:    [{type, time, order}],
+        ratio: Number
+    },          required: false             }
 },
 {
     query: {

@@ -21,6 +21,7 @@ import { SeedingContent } from './SeedingContent.jsx';
 import { HarvestingContent } from './HarvestingContent.jsx';
 import { PackingContent } from './PackingContent.jsx';
 import { DeliveryContent } from './DeliveryContent.jsx';
+import { Timer } from '../../../../CoreComponents/Timer'
 
 export const TaskTest = (props) => {
     const theme = useTheme(BV_THEME);
@@ -48,9 +49,11 @@ export const TaskTest = (props) => {
     let contentTitle
     let content
     let expectedtTime
+    
     const trays = order.productionData.reduce((prev, curr) => {
         return prev + curr.trays
     },0)
+
     switch (type){
             case "unpaid": {
                 contentTitle = "Unpaid"
@@ -336,6 +339,7 @@ export const TaskTest = (props) => {
                 <Box sx={{ width:{xs:"100%",sm:"65%"}, display:"flex", flexDirection:"column", padding:"5%", alignItems:"center" }}>          
                     <Typography variant="h3" color="primary">{contentTitle}</Typography>
                     <Typography>Expected time: {expectedtTime} Minutes</Typography>
+                    <Timer contxt="task"/>
                     {content}
                     
                 </Box>

@@ -19,7 +19,7 @@ function useInterval(cb, delay) {
   }, []);
 }
 
-export const Timer = () => {
+export const Timer = ({contxt}) => {
     const [time, setTime] = useState(0);
     const updateTime = () => {
       setTime(time+1000)
@@ -27,6 +27,6 @@ export const Timer = () => {
     
     useInterval(updateTime, 1000)
   return (
-    <Typography>Current Time {Math.floor((time/(60000*60))%60)}:{Math.floor((time/60000)%60)}:{(time/1000)}</Typography>
+    <Typography>Current {contxt} time: {Math.floor((time/(60000*60))%60)}:{Math.floor((time/60000)%60)}:{Math.floor((time/1000)%60)}</Typography>
   )
 }

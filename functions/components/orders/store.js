@@ -14,7 +14,7 @@ import { updateContainer } from '../container/store.js'
 
 const orgModel = mongoose.model('organization', Organization)
 
-export const getAllOrders = (orgId, req, filtered=false, filter=undefined) => {
+export const getAllOrders = (orgId, req, filtered=false, filter=undefined, production=true) => {
     return new Promise((resolve, reject) => {
         const orgIDNotProvided = {
             "message":  "Organization ID was not provided",
@@ -69,7 +69,9 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined) => {
                 
             }
 
-
+            if(!production){
+                return resolve(orgOrders)
+            }
             const mappedOrders = orgOrders.map((order, orderIndex) => {
                 const production = getOrderProdData(order, org.containers[0].products, true)
                 const mutableOrder = order.toObject()
@@ -119,16 +121,17 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined) => {
     })
     
 }
-export const getFilteredOrders = (orgId, req) => {
+export const getFilteredOrders = (orgId, req, production) => {
     return new Promise((resolve, reject) => {
         let key
         let value
         if(req.query){
+            console.log(req.query)
             key = req.query.key
             value = req.query.value
         }
 
-        getAllOrders(orgId, req, true, {key, value})
+        getAllOrders(orgId, req, true, {key, value}, production)
         .then((orders) => {
             resolve(orders)
         })
@@ -220,7 +223,8 @@ export const createNewOrder = (orgId, order) => {
                 status:         prod.status,
                 seedId:         prod?.seedId,
                 packages:       prod.packages,
-                mix:            product.mix.isMix
+                mix:            product.mix.isMix,
+                price:          product.price
             }
         })
 

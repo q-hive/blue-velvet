@@ -6,7 +6,7 @@ import fileUpload from 'express-fileupload'
 
 import { 
     adminRoutes, ordersRoutes, organizationRoutes, 
-    productsRoutes, taskRoutes, passphraseRoutes, customerRoutes 
+    productsRoutes, taskRoutes, passphraseRoutes, customerRoutes, filesApi 
 } from './network/routes.js'
 
 import { authRoutes } from './network/routes.js'
@@ -56,6 +56,7 @@ productsRoutes(app)
 passphraseRoutes(app)
 organizationRoutes(app)
 customerRoutes(app)
+filesApi(app)
 
 const server = http.createServer(app)
 
