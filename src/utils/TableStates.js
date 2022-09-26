@@ -22,15 +22,6 @@ export const productsColumns = [
         flex:1,
     },
     {
-        field:"performance",
-        headerClassName:"header-products-table",
-        headerAlign:"center",
-        align:"center",
-        headerName:"Performance",
-        flex:1,
-
-    },
-    {
         field:"tasks",
         headerClassName:"header-products-table",
         headerAlign:"center",
@@ -98,9 +89,20 @@ export const productsColumns = [
         headerClassName:"header-products-table",
         headerAlign:"center",
         align:"center",
-        headerName:"Seed charge",
+        headerName:"Seed",
         renderCell:(params) => {
             return 35
+        },
+        flex:1
+    },
+    {
+        field:"harvestRate",
+        headerClassName:"header-products-table",
+        headerAlign:"center",
+        align:"center",
+        headerName:"Harvest",
+        renderCell:(params) => {
+            return 300
         },
         flex:1
     },
@@ -202,14 +204,6 @@ export const productsColumns = [
                             type:"privileged",
                             execute:() => {
                                 navigate(`/${user.uid}/${user.role}/production/editProduct/?id=${params.id}`)
-                            }
-                        },
-                        {
-                            label:"Allocate task",
-                            btn_color:"white_btn",
-                            type:"normal",
-                            execute:() => {
-                                console.log("Redirect to task allocation screen")    
                             }
                         },
                         {
@@ -512,6 +506,15 @@ export const salesColumns = [
                             type:"privileged",
                             execute:() => {
                                 editOrder()
+                                // navigate(`/${user.uid}/${user.role}/production/editProduct/?id=${params.id}`)
+                            }
+                        },
+                        {
+                            label:"Get Order's invoice",
+                            btn_color:"white_btn",
+                            type:"privileged",
+                            execute:() => {
+                                getOrderInvoice()
                                 // navigate(`/${user.uid}/${user.role}/production/editProduct/?id=${params.id}`)
                             }
                         },
