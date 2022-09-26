@@ -10,6 +10,7 @@ import { BV_THEME } from '../../theme/BV-theme'
 import api from '../../axios.js'
 import { intlFormat } from 'date-fns'
 import { Timer } from '../../CoreComponents/Timer'
+import { DataGrid } from '@mui/x-data-grid'
 
 export const EntryPoint = () => {
 
@@ -136,6 +137,12 @@ export const EntryPoint = () => {
         {name:"Seeding", time:"5:04"},
         {name:"Harvesting", time:"6:04"},
     ]
+
+    const completedTasksRows = [
+        { id: 1, col1: 'Seeding', col2: Math.random()},
+        { id: 2, col1: 'Harvesting', col2: Math.random()},
+        { id: 3, col1: 'Seeding', col2: Math.random() },
+      ];
 
 
     useEffect(() => {
@@ -278,18 +285,47 @@ export const EntryPoint = () => {
                 </Grid>
 
                 {/*Completed tasks */}
-                <Grid item xs={12} md={4}>
-                    <Paper sx={fixedHeightPaper}>
+                <Grid item xs={12} md={8}>
+                    <Paper sx={{...fixedHeightPaper,height:400,
+                        "& .header-sales-table":{
+                            backgroundColor:BV_THEME.palette.primary.main,
+                            color:"white"
+                        }}}>
                         <Typography variant="h6" color="secondary">Your Completed Tasks</Typography>
-                        {completedTasks.map((task,index) => { 
-                            return(
-                                <Paper variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"3px",paddingX:"2px",marginTop:"2vh",display:"flex", flexDirection:"row"}}>
-                                    <Typography><b>{task.name}</b>{" "}<br/>
-                                    Completion time: <i>{task.time}</i></Typography>
-                                    
-                                </Paper>                             
-                            )
-                        })}
+                        <DataGrid
+                            columns={[
+                                {
+                                    field:"col1",
+                                    headerName:"Type",
+                                    headerAlign:"center",
+                                    align:"center",
+                                    headerClassName:"header-sales-table",
+                                    minWidth:{xs:"25%",md:130},
+                                    flex:1
+                                },
+                                {
+                                    field:"col2",
+                                    headerName:"Completion Time",
+                                    headerAlign:"center",
+                                    align:"center",
+                                    headerClassName:"header-sales-table",
+                                    minWidth:{xs:"25%",md:130},
+                                    flex:1
+                                },
+                                {
+                                    field:"id",
+                                    headerName:"id",
+                                    headerAlign:"center",
+                                    align:"center",
+                                    headerClassName:"header-sales-table",
+                                    minWidth:{xs:"25%",md:130},
+                                    flex:1
+                                },
+                            ]}
+                            rows={completedTasksRows}
+                            sx={{marginY:"2vh",}}>
+                        </DataGrid>
+                        
                     </Paper>
                 </Grid>
             </Grid>

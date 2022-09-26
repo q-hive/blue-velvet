@@ -13,10 +13,18 @@ import api from '../../../axios.js'
 
 //*THEME
 import { BV_THEME } from '../../../theme/BV-theme'
+import { UserDialog } from '../../../CoreComponents/UserFeedback/Dialog'
 
 export const NewEmployee = () => {
     const {user, credential} = useAuth()
     const navigate = useNavigate()
+
+    const [dialog, setDialog] = useState({
+        open:false,
+        title:"",
+        message:"",
+        actions:[]
+    })
     
     const [input, setInput] = useState({
         name:           undefined,
@@ -80,8 +88,53 @@ export const NewEmployee = () => {
             }
         })
         .then((res) => {
+            if(res.status === 500 || res.status === 400){
+                setDialog({
+                    ...dialog,
+                    open:true,
+                    title:"Employee could not be added",
+                    actions:[ 
+                        {
+                            label:"Retry",
+                            btn_color:"primary",
+                            execute:() => {
+                                window.location.reload()
+                            }
+                        },
+                        {
+                            label:"Close",
+                            btn_color:"secondary",
+                            execute:() => {
+                                setDialog({...dialog,open:false})
+                            }
+                        }
+                    ]
+                    
+                }) 
+            }
             if(res.status === 201){
-                navigate(`/${user.uid}/${user.role}/dashboard`)
+                setDialog({
+                    ...dialog,
+                    open:true,
+                    title:"Customer Added",
+                    actions:[ 
+                        {
+                            label:"Add Another",
+                            btn_color:"primary",
+                            execute:() => {
+                                window.location.reload()
+                            }
+                        },
+                        {
+                        label:"Go to Dashboard",
+                        btn_color:"white_btn",
+                        execute:() => {
+                            navigate(`/${user.uid}/${user.role}/dashboard`)
+                        }
+                        }
+                    ]
+                    
+                })
             }
         })
         .catch((err) => {
@@ -151,7 +204,16 @@ export const NewEmployee = () => {
 
     
         </Box>
+        
     </Box>
+    <UserDialog
+        setDialog={setDialog}
+        dialog={dialog}
+        open={dialog.open}
+        title={dialog.title}
+        content={dialog.message}
+        actions={dialog.actions}
+    />
     </>
   )
 }

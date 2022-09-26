@@ -76,17 +76,17 @@ export const createInvoiceHeader = (data) => {
         ${Object.keys(data.textLines).map((key) => {
             if(key === "adressContainer") {
                 return `
-                    <div id=${key}>
+                    <div id='${key}'>
                         ${Object.keys(data.textLines[key]).map((addressKey) => {
                             return `
-                                <h3 id=${addressKey}>${data.textLines[key][addressKey]}</h3>
+                                <h3 id='${addressKey}'>${data.textLines[key][addressKey]}</h3>
                             `
                         }).join('')}
                     </div>
                 `
             }
             
-            return `<h2 id=${key}>${data.textLines[key]}</h2>`
+            return `<h2 id='${key}'>${data.textLines[key]}</h2>`
         }).join('')}
         </div>
     `
@@ -94,12 +94,12 @@ export const createInvoiceHeader = (data) => {
 
 export const createCustomerDataStructure = (data) => {
     return `
-        <h2><strong>Bill to</strong></h2>
+        <h2><strong>Bill to:</strong></h2>
 
         ${Object.keys(data).map((key) => {
             if(key === "adressContainer") {
                 return `
-                    <div id=${key}>
+                    <div id='${key}'>
                         ${Object.keys(data[key]).map((addressKey) => {
                             return `
                                 <h3 id=${addressKey}>${data[key][addressKey]}</h3>
@@ -108,7 +108,7 @@ export const createCustomerDataStructure = (data) => {
                     </div>
                 `
             }
-            return `<h2 id=${key}>${data[key]}</h2>`
+            return `<h2 id='${key}'>${data[key]}</h2>`
         }).join('')}
     `
 }
@@ -116,7 +116,7 @@ export const createCustomerDataStructure = (data) => {
 const createInvoiceDataHTML = (data) => {
     return `
         ${Object.keys(data).map((key) => {
-            return `<h2 id=${key}>${data[key]}</h2>`
+            return `<h2 id='${key}'>${data[key]}</h2>`
         }).join('')}
     `
 }
@@ -383,6 +383,9 @@ export const createConfigObjectFromOrder = async (order) => {
             }
             #headerContainer {
                 justify-content:space-between;
+            }
+            #addressContainer {
+                display: flex;
             }
             `,
             textLines: {
