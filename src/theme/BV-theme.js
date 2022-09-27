@@ -10,7 +10,7 @@ export const BV_THEME = createTheme({
             light: "#312ef0"
         },
         secondary: {
-            main:"#0E0C8F",
+            main:"#2f4da5",
         },
         white_btn:{
             main:"#F9F9F9"

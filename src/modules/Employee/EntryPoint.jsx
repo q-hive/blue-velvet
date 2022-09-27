@@ -9,8 +9,8 @@ import { TaskTest } from './Tasks/WorkingTasks/TaskTest'
 import { BV_THEME } from '../../theme/BV-theme'
 import api from '../../axios.js'
 import { intlFormat } from 'date-fns'
-import { Timer } from '../../CoreComponents/Timer'
 import { DataGrid } from '@mui/x-data-grid'
+import { Timer } from '../../CoreComponents/Timer'
 
 export const EntryPoint = () => {
 
