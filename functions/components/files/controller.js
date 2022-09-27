@@ -4,9 +4,10 @@ import { getCustomerById } from '../customer/store.js'
 import { getOrganizationById } from '../organization/store.js'
 import { getAllProducts } from '../products/store.js'
 import { buildPDFFromHTML } from './pdfManager.js'
-
-// const {pathname: buildPath} = new URL('./filesDB/newFile.html', import.meta.url)
-const buildPath = path.resolve('./components/files/filesDB/order.html')
+// import bvLogo from '../../assets/images/logos/blue-velvet'
+const buildPath = path.resolve('./components/files/filesDB/orderStyled.html')
+const blvtLogoPath = "https://github.com/q-hive/blue-velvet/blob/deploy/src/assets/images/LOGO_WHITE_BG.jpg?raw=true"
+const softwareLogoPath = "https://github.com/q-hive/blue-velvet/blob/deploy/src/assets/images/png-Logos/BlueVelvet-Logo.png?raw=true"
 /**
  * Take an object with the following model
  * @param {Object} item
@@ -52,14 +53,28 @@ export const createRow = (item) => {
  */
 export const createTable = (config) => {
     return `
-        <table>
-            <tr>
-                ${config.headers.map((header) => {
-                    return `<th>${header.name}</th>`
-                }).join('')}
-            </tr>
-            ${config.rows}
-        </table>
+        <div id="tableContainer">
+            <table style="width:75%;">
+                <thead>
+                    <tr>
+                        ${config.headers.map((header) => {
+                            return `<th>${header.name}</th>`
+                        }).join('')}
+                    </tr>
+                </thead>
+                <tbody>
+                    ${config.rows}
+                </tbody>
+                <tfoot>
+                    <td></td>
+                    <td></td>
+                    
+                    ${config.footer.join('')}
+                </tfoot>
+
+            </table>
+            
+        </div>
     `
 }
 
@@ -71,55 +86,109 @@ export const createTable = (config) => {
  * }
  */
 export const createInvoiceHeader = (data) => {
+    const getAddressContainer = () => {
+        const adressData = Object.entries(data.textLines).find((key) => {
+            return key[0] === "adressContainer"
+        })
+
+        console.log(adressData)
+
+        const h3 = Object.entries(adressData[1]).map((entry) => {
+            return `
+                <h3 id='${entry[0]}'>${entry[1]}</h3>
+            `
+        }).join('')
+
+        const adressHTML = `
+            <div id="addressContainer">
+                ${h3}
+            </div>
+        `
+
+
+        return adressHTML
+    }
+    const getClientContainer = () => {
+        const headerColumn1 = `
+            <h2 id="businessName">${data.textLines.businessName}</h2>
+            ${getAddressContainer()}
+            <br/>
+            <h2 id="phone">Phone Number: ${data.textLines.phone}</h2>
+            <h2 id="email">E-Mail: ${data.textLines.email}</h2>
+        `
+        const headerColumn2 = `
+            <h1 id='pdfType' class="right">${data.textLines.pdfType}</h1>
+        `
+
+        const headersHTML = `
+            <div class="headerColumn">
+                ${headerColumn1}
+            </div>
+            <div class="headerColumn">
+                ${headerColumn2}
+            </div>
+
+        `
+        return headersHTML
+    }   
+    
     return `
-        <div id="headerContainer">
-        ${Object.keys(data.textLines).map((key) => {
-            if(key === "adressContainer") {
-                return `
-                    <div id='${key}'>
-                        ${Object.keys(data.textLines[key]).map((addressKey) => {
-                            return `
-                                <h3 id='${addressKey}'>${data.textLines[key][addressKey]}</h3>
-                            `
-                        }).join('')}
-                    </div>
-                `
-            }
+        <header>
+            <div id="logoHeader">
+
+                <div class="headerColumn">
+                    <img src="${softwareLogoPath}" style="width:65%">
+                </div>
+                
+                <div class="headerColumn">
+                    <img src="${blvtLogoPath}" style="display:block;margin-left:auto;width:65%"/>
+                </div>
             
-            return `<h2 id='${key}'>${data.textLines[key]}</h2>`
-        }).join('')}
+            </div>
+        </header>
+    
+        <div id="clientContainer" class="orderContainer">
+            ${getClientContainer()}
+        </div>
+
+        <hr class="divider"/>
+    `
+}
+
+export const createCustomerBillingStructure = (data) => {
+    return `
+        <div id="billingContainer" class="orderContainer">
+            <div style="width:10%; float:left;">
+                <h2><strong>Bill to:</strong></h2>
+            </div>
+
+            <div id='addressContainer' style="width:40%;float:left;">
+                <h2 id="clientName">${data.customer.clientName}</h2>
+                ${Object.keys(data.customer.adressContainer).map((key) => {
+                    return `
+                        <p id=${key}>${data.customer.adressContainer[key]}</p>
+                    `
+                }).join('')}
+            </div>
+            
+            <div style="width:50%;float:left;">
+                <h3 id="invoiceNumber"><b>Invoice Number: <b/> ${data.invoice.invoiceNumber}</h3>
+                <h3 id="date"><b>Date:</b> ${data.invoice.date}</h3>
+            </div>
         </div>
     `
 }
 
-export const createCustomerDataStructure = (data) => {
-    return `
-        <h2><strong>Bill to:</strong></h2>
+// const createInvoiceDataHTML = (data) => {
+//     return `
+//         <div id="billingContainer" class="orderContainer">
+//             ${Object.keys(data).map((key) => {
 
-        ${Object.keys(data).map((key) => {
-            if(key === "adressContainer") {
-                return `
-                    <div id='${key}'>
-                        ${Object.keys(data[key]).map((addressKey) => {
-                            return `
-                                <h3 id=${addressKey}>${data[key][addressKey]}</h3>
-                            `
-                        }).join('')}
-                    </div>
-                `
-            }
-            return `<h2 id='${key}'>${data[key]}</h2>`
-        }).join('')}
-    `
-}
-
-const createInvoiceDataHTML = (data) => {
-    return `
-        ${Object.keys(data).map((key) => {
-            return `<h2 id='${key}'>${data[key]}</h2>`
-        }).join('')}
-    `
-}
+//                 return `<h2 id='${key}'>${data[key]}</h2>`
+//             }).join('')}
+//         </div>
+//     `
+// }
 
 /** 
  * @description receives an Object with the style and the body as strings containing the html
@@ -134,7 +203,7 @@ export const createHTML = (config) => {
             </head>
 
             <body>
-                <header>${config.header.content}</header>
+                ${config.header.content}
                 ${config.body}
             </body>
         </html>
@@ -160,18 +229,21 @@ const createOrderPDFStruct = (data) => {
     const header = createInvoiceHeader(data.header)
     
     //*SETS THE HTML STRUCTURE FOR THE CUSTOMER DATA
-    const customerData = createCustomerDataStructure(data.customerData)
+    const customerData = createCustomerBillingStructure({customer:data.customerData, invoice:data.invoiceData})
 
     //*SETS THE HTML STRUCTURE FOR THE INVOICE DATA
-    const invoiceData = createInvoiceDataHTML(data.invoiceData)
+    // const invoiceData = createInvoiceDataHTML(data.invoiceData)
     //*SETS THE HTML STRUCTURE FOR THE ORDER TABLE
      //*Generate rows
     const rows = data.table.rows.map((row) => createRow(row)).join('');
     
-    
+    const footer = data.table.footer
+
+
     const table = createTable({
         headers:data.table.headers,
-        rows:rows
+        rows:rows,
+        footer: footer
     })
 
     //*RETURNS THE HTML STRUCTURE
@@ -181,7 +253,7 @@ const createOrderPDFStruct = (data) => {
             style: data.header.style,
             content: header
         },
-        body: `${customerData} ${invoiceData} ${table}`
+        body: `${customerData} ${table}`
     }
 }
 
@@ -339,12 +411,12 @@ export const createConfigObjectFromOrder = async (order) => {
             },
             {
                 value: `${mapProd.map((price) => {
-                    return `Size: ${price.size} Price: ${price.price}`
+                    return `${price.size}: ${price.price}`
                 })}`
             },
             {
                 value: `${mapProd.map((price) => {
-                    return `Size: ${price.size} Ordered: ${price.qty}`
+                    return `${price.size}: ${price.qty}`
                 })}`
             },
             {
@@ -355,37 +427,109 @@ export const createConfigObjectFromOrder = async (order) => {
         return {data:productData}
     })
 
-    mappedTable = {headers, rows}
+    const footer = ['<td id="total" class="right, endTable"><b>Total :</b><th/>', `<td class="endTable">${order.price}</td>`]
+    mappedTable = {headers, rows, footer}
     return {
         header:{
             style: ` 
+            body{
+                font-family: Arial, Helvetica, sans-serif;
+                width:65em;
+                padding-bottom: 5%;
+            }
+
+            p{
+                font-size: 1.8vh;
+                font-weight: 500;
+            }
+            h3{
+                font-weight: 500;
+            }
+
+            
+            .right{text-align:right;align-items: right;}
+            
             table {
                 width: 100%;
-              }
+                border-spacing: 0px;
+                border-width: 0px;
+                border-style: hidden hidden solid;
+                border-collapse: collapse;
+            }
             tr {
-            text-align: left;
-            border: 1px solid black;
+                text-align: left;
             }
-            th, td {
-            padding: 15px;
+
+            th,td {
+                border-width: 2px;
+                padding: 15px;
+                border-style: solid;
+                border-color: #2F4DA5;
             }
-            table, th, td {
-            border:solid 1px black;
+
+            thead tr th {
+                background: #93cf0f;
+                color: #FFF;
             }
+
+
+            tfoot td{
+                background: #FFF;
+                border-style: hidden;
+            }
+
+            .endTable{
+                background: #FFF;
+                border-style: hidden hidden solid ;
+                border-collapse: separate !important;
+            }
+
             tr:nth-child(odd) {
-            background: #CCC
+                background: #CCC
             }
+
             tr:nth-child(even) {
-            background: #FFF
+                background: #FFF
             }
+
             .no-content {
-            background-color: red;
+                background-color: red;
             }
-            #headerContainer {
-                justify-content:space-between;
+
+            .orderContainer{
+                width:95%;
+                padding:3%;
+                margin-top: 1%;
+                overflow: auto;
+                
             }
+
+            #clientContainer {
+                justify-content: space-between;
+            }
+
+            #billingContainer{
+
+            }
+
             #addressContainer {
-                display: flex;
+                justify-content: space-evenly;
+            }
+            
+            #tableContainer {
+                width:100%;
+                display:flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .headerColumn{
+                width:50%;
+                float:left;
+            }
+            .divider{
+                border: 10px solid #2F4DA5;
+                border-radius: 5px;
             }
             `,
             textLines: {

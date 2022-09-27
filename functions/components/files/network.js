@@ -17,6 +17,7 @@ router.get('/order/invoice/:id', async (req, res) => {
         const config = await createConfigObjectFromOrder(order[0])
         createOrderInvoicePdf(config)
         .then((file) => {
+            console.log("PDF created succesfully")
             success(req, res, 200, "PDF obtained succesfully", file)
         })
         .catch((err) => {
