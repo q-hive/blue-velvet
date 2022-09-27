@@ -20,6 +20,7 @@ import { useNavigate } from 'react-router-dom'
 import useAuth from '../../../../contextHooks/useAuthContext'
 //*App components
 import { ProductsPrice } from '../components/ProductsPrice';
+import { borderColor } from '@mui/system';
 
 export const MixProductsForm = ({editing, product}) => {
     const theme = useTheme(BV_THEME);
@@ -82,6 +83,10 @@ export const MixProductsForm = ({editing, product}) => {
             message:""
         }
     })
+
+    const handleDeleteProduct = (product)=>{
+        
+    }
 
     const {user, credential} = useAuth()
     const navigate = useNavigate()
@@ -625,7 +630,30 @@ export const MixProductsForm = ({editing, product}) => {
                                 Set Mix
                             </Button>
 
+                            
+
                         </Box>
+
+                        {mix.products.length != 0 ? 
+                            <Box  sx={{display:"inline-block",minWidth:"15em",textAlign:"justify",alignItems:"center",marginTop:"10vh",padding:"3px"}}>
+                                <Typography sx={{textAlign:"center"}}>Added Products</Typography>
+                                {mix.products.map((product,id)=>{
+                                    return (
+                                        <Box key={id} sx={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:3}}>
+                                            <Typography sx={{flex:1}}>
+                                                {product.amount}% {product.product.name.toString()} 
+                                            </Typography>
+                                            <Button variant="contained" onClick={handleDeleteProduct(product)}>
+                                                Delete
+                                            </Button>
+                                        </Box>
+                                    )
+                                })}
+
+                            </Box>
+                            :
+                            null
+                        }
                                 </>
                                 ) : null
                 }
