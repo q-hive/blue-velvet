@@ -85,6 +85,19 @@ export const MixProductsForm = ({editing, product}) => {
     })
 
     const handleDeleteProduct = (product)=>{
+        console.log("antes",mix.products)
+
+          var arr = mix.products.filter(prod =>{
+            return prod.product.name != product.product.name
+          })
+          setMix({
+            ...mix,
+            products:arr
+            
+        })
+        
+        console.log("despues",mix.products)
+        console.log("tempArr",arr)
         
     }
 
@@ -636,14 +649,15 @@ export const MixProductsForm = ({editing, product}) => {
 
                         {mix.products.length != 0 ? 
                             <Box  sx={{display:"inline-block",minWidth:"15em",textAlign:"justify",alignItems:"center",marginTop:"10vh",padding:"3px"}}>
-                                <Typography sx={{textAlign:"center"}}>Added Products</Typography>
+                                <hr color="secondary"/>
+                                <Typography color="secondary" sx={{textAlign:"center",marginTop:1}}>Products in Mix</Typography>
                                 {mix.products.map((product,id)=>{
                                     return (
                                         <Box key={id} sx={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:3}}>
                                             <Typography sx={{flex:1}}>
                                                 {product.amount}% {product.product.name.toString()} 
                                             </Typography>
-                                            <Button variant="contained" onClick={handleDeleteProduct(product)}>
+                                            <Button variant="contained" onClick={()=>handleDeleteProduct(product)}>
                                                 Delete
                                             </Button>
                                         </Box>
@@ -654,8 +668,8 @@ export const MixProductsForm = ({editing, product}) => {
                             :
                             null
                         }
-                                </>
-                                ) : null
+                        </>
+                    ) : null
                 }
 
                             
