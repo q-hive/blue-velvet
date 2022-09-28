@@ -52,6 +52,77 @@ export const FullChamber = () => {
     
     const ordersList=orders
 
+    function getAllProducts(){
+        var productList = []
+        ordersList.map((order, id)=>{
+            order.products.map((product,idx)=>{
+                productList.push({...product,status:order.status})
+            })
+            
+        })
+        return productList;
+    }
+
+    const allProducts = getAllProducts()
+
+
+    {/* Products to send as props to TaskTest */}
+    function getProductsByType(type){
+        
+        var filteredProductList = []
+
+        allProducts.map((product, id)=>{
+            if(product.status===type)
+                filteredProductList.push(product)
+        })
+            return filteredProductList;
+
+    }
+
+    console.log("allproducts",allProducts)
+
+
+    
+
+    function filterByKey(obj, prop) {
+        {/* 
+            Returns an object with objects' desired prop as key, 
+            letting you have a "status as Key" object or a "name as key" object 
+            to name a few 
+        */}
+        return obj.reduce(function (acc, item) {
+      
+          let key = item[prop]
+      
+          if (!acc[key] ) { 
+            acc[key] = []
+          }
+          if(item["mix"]==true){
+            let mixProds = filterByKey(item.products,"item")
+
+            
+          }else if(!item.productionData){
+            acc[key].push({name:item.name,harvest:item.harvest,seeds:item.seeds,trays:item.trays,})
+            
+          }else
+            acc[key].push({...item.productionData,name:item.name})
+
+          return acc
+      
+        }, {})
+      
+      }
+
+
+      {/* The keys of this object will allow us to generate a tasks by status */}
+      const allStatusesObj = filterByKey(allProducts,"status")
+      console.log("all statuses",allStatusesObj)
+
+
+
+
+
+
     const carouselChange=(item,index)=>{
         {item<canSeeNextTask.counter ?
         setCanSeeNexttask({...canSeeNextTask,value:true}):setCanSeeNexttask({...canSeeNextTask,value:false})}
@@ -65,7 +136,7 @@ export const FullChamber = () => {
 
     const arrowNext = (onClickHandler, hasNext, label) =>
     hasNext && (
-        <Button disabled={canSeeNextTask.value == false} variant="contained" onClick={onClickHandler} title={"next task"} 
+        <Button disabled={false/*canSeeNextTask.value == false*/} variant="contained" onClick={onClickHandler} title={"next task"} 
                 sx={()=>({...carouselButtonSX,right:"5%"})}>
             {"Next Task"}
         </Button>
@@ -91,20 +162,22 @@ export const FullChamber = () => {
         renderIndicator={false}
         selectedItem={canSeeNextTask.counter}
         onChange={carouselChange}
-        >
-        {ordersList.map((order,index)=>{ 
+    >
+        {Object.keys(allStatusesObj).map((status,index)=>{ 
             return(
-                <Box key={order.id} height="80vh" component={"div"}>
+                <Box key={index} height="80vh" component={"div"}>
                     {TaskTest({ 
-                        type: order.status || null, 
-                        order:order,
+                        type: status || null, 
                         counter:canSeeNextTask.counter, 
                         setFinished:setCanSeeNexttask,
-                        setOpen:setOpen
-                    })}
+                        setOpen:setOpen,
+                        products:getProductsByType(status)})
+                    }
                 </Box>
             )
         })}
+
+        
     </Carousel>
 
     <Timer/>
@@ -117,11 +190,11 @@ export const FullChamber = () => {
 
     
     <Fab 
-    color="primary" 
-    size="medium"
-    aria-label="take a break"
-    sx={{position:"absolute",bottom: 30,
-    right: {xs:30,md:"40%"},}}
+        color="primary" 
+        size="medium"
+        aria-label="take a break"
+        sx={{position:"absolute",bottom: 30,
+        right: {xs:30,md:"40%"},}}
     >
         <LocalCafeIcon />
     </Fab>
