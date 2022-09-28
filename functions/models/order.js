@@ -22,7 +22,8 @@ const Order = new Schema({
             ],   required: true  },
             status:     { type: String,   required: true  },
             seedId:     { type: String,   required: false },
-            mix:        { type: Boolean,  required: true  }
+            mix:        { type: Boolean,  required: true  },
+            price:      { type:  [],      required: true  }
         }],
         required: true
     },
@@ -57,11 +58,11 @@ const Order = new Schema({
 
 //STATUS
 //* pending
+//* stopped
 //* Seeding
 //* GROWING -- 2 days p/w 7am
-//* harvestReady
-//* harvested
-//* packaged
+//* harvestingPacking
 //* ready
 //* delivered
+
 export default Order

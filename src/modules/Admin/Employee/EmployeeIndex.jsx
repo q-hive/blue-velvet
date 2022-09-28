@@ -1,10 +1,11 @@
 import { Add } from '@mui/icons-material'
 import { Box, Button, Container, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BV_THEME } from '../../../theme/BV-theme'
 import { EmployeeColumns } from '../../../utils/TableStates'
+import api from '../../../axios.js'
 
 export const EmployeeIndex = () => {
     const [rows, setRows] = useState([])
@@ -15,7 +16,9 @@ export const EmployeeIndex = () => {
         navigate('new')
     }
 
-    
+    useEffect(() => {
+        api.api.get(`${api.apiVersion}/`)
+    },[])
     
   return (
     <>

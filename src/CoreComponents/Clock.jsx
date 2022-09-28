@@ -45,7 +45,7 @@ export const Clock = ({withTimer}) => {
         })
     },1000)
   return (
-    <Typography color="primary">
+    <Typography color="black">
         {normalizeDate(time)}
     </Typography>
   )

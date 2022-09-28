@@ -180,7 +180,7 @@ export const FullChamber = () => {
         
     </Carousel>
 
-    <Timer/>
+    <Timer contxt="work"/>
     
     <Snackbar  anchorOrigin={{vertical: "bottom",horizontal: "center" }} open={open} autoHideDuration={5000} onClose={handleClose}>
         <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
