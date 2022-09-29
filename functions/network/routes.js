@@ -9,6 +9,7 @@ import productionRouter from '../components/production/network.js'
 import passphraseRouter from '../components/passphrase/network.js'
 import customersRouter from '../components/customer/network.js'
 import filesRouter from '../components/files/network.js'
+import workRouter from '../components/work/network.js'
 
 
 //*Middlewares
@@ -44,6 +45,11 @@ export const customerRoutes = (app) => {
 export const taskRoutes = (app) => {
     const authorized = ["admin", "employee"]
     app.use(`${apiV1}/tasks`, isAuthenticated, isAuthorized(authorized), tasksRouter)
+}
+
+export const workRoutes = (app) => {
+    const authorized = ["admin", "employee"]
+    app.use(`${apiV1}/work`, isAuthenticated, isAuthorized(authorized), workRouter)
 }
 
 export const productionRoutes = (app) => {

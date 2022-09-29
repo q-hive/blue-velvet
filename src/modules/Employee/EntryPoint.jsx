@@ -29,7 +29,7 @@ export const EntryPoint = () => {
     const [snackState, setSnackState] = useState({open:false,label:"",severity:""});
 
     //Time
-    const [isOnTime, setIsOnTime] = useState(false)
+    const [isOnTime, setIsOnTime] = useState(true)
 
     const getTime = () => {
         var today = new Date()
@@ -40,12 +40,12 @@ export const EntryPoint = () => {
         }
     };
 
-        const handleClose = (event, reason) => {
-            if (reason === 'clickaway') {
-            return;
-            }
-            setSnackState({...snackState,open:false});
-        };
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+        return;
+        }
+        setSnackState({...snackState,open:false});
+    };
 
     const handleViewTask = (type) => {
             navigate('taskTest',
@@ -57,9 +57,8 @@ export const EntryPoint = () => {
     }
 
     const handleStartWork = () => {
-        //Change to 'true' to test Full Chamber
-        //isOnTime 
-        true
+        // Change to 'true' to test Full Chamber
+        isOnTime 
         ? 
             {
                 ...orders.length != 0 ?

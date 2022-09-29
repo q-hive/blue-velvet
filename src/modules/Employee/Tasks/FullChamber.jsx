@@ -19,6 +19,7 @@ import { TaskTest } from './WorkingTasks/TaskTest'
 import LocalCafeIcon from '@mui/icons-material/LocalCafe';
 import { Timer } from '../../../CoreComponents/Timer.jsx'
 import { Clock } from '../../../CoreComponents/Clock'
+import useAuth from '../../../contextHooks/useAuthContext'
 
 
 
@@ -26,28 +27,39 @@ import { Clock } from '../../../CoreComponents/Clock'
 
 export const FullChamber = () => {
     //*DATA STATES
-
+    const {orders} = state
+    
 
     //*Netword and router
     const navigate = useNavigate()
-
-    
     const {state}= useLocation();
 
-    const {orders} = state
-
+    //*CONTEXTS
+    const {user, credential} = useAuth()
+    
+    //*render states
     const[canSeeNextTask,setCanSeeNexttask] = useState({value:false,counter:0})
 
+
+
     //Snackbar
-    const [open, setOpen] = useState(false);
+    const [snack, setSnack] = useState({
+        open:false,
+        state:"",
+        message:""
+    });
 
-        const handleClose = (event, reason) => {
-            if (reason === 'clickaway') {
-            return;
-            }
 
-            setOpen(false);
-        };
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+        return;
+        }
+
+        setSnack({
+            ...snack,
+            open:false
+        });
+    };
 
     
     const ordersList=orders
@@ -78,6 +90,43 @@ export const FullChamber = () => {
             {"Prev Task"}
         </Button>
     )
+
+    const updateEmployeePerformance = (expected, real) => {
+        //*EMPLOYEE PERFORMANCE = container capacity (real/expected)
+        //* if (real/expected) > 1 negative
+    }
+
+    useEffect(() => {
+        //*Update workdays of employee
+        api.api.patch(`${api.apiVersion}/work/performance/${user._id}`,{performance:[{workdays:1}]}, {
+            headers: {
+                authorization:credential._tokenResponse.idToken,
+                user:user
+            }
+        })
+        .then((res) => {
+            setSnack(() => {
+                return ({
+                    ...snack,
+                    open:true,
+                    state:"success",
+                    message:"Workdays updated"
+                })
+            
+            })
+        })
+        .catch((err) => {
+            setSnack(() => {
+                return ({
+                    ...snack,
+                    open:true,
+                    state:"success",
+                    message:"Workdays updated"
+                })
+            
+            })
+        })
+    },[])
   return (
     <>
 
@@ -100,7 +149,8 @@ export const FullChamber = () => {
                         order:order,
                         counter:canSeeNextTask.counter, 
                         setFinished:setCanSeeNexttask,
-                        setOpen:setOpen
+                        setOpen:setOpen,
+                        updatePerformance: updateEmployeePerformance
                     })}
                 </Box>
             )
@@ -109,9 +159,9 @@ export const FullChamber = () => {
 
     <Timer contxt="work"/>
     
-    <Snackbar  anchorOrigin={{vertical: "bottom",horizontal: "center" }} open={open} autoHideDuration={5000} onClose={handleClose}>
-        <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
-            Task finished!
+    <Snackbar  anchorOrigin={{vertical: "bottom",horizontal: "center" }} open={snack.open} autoHideDuration={5000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity={snack.status} sx={{ width: '100%' }}>
+            {snack.message}
         </Alert>
     </Snackbar>
 
