@@ -36,6 +36,6 @@ export const Timer = ({contxt}) => {
     
     useInterval(updateTime, 1000)
   return (
-    <Typography>Current {contxt} time: {Math.floor((time/(60000*60))%60)}:{Math.floor((time/60000)%60)}:{Math.floor((time/1000)%60)}</Typography>
+    <Typography>Current {contxt} time: {formattedTime}</Typography>
   )
 }
