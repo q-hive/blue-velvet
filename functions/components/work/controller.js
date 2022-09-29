@@ -41,6 +41,7 @@ export const updatePerformance = (orgId, id, array) => {
         })
         Promise.all(queries)
         .then(results => {
+            console.log(results)
             resolve(results)
         })
         .catch(err => {

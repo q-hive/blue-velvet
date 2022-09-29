@@ -98,7 +98,7 @@ export const FullChamber = () => {
 
     useEffect(() => {
         //*Update workdays of employee
-        api.api.patch(`${api.apiVersion}/work/performance/${user._id}`,{performance:[{workdays:1}]}, {
+        api.api.patch(`${api.apiVersion}/work/performance/${user._id}`,{performance:[{query:"add",workdays:1}]}, {
             headers: {
                 authorization:credential._tokenResponse.idToken,
                 user:user
