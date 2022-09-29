@@ -22,18 +22,29 @@ const taskCard_sx = {
 export const SeedingContent = (props) => {
 
     const products=props.products
-    
 
-    //Filtering Mix products and displaying them proposal
-    {/*products.forEach((product,index) => {
+    const productsObj = props.productsObj
 
-        if(product.isMix && product.products.lenght != 0){
-            product.products.forEach((mixProduct,idx)=>{
-                products.push(mixProduct)
-            })
-            products.splice(index)
+
+    const finalArray = getFinalArray()
+
+
+    {/* Adds all the relevant information of same name products */}
+    function getFinalArray(){
+        var array = []
+        var llaves = Object.keys(productsObj)
+
+        for(let i=0; i<llaves.length; i++){
+            array.push({
+                    name:llaves[i].toString(),
+                    harvest:productsObj[llaves[i]].harvest,
+                    seeds:productsObj[llaves[i]].seeds
+                })
         }
-    })*/}
+        return array
+    }
+    
+    console.log("finalarray",finalArray)
         
 
     const totalTrays =Math.ceil(sumAllTrays())
@@ -42,7 +53,8 @@ export const SeedingContent = (props) => {
         var i;
         var ttrays = 0;
         for (i = 0; i < products.length; i++) {
-          ttrays += Math.ceil(products[i].productionData.trays)
+          if(products[i].productionData != undefined)
+            ttrays += Math.ceil(products[i].productionData.trays)
         }
         return ttrays;
       }
@@ -58,11 +70,12 @@ export const SeedingContent = (props) => {
                     Seeding-tools<br/><b>{totalTrays}</b> {totalTrays>1 ? "Trays": "Tray"} <br/> 
                     <b>{totalTrays}</b> pre-cut {totalTrays>1 ? "Hemp-Mats": "Hemp-Mat"} <br/>
                 </Typography>
-                {products.map((product,index)=>{return(
-                    <Typography key={product.id} variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                        <b>{parseFloat(product.productionData.seeds).toFixed(2)}</b> grs of <b>{product.name}</b> Seeds <br/>
+                {finalArray.map((product,index)=>{return(
+                    <Typography key={index} variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+                        <b>{parseFloat(product.seeds).toFixed(2)}</b> grs of <b>{product.name}</b> Seeds <br/>
                     </Typography>
                 )})}
+                
                 
             </Box>
 

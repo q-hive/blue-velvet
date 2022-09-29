@@ -31,6 +31,7 @@ export const Timer = ({contxt}) => {
     let h = addZero(Math.floor((time/(60000*60))%60));
     let m = addZero(Math.floor((time/60000)%60));
     let s = addZero((time/1000)%60);
+    
     let formattedTime = h + ":" + m + ":" + s;
     
     useInterval(updateTime, 1000)

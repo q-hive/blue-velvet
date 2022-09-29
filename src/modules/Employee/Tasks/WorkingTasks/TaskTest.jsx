@@ -22,20 +22,21 @@ import { HarvestingContent } from './HarvestingContent.jsx';
 import { PackingContent } from './PackingContent.jsx';
 import { DeliveryContent } from './DeliveryContent.jsx';
 import { Timer } from '../../../../CoreComponents/Timer'
+import { ArrowCircleRightOutlined } from '@mui/icons-material'
 
 export const TaskTest = (props) => {
     const theme = useTheme(BV_THEME);
     
     const {user, credential} = useAuth()
     
-    const {state}= useLocation();
+    const {state} = useLocation();
 
     const [isFinished,setIsFinished] = useState(false)
     
     //* STEPPER
     const [activeStep, setActiveStep] = useState(0)
 
-    let type, order
+    let type, order, products
 
     if(state != null){
         ({type, order} = state);
@@ -43,17 +44,119 @@ export const TaskTest = (props) => {
     if(props != null){
         type=props.type
         order=props.order
+        products=props.products
     }
+
 
     let steps
     let contentTitle
     let content
     let expectedtTime
-    
-    const trays = order.productionData.reduce((prev, curr) => {
-        return prev + curr.trays
-    },0)
 
+    const trays = getTraysTotal(products)
+    
+    function getTraysTotal(producti){
+        let ttrays = 0
+        producti.map((product, id) => {
+            let prev = ttrays
+            let curr
+
+            { product.mix != undefined && product.mix===true  ?
+                curr = getTraysTotal(product.products)
+                :
+                product.productionData != undefined ? 
+                    curr = product.productionData.trays 
+                    : 
+                    curr=product.trays
+            }
+            ttrays = prev + curr
+        })
+        return ttrays
+    }
+
+
+      
+      function filterByKey(obj, prop) {
+        {/* 
+            Returns an object with objects' desired prop as key, 
+            letting you have a "status as Key" object or a "name as key" object 
+            to name a few 
+        */}
+        return obj.reduce(function (acc, item) {
+      
+          let key = item[prop]
+      
+          if (!acc[key] ) { 
+            acc[key] = []
+          }
+          if(item["mix"]==true){
+            let mixProds = filterByKey(item.products,"item")
+            console.log("solo soy uno",mixProds)
+
+            
+          }else if(!item.productionData){
+            acc[key].push({name:item.name,harvest:item.harvest,seeds:item.seeds,trays:item.trays,})
+            
+          }else
+            acc[key].push({...item.productionData,name:item.name})
+
+          return acc
+      
+        }, {})
+      
+      }
+
+      
+      const redplacedMixProducts = mixOpener(products)
+      console.log("mix opener",redplacedMixProducts)
+
+      
+      const productsByNameObj = filterByKey(redplacedMixProducts,"name")
+
+      function mixOpener(products) {
+        let arreglo = []
+        products.map((product,id)=>{
+            if(product.mix == true){
+                product.products.map((product2, id)=>{
+                    arreglo.push(product2)
+                })
+            }else 
+                arreglo.push(product)
+        })
+         return arreglo
+      }
+
+
+        const sumProdData = (arr, data) => {
+            let result = 0;
+            arr.forEach(product => {
+                result += product[data]
+                })
+            return result;
+        }
+
+        function setFinalProductionData(){
+            for(const key in productsByNameObj){
+
+                const h = sumProdData(productsByNameObj[key], 'harvest');
+                const s = sumProdData(productsByNameObj[key], 'seeds');
+                const t = sumProdData(productsByNameObj[key], 'trays');
+                
+                productsByNameObj[key]={harvest:h,seeds:s,trays:t}
+            }
+        }
+        setFinalProductionData()
+
+            
+
+            
+        console.log("Products By Name Object",productsByNameObj)
+
+      
+
+        
+    
+    
     switch (type){
             case "unpaid": {
                 contentTitle = "Unpaid"
@@ -79,7 +182,7 @@ export const TaskTest = (props) => {
             case "seeding": {
                 contentTitle = "Seeding"
                 expectedtTime = Number(Math.ceil(trays) * 2).toFixed(2)
-                content = <SeedingContent products={order.products} index={activeStep}/>
+                content = <SeedingContent products={products} productsObj={productsByNameObj} index={activeStep}/>
                 steps=[
                     {step:"Tools"},
                     {step:"Setup trays"},
@@ -100,7 +203,7 @@ export const TaskTest = (props) => {
         case "harvestReady":{
                 contentTitle = "Harvesting"
                 expectedtTime = Number(Math.ceil(trays) * 2).toFixed(2)
-                content = <HarvestingContent products={order.products} index={activeStep}/>
+                content = <HarvestingContent products={products} index={activeStep}/>
                 steps=[
                     {step:"Setup"},
                     {step:"Recolection"},
@@ -112,7 +215,7 @@ export const TaskTest = (props) => {
         case "harvested":{
                 contentTitle = "Packing"
                 // expectedtTime = Number(Math.ceil(trays) * 2).toFixed(2)
-                const totalPacks = order.products.map((product) => {
+                {/*const totalPacks = order.products.map((product) => {
                     const total = product.packages.reduce((prev, curr) => {
                         return prev + curr.number
                     },0)
@@ -121,6 +224,8 @@ export const TaskTest = (props) => {
                 })
 
                 expectedtTime = Number((0.5*totalPacks[0])).toFixed(2)
+                */}
+                expectedtTime = 3
                 content = <PackingContent index={activeStep}/>
                 steps=[
                     {step:"Tools"},
@@ -135,6 +240,12 @@ export const TaskTest = (props) => {
                 content = <DeliveryContent index={activeStep}/>
                 steps=[{step:"Delivery"}]
             } break;
+        
+        default: { 
+            contentTitle = "Error"
+            content = <Typography>Error</Typography>
+            steps=[{step:"error"}] 
+        } break;
             
     }
     
@@ -194,13 +305,13 @@ export const TaskTest = (props) => {
 
         updateTask()
         .then((response) => {
-            console.log(response)
+            console.log("response",response)
+            props.setSnack({...props.snack, open:true, message:"Task updated succesfully", status:"success"})
         })
         .catch(err => {
-            console.log(err)
+            console.log("err",err)
         })
 
-        props.setOpen(true)
     }
 
 

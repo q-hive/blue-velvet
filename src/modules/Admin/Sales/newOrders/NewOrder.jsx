@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react'
 //*MUI Components
 import { 
     Autocomplete, TextField, 
-    Typography, Button, Box, FormHelperText, getInputUtilityClass, Snackbar, Alert 
+    Typography, Button, Box, FormHelperText, getInputUtilityClass, Snackbar, Alert, Stack 
 } from '@mui/material'
 import {DatePicker, LocalizationProvider} from '@mui/x-date-pickers'
 import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns'
@@ -18,8 +18,6 @@ import useAuth from '../../../../contextHooks/useAuthContext'
 import api from '../../../../axios.js'
 import { useNavigate } from 'react-router-dom'
 
-
-const products = []
 
 export const NewOrder = () => {
     //*Auth context
@@ -39,6 +37,7 @@ export const NewOrder = () => {
         size:               undefined,
         date:               undefined
     });
+    const [products,setProducts]= useState([])
 
     //*Render states
     const [productsInput, setProductsInput] = useState(false)
@@ -209,6 +208,18 @@ export const NewOrder = () => {
             }
         }
     }
+    const handleDeleteProduct = (product)=>{
+        console.log("antes",products)
+
+          var arr = products.filter(prod =>{
+            return prod.name != product.name
+          })
+          setProducts(arr)
+        
+        console.log("despues",products)
+        console.log("tempArr",arr)
+        
+    }
     
     const handleSetOrder = async (e) => {
         if(e.target.id === "accept") {
@@ -230,6 +241,8 @@ export const NewOrder = () => {
             }
             return 
         }
+
+        
         
 
         const mapInput = () => {
@@ -532,8 +545,79 @@ export const NewOrder = () => {
                 Set Order
             </Button>
 
+            {/* Generate Feedback table */}
+            {products.length != 0 ? 
+                <Box  sx={{display:"inline-block",minWidth:"22em",textAlign:"justify",alignItems:"center",marginTop:"10vh",padding:"3px"}}>
+                    <hr color="secondary"/>
+                    <Typography color="secondary" sx={{textAlign:"center",marginTop:1}}>
+                        Products in Order
+                    </Typography>
+                    
+                    <table style={{marginTop:"1vh",width:"100%"}}>
+                        <thead>
+                            <tr>
+                                <th><Typography variant="subtitle1">Name</Typography></th>
+                                <th><Typography variant="subtitle1">Small</Typography></th>
+                                <th><Typography variant="subtitle1">Medium</Typography></th>
+                            </tr>
+                        </thead>
+
+                <tbody>
+                    {products.map((product,id)=>{
+                        return (
+                            
+                            <tr key={id}>
+                                <td>
+                                    <Typography>{product.name}</Typography>
+                                </td>
+                                {  
+                                        product.packages.length > 1 ? 
+                                        
+                                            product.packages.map((pkg,idx)=>{
+                                                return (
+                                            <td key={idx} style={{textAlign:"center"}}>
+                                                <Typography>{pkg.number}</Typography>
+                                            </td>)})
+                                        :
+                                        product.packages[0].size === "small" ? 
+                                            <>
+                                                <td style={{ textAlign: "center" }}>
+                                                    <Typography>{product.packages[0].number}</Typography>
+                                                </td>
+                                                <td style={{ textAlign: "center" }}>
+                                                    <Typography>0</Typography>
+                                                </td>
+                                            </>
+                                            :
+                                            <>
+                                                <td style={{ textAlign: "center" }}>
+                                                    <Typography>0</Typography>
+                                                </td>
+                                                <td style={{ textAlign: "center" }}>
+                                                    <Typography>{product.packages[0].number}</Typography>
+                                                </td>
+                                            </>
+                                }
+                                <td>
+                                    <Button variant="contained" onClick={()=>handleDeleteProduct(product)}>
+                                        Delete
+                                    </Button>
+                                </td>
+                            </tr>
+                        )
+                    })}
+                </tbody>
+                </table>
+
+                </Box>
+                :
+                null
+            }
+
     
         </Box>
+
+
     </Box>
     <Snackbar open={open} anchorOrigin={{vertical: "bottom",horizontal: "center" }} autoHideDuration={5000} onClose={handleClose}>
         <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>

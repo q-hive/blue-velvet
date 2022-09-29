@@ -647,6 +647,7 @@ export const MixProductsForm = ({editing, product}) => {
 
                         </Box>
 
+                        {/* Generate Feedback table */}
                         {mix.products.length != 0 ? 
                             <Box  sx={{display:"inline-block",minWidth:"15em",textAlign:"justify",alignItems:"center",marginTop:"10vh",padding:"3px"}}>
                                 <hr color="secondary"/>
