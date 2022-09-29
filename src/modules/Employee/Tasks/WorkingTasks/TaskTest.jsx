@@ -21,15 +21,15 @@ import { SeedingContent } from './SeedingContent.jsx';
 import { HarvestingContent } from './HarvestingContent.jsx';
 import { PackingContent } from './PackingContent.jsx';
 import { DeliveryContent } from './DeliveryContent.jsx';
-import { ArrowCircleRightOutlined } from '@mui/icons-material'
 import { Timer } from '../../../../CoreComponents/Timer'
+import { ArrowCircleRightOutlined } from '@mui/icons-material'
 
 export const TaskTest = (props) => {
     const theme = useTheme(BV_THEME);
     
     const {user, credential} = useAuth()
     
-    const {state}= useLocation();
+    const {state} = useLocation();
 
     const [isFinished,setIsFinished] = useState(false)
     
@@ -306,12 +306,12 @@ export const TaskTest = (props) => {
         updateTask()
         .then((response) => {
             console.log("response",response)
+            props.setSnack({...props.snack, open:true, message:"Task updated succesfully", status:"success"})
         })
         .catch(err => {
             console.log("err",err)
         })
 
-        props.setOpen(true)
     }
 
 

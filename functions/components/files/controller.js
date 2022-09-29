@@ -445,8 +445,9 @@ export const createConfigObjectFromOrder = async (order) => {
             h3{
                 font-weight: 500;
             }
-
-            
+            html {
+                -webkit-print-color-adjust: exact;
+            }
             .right{text-align:right;align-items: right;}
             
             table {
