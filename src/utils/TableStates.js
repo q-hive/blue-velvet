@@ -473,8 +473,22 @@ export const salesColumns = [
         renderCell:() => {
             const editOrder = () => console.log("Update Order")
             const deleteOrder = () => console.log("Deleting Order")
+            const getOrderInvoice = async () => {
+                const ordersInvoice = await api.api.get(`${api.apiVersion}/files/order/invoice/633b4814b16461ba488de884`,{
+                    headers:{
+                        "authorization":    credential._tokenResponse.idToken,
+                        "user":             user
+                    }
+                })
+    
+                return ordersInvoice.data
+            }
             
-            const actions = [{label:"Delete", execute:deleteOrder}, {label:"Update", execute:editOrder}]
+            
+            const actions = [
+                {label:"Delete", execute:deleteOrder}, 
+                {label:"Update", execute:editOrder},
+                {label:"Print PDF", execute:getOrderInvoice}]
 
             const [modal,setModal] = useState({
                 open:false,
@@ -514,7 +528,11 @@ export const salesColumns = [
                             btn_color:"white_btn",
                             type:"privileged",
                             execute:() => {
-                                getOrderInvoice()
+                                getOrderInvoice().then((response)=>{
+                                    console.log("pdf response data",response.data.data)
+                                    var testBlob = Blob(response.data.data,{type:"application/ectetstream"})
+                                    console.log("test Blob",testBlob)
+                                })
                                 // navigate(`/${user.uid}/${user.role}/production/editProduct/?id=${params.id}`)
                             }
                         },
