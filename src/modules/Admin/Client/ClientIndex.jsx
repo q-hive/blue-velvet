@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom'
 import { DataGrid } from '@mui/x-data-grid'
 import { CustomerColumns } from '../../../utils/TableStates'
 import api from '../../../axios.js'
+import { UserDialog } from '../../../CoreComponents/UserFeedback/Dialog'
 
 
 
@@ -23,12 +24,19 @@ import api from '../../../axios.js'
 export const ClientIndex = () => {
     //*CONTEXTS
     const {user, credential} = useAuth()
-    const [loading, setLoading] = useState(false)
     
     //*DATA STATES
     const [rows, setRows] = useState([])
     //*Netword and router
     const navigate = useNavigate()
+    
+    const [loading, setLoading] = useState(false)
+    const [dialog, setDialog] = useState({
+        open:       false,
+        title:      "",
+        message:    "",
+        actions:    []
+    })
     
     const handleNewOrder = () => {
         console.log("Redirect user")
@@ -53,8 +61,26 @@ export const ClientIndex = () => {
         setLoading(true)
         getCustomers()
         .then((data) => {
-            setRows(data)
             setLoading(false)
+            setRows(data)
+            if(data.length === 0 ){
+                setDialog({
+                    ...dialog,
+                    open:true,
+                    title:"You have no customers added",
+                    message:"Please add at least one customer in order to manage them",
+                    actions: [
+                        {
+                            label:"Add customer",
+                            execute: () => navigate('NewCustomer')
+                        },
+                        {
+                            label: "Cancel",
+                            execute: () => navigate(`/${user.uid}/${user.role}/dashboard`)
+                        }
+                    ]
+                })
+            }
         })
         .catch(err => {
             console.log(err)
@@ -66,6 +92,8 @@ export const ClientIndex = () => {
 
 
     <Box width="100%" height="100%">
+        <UserDialog dialog={dialog} setDialog={setDialog} open={dialog.open} title={dialog.title} content={dialog.message} actions={dialog.actions}/>
+        
         <Container sx={{padding:"2%"}}>
             <Box sx={{
                         width:"100%", 

@@ -1,7 +1,8 @@
 import {mongoose} from '../../mongo.js'
-import { getEmployeeById } from "../../employees/store.js"
+import { getEmployeeById } from "../employees/store.js"
 import Organization from '../../models/organization.js'
 import { getMongoQueryByReq } from '../../utils/getMongoQuery.js'
+import { getOrganizationById } from '../organization/store.js'
 
 const orgModel = mongoose.model('organization', Organization)
 /**
@@ -31,6 +32,11 @@ export const setPerformance = (orgId, id, array) => {
 
 export const updatePerformance = (orgId, id, array) => {
     return new Promise((resolve, reject) => {
+        getOrganizationById(orgId)
+        .then((org) => {
+            console.log(org.employees.find((employee) => employee._id.equals(id)))
+        })
+        
         const queries = array.map(async (queryConfig) => {
             const dbOp = await orgModel.updateOne(
                 {_id:orgId, "employees._id":id},
@@ -41,7 +47,6 @@ export const updatePerformance = (orgId, id, array) => {
         })
         Promise.all(queries)
         .then(results => {
-            console.log(results)
             resolve(results)
         })
         .catch(err => {

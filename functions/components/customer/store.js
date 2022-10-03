@@ -68,7 +68,7 @@ export const getAllCustomers = (orgId) => {
                 return resolve(mappedCustomers)
             }
 
-            return reject(new Error(JSON.stringify(emptyDbError)))
+            return resolve(orgDoc.customers)
         })
         .catch(err => {
             console.log(err)
@@ -104,5 +104,28 @@ export const getCustomerById = (orgId, customerId) => {
         }
 
         resolve(customer)
+    })
+}
+
+export const deleteCustomer = (orgId, cId) => {
+    return new Promise((resolve, reject) => {
+        orgModel.findOneAndUpdate(
+            {
+                "_id": orgId
+            },
+            {
+                "$pull":{
+                    "customers": {
+                        "_id": cId
+                    }
+                }
+            }
+        )
+        .then((result) => {
+            resolve(result)
+        })
+        .catch(err => {
+            reject(err)
+        })
     })
 }

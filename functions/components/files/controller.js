@@ -4,6 +4,11 @@ import { getCustomerById } from '../customer/store.js'
 import { getOrganizationById } from '../organization/store.js'
 import { getAllProducts } from '../products/store.js'
 import { buildPDFFromHTML } from './pdfManager.js'
+
+import {mongoose} from '../../mongo.js'
+import Client from '../../models/client.js'
+
+const ownerModel = mongoose.model('clients', Client)
 // import bvLogo from '../../assets/images/logos/blue-velvet'
 const buildPath = path.resolve('./components/files/filesDB/orderStyled.html')
 const blvtLogoPath = "https://github.com/q-hive/blue-velvet/blob/deploy/src/assets/images/LOGO_WHITE_BG.jpg?raw=true"
@@ -166,7 +171,7 @@ export const createCustomerBillingStructure = (data) => {
                 <h2 id="clientName">${data.customer.clientName}</h2>
                 ${Object.keys(data.customer.adressContainer).map((key) => {
                     return `
-                        <p id=${key}>${data.customer.adressContainer[key]}</p>
+                        <p id=${key}><strong>${key}: </strong>${data.customer.adressContainer[key]}</p>
                     `
                 }).join('')}
             </div>
@@ -352,8 +357,8 @@ export const createOrderInvoicePdf = (orderPDFConfig) => {
 
             
             buildPDFFromHTML(buildPath)
-            .then((pdf) => {
-                resolve(pdf)
+            .then((file) => {
+                resolve(file)
             })
             .catch((err) => {
                 reject(err)
@@ -370,6 +375,8 @@ export const createOrderInvoicePdf = (orderPDFConfig) => {
 export const createConfigObjectFromOrder = async (order) => {
     const customer = await getCustomerById(order.organization, order.customer)
     const organization = await getOrganizationById(order.organization)
+    const orgOwner = await ownerModel.find({_id:organization.owner})
+    console.log(orgOwner)
     const products = await getAllProducts(order.organization)
     let mappedTable
 
@@ -542,8 +549,8 @@ export const createConfigObjectFromOrder = async (order) => {
                     state:organization.address.state,
                     cp:organization.address.zip,
                 },
-                phone:"123456",
-                email:"luis@gmail.com",
+                phone:orgOwner[0].phone,
+                email:orgOwner[0].email,
             }
         },
         customerData:{

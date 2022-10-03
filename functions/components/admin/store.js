@@ -9,6 +9,18 @@ import { newPassphrase } from '../passphrase/store.js'
 import { newClient } from '../client/store.js'
 
 
+export function deleteFromFirebase(uid) {
+    return new Promise((resolve, reject) => {
+        adminAuth.deleteUser(uid)
+        .then(() => {
+            resolve("User removed from google")
+        })
+        .catch((err) => {
+            reject(err)
+        })
+    })
+}
+
 export function newEmployee(res,data) {
     return new Promise((resolve, reject) => {
         // * Create account on firebase

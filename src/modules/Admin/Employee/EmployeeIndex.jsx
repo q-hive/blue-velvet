@@ -1,13 +1,16 @@
 import { Add } from '@mui/icons-material'
-import { Box, Button, Container, Typography } from '@mui/material'
+import { Box, Button, Container, LinearProgress, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BV_THEME } from '../../../theme/BV-theme'
 import { EmployeeColumns } from '../../../utils/TableStates'
 import api from '../../../axios.js'
+import useAuth from '../../../contextHooks/useAuthContext'
 
 export const EmployeeIndex = () => {
+    const {user, credential} = useAuth()
+    
     const [rows, setRows] = useState([])
     const [loading, setLoading] = useState(false)
 
@@ -17,7 +20,24 @@ export const EmployeeIndex = () => {
     }
 
     useEffect(() => {
-        api.api.get(`${api.apiVersion}/`)
+        setLoading(() => {
+            return true
+        })
+        api.api.get(`${api.apiVersion}/employees/`, {
+            headers:{
+                authorization:credential._tokenResponse.idToken,
+                user: user
+            }
+        })
+        .then((res) => {
+            setRows(res.data.data)
+            setLoading(() => {
+                return false
+            })
+        })
+        .catch((err) => {
+            console.log(err)
+        })
     },[])
     
   return (
