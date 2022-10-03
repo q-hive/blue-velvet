@@ -196,12 +196,34 @@ export const deleteProduct = (orgId, id) => {
                 return reject("No product found")
             }
     
-            product.remove()
-            org.save((err) => {
-                if(err) return reject(err)
+            
+            orgModel.findOneAndUpdate(
+                {
+                    organization
+                },
+                {
+                    "$pull":{
+                        "orders": {
+                            "products":{
+                                "_id":id
+                            }
+                        }
+                    }
+                }
+            )
+            .then(() => {
+                product.remove()
     
-                return resolve("Doc removed")
+                org.save((err) => {
+                    if(err) return reject(err)
+        
+                    return resolve("Doc removed")
+                })
             })
+            .catch((err) => {
+                reject(err)
+            })
+
         })
         
     })

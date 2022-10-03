@@ -1,7 +1,7 @@
 import express from 'express'
 import { error, success } from '../../network/response.js'
 import { validateBodyNotEmpty } from '../security/secureHelpers.js'
-import { createNewCustomer, getAllCustomers, getCustomerById } from './store.js'
+import { createNewCustomer, deleteCustomer, getAllCustomers, getCustomerById } from './store.js'
 
 const router = express.Router()
 
@@ -58,5 +58,15 @@ router.post('/', (req, res) => {
         error(req, res, 500, "Error creatiing customer - GENERIC ERROR", err, processError)
     })
 })
+
+router.delete('/:id', (req, res) => {
+    deleteCustomer(res.locals.organization,req.params.id)
+    .then((result) => {
+        success(req, res, 200, "Customer deleted successfully", result)
+    })
+    .catch((err) => {
+        error(req, res, 500, "GENERIC ERROR - DELETING CUSTOMER", err, err)
+    })
+})  
 
 export default router

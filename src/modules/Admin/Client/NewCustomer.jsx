@@ -36,7 +36,7 @@ export const NewCustomer = () => {
     })
     
     const [options, setOptions] = useState({
-        roles: ["El chido", "El mero mero", "Steve"]
+        roles: ["Business manager", "Finance manager", "Other"]
 
     })
 

@@ -116,7 +116,7 @@ export const NewEmployee = () => {
                 setDialog({
                     ...dialog,
                     open:true,
-                    title:"Customer Added",
+                    title:"Employee Added",
                     actions:[ 
                         {
                             label:"Add Another",

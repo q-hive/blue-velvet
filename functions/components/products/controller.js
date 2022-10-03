@@ -71,12 +71,13 @@ export const relateOrdersAndTasks = (orgId) => {
                 const mappedProd = products.map(async (prod) => {
                     const mutableProd = prod.toObject()
                     //* AND SEARCH IN TASKS BY PRODUCTS
-                    const tasks = await getTaskByProdId(orgId ,prod._id)
+                    // const tasks = await getTaskByProdId(orgId ,prod._id)
                     //*This function returns the orders, that have a different status of delivered and that includes the products we are asking for
                     //*SEARCH IN ORDERS BY PRODUCT ID
                     const orders = await getOrdersByProd(orgId, prod._id)
 
-                    mutableProd.tasks = tasks
+                    // mutableProd.tasks = tasks
+                    console.log(mutableProd)
                     mutableProd.orders = orders
                     return {...mutableProd}
                 })
