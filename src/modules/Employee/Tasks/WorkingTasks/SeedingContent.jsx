@@ -38,7 +38,8 @@ export const SeedingContent = (props) => {
             array.push({
                     name:llaves[i].toString(),
                     harvest:productsObj[llaves[i]].harvest,
-                    seeds:productsObj[llaves[i]].seeds
+                    seeds:productsObj[llaves[i]].seeds,
+                    trays:productsObj[llaves[i]].trays
                 })
         }
         return array
@@ -54,16 +55,20 @@ export const SeedingContent = (props) => {
     function sumAllTrays() {
         var i,j;
         var ttrays = 0;
-        for (i = 0; i < products.length; i++) {
-            if(products[i].productionData != undefined)
-                ttrays += Math.ceil(products[i].productionData.trays)
-            else if(products[i].mix == true) //Trays if mix
-                for (j = 0; j < products[i].products.length; j++) {
-                    ttrays += Math.ceil(products[i].products[j].trays)
-                }
+        for (i = 0; i < finalArray.length; i++) {
+                ttrays += Math.ceil(finalArray[i].trays)
 
         }
         return ttrays;
+      }
+
+      function uniqueByName(items) {
+        const set = new Set();
+        return items.filter((item) => {
+          const isDuplicate = set.has(item.name);
+          set.add(item.name);
+          return !isDuplicate;
+        });
       }
     
     
@@ -121,17 +126,15 @@ export const SeedingContent = (props) => {
                 <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
                 Spread the seeds equally on the mats and softly spray them with the <i><b>triangle-spray.</b></i> <br/><br/>
                 <b>Max seeds per tray:</b><br/></Typography>
-                {products.map((product,index)=>{console.log("amen",product);return(
-                    product.mix != true ? 
-                        <Typography key={product.id+"2"} variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+
+                {
+                    
+                uniqueByName(finalArray).map((product,index)=>{
+                    console.log("amen",product);
+                    return( 
+                        <Typography key={product+index+"2"} variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
                             <b>{product.name}</b> :  <b>{getSeeds(product)}</b> grs of seeds <br/>
                         </Typography>
-                    :
-                        product.products.map((produc,idx)=>{return(
-                            <Typography key={produc.id+"2"} variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                                <b>{produc.name}</b> :  <b>{getSeeds(produc)}</b> grs of seeds <br/>
-                            </Typography>
-                        )})
                 )})}
 
                 

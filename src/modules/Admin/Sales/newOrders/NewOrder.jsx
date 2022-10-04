@@ -329,7 +329,6 @@ export const NewOrder = () => {
                     user:           user
                 }
             })
-            console.log("response of order post",response)
 
             if(response.status === 201){
                 setOpen(true);
@@ -351,7 +350,6 @@ export const NewOrder = () => {
                             btn_color:"secondary",
                             execute:() => {
                                 getOrderInvoice(response.data.data).then((result) => {
-                                    console.log("result post",result)
 
                                     const url = window.URL.createObjectURL(new Blob([new Uint8Array(result.data.data.data).buffer]))
                                     const link = document.createElement('a')
