@@ -49,12 +49,19 @@ export const SeedingContent = (props) => {
 
     const totalTrays =Math.ceil(sumAllTrays())
 
+    console.log("products SeedingContent", products)
+
     function sumAllTrays() {
-        var i;
+        var i,j;
         var ttrays = 0;
         for (i = 0; i < products.length; i++) {
-          if(products[i].productionData != undefined)
-            ttrays += Math.ceil(products[i].productionData.trays)
+            if(products[i].productionData != undefined)
+                ttrays += Math.ceil(products[i].productionData.trays)
+            else if(products[i].mix == true) //Trays if mix
+                for (j = 0; j < products[i].products.length; j++) {
+                    ttrays += Math.ceil(products[i].products[j].trays)
+                }
+
         }
         return ttrays;
       }
@@ -103,9 +110,8 @@ export const SeedingContent = (props) => {
 
     if(props.index===3){
         const getSeeds = (product) => {
-            if(product.mix){
-                //*CHECK FOR PRODUCTS IN MIX 
-                // parseFloat(product.productionData.seeds/product.productionData.trays).toFixed(2)
+            if(product.productionData === undefined){
+                return parseFloat(product.seeds/product.trays).toFixed(2)
             }
             return parseFloat(product.productionData.seeds/product.productionData.trays).toFixed(2)
         }
@@ -115,10 +121,17 @@ export const SeedingContent = (props) => {
                 <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
                 Spread the seeds equally on the mats and softly spray them with the <i><b>triangle-spray.</b></i> <br/><br/>
                 <b>Max seeds per tray:</b><br/></Typography>
-                {products.map((product,index)=>{console.log("amen",product); return(
-                    <Typography key={product.id+"2"} variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                        <b>{product.name}</b> :  <b>{getSeeds(product)}</b> grs of seeds <br/>
-                    </Typography>
+                {products.map((product,index)=>{console.log("amen",product);return(
+                    product.mix != true ? 
+                        <Typography key={product.id+"2"} variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+                            <b>{product.name}</b> :  <b>{getSeeds(product)}</b> grs of seeds <br/>
+                        </Typography>
+                    :
+                        product.products.map((produc,idx)=>{return(
+                            <Typography key={produc.id+"2"} variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+                                <b>{produc.name}</b> :  <b>{getSeeds(produc)}</b> grs of seeds <br/>
+                            </Typography>
+                        )})
                 )})}
 
                 
