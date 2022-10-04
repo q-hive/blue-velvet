@@ -121,6 +121,7 @@ export const getOrdersPrice = (order, products) => {
 export const getOrderProdData = (order, dbproducts, perProduct = false) => {
     //*SORT PRICES IN DBPRODUCTS
     const sortedProductPrices = sortProductsPrices(order, dbproducts)
+    console.log('products from db sorted...')
     //*Add grams per size to order product packages
     order.products.forEach((prod, pidx) => {
         //*Find the product in database
@@ -189,6 +190,7 @@ export const getOrderProdData = (order, dbproducts, perProduct = false) => {
         
         prod["productionData"] = {harvest, seeds, trays}
     })
+    console.log('seeds, trays and harvest calculated per product...')
 
     if(perProduct){
         let productionData
@@ -204,8 +206,11 @@ export const getOrderProdData = (order, dbproducts, perProduct = false) => {
         })
         
         if(order.products.some((product) => product.mix)){
+            console.log('Detected mix, returning first element in array...')
             return productionData[0]
         }
+
+        console.log('Production data mapped and assigned per product...')
         return productionData
     }
     
@@ -221,5 +226,6 @@ export const getOrderProdData = (order, dbproducts, perProduct = false) => {
         return {product:prod.name,...prod.productionData}
     })
 
+    console.log(`Production data before return in controller: ${productionData}`)
     return productionData
 }

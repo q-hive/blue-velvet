@@ -52,8 +52,8 @@ router.delete('/', (req, res) => {
         error(req , res, 500, "ERROR GETING THE ORDERS TO BE DELETED - GENERIC ERROR", err)
     })
 })
+
 router.delete('/:status', (req, res) => {
-    console.log(res.locals)
     getFilteredOrders(res.locals.organization, req)
     .then((orders) => {
         deleteOrders(res.locals.organization, orders)

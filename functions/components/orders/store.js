@@ -87,6 +87,7 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined, produ
                         return {...product}
                     }
 
+                    console.log('Production data is failing here')
                     let found = production.find((prod) => {
                         return prod.id.equals(product._id)
                     })
@@ -105,6 +106,7 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined, produ
                     }
                     
                 })
+                
                 mutableOrder.products = mappedProds
 
                 return mutableOrder
@@ -126,9 +128,11 @@ export const getFilteredOrders = (orgId, req, production) => {
         let key
         let value
         if(req.query){
-            console.log(req.query)
             key = req.query.key
             value = req.query.value
+        } else if (req.params) {
+            key = Object.entries(req.params)[0]
+            value = Object.entries(req.params)[1]
         }
 
         getAllOrders(orgId, req, true, {key, value}, production)
