@@ -72,47 +72,53 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined, produ
             if(!production){
                 return resolve(orgOrders)
             }
-            const mappedOrders = orgOrders.map((order, orderIndex) => {
-                const production = getOrderProdData(order, org.containers[0].products, true)
-                const mutableOrder = order.toObject()
-                const mappedProds = mutableOrder.products.map((product, index, thisArr) => {
-                    if(product.mix){
-                        const correspondingMixProducts = production.filter((prodData) => {
-                            const sameOrder = prodData.orderId.equals(order._id)
-                            const sameMix =  prodData.mixId.equals(product._id)
-                            return sameOrder && sameMix && prodData.mix
+            
+            try {
+                const mappedOrders = orgOrders.map((order, orderIndex) => {
+                    const production = getOrderProdData(order, org.containers[0].products, true)
+                    const mutableOrder = order.toObject()
+                    const mappedProds = mutableOrder.products.map((product, index, thisArr) => {
+                        if(product.mix){
+                            const correspondingMixProducts = production.filter((prodData) => {
+                                const sameOrder = prodData.orderId?.equals(order._id)
+                                const sameMix =  prodData.mixId?.equals(product._id)
+                                return sameOrder && sameMix && prodData.mix
+                            })
+    
+                            product.products = correspondingMixProducts
+                            return {...product}
+                        }
+    
+                        let found = production.find((prod) => {
+                            return prod.id.equals(product._id)
                         })
-
-                        product.products = correspondingMixProducts
-                        return {...product}
-                    }
-
-                    console.log('Production data is failing here')
-                    let found = production.find((prod) => {
-                        return prod.id.equals(product._id)
+                        return {productionData:found, ...product}
                     })
-                    return {productionData:found, ...product}
-                })
-
-                mappedProds.forEach(prod => {
-                    if(prod.mix){
-                        prod.products.forEach((mixProd) => {
-                            delete mixProd.mixId
-                            delete mixProd.orderId
-                            delete mixProd.mix
-                        })
-                    } else {
-                        delete prod.productionData.id
-                    }
+    
+                    mappedProds.forEach(prod => {
+                        if(prod.mix){
+                            prod.products.forEach((mixProd) => {
+                                delete mixProd.mixId
+                                delete mixProd.orderId
+                                delete mixProd.mix
+                            })
+                        } else {
+                            delete prod.productionData.id
+                        }
+                        
+                    })
                     
+                    mutableOrder.products = mappedProds
+    
+                    return mutableOrder
                 })
-                
-                mutableOrder.products = mappedProds
+                resolve(mappedOrders)
+            } catch (err) {
+                console.log(err)
+                errorFromOrg.processError = err.message
+                reject(new Error(JSON.stringify(errorFromOrg)))
+            }
 
-                return mutableOrder
-            })
-
-            resolve(mappedOrders)
         })
         .catch(err => {
             console.log(err)

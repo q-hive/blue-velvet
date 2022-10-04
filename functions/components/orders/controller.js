@@ -195,7 +195,7 @@ export const getOrderProdData = (order, dbproducts, perProduct = false) => {
     if(perProduct){
         let productionData
 
-        productionData = order.products.map((prod) => {
+        productionData = order.products.flatMap((prod) => {
             if(prod.mix){
                 return prod.products.map((mxprod) => {
                     return {id:mxprod._id,mixId:prod._id,orderId:order._id, ...mxprod.productionData, mix:true}
@@ -205,12 +205,10 @@ export const getOrderProdData = (order, dbproducts, perProduct = false) => {
             return {...prod.productionData, id:prod._id}
         })
         
-        if(order.products.some((product) => product.mix)){
-            console.log('Detected mix, returning first element in array...')
-            return productionData[0]
-        }
-
         console.log('Production data mapped and assigned per product...')
+        console.log(productionData)
+        productionData
+        
         return productionData
     }
     
