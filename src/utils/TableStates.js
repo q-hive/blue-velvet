@@ -609,7 +609,7 @@ export const salesColumns = [
             const editOrder = () => console.log("Update Order")
             const deleteOrder = async () => {
                 setLoading(true)
-                const deleteOperation = await api.api.delete(`${api.apiVersion}/orders/?key=_id&&value=${params.id}`, {
+                const deleteOperation = await api.api.delete(`${api.apiVersion}/orders/custom/?key=_id&&value=${params.id}`, {
                     headers: {
                         authorization: credential._tokenResponse.idToken,
                         user:          user
