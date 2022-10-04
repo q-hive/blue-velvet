@@ -126,9 +126,11 @@ export const getFilteredOrders = (orgId, req, production) => {
         let key
         let value
         if(req.query){
-            console.log(req.query)
             key = req.query.key
             value = req.query.value
+        } else if (req.params) {
+            key = Object.entries(req.params)[0]
+            value = Object.entries(req.params)[1]
         }
 
         getAllOrders(orgId, req, true, {key, value}, production)
