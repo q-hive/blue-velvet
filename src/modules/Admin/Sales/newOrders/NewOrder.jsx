@@ -17,6 +17,7 @@ import useAuth from '../../../../contextHooks/useAuthContext'
 //*Network and API
 import api from '../../../../axios.js'
 import { useNavigate } from 'react-router-dom'
+import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog'
 
 
 export const NewOrder = () => {
@@ -78,6 +79,27 @@ export const NewOrder = () => {
 
             setOpen(false);
         };
+    //
+
+    //Get invoice
+    const getOrderInvoice = async (params) => {
+        const orderPDF = await api.api.get(`${api.apiVersion}/files/order/invoice/${params._id}`, {
+            headers: {
+                authorization: credential._tokenResponse.idToken,
+                user:user
+            }
+        })
+        return orderPDF
+    }
+    //
+
+    //Dialog
+    const [dialog, setDialog] = useState({
+        open:false,
+        title:"",
+        message:"",
+        actions:[]
+    })
     //
     
     const handleChangeInput = (e,v,r) => {
@@ -307,11 +329,60 @@ export const NewOrder = () => {
                     user:           user
                 }
             })
+            console.log("response of order post",response)
 
             if(response.status === 201){
                 setOpen(true);
                 products.splice(0, products.length-1)
-                navigate(`/${user.uid}/${user.role}/sales`)
+                setDialog({
+                    ...dialog,
+                    open:true,
+                    title:"Order created succesfully",
+                    actions:[ 
+                        {
+                            label:"Continue",
+                            btn_color:"primary",
+                            execute:() => {
+                                window.location.reload()
+                            }
+                        },
+                        {
+                            label:"Print Order's Invoice",
+                            btn_color:"secondary",
+                            execute:() => {
+                                getOrderInvoice(response.data.data).then((result) => {
+                                    console.log("result post",result)
+
+                                    const url = window.URL.createObjectURL(new Blob([new Uint8Array(result.data.data.data).buffer]))
+                                    const link = document.createElement('a')
+                                    link.href = url;
+                                    
+                                    link.setAttribute('download', `Invoice ${response.data.data._id}.pdf`)
+                                    
+                                    document.body.appendChild(link)
+                                    link.click()
+                                })
+                                .catch((err) => {
+                                    setDialog({
+                                        ...dialog,
+                                        open:true,
+                                        title:"Error getting file",
+                                        message: "Please try again, there was an issue getting the file",
+                                        actions:[
+                                            {
+                                                label:"Ok",
+                                                execute:() => window.location.reload()
+                                            }
+                                        ]
+
+                                    })
+                                })
+                            }
+                        }
+                    ]
+                    
+                })
+
             }
             if(response.status === 500){
                 setDialog({
@@ -394,6 +465,17 @@ export const NewOrder = () => {
 
   return (
     <>
+                <UserDialog
+                    title={dialog.title}
+                    content={dialog.message}
+                    dialog={dialog}
+                    setDialog={setDialog}
+                    actions={dialog.actions}
+                    open={dialog.open}
+                />
+
+    
+
     <Box sx={
         {
             display:"flex",
