@@ -37,7 +37,7 @@ useMorgan(app);
 const originsList = ["http://localhost:3000", "https://bluevelvetdeploy.herokuapp.com"]
 
 app.use(cors({
-    origin: originsList[0],
+    origin: originsList[1],
     credentials: true
 }));
 
@@ -65,7 +65,7 @@ employeesRoutes(app)
 const server = http.createServer(app)
 
 server.listen(port)
-server.on('error', onError);
+server.on('error', onError)
 server.on('listening', onListening)
 
 

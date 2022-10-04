@@ -101,7 +101,15 @@ export const SeedingContent = (props) => {
 
         </>);
 
-    if(props.index===3) 
+    if(props.index===3){
+        const getSeeds = (product) => {
+            if(product.mix){
+                //*CHECK FOR PRODUCTS IN MIX 
+                // parseFloat(product.productionData.seeds/product.productionData.trays).toFixed(2)
+            }
+            return parseFloat(product.productionData.seeds/product.productionData.trays).toFixed(2)
+        }
+    
         return (<>
             <Box sx={taskCard_sx}>
                 <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
@@ -109,7 +117,7 @@ export const SeedingContent = (props) => {
                 <b>Max seeds per tray:</b><br/></Typography>
                 {products.map((product,index)=>{console.log("amen",product); return(
                     <Typography key={product.id+"2"} variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                        <b>{product.name}</b> :  <b>{parseFloat(product.productionData.seeds/product.productionData.trays).toFixed(2)}</b> grs of seeds <br/>
+                        <b>{product.name}</b> :  <b>{getSeeds(product)}</b> grs of seeds <br/>
                     </Typography>
                 )})}
 
@@ -119,6 +127,7 @@ export const SeedingContent = (props) => {
             </Box>
 
         </>)
+    } 
 
     if(props.index===4) 
     return (<>

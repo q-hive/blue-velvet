@@ -38,8 +38,11 @@ router.get('/:status', (req, res) => {
     })    
 })
 
-router.delete('/', (req, res) => {
-    getAllOrders(res.locals.organization, req)
+/** 
+ * @description receives a custom key value pair of query strings in order to filter the orders to be deleted
+*/
+router.delete('/custom/', (req, res) => {
+    getFilteredOrders(res.locals.organization, req)
     .then((orders) => {
         deleteOrders(res.locals.organization, orders)
         .then((status) => {
@@ -52,8 +55,8 @@ router.delete('/', (req, res) => {
         error(req , res, 500, "ERROR GETING THE ORDERS TO BE DELETED - GENERIC ERROR", err)
     })
 })
+
 router.delete('/:status', (req, res) => {
-    console.log(res.locals)
     getFilteredOrders(res.locals.organization, req)
     .then((orders) => {
         deleteOrders(res.locals.organization, orders)

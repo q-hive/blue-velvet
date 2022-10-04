@@ -121,6 +121,7 @@ export const getOrdersPrice = (order, products) => {
 export const getOrderProdData = (order, dbproducts, perProduct = false) => {
     //*SORT PRICES IN DBPRODUCTS
     const sortedProductPrices = sortProductsPrices(order, dbproducts)
+    console.log('products from db sorted...')
     //*Add grams per size to order product packages
     order.products.forEach((prod, pidx) => {
         //*Find the product in database
@@ -189,11 +190,12 @@ export const getOrderProdData = (order, dbproducts, perProduct = false) => {
         
         prod["productionData"] = {harvest, seeds, trays}
     })
+    console.log('seeds, trays and harvest calculated per product...')
 
     if(perProduct){
         let productionData
 
-        productionData = order.products.map((prod) => {
+        productionData = order.products.flatMap((prod) => {
             if(prod.mix){
                 return prod.products.map((mxprod) => {
                     return {id:mxprod._id,mixId:prod._id,orderId:order._id, ...mxprod.productionData, mix:true}
@@ -203,9 +205,10 @@ export const getOrderProdData = (order, dbproducts, perProduct = false) => {
             return {...prod.productionData, id:prod._id}
         })
         
-        if(order.products.some((product) => product.mix)){
-            return productionData[0]
-        }
+        console.log('Production data mapped and assigned per product...')
+        console.log(productionData)
+        productionData
+        
         return productionData
     }
     
@@ -221,5 +224,6 @@ export const getOrderProdData = (order, dbproducts, perProduct = false) => {
         return {product:prod.name,...prod.productionData}
     })
 
+    console.log(`Production data before return in controller: ${productionData}`)
     return productionData
 }

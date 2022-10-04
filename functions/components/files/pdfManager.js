@@ -12,10 +12,10 @@ const pdfBuildPath = path.resolve('./components/files/filesDB/order.pdf')
 export const buildPDFFromHTML = (htmlPath) => {
     return new Promise(async (resolve, reject) => {
         try{
-            const browser = await puppeteer.launch();
+            const browser = await puppeteer.launch({args: ['--no-sandbox'], headless:true});
             const page = await browser.newPage();
 
-            await page.goto(htmlPath, {waitUntil: 'networkidle0'})
+            await page.goto(`file://${htmlPath}`, {waitUntil: 'networkidle0'})
 
 
             
