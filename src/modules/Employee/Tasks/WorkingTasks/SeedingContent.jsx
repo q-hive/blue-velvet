@@ -135,7 +135,7 @@ export const SeedingContent = (props) => {
                         <Typography key={product+index+"2"} variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
                             <b>{product.name}</b> :  <b>{getSeeds(product)}</b> grs of seeds <br/>
                         </Typography>
-                )})}
+                    )})}
 
                 
                 <br/>

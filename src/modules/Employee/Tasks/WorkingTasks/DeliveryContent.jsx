@@ -18,9 +18,6 @@ const taskCard_sx = {
     alignItems:"center"
 }
 
-const product = "Cebolla"
-const packages =3
-
 export const DeliveryContent = (props) => {
 
     if(props.index===0) 
