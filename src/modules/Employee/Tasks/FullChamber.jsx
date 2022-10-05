@@ -14,7 +14,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 
 import { Carousel } from 'react-responsive-carousel'
 import "react-responsive-carousel/lib/styles/carousel.min.css";
-import { TaskTest } from './WorkingTasks/TaskTest'
+import { TaskContainer } from './WorkingTasks/TaskContainer'
 
 import LocalCafeIcon from '@mui/icons-material/LocalCafe';
 import { Timer } from '../../../CoreComponents/Timer.jsx'
@@ -217,7 +217,7 @@ export const FullChamber = () => {
         {Object.keys(allStatusesObj).map((status,index)=>{ 
             return(
                 <Box key={index} height="80vh" component={"div"}>
-                    {TaskTest({ 
+                    {TaskContainer({ 
                         type: status || null, 
                         counter:canSeeNextTask.counter, 
                         setFinished:setCanSeeNexttask,

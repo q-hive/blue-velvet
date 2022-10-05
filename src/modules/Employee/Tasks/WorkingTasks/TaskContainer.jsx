@@ -23,8 +23,9 @@ import { PackingContent } from './PackingContent.jsx';
 import { DeliveryContent } from './DeliveryContent.jsx';
 import { Timer } from '../../../../CoreComponents/Timer'
 import { ArrowCircleRightOutlined } from '@mui/icons-material'
+import { CleaningContent } from '../ContainerTasks/CleaningContent'
 
-export const TaskTest = (props) => {
+export const TaskContainer = (props) => {
     const theme = useTheme(BV_THEME);
     
     const {user, credential} = useAuth()
@@ -36,24 +37,46 @@ export const TaskTest = (props) => {
     //* STEPPER
     const [activeStep, setActiveStep] = useState(0)
 
-    let type, order, products
+    var type, order, products
 
-    if(state != null){
-        ({type, order} = state);
-    }
     if(props != null){
         type=props.type
         order=props.order
         products=props.products
     }
+    
+    if(state.type != undefined){
+        ({type} = state);
+    }
 
+    console.log("types",type,state.type)
+    
+    
+    
 
     let steps
     let contentTitle
     let content
     let expectedtTime
 
-    const trays = getTraysTotal(products)
+    var trays 
+    var redplacedMixProducts
+    var productsByNameObj
+
+    const sumProdData = (arr, data) => {
+        let result = 0;
+        arr.forEach(product => {
+            result += product[data]
+            })
+        return result;
+    }
+
+    if(products != null){
+         trays = getTraysTotal(products)
+         redplacedMixProducts = mixOpener(products)
+         productsByNameObj = filterByKey(redplacedMixProducts,"name")
+        setFinalProductionData()
+    }
     
     function getTraysTotal(producti){
         let ttrays = 0
@@ -107,11 +130,6 @@ export const TaskTest = (props) => {
       }
 
       
-      const redplacedMixProducts = mixOpener(products)
-      console.log("mix opener",redplacedMixProducts)
-
-      
-      const productsByNameObj = filterByKey(redplacedMixProducts,"name")
 
       function mixOpener(products) {
         let arreglo = []
@@ -127,13 +145,7 @@ export const TaskTest = (props) => {
       }
 
 
-        const sumProdData = (arr, data) => {
-            let result = 0;
-            arr.forEach(product => {
-                result += product[data]
-                })
-            return result;
-        }
+        
 
         function setFinalProductionData(){
             for(const key in productsByNameObj){
@@ -145,18 +157,14 @@ export const TaskTest = (props) => {
                 productsByNameObj[key]={harvest:h,seeds:s,trays:t}
             }
         }
-        setFinalProductionData()
 
-            
-
-            
-        console.log("Products By Name Object",productsByNameObj)
+        
 
       
 
         
     
-    
+    console.log("type",type)
     switch (type){
             case "unpaid": {
                 contentTitle = "Unpaid"
@@ -240,6 +248,13 @@ export const TaskTest = (props) => {
                 content = <DeliveryContent index={activeStep}/>
                 steps=[{step:"Delivery"}]
             } break;
+
+
+        case "cleaning":{
+                contentTitle = "Cleaning"
+                content = <CleaningContent index={activeStep}/>
+                steps=[{step:"Cleaning"}]
+        } break;
         
         default: { 
             contentTitle = "Error"

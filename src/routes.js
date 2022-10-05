@@ -13,7 +13,7 @@ import { NewProduct } from "./modules/Admin/production/NewProduct";
     import { DeliveryTask } from "./modules/Employee/Tasks/StandaloneTasks/Delivery";
     import { MaintenanceTask } from "./modules/Employee/Tasks/StandaloneTasks/Maintenance";
     import { GrowingTask } from "./modules/Employee/Tasks/StandaloneTasks/Growing";
-    import {TaskTest} from "./modules/Employee/Tasks/WorkingTasks/TaskTest";
+    import {TaskContainer} from "./modules/Employee/Tasks/WorkingTasks/TaskContainer";
 
 import { SalesIndex } from "./modules/Admin/Sales/SalesIndex";
 import { NewOrder } from "./modules/Admin/Sales/newOrders/NewOrder";
@@ -75,7 +75,7 @@ export const AppRoutes  = [
     },
     {
         path:"/:uid/employee/dashboard/taskTest",
-        component:<TaskTest/>
+        component:<TaskContainer/>
     },
     {
         path:"/:uid/employee/home",

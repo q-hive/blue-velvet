@@ -5,7 +5,7 @@ import useAuth from '../../contextHooks/useAuthContext'
 
 //*Netword and routing
 import { useNavigate } from 'react-router-dom'
-import { TaskTest } from './Tasks/WorkingTasks/TaskTest'
+import { TaskContainer } from './Tasks/WorkingTasks/TaskContainer'
 import { BV_THEME } from '../../theme/BV-theme'
 import api from '../../axios.js'
 import { intlFormat } from 'date-fns'
@@ -47,11 +47,10 @@ export const EntryPoint = () => {
         setSnackState({...snackState,open:false});
     };
 
-    const handleViewTask = (type) => {
+    const handleViewTask = (typee) => {
             navigate('taskTest',
                         {state: {
-                            type: "seeding",
-                            order: orderSelected
+                            type: typee
                         }}
                     )
     }
@@ -127,7 +126,7 @@ export const EntryPoint = () => {
         {name:"Cut mats", type:"maintenance"},
         {name:"Waste and Control", type:"maintenance"},
         {name:"Labelling", type:"maintenance"},
-        {name:"Cleaning", type:"maintenance"},
+        {name:"Cleaning", type:"cleaning"},
     ]
 
     const completedTasks = [ 
@@ -274,7 +273,7 @@ export const EntryPoint = () => {
                                 <Paper variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"3px",paddingX:"2px",marginTop:"2vh",display:"flex", flexDirection:"row"}}>
                                     <Typography><b>{task.name}</b>{" "}
                                     <i>{task.type}</i></Typography>
-                                    <Button variant="contained" sx={{width:"34%"}} onClick={()=>handleViewTask(task.type,product,order.productionData)} color="primary" >
+                                    <Button variant="contained" sx={{width:"34%"}} onClick={()=>handleViewTask(task.type)} color="primary" >
                                         View
                                     </Button>
                                 </Paper>                             
