@@ -123,9 +123,7 @@ export const EntryPoint = () => {
     
 
     const containerTasks = [ 
-        {name:"Cut mats", type:"maintenance"},
-        {name:"Waste and Control", type:"maintenance"},
-        {name:"Labelling", type:"maintenance"},
+        {name:"Cut mats", type:"mats"},
         {name:"Cleaning", type:"cleaning"},
     ]
 
@@ -271,8 +269,7 @@ export const EntryPoint = () => {
                         {containerTasks.map((task,index) => { 
                             return(
                                 <Paper variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"3px",paddingX:"2px",marginTop:"2vh",display:"flex", flexDirection:"row"}}>
-                                    <Typography><b>{task.name}</b>{" "}
-                                    <i>{task.type}</i></Typography>
+                                    <Typography><b>{task.name}</b></Typography>
                                     <Button variant="contained" sx={{width:"34%"}} onClick={()=>handleViewTask(task.type)} color="primary" >
                                         View
                                     </Button>

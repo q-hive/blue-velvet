@@ -24,6 +24,7 @@ import { DeliveryContent } from './DeliveryContent.jsx';
 import { Timer } from '../../../../CoreComponents/Timer'
 import { ArrowCircleRightOutlined } from '@mui/icons-material'
 import { CleaningContent } from '../ContainerTasks/CleaningContent'
+import { MatCutContent } from '../ContainerTasks/MatCutContent'
 
 export const TaskContainer = (props) => {
     const theme = useTheme(BV_THEME);
@@ -166,27 +167,28 @@ export const TaskContainer = (props) => {
     
     console.log("type",type)
     switch (type){
+        
             case "unpaid": {
                 contentTitle = "Unpaid"
                 expectedtTime = 0
                 content = <Typography>The order is in UNPAID status, please wait until the Order is Ready</Typography>
                 steps=[{step:"Unpaid"}]
-            }
-                break;
+                } break;
+
             case "pending": {
                 contentTitle = "Pending"
                 expectedtTime = 0
                 content = <Typography>The order is in PENDING status, please wait until the Order is Ready</Typography>
                 steps=[{step:"Pending"}]
-            }
-                break;
+                } break;
+
             case "uncompleted": {
                 contentTitle = "Unpaid"
                 expectedtTime = 0
                 content = <Typography>The order is in UNPAID status, please wait until the Order is Ready</Typography>
                 steps=[{step:"Unpaid"}]
-            }
-                break;
+                } break;
+
             case "seeding": {
                 contentTitle = "Seeding"
                 expectedtTime = Number(Math.ceil(trays) * 2).toFixed(2)
@@ -198,17 +200,16 @@ export const TaskContainer = (props) => {
                     {step:"Spray Seeds"},
                     {step:"Shelf"},
                 ]
-            }   break;
+                } break;
             
 
-        case "growing": {
-            contentTitle = "Growing"
-            content = <Typography>The order is in growing status, please wait until the products are ready to harvest</Typography>
-            steps=[{step:"Growing"}]
-            }
-            break;
+            case "growing": {
+                contentTitle = "Growing"
+                content = <Typography>The order is in growing status, please wait until the products are ready to harvest</Typography>
+                steps=[{step:"Growing"}]
+                } break;
 
-        case "harvestReady":{
+            case "harvestReady":{
                 contentTitle = "Harvesting"
                 expectedtTime = Number(Math.ceil(trays) * 2).toFixed(2)
                 content = <HarvestingContent products={products} index={activeStep}/>
@@ -220,7 +221,7 @@ export const TaskContainer = (props) => {
                 ]
             } break;
 
-        case "harvested":{
+            case "harvested":{
                 contentTitle = "Packing"
                 // expectedtTime = Number(Math.ceil(trays) * 2).toFixed(2)
                 {/*const totalPacks = order.products.map((product) => {
@@ -243,24 +244,30 @@ export const TaskContainer = (props) => {
                 ]
             } break;
 
-        case "ready":{
+            case "ready":{
                 contentTitle = "Delivery"
                 content = <DeliveryContent index={activeStep}/>
                 steps=[{step:"Delivery"}]
-            } break;
+                } break;
 
 
-        case "cleaning":{
+            case "cleaning":{
                 contentTitle = "Cleaning"
                 content = <CleaningContent index={activeStep}/>
                 steps=[{step:"Cleaning"}]
-        } break;
-        
-        default: { 
-            contentTitle = "Error"
-            content = <Typography>Error</Typography>
-            steps=[{step:"error"}] 
-        } break;
+                } break;
+
+            case "mats":{
+                contentTitle = "Cut Mats"
+                content = <MatCutContent index={activeStep}/>
+                steps=[{step:"Cut Mats"}]
+                } break;
+            
+            default: { 
+                contentTitle = "Error"
+                content = <Typography>Error</Typography>
+                steps=[{step:"error"}] 
+                } break;
             
     }
     
