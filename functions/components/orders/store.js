@@ -35,39 +35,39 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined, produ
 
             let orgOrders = org.orders
             
-            if(filtered && filter){
-                const {key, value} = filter
-                if(value == "uncompleted" && key == "status") {
-                    orgOrders = orgOrders.filter((order) => order.status != "delivered")
-
-                    orgOrders.orders = orgOrders
-                } else {
-                    if(Boolean(req.query.all)){
-                        orgOrders = await orgModel.find(
-                            {
-                                "_id":  orgId,
-                                [`orders.${key}`]: value
-                            },
-                            "orders -_id"
-                        )
+            try {
+                if(filtered && filter){
+                
+                    const {key, value} = filter
+                    console.log(filter)
+                    if(value == "uncompleted" && key == "status") {
+                        orgOrders = orgOrders.filter((order) => order.status != "delivered")
     
-                        orgOrders = orgOrders[0]
-                    } else { 
-                        orgOrders = await orgModel.findOne(
-                            {
-                                "_id":        orgId,
-                                [`orders.${key}`]: value
-                            },
-                            "orders.$ -_id"
-                        )
+                        orgOrders.orders = orgOrders
+                    } else {
+                        if(Boolean(req.query.all)){
+                            orgOrders = await orgModel.find(
+                                {
+                                    "_id":  orgId,
+                                    [`orders.${key}`]: value
+                                },
+                                "orders -_id"
+                            )
+        
+                            orgOrders = orgOrders[0]
+                        } else { 
+                            orgOrders = await orgModel.findOne(
+                                {
+                                    "_id":        orgId,
+                                    [`orders.${key}`]: value
+                                },
+                                "orders.$ -_id"
+                            )
+                        }
+                        
                     }
                     
                 }
-                
-            }
-            
-            
-            try {
                 
                 if(!Object.keys(req.query).includes("production") && !Boolean(req.query?.production)){
                     return resolve(orgOrders)

@@ -91,7 +91,6 @@ export const getProductionTotal = (req, res) => {
                 })
                 
                 const ids = productionData.map((productData) => {
-                    
                     return productData.id
                 })
 

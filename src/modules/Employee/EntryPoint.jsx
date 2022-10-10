@@ -168,41 +168,55 @@ export const EntryPoint = () => {
         { id: 2, col1: 'Harvesting', col2: Math.random()},
         { id: 3, col1: 'Seeding', col2: Math.random() },
     ];
+    const getOrders = async ()=> {
+        const ordersData = await api.api.get(`${api.apiVersion}/orders/uncompleted`,{
+            headers:{
+                "authorization":    credential._tokenResponse.idToken,
+                "user":             user
+            }
+        })
 
+        return ordersData.data
+    }
+    const getTimeEstimate = async () => {
+        const request = await api.api.get(`${api.apiVersion}/work/time/${user._id}`, {
+            headers: {
+                authorization:  credential._tokenResponse.idToken,
+                user:           user
+            }
+        })
+        
+
+        const reduced = request.data.data.reduce((prev, curr) => {
+            console.log(prev)
+            const prevseedTime = prev.times.seeding.time
+            const prevharvestTime = prev.times.harvest.time
+
+            const currseedTime = curr.times.seeding.time
+            const currharvestTime = curr.times.harvest.time
+
+            const prevTotal = prevseedTime + prevharvestTime
+            
+            const currTotal = currseedTime + currharvestTime
+            
+            return prevTotal + currTotal
+        }, {times:{harvest:{time:0}, seeding:{time:0}}}) 
+        
+        return reduced
+    }
 
     useEffect(() => {
         const getData = async () => {
-            const getOrders = async ()=> {
-                const ordersData = await api.api.get(`${api.apiVersion}/orders/uncompleted`,{
-                    headers:{
-                        "authorization":    credential._tokenResponse.idToken,
-                        "user":             user
-                    }
-                })
-    
-                return ordersData.data
-            }
-            const getTimeEstimate = async () => {
-                const request = await api.api.get(`${api.apiVersion}/work/time/${user._id}`, {
-                    headers: {
-                        authorization:  credential._tokenResponse.idToken,
-                        user:           user
-                    }
-                })
-                
-                return request.data.data
-            }
-    
             try {
                 const orders = await getOrders()
                 const time = await getTimeEstimate()
-               
                 return {orders, time}
             } catch(err) {
                 console.log(err)
             }
         }
         
+        // getTimeEstimate()
         getTime()
         getData()
         .then(({orders, time}) => {
@@ -218,7 +232,9 @@ export const EntryPoint = () => {
             for (var i = indexes.length -1; i >= 0; i--){
                 orders.data.splice(indexes[i],1);
             }
-            setOrders(orders.data)
+            console.log(orders)
+            setOrders(orders)
+            console.log(time)
             setEstimatedTime(time)
         })
         .catch((err) => {

@@ -1,8 +1,9 @@
+import { LoadingButton } from '@mui/lab'
 import { Box, Button, Modal, Typography, useTheme } from '@mui/material'
 import React from 'react'
 import { BV_THEME } from '../../theme/BV-theme'
 
-export const UserModal = ({modal, setModal, title, content, actions}) => {
+export const UserModal = ({modal, setModal, title, content, actions, loading}) => {
     const handleCloseModal = () => {
         setModal({
             ...modal,
@@ -27,7 +28,7 @@ export const UserModal = ({modal, setModal, title, content, actions}) => {
                     ?
                     <>
                         {actions.map((action, idx) => {
-                            return <Button variant="contained" sx={()=>({...theme.button.dialog, borderRadius:"20px"})} key={idx} color={action.btn_color} onClick={action.execute}>{action.label}</Button>
+                            return <LoadingButton loading={loading} variant="contained" sx={()=>({...theme.button.dialog, borderRadius:"20px"})} key={idx} color={action.btn_color} onClick={action.execute}>{action.label}</LoadingButton>
                             
                         })}
                     </>
