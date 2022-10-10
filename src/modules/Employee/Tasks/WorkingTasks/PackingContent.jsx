@@ -18,11 +18,11 @@ const taskCard_sx = {
     alignItems:"center"
 }
 
-const product = "Cebolla"
-const packages =3
+
 
 export const PackingContent = (props) => {
-
+    const products = props.products
+    
     if(props.index===0)
         return (<>
             <Box sx={taskCard_sx}>
@@ -32,7 +32,10 @@ export const PackingContent = (props) => {
                 
 
                 <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                     Dry-Products: <b>{product}</b> <br/> 
+                     Dry-Products: 
+                     {products.map((product,index)=>{return(
+                        <b>{product.name}</b>)})}
+                     <br/> 
                      Scale <br/> 
                      <b>{packages}</b> pre-labeled Packages <br/> 
                      Box for packed Products <br/>
