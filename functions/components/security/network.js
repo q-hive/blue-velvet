@@ -23,22 +23,23 @@ const authRouter = express.Router()
 
 authRouter.post('/login', (req, res) => {
     validateBodyNotEmpty(req, res)
+    isEmailValid(req, res, req.body.email)
 
     signInWithEmailAndPassword(auth, req.body.email, req.body.password)
-    .then(userRegister => {
+    .then(credential => {
         console.log("Signed in")
-        adminAuth.verifyIdToken(userRegister._tokenResponse.idToken)
+        adminAuth.verifyIdToken(credential._tokenResponse.idToken)
         .then(claims => {
             console.log("Id token verified")
-            if (claims.role === 'admin') {
-                return success(req, res, 200, "Authentication succeed", { isAdmin: true, token:userRegister._tokenResponse.idToken, user:userRegister })
+            if (claims.role === 'admin' || claims.role === 'root') {
+                return success(req, res, 200, "Authentication succeed", { isAdmin: true, token:credential._tokenResponse.idToken, user:credential })
             } else if (claims.role === 'employee') {
                 // * Obtain organization info to query for employee data
                 console.group("Auth logs")
                 console.log(claims)
                 getOrganizationById(claims.organization)
                 .then(async organization => {
-                    const employee = organization.employees.find(employee => employee.uid === userRegister.user.uid) 
+                    const employee = organization.employees.find(employee => employee.uid === credential.user.uid) 
                     let token
                     if(employee) {
                         try {
@@ -59,13 +60,14 @@ authRouter.post('/login', (req, res) => {
                 .catch(err => error(req, res, 500, "Error verifying ID Token", err))
             }
         })
-        .catch(err => error(req, res, 500, "Error verifying ID Token", err))
+        .catch(err => error(req, res, 500, "ID Token verification failed", err))
     })
     .catch(err => error(req, res, 500, "Error signing in", err))
 })
 
 authRouter.post('/login/admin', (req, res) => {
     validateBodyNotEmpty(req, res)
+    isEmailValid(req, res, req.body.email)
 
     signInWithEmailAndPassword(auth, req.body.email, req.body.password)
     .then(user => {

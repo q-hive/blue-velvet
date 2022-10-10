@@ -14,7 +14,6 @@ const sortProductsPrices = (order,products) => {
             return prod._id.equals(element.prodId)
         })
         if(!prodFound){
-            console.log("Product not found from data provided")
             return
         }
         //*Bubble sort algorithm
@@ -78,9 +77,7 @@ export const getOrdersPrice = (order, products) => {
         //*If we found the actual product in the sorted array from DB then
         if(dbSortedProd){
             //*Iterate over the product order packages
-            console.log(dbSortedProd.price[0])
             prod.packages.forEach((pkg, idx) => {
-                console.log(pkg)
                 switch(pkg.size){
                     //*we have 2 types of sizes and with the sorted products we can access based on index
                     case "small":
@@ -121,7 +118,6 @@ export const getOrdersPrice = (order, products) => {
 export const getOrderProdData = (order, dbproducts, perProduct = false) => {
     //*SORT PRICES IN DBPRODUCTS
     const sortedProductPrices = sortProductsPrices(order, dbproducts)
-    console.log('products from db sorted...')
     //*Add grams per size to order product packages
     order.products.forEach((prod, pidx) => {
         //*Find the product in database
@@ -190,7 +186,6 @@ export const getOrderProdData = (order, dbproducts, perProduct = false) => {
         
         prod["productionData"] = {harvest, seeds, trays}
     })
-    console.log('seeds, trays and harvest calculated per product...')
 
     if(perProduct){
         let productionData
@@ -204,10 +199,6 @@ export const getOrderProdData = (order, dbproducts, perProduct = false) => {
             
             return {...prod.productionData, id:prod._id}
         })
-        
-        console.log('Production data mapped and assigned per product...')
-        console.log(productionData)
-        productionData
         
         return productionData
     }
@@ -224,6 +215,5 @@ export const getOrderProdData = (order, dbproducts, perProduct = false) => {
         return {product:prod.name,...prod.productionData}
     })
 
-    console.log(`Production data before return in controller: ${productionData}`)
     return productionData
 }

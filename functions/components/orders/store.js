@@ -30,51 +30,52 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined, produ
         }
 
         getOrganizationById(orgId, true)
-        .then(org => {
+        .then(async org => {
             if(!Boolean(org)) return reject(new Error(errorFromOrg))
 
             let orgOrders = org.orders
-            if(!orgOrders) return resolve([])
+            
             if(filtered && filter){
                 const {key, value} = filter
-                const param = req.params.status
-                orgOrders = orgOrders.filter((order) => {
-                    if(param && key && value){
-                        let prm = order.status === param
-
-                        if(key === "_id"){
-                            return prm && order[key].equals(value)        
-                        }
-                        
-                        
-                        return prm && order[key] === value
+                if(value === "uncompleted" && key === "status") {
+                    orgOrders = orgOrders.filter((order) => order.status != "delivered")
+                } else {
+                    if(Boolean(req.query.all)){
+                        orgOrders = await orgModel.find(
+                            {
+                                "_id":  orgId,
+                                [`orders.${key}`]: value
+                            },
+                            "orders -_id"
+                        )
+    
+                        orgOrders = orgOrders[0]
+                    } else { 
+                        orgOrders = await orgModel.findOne(
+                            {
+                                "_id":        orgId,
+                                [`orders.${key}`]: value
+                            },
+                            "orders.$ -_id"
+                        )
                     }
-
-                    if(!param && key && value){
-                        if(key === "_id"){
-                            return order[key].equals(value)
-                        }
-                        
-                        return order[key] === value
-                    }
-
-                    if(param && !key && !value){
-                        if(param === "uncompleted") {
-                            return order.status !== "delivered"
-                        }
-                        
-                        return order.status === param
-                    }
-                })
+                    
+                }
                 
             }
-
-            if(!production){
-                return resolve(orgOrders)
-            }
+            
             
             try {
-                const mappedOrders = orgOrders.map((order, orderIndex) => {
+                
+                if(!Object.keys(req.query).includes("production") && !Boolean(req.query?.production)){
+                    return resolve(orgOrders)
+                }
+
+                if(!orgOrders) {
+                    return resolve(orgOrders)
+                }
+                
+                const mappedOrders = orgOrders.orders.map((order, orderIndex) => {
                     const production = getOrderProdData(order, org.containers[0].products, true)
                     const mutableOrder = order.toObject()
                     const mappedProds = mutableOrder.products.map((product, index, thisArr) => {
@@ -129,19 +130,25 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined, produ
     })
     
 }
-export const getFilteredOrders = (orgId, req, production) => {
+export const getFilteredOrders = (orgId, req, production, filter = undefined) => {
     return new Promise((resolve, reject) => {
         let key
         let value
-        if(req.query){
+        let mappedFilter
+        if(Object.keys(req.query).length > 0){
             key = req.query.key
             value = req.query.value
+            mappedFilter = {key, value}
         } else if (req.params) {
-            key = Object.entries(req.params)[0]
-            value = Object.entries(req.params)[1]
+            key = Object.entries(req.params)[0][0]
+            value = Object.entries(req.params)[0][1]
+            mappedFilter = {key, value}
+        } else if (filter) {
+            mappedFilter = filter
         }
 
-        getAllOrders(orgId, req, true, {key, value}, production)
+        console.log(mappedFilter)
+        getAllOrders(orgId, req, true, mappedFilter, production)
         .then((orders) => {
             resolve(orders)
         })
@@ -350,22 +357,6 @@ export const updateOrder = (org, orderId, body) => {
     })
 }
 
-const deleteOrder = (orgId,orderId,req,filter=undefined) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            const org = await getOrganizationById(orgId)
-        } catch (err){
-            console.log(err)
-        }        
-
-        if(org) {
-            const order = org.orders.id(orderId)
-            let filter = "id"
-            let value = orderId
-            org.orders.delteOne({[filter]:{"eq":{value}}})
-        }
-    })
-}
 
 //* production status
 //* seeding

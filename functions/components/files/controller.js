@@ -11,7 +11,7 @@ import Client from '../../models/client.js'
 const ownerModel = mongoose.model('clients', Client)
 // import bvLogo from '../../assets/images/logos/blue-velvet'
 const buildPath = path.resolve('./components/files/filesDB/orderStyled.html')
-const blvtLogoPath = "https://github.com/q-hive/blue-velvet/blob/deploy/src/assets/images/LOGO_WHITE_BG.jpg?raw=true"
+const blvtLogoPath = "https://github.com/q-hive/blue-velvet/blob/deploy/src/assets/images/png-Logos/blue-velvet.png?raw=true"
 const softwareLogoPath = "https://github.com/q-hive/blue-velvet/blob/deploy/src/assets/images/png-Logos/softwareLogo.png?raw=true"
 /**
  * Take an object with the following model

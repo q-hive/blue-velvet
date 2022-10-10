@@ -38,13 +38,16 @@ export const SeedingContent = (props) => {
             array.push({
                     name:llaves[i].toString(),
                     harvest:productsObj[llaves[i]].harvest,
-                    seeds:productsObj[llaves[i]].seeds
+                    seeds:productsObj[llaves[i]].seeds,
+                    trays:productsObj[llaves[i]].trays
                 })
         }
         return array
     }
     
     const totalTrays = Math.ceil(sumAllTrays())
+
+    console.log("products SeedingContent", products)
 
     function sumAllTrays() {
         let i;
@@ -56,6 +59,15 @@ export const SeedingContent = (props) => {
         }
         
         return trays;
+      }
+
+      function uniqueByName(items) {
+        const set = new Set();
+        return items.filter((item) => {
+          const isDuplicate = set.has(item.name);
+          set.add(item.name);
+          return !isDuplicate;
+        });
       }
     
     
@@ -108,34 +120,35 @@ export const SeedingContent = (props) => {
 
     if(props.index===3){
         const getSeeds = (product) => {
-            if(product.mix){
-                //*CHECK FOR PRODUCTS IN MIX 
-                // parseFloat(product.productionData.seeds/product.productionData.trays).toFixed(2)
+            if(product.productionData === undefined){
+                return parseFloat(product.seeds/product.trays).toFixed(2)
             }
             return parseFloat(product.productionData.seeds/product.productionData.trays).toFixed(2)
         }
     
         return (
-            <>
-                <Box sx={taskCard_sx}>
-                    <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+        <>
+            <Box sx={taskCard_sx}>
+                <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
                     Spread the seeds equally on the mats and softly spray them with the <i><b>triangle-spray.</b></i> <br/><br/>
-                    <b>Max seeds per tray:</b><br/></Typography>
+                    <b>Max seeds per tray:</b><br/>
+                </Typography>
 
-                    {
-                        products.map((product)=>{
-                            return(
-                                <Typography key={product.id + "2"} variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                                    <b>{product.name}</b> :  <b>{getSeeds(product)}</b> grs of seeds <br/>
-                                </Typography>
-                            )
-                        })
-                    }
+                {
+                    
+                    uniqueByName(finalArray).map((product,index)=>{
+                        return( 
+                            <Typography key={product+index+"2"} variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+                                <b>{product.name}</b> :  <b>{getSeeds(product)}</b> grs of seeds <br/>
+                            </Typography>
+                        )
+                    })
+                }
 
-                    <br/>
-                </Box>
+                <br/>
+            </Box>
 
-            </>
+        </>
         )
     } 
 

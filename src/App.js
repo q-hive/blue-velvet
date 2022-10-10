@@ -15,8 +15,6 @@ import { AppRoutes } from './routes.js'
 export const App = () => {
 
   return (
-    
-        
     <Router history={history}>
         <AuthContext>
             <Routes>

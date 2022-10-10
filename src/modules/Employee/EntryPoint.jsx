@@ -5,12 +5,13 @@ import useAuth from '../../contextHooks/useAuthContext'
 
 //*Netword and routing
 import { useNavigate } from 'react-router-dom'
-import { TaskTest } from './Tasks/WorkingTasks/TaskTest'
+import { TaskContainer } from './Tasks/WorkingTasks/TaskContainer'
 import { BV_THEME } from '../../theme/BV-theme'
 import api from '../../axios.js'
 import { intlFormat } from 'date-fns'
 import { DataGrid } from '@mui/x-data-grid'
 import { Timer } from '../../CoreComponents/Timer'
+import { LoadingButton } from '@mui/lab'
 
 export const EntryPoint = () => {
 
@@ -20,10 +21,14 @@ export const EntryPoint = () => {
     
     //*DATA STATES
     const [orders, setOrders] = useState([])
+    const [estimatedTime, setEstimatedTime] = useState(0)
 
 
     //*Render states
     const [orderSelected, setOrderSelected] = useState([])
+    const [loading, setLoading] = useState({
+        startWorkBtn:false
+    })
 
     //Snackbar
     const [snackState, setSnackState] = useState({open:false,label:"",severity:""});
@@ -40,6 +45,22 @@ export const EntryPoint = () => {
         }
     };
 
+    const updateWorkDays = async () => {
+        setLoading({
+            ...loading,
+            startWorkBtn: true
+        })
+        //*Update workdays of employee
+        const request = await api.api.patch(`${api.apiVersion}/work/performance/${user._id}`,{performance:[{query:"add",workdays:1}]}, {
+            headers: {
+                authorization:credential._tokenResponse.idToken,
+                user:user
+            }
+        })
+
+        return request
+    }
+
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
         return;
@@ -47,11 +68,10 @@ export const EntryPoint = () => {
         setSnackState({...snackState,open:false});
     };
 
-    const handleViewTask = (type) => {
+    const handleViewTask = (typee) => {
             navigate('taskTest',
                         {state: {
-                            type: "seeding",
-                            order: orderSelected
+                            type: typee
                         }}
                     )
     }
@@ -61,12 +81,20 @@ export const EntryPoint = () => {
         isOnTime 
         ? 
             {
-                ...orders.length != 0 ?
-                    navigate('./../tasks/work',
-                        {state: {
-                        orders: orders
-                        }}
-                    )
+                ...orders.length != 0 
+                ?
+                    updateWorkDays()
+                    .then(() => {
+                        navigate('./../tasks/work',
+                            {state: {
+                            orders: orders
+                            }}
+                        )
+                    })
+                    .catch(err => {
+                        setSnackState({open:true, label:"There was an error updating your data.", severity:"error"})
+                    })
+                    
                 :
                 setSnackState({open:true,label:"There are no orders!",severity:"success"})
             }
@@ -127,7 +155,7 @@ export const EntryPoint = () => {
         {name:"Cut mats", type:"maintenance"},
         {name:"Waste and Control", type:"maintenance"},
         {name:"Labelling", type:"maintenance"},
-        {name:"Cleaning", type:"maintenance"},
+        {name:"Cleaning", type:"cleaning"},
     ]
 
     const completedTasks = [ 
@@ -141,44 +169,65 @@ export const EntryPoint = () => {
         { id: 1, col1: 'Seeding', col2: Math.random()},
         { id: 2, col1: 'Harvesting', col2: Math.random()},
         { id: 3, col1: 'Seeding', col2: Math.random() },
-      ];
+    ];
 
 
     useEffect(() => {
-        const getOrders = async ()=> {
-            const ordersData = await api.api.get(`${api.apiVersion}/orders/uncompleted`,{
-                headers:{
-                    "authorization":    credential._tokenResponse.idToken,
-                    "user":             user
-                }
-            })
-
-            return ordersData.data
-        }
-
-        getOrders()
-        .then((response) => {
-            let indexes =[]
-            console.log(response.data)
-            response.data.forEach((order, idx) => {
-                order.status === "delivered"?
-                    indexes.push(idx) :""
+        const getData = async () => {
+            const getOrders = async ()=> {
+                const ordersData = await api.api.get(`${api.apiVersion}/orders/uncompleted`,{
+                    headers:{
+                        "authorization":    credential._tokenResponse.idToken,
+                        "user":             user
+                    }
+                })
+    
+                return ordersData.data
+            }
+            const getTimeEstimate = async () => {
+                const request = await api.api.get(`${api.apiVersion}/work/time/${user._id}`, {
+                    headers: {
+                        authorization:  credential._tokenResponse.idToken,
+                        user:           user
+                    }
+                })
                 
-                console.log(indexes)
+                return request.data.data
+            }
+    
+            try {
+                const orders = await getOrders()
+                const time = await getTimeEstimate()
+               
+                return {orders, time}
+            } catch(err) {
+                console.log(err)
+            }
+        }
+        
+        getTime()
+        getData()
+        .then(({orders, time}) => {
+            let indexes =[]
+            orders.data.forEach((order, idx) => {
+                order.status === "delivered"
+                ?
+                indexes.push(idx) 
+                :
+                null
             })
-
-        for (var i = indexes.length -1; i >= 0; i--)
-            response.data.splice(indexes[i],1);
-
-
-            console.log("fuera",indexes)
-            setOrders(response.data)
-            console.log(response.data)
+    
+            for (var i = indexes.length -1; i >= 0; i--){
+                orders.data.splice(indexes[i],1);
+            }
+            setOrders(orders.data)
+            setEstimatedTime(time)
         })
-        .catch(err => {
+        .catch((err) => {
             console.log(err)
         })
-        getTime()
+        
+        
     }, [])
 
   return (<>
@@ -187,10 +236,10 @@ export const EntryPoint = () => {
         <Container maxWidth="lg" sx={{paddingTop:4,paddingBottom:4,marginX:{xs:4,md:"auto"},marginTop:{xs:4,md:3}}}>
             <Typography variant="h2" color="primary">Welcome, {user.name}</Typography>
             <Typography variant="h5" color="secondary">Here's your work</Typography><br/>
-            <Typography variant="h6" color="secondary">You'll need aproximately TIME to finish your Tasks</Typography>
+            <Typography variant="h6" color="secondary">{`You'll need aproximately ${estimatedTime} to finish your Tasks`}</Typography>
             <Box pt={4}>
                 <Typography variant="h6" >Pending Orders: {orders.length}</Typography>
-                <Button variant="contained" size="large" onClick={handleStartWork}>Start</Button>
+                <LoadingButton variant="contained" size="large" onClick={handleStartWork} loading={loading.startWorkBtn} >Start</LoadingButton>
             </Box>
 
             <Grid container spacing={3} marginTop={3}>
@@ -274,7 +323,7 @@ export const EntryPoint = () => {
                                 <Paper variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"3px",paddingX:"2px",marginTop:"2vh",display:"flex", flexDirection:"row"}}>
                                     <Typography><b>{task.name}</b>{" "}
                                     <i>{task.type}</i></Typography>
-                                    <Button variant="contained" sx={{width:"34%"}} onClick={()=>handleViewTask(task.type,product,order.productionData)} color="primary" >
+                                    <Button variant="contained" sx={{width:"34%"}} onClick={()=>handleViewTask(task.type)} color="primary" >
                                         View
                                     </Button>
                                 </Paper>                             

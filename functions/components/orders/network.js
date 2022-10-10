@@ -19,7 +19,17 @@ router.post('/', (req, res) => {
 })
 
 router.get('/', (req, res) => {
-    getAllOrders(res.locals.organization, req)
+    const hasFilter = Object.keys(req.query).length > 0
+    let queryFunction
+    queryFunction = getAllOrders
+    let boolean = false
+    if(hasFilter){
+        queryFunction = getFilteredOrders
+        //*WHEN IS A QUERY FOR FILTERED ORDERS, THE BOOLEAN VALUE MEANS TAHT WE NEED QUERY WITH PRODUCTION DATA
+        boolean = true
+    }
+    
+    queryFunction(res.locals.organization, req, boolean)
     .then((orders) => {
         success(req, res, 200, "Orders obtained, succesfully", orders)
     })
@@ -29,7 +39,7 @@ router.get('/', (req, res) => {
 })
 
 router.get('/:status', (req, res) => {
-    getFilteredOrders(res.locals.organization, req)
+    getFilteredOrders(res.locals.organization, req, true)
     .then((orders) => {
         success(req, res, 200, "Orders obtained, succesfully", orders)
     })
