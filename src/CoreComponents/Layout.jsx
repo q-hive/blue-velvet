@@ -362,8 +362,6 @@ const BV_Layout = (props) => {
               >
                 
                 {drawer}
-                {/* IF Employee */}
-                {user.role === "admin" ? "" : {...tasks}}
               </Drawer>
 
               <Drawer
@@ -375,8 +373,6 @@ const BV_Layout = (props) => {
                   open
               >
                 {drawer}
-                {/* IF Employee */}
-                {user.role === "admin" ? "" : {...tasks}}
               </Drawer>
             </Grid>
 
