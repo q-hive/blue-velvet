@@ -14,7 +14,7 @@ import { updateContainer } from '../container/store.js'
 
 const orgModel = mongoose.model('organization', Organization)
 
-export const getAllOrders = (orgId, req, filtered=false, filter=undefined, production=true) => {
+export const getAllOrders = (orgId, req, filtered=false, filter=undefined, production=false) => {
     return new Promise((resolve, reject) => {
         const orgIDNotProvided = {
             "message":  "Organization ID was not provided",
@@ -37,8 +37,10 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined, produ
             
             if(filtered && filter){
                 const {key, value} = filter
-                if(value === "uncompleted" && key === "status") {
+                if(value == "uncompleted" && key == "status") {
                     orgOrders = orgOrders.filter((order) => order.status != "delivered")
+
+                    orgOrders.orders = orgOrders
                 } else {
                     if(Boolean(req.query.all)){
                         orgOrders = await orgModel.find(
@@ -96,23 +98,24 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined, produ
                         return {productionData:found, ...product}
                     })
     
-                    mappedProds.forEach(prod => {
-                        if(prod.mix){
-                            prod.products.forEach((mixProd) => {
-                                delete mixProd.mixId
-                                delete mixProd.orderId
-                                delete mixProd.mix
-                            })
-                        } else {
-                            delete prod.productionData.id
-                        }
+                    // mappedProds.forEach(prod => {
+                    //     if(prod.mix){
+                    //         prod.products.forEach((mixProd) => {
+                    //             delete mixProd.mixId
+                    //             delete mixProd.orderId
+                    //             delete mixProd.mix
+                    //         })
+                    //     } else {
+                    //         delete prod.productionData.id
+                    //     }
                         
-                    })
+                    // })
                     
                     mutableOrder.products = mappedProds
-    
+                    mutableOrder.productionData = production
                     return mutableOrder
                 })
+                
                 resolve(mappedOrders)
             } catch (err) {
                 console.log(err)
@@ -135,19 +138,19 @@ export const getFilteredOrders = (orgId, req, production, filter = undefined) =>
         let key
         let value
         let mappedFilter
-        if(Object.keys(req.query).length > 0){
+        if(Object.keys(req.query).length > 1){
             key = req.query.key
             value = req.query.value
             mappedFilter = {key, value}
-        } else if (req.params) {
+        } else if (req.params && filter === undefined) {
             key = Object.entries(req.params)[0][0]
             value = Object.entries(req.params)[0][1]
             mappedFilter = {key, value}
-        } else if (filter) {
+        } else if (filter != undefined) {
             mappedFilter = filter
+            
         }
 
-        console.log(mappedFilter)
         getAllOrders(orgId, req, true, mappedFilter, production)
         .then((orders) => {
             resolve(orders)

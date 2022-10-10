@@ -57,16 +57,80 @@ export const updatePerformance = (orgId, id, array) => {
         })
     })
 }
-export const calculateTimeEstimation = (orders) => {
-    console.log(orders)
-    return
+export const calculateTimeEstimation = (totalProduction) => {
+    //*TIMES PER TRAY in minutes
+    const harvest = 2;
+    const packing25 = 0.48;
+    const packing80 = 0.5;
+    const seeding = 2.2;
+
+    return totalProduction.map((production) => {
+        production.times = {
+            harvest: {
+                totalAmount: production.harvest,
+                time: harvest * production.trays
+            }
+        }
+
+        production.times.seeding = {
+            totalAmount: production.seeds,
+            time: seeding * production.trays
+        }
+        return {...production}
+    })
 }
 
 export const getProductionTotal = (req, res) => {
     return new Promise((resolve, reject) => {
-        getFilteredOrders(res.locals.organization, req, false, {key:"status", value:"uncompleted"})
+        req.query.production = "true"
+        getFilteredOrders(res.locals.organization, req, true, {key:"status", value:"uncompleted"})
         .then((orders) => {
-            resolve(orders)
+            try {
+                const productionData = orders.flatMap((order) => {
+                    return order.productionData
+                })
+                
+                const ids = productionData.map((productData) => {
+                    
+                    return productData.id
+                })
+
+                const filtered = [];
+
+                for(const id of ids){
+                    let isNew = true;
+                    for(const elem of filtered){
+                        if(id.equals(elem)){
+                            isNew = false
+                        }
+                    }
+
+                    if(isNew){
+                        filtered.push(id)
+                    }
+                }
+
+                const accumProduction = []
+                for(const id of filtered) {
+                    const filteredProduction = productionData.filter((prddata) => prddata.id.equals(id))
+
+                    const productionById = filteredProduction.reduce((prev, curr) => {
+                        return {
+                            "seeds": prev.seeds + curr.seeds,
+                            "harvest": prev.harvest + curr.harvest,
+                            "trays": prev.trays + curr.trays,
+                            "prodId":id
+                        }
+                    }, {seeds:0, harvest:0, trays:0, id:undefined}) 
+
+                    accumProduction.push(productionById)
+                }
+
+
+                resolve(accumProduction)
+            } catch(err) {
+                reject(err)
+            }
         })
         .catch(err => {
             reject(err)

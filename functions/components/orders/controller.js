@@ -212,7 +212,7 @@ export const getOrderProdData = (order, dbproducts, perProduct = false) => {
             return mappedProducionData
         }
         
-        return {product:prod.name,...prod.productionData}
+        return {product:prod.name,id:prod._id,...prod.productionData}
     })
 
     return productionData
