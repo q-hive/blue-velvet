@@ -26,6 +26,7 @@ export const SalesIndex = () => {
     //*DATA STATES
     const [orders, setOrders] = useState([])
     const [loading, setLoading] = useState(false)
+    const [totalIncome, setTotalIncome] = useState(0)
 
     //*Netword and router
     const navigate = useNavigate()
@@ -74,6 +75,18 @@ export const SalesIndex = () => {
                                 break;
                         }
                     })
+                    
+                    setTotalIncome(sumPrices())
+                    
+                    function sumPrices() { 
+                        let arr =[]
+                        newResponse.map((order) => {
+                            arr.push(order.price)
+                        })
+                        let sum =arr.reduce((a, b) => a + b, 0)
+                        return(sum)
+                    
+                    }
                     const mappedRow = newResponse.map((order) => {
                         console.log(order)
                         
@@ -134,6 +147,9 @@ export const SalesIndex = () => {
                     <Button variant='contained' color='primary' startIcon={<Add/>} onClick={handleNewOrder} sx={{minWidth:"20%"}}>
                         New order
                     </Button>
+                    <Typography>
+                        Orders' Total Income : ${totalIncome.toFixed(2)}
+                    </Typography>
                 </Box>
                 {
                     loading
