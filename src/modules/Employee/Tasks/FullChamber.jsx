@@ -98,34 +98,7 @@ export const FullChamber = () => {
 
     
 
-    function filterByKey(obj, prop) {
-        {/* 
-            Returns an object with objects' desired prop as key, 
-            letting you have a "status as Key" object or a "name as key" object 
-            to name a few 
-        */}
-        return obj.reduce(function (acc, item) {
-      
-          let key = item[prop]
-      
-          if (!acc[key] ) { 
-            acc[key] = []
-          }
-          if(item["mix"]==true){
-            let mixProds = filterByKey(item.products,"item")
-
-            
-          }else if(!item.productionData){
-            acc[key].push({name:item.name,harvest:item.harvest,seeds:item.seeds,trays:item.trays,})
-            
-          }else
-            acc[key].push({...item.productionData,name:item.name})
-
-          return acc
-      
-        }, {})
-      
-      }
+    
 
 
       {/* The keys of this object will allow us to generate a tasks by status */}
@@ -221,3 +194,33 @@ export const FullChamber = () => {
     </Fab>
     </>
   )}
+
+  //TODO Move component 
+  export function filterByKey(obj, prop) {
+    {/* 
+        Returns an object with objects' desired prop as key, 
+        letting you have a "status as Key" object or a "name as key" object 
+        to name a few 
+    */}
+    return obj.reduce(function (acc, item) {
+  
+      let key = item[prop]
+  
+      if (!acc[key] ) { 
+        acc[key] = []
+      }
+      if(item["mix"]==true){
+        let mixProds = filterByKey(item.products,"item")
+
+        
+      }else if(!item.productionData){
+        acc[key].push({name:item.name,harvest:item.harvest,seeds:item.seeds,trays:item.trays,})
+        
+      }else
+        acc[key].push({...item.productionData,name:item.name})
+
+      return acc
+  
+    }, {})
+  
+  }

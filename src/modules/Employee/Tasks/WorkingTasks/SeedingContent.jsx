@@ -55,7 +55,7 @@ export const SeedingContent = (props) => {
 
         for (i = 0; i < products.length; i++) {
           if(products[i].productionData != undefined)
-            trays += Math.ceil(products[i].productionData.trays)
+            trays += products[i].productionData.trays
         }
         
         return trays;

@@ -2,6 +2,7 @@ import { Add } from '@mui/icons-material'
 import { Alert, Box, Button, Container, Grid, Paper, Snackbar, Typography } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import useAuth from '../../contextHooks/useAuthContext'
+import { filterByKey } from './Tasks/FullChamber'
 
 //*Netword and routing
 import { useNavigate } from 'react-router-dom'
@@ -34,15 +35,19 @@ export const EntryPoint = () => {
     const [snackState, setSnackState] = useState({open:false,label:"",severity:""});
 
     //Time
-    const [isOnTime, setIsOnTime] = useState(true)
+    const [isOnTime, setIsOnTime] = useState(false)
 
-    const getTime = () => {
+    const checkTime = () => {
         var today = new Date()
-     
-        if(today.getHours() >= 4 && today.getHours() < 9){
-            setIsOnTime(true);
-            console.log("testDate",today.getHours())
+        
+        if(today.getDay() == 2 || today.getDay() == 5){
+            if(today.getHours() >= 4 && today.getHours() < 9){
+                setIsOnTime(true);
+                console.log("testDate",today.getDay(),today.getHours())
+            }
         }
+
+
     };
 
     const updateWorkDays = async () => {
@@ -102,6 +107,84 @@ export const EntryPoint = () => {
         setSnackState({open:true,label:"You can't start working right now",severity:"error"})
          
     }
+
+    // Filter Tasks
+    function getAllProducts(){
+        var productList = []
+        orders.map((order, id)=>{
+            order.products.map((product,idx)=>{
+                productList.push({...product,status:order.status})
+            })
+            
+        })
+        return productList;
+    }
+
+    const allProducts = getAllProducts()
+    const allStatusesObj = filterByKey(allProducts,"status")
+
+    console.log("allstatusesobj",allStatusesObj)
+    //
+
+    // Get trays to calculte time
+    function getTraysTotal(producti,status){
+        let ttrays = 0
+
+        producti.map((product, id) => {
+            let prev = ttrays
+            let curr
+            if(status != undefined && product.status === status){
+                { product.mix != undefined && product.mix===true  ?
+                    curr = getTraysTotal(product.products)
+                    :
+                    product.productionData != undefined ? 
+                        curr = product.productionData.trays 
+                        : 
+                        curr=product.trays
+                }
+                ttrays = prev + curr
+            }else if(status === undefined){
+                { product.mix != undefined && product.mix===true  ?
+                    curr = getTraysTotal(product.products)
+                    :
+                    product.productionData != undefined ? 
+                        curr = product.productionData.trays 
+                        : 
+                        curr=product.trays
+                }
+                ttrays = prev + curr
+            }
+        })
+            
+    
+        return ttrays
+    }
+
+    function getExpectedTime(arr){
+        let trays = getTraysTotal(allProducts,arr)
+
+        switch (arr) {
+            case "seeding":
+                return Number(Math.ceil(trays) * 2).toFixed(2)
+            case "all":
+                let seedingTrays=getTraysTotal(allProducts,"seeding")
+                let harvestTrays=getTraysTotal(allProducts,"harvestReady")
+                return Number((Math.ceil(seedingTrays) * 2+(Math.ceil(harvestTrays) * 3 )) ).toFixed(2)
+        
+            default:
+                break;
+        }
+    }
+    //
+
+    function capitalize(word) {
+        return word[0].toUpperCase() + word.slice(1).toLowerCase();
+      }
+      
+    const trays = getTraysTotal(allProducts)
+
+    console.log("orders", orders)
+    console.log("unfiltered trays", trays)
 
     
     const status = "uncompleted"
@@ -173,7 +256,7 @@ export const EntryPoint = () => {
     useEffect(() => {
         const getData = async () => {
             const getOrders = async ()=> {
-                const ordersData = await api.api.get(`${api.apiVersion}/orders/uncompleted`,{
+                const ordersData = await api.api.get(`${api.apiVersion}/orders/uncompleted?production=true`,{
                     headers:{
                         "authorization":    credential._tokenResponse.idToken,
                         "user":             user
@@ -192,10 +275,21 @@ export const EntryPoint = () => {
                 
                 return request.data.data
             }
+            const getFilteredOrders = async (param)=> {
+                const ordersData = await api.api.get(`${api.apiVersion}/orders/uncompleted`,{
+                    headers:{
+                        "authorization":    credential._tokenResponse.idToken,
+                        "user":             user
+                    }
+                })
+    
+                return ordersData.data
+            }
     
             try {
                 const orders = await getOrders()
                 const time = await getTimeEstimate()
+                const filteredOrders = await getFilteredOrders()
                
                 return {orders, time}
             } catch(err) {
@@ -203,7 +297,7 @@ export const EntryPoint = () => {
             }
         }
         
-        getTime()
+        checkTime()
         getData()
         .then(({orders, time}) => {
             let indexes =[]
@@ -234,7 +328,7 @@ export const EntryPoint = () => {
         <Container maxWidth="lg" sx={{paddingTop:4,paddingBottom:4,marginX:{xs:4,md:"auto"},marginTop:{xs:4,md:3}}}>
             <Typography variant="h2" color="primary">Welcome, {user.name}</Typography>
             <Typography variant="h5" color="secondary">Here's your work</Typography><br/>
-            <Typography variant="h6" color="secondary">{`You'll need aproximately ${estimatedTime} to finish your Tasks`}</Typography>
+            <Typography variant="h6" color="secondary">{`You'll need aproximately ${getExpectedTime("all")} minutes to finish your Tasks`}</Typography>
             <Box pt={4}>
                 <Typography variant="h6" >Pending Orders: {orders.length}</Typography>
                 <LoadingButton variant="contained" size="large" onClick={handleStartWork} loading={loading.startWorkBtn} >Start</LoadingButton>
@@ -268,47 +362,23 @@ export const EntryPoint = () => {
                 <Grid item xs={12} md={4} lg={4}>
                     <Paper sx={fixedHeightPaper}>
                         <Typography variant="h6" color="secondary">Tasks</Typography>
-                        
-                            <>
-                                {orders.map((order, index) => {
-                                    {setOrderTasks(order.status)}
-                                    if(productTasks.length > 0){
-                                        return (
-                                            <>{order.products.map((product, index) => {
-                                                return (
-                                                    <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
-                                                        <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
-                                                            <Typography >
-                                                                <b>Product: {product.name}</b>
-                                                            </Typography>
-                                                            <Box key={index} sx={{display:"flex",flexDirection:"column", }}>
-
-                                                                {productTasks.map((task,index) => { return(
-                                                                        <Paper variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"3px",paddingX:"2px",marginTop:"2vh",display:"flex", flexDirection:"row"}}>
-                                                                            <Typography>
-                                                                                <b>{task.name}</b>{" "}
-                                                                                <i>{task.type}</i>
-                                                                            </Typography>
-                                                                            {/*<Button variant="contained" sx={{width:"34%"}} onClick={()=>handleViewTask(task.type)} color="primary" >
-                                                                                View
-                                                                            </Button>*/}
-                                                                        </Paper>
-                                                                        
-                                                                    )
-                                                                })}
-                                                            </Box> 
-                                                            
-                                                        </Box>
-                                                    </Paper>
-                                        
-                                                )
-                                            })}</>  
-                                        )
-                                    }
-                                })} 
-                            </>
-                           
-                        
+                        <>
+                            {Object.keys(allStatusesObj).map((status,index)=>{ 
+                                return(
+                                    <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
+                                        <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
+                                            <Typography >
+                                                <b>Task: {capitalize(status)}</b>
+                                            </Typography>
+                                            <Typography >
+                                                <i>Expected Time: {getExpectedTime(status)}</i>
+                                            </Typography>
+                                        </Box>
+                                    </Paper>
+                                )
+                            })}
+                                
+                        </>
                     </Paper>
                 </Grid>
 
