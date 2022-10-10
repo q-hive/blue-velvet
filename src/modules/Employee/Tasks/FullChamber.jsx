@@ -130,11 +130,6 @@ export const FullChamber = () => {
 
       {/* The keys of this object will allow us to generate a tasks by status */}
       const allStatusesObj = filterByKey(allProducts,"status")
-      console.log("all statuses",allStatusesObj)
-
-
-
-
 
 
     const carouselChange=(item,index)=>{
@@ -158,9 +153,13 @@ export const FullChamber = () => {
     
     const arrowPrev = (onClickHandler, hasPrev, label) =>
     hasPrev && (
-        <Button variant="contained" onClick={onClickHandler} title={"previous task"} 
-                sx={()=>({...carouselButtonSX,left:{xs:"5%", md:"5%"} })}>
-            {"Prev Task"}
+        <Button 
+        variant="contained" 
+        onClick={onClickHandler} 
+        title={"previous task"} 
+        sx={()=>({...carouselButtonSX,left:{xs:"5%", md:"5%"}})}
+        >
+            Prev Task
         </Button>
     )
 
@@ -169,37 +168,6 @@ export const FullChamber = () => {
         //* if (real/expected) > 1 negative
     }
 
-    useEffect(() => {
-        //*Update workdays of employee
-        api.api.patch(`${api.apiVersion}/work/performance/${user._id}`,{performance:[{query:"add",workdays:1}]}, {
-            headers: {
-                authorization:credential._tokenResponse.idToken,
-                user:user
-            }
-        })
-        .then((res) => {
-            setSnack(() => {
-                return ({
-                    ...snack,
-                    open:true,
-                    state:"success",
-                    message:"Workdays updated"
-                })
-            
-            })
-        })
-        .catch((err) => {
-            setSnack(() => {
-                return ({
-                    ...snack,
-                    open:true,
-                    state:"success",
-                    message:"Workdays updated"
-                })
-            
-            })
-        })
-    },[])
   return (
     <>
 
