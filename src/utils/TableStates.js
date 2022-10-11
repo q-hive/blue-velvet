@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom"
 import { UserDialog } from "../CoreComponents/UserFeedback/Dialog"
 
 import { BV_THEME } from "../theme/BV-theme"
-import { Button, Typography, Box, Accordion, AccordionSummary, AccordionDetails, Divider } from "@mui/material"
+import { Button, Typography, Box, Accordion, AccordionSummary, AccordionDetails, Divider, CircularProgress } from "@mui/material"
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 export const productsColumns = [
@@ -661,7 +661,7 @@ export const salesColumns = [
                             }
                         },
                         {
-                            label:"Get Order's invoice",
+                            label:loading ? <CircularProgress/> : "Get Order's invoice",
                             btn_color:"white_btn",
                             type:"privileged",
                             execute:() => {

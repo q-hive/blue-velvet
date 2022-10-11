@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react'
 //*MUI Components
 import { 
     Autocomplete, TextField, 
-    Typography, Button, Box, FormHelperText, getInputUtilityClass, Snackbar, Alert, Stack 
+    Typography, Button, Box, FormHelperText, getInputUtilityClass, Snackbar, Alert, Stack, CircularProgress 
 } from '@mui/material'
 import {DatePicker, LocalizationProvider} from '@mui/x-date-pickers'
 import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns'
@@ -26,6 +26,7 @@ export const NewOrder = () => {
 
     const navigate = useNavigate()
     //*Data States
+    const [loading,setLoading] = useState(false)
     const [options, setOptions] = useState({
         customers:  [],
         products:   []
@@ -83,6 +84,7 @@ export const NewOrder = () => {
 
     //Get invoice
     const getOrderInvoice = async (params) => {
+        setLoading(true)
         const orderPDF = await api.api.get(`${api.apiVersion}/files/order/invoice/${params._id}`, {
             headers: {
                 authorization: credential._tokenResponse.idToken,
@@ -346,7 +348,7 @@ export const NewOrder = () => {
                             }
                         },
                         {
-                            label:"Print Order's Invoice",
+                            label:loading ? <CircularProgress/> : "Print Order's Invoice",
                             btn_color:"secondary",
                             execute:() => {
                                 getOrderInvoice(response.data.data).then((result) => {
@@ -359,8 +361,10 @@ export const NewOrder = () => {
                                     
                                     document.body.appendChild(link)
                                     link.click()
+                                    setLoading(false)
                                 })
                                 .catch((err) => {
+                                    setLoading(false)
                                     setDialog({
                                         ...dialog,
                                         open:true,
