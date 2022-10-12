@@ -19,7 +19,7 @@ const taskCard_sx = {
 }
 
 
-
+const packages = 3
 export const PackingContent = (props) => {
     const products = props.products
     

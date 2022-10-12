@@ -85,7 +85,7 @@ export const TaskContainer = (props) => {
             let prev = ttrays
             let curr
 
-            { product.mix != undefined && product.mix===true  ?
+            { product.products != undefined && product.mix===true  ?
                 curr = getTraysTotal(product.products)
                 :
                 product.productionData != undefined ? 
@@ -113,7 +113,7 @@ export const TaskContainer = (props) => {
           if (!acc[key] ) { 
             acc[key] = []
           }
-          if(item["mix"]==true){
+          if(item["mix"]==true && item["products"]!=undefined){
             let mixProds = filterByKey(item.products,"item")
             console.log("solo soy uno",mixProds)
 
@@ -429,7 +429,7 @@ export const TaskContainer = (props) => {
                 <Box justifyContent={"space-evenly"} flexDirection="column" alignItems={"center"} sx={{ width: {xs:"100%",sm:"90%"}, display:{xs:"flex", sm:"none"}}}>
                     <Stepper activeStep={activeStep} >
                         {steps.map((step, index) => (
-                            <Step key={step.label}>
+                            <Step key={index}>
                                 <StepLabel sx={{fontSizeAdjust:"20px"}}>
                                     {step.label}
                                 </StepLabel>

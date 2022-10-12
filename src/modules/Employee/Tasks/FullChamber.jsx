@@ -202,6 +202,7 @@ export const FullChamber = () => {
         letting you have a "status as Key" object or a "name as key" object 
         to name a few 
     */}
+    if(obj != undefined){
     return obj.reduce(function (acc, item) {
   
       let key = item[prop]
@@ -221,6 +222,6 @@ export const FullChamber = () => {
 
       return acc
   
-    }, {})
+    }, {})}
   
   }

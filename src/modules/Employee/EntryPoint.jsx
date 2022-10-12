@@ -35,7 +35,7 @@ export const EntryPoint = () => {
     const [snackState, setSnackState] = useState({open:false,label:"",severity:""});
 
     //Time
-    const [isOnTime, setIsOnTime] = useState(false)
+    const [isOnTime, setIsOnTime] = useState(true)
 
     const checkTime = () => {
         var today = new Date()
@@ -124,6 +124,19 @@ export const EntryPoint = () => {
     const allStatusesObj = filterByKey(allProducts,"status")
 
     console.log("allstatusesobj",allStatusesObj)
+
+    function mixOpener(products) {
+        let arreglo = []
+        products.map((product,id)=>{
+            if(product.mix == true && product.products != undefined){
+                product.products.map((product2, id)=>{
+                    arreglo.push(product2)
+                })
+            }else 
+                arreglo.push(product)
+        })
+         return arreglo
+      }
     //
 
     // Get trays to calculte time
@@ -144,7 +157,9 @@ export const EntryPoint = () => {
                 }
                 ttrays = prev + curr
             }else if(status === undefined){
-                { product.mix != undefined && product.mix===true  ?
+                console.log(product.products)
+                { product.products != undefined && product.mix===true  ?
+                    
                     curr = getTraysTotal(product.products)
                     :
                     product.productionData != undefined ? 
@@ -388,7 +403,7 @@ export const EntryPoint = () => {
                         <Typography variant="h6" color="secondary">Container's Tasks</Typography>
                         {containerTasks.map((task,index) => { 
                             return(
-                                <Paper variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"3px",paddingX:"2px",marginTop:"2vh",display:"flex", flexDirection:"row"}}>
+                                <Paper key={index} variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"3px",paddingX:"2px",marginTop:"2vh",display:"flex", flexDirection:"row"}}>
                                     <Typography><b>{task.name}</b></Typography>
                                     <Button variant="contained" sx={{width:"34%"}} onClick={()=>handleViewTask(task.type)} color="primary" >
                                         View

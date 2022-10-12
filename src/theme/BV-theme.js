@@ -30,6 +30,7 @@ export const BV_THEME = createTheme({
 
     },
     typography: {
+        fontFamily: `"Montserrat", sans-serif`,
         button: {
           textTransform: "none"}},
 
