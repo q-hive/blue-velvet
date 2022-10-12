@@ -1,6 +1,6 @@
 import express from 'express'
 import { error, success } from '../../network/response.js'
-import {getWorkTimeByEmployee, setPerformance, updatePerformance} from './controller.js'
+import {getProductionWorkById, getWorkTimeByEmployee, parseProduction, setPerformance, updatePerformance} from './controller.js'
 
 
 const router = express.Router()
@@ -35,6 +35,22 @@ router.get('/time/:id', (req, res) => {
     })
     .catch(err => {
         error(req, res, 500, "An error ocurred calculating times -  GENERIC ERROR", err, err)
+    })
+})
+
+/**
+ * @description receives the employee id as a req.param and returns the following model based on the orders state
+ */
+router.get('/production/:id', (req, res) => {
+    getProductionWorkById(req,res)
+    .then((work) => {
+        parseProduction(req,res,work)
+        .then((parsedWork) => {
+            success(req, res, 200, "Production work obtained succesfully", parsedWork)
+        })
+    })
+    .catch((err) => {
+        error(req, res, 500, "Error getting production work - GNERIC ERROR", err, err)
     })
 })
 

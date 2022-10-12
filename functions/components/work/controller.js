@@ -4,12 +4,13 @@ import Organization from '../../models/organization.js'
 import { getMongoQueryByReq } from '../../utils/getMongoQuery.js'
 import { getOrganizationById } from '../organization/store.js'
 import { getFilteredOrders } from '../orders/store.js'
+import { getProductById } from '../products/store.js'
 
 const orgModel = mongoose.model('organization', Organization)
 /**
- * 
+ *
  * @param {*} array
- * @description Receives an array of objects, each object represents a performance key that contains the value 
+ * @description Receives an array of objects, each object represents a performance key that contains the value
  */
 export const setPerformance = (orgId, id, array) => {
     return new Promise((resolve, reject) => {
@@ -47,7 +48,7 @@ export const updatePerformance = (orgId, id, array) => {
             )
             return dbOp
         })
-        
+
         Promise.all(queries)
         .then(results => {
             resolve(results)
@@ -80,20 +81,43 @@ export const calculateTimeEstimation = (totalProduction) => {
     })
 }
 
+
+const insertOrdersInProduction = (production, orders) => {
+    production.orders = []
+
+    const prodMatchedOrders = orders.filter((order) => {
+        return order.productionData.find((produc) => produc.id.equals(production.prodId))
+    })
+
+    let mappedMatchedOrders = prodMatchedOrders.forEach((matchedOrder) => {
+        production.orders.push(matchedOrder._id)    
+    })
+
+    return production
+}
 export const getProductionTotal = (req, res) => {
     return new Promise((resolve, reject) => {
         req.query.production = "true"
+        
+        const origin = req.path
+
+        let matchOrders = false;    
+        
+        if(origin.split('/').includes("production")){
+            matchOrders = true;
+        }
         getFilteredOrders(res.locals.organization, req, true, {key:"status", value:"uncompleted"})
         .then((orders) => {
             try {
-                const productionData = orders.flatMap((order) => {
+                let productionData = orders.flatMap((order) => {
                     return order.productionData
                 })
-                
+
                 const ids = productionData.map((productData) => {
                     return productData.id
                 })
 
+            
                 const filtered = [];
 
                 for(const id of ids){
@@ -113,14 +137,18 @@ export const getProductionTotal = (req, res) => {
                 for(const id of filtered) {
                     const filteredProduction = productionData.filter((prddata) => prddata.id.equals(id))
 
-                    const productionById = filteredProduction.reduce((prev, curr) => {
+                    let productionById = filteredProduction.reduce((prev, curr) => {
                         return {
                             "seeds": prev.seeds + curr.seeds,
                             "harvest": prev.harvest + curr.harvest,
                             "trays": prev.trays + curr.trays,
-                            "prodId":id
+                            "prodId":id,
                         }
-                    }, {seeds:0, harvest:0, trays:0, id:undefined}) 
+                    }, {seeds:0, harvest:0, trays:0, id:undefined})
+
+                    if(matchOrders){
+                        productionById = insertOrdersInProduction(productionById, orders)
+                    }
 
                     accumProduction.push(productionById)
                 }
@@ -147,6 +175,55 @@ export const getWorkTimeByEmployee = (req, res) => {
             resolve(totalEstimations)
         })
         .catch((err) => {
+            reject(err)
+        })
+    })
+}
+
+export const getProductionWorkById = (req,res) => {
+    return new Promise((resolve, reject) => {
+        getProductionTotal(req, res)
+        .then(production => {
+            resolve(production)
+        })
+        .catch((err) => {
+            console.log(err)
+            reject(err)
+        })
+    })
+}
+
+export const parseProduction = (req,res,work) => {
+    return new Promise((resolve, reject) => {
+        const asyncMapWork = work.map(async (totalWork) => {
+            const productData = await getProductById(res.locals.organization,req.query.container, totalWork.prodId)
+
+            const newProductModel = {
+                "trays":    totalWork.trays,
+                "harvest":  totalWork.harvest,
+                "seeds":    totalWork.seeds,
+                "name":     productData.name,
+                "status":   productData.status,
+                "mix":      productData.mix.isMix,
+                "prodId":   totalWork.prodId,
+                "orders":   totalWork.orders
+            }
+            return { 
+                productData: newProductModel
+            }
+            
+        }) 
+        Promise.all(asyncMapWork)
+        .then((mappedWork) => {
+            let finalModel = {
+                production: {
+                   products: mappedWork
+                }
+            }
+            
+            resolve(finalModel)
+        })
+        .catch(err => {
             reject(err)
         })
     })

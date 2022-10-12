@@ -138,7 +138,7 @@ export const getFilteredOrders = (orgId, req, production, filter = undefined) =>
         let key
         let value
         let mappedFilter
-        if(Object.keys(req.query).length > 1){
+        if(Object.keys(req.query).includes('key') && Object.keys(req.query).includes('value')){
             key = req.query.key
             value = req.query.value
             mappedFilter = {key, value}

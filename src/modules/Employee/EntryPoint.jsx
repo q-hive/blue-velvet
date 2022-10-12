@@ -188,7 +188,6 @@ export const EntryPoint = () => {
         
 
         const reduced = request.data.data.reduce((prev, curr) => {
-            console.log(prev)
             const prevseedTime = prev.times.seeding.time
             const prevharvestTime = prev.times.harvest.time
 
@@ -198,9 +197,30 @@ export const EntryPoint = () => {
             const prevTotal = prevseedTime + prevharvestTime
             
             const currTotal = currseedTime + currharvestTime
-            
-            return prevTotal + currTotal
-        }, {times:{harvest:{time:0}, seeding:{time:0}}}) 
+
+            return {
+                times: {
+                    harvest: {
+                        time:prevseedTime + currseedTime
+                    }, 
+                    seeding: {
+                        time:prevharvestTime + currharvestTime
+                    }
+                }, 
+                total:prevTotal + currTotal
+            }
+        }, 
+        {
+            times: {
+                harvest: {
+                    time:0
+                }, 
+                seeding: {
+                    time:0
+                }
+            },
+            total:0
+        }) 
         
         return reduced
     }
@@ -209,6 +229,7 @@ export const EntryPoint = () => {
         const getData = async () => {
             try {
                 const orders = await getOrders()
+                console.log(orders)
                 const time = await getTimeEstimate()
                 return {orders, time}
             } catch(err) {
@@ -232,10 +253,8 @@ export const EntryPoint = () => {
             for (var i = indexes.length -1; i >= 0; i--){
                 orders.data.splice(indexes[i],1);
             }
-            console.log(orders)
-            setOrders(orders)
-            console.log(time)
-            setEstimatedTime(time)
+            setOrders(orders.data)
+            setEstimatedTime(time.total)
         })
         .catch((err) => {
             console.log(err)
@@ -250,7 +269,7 @@ export const EntryPoint = () => {
         <Container maxWidth="lg" sx={{paddingTop:4,paddingBottom:4,marginX:{xs:4,md:"auto"},marginTop:{xs:4,md:3}}}>
             <Typography variant="h2" color="primary">Welcome, {user.name}</Typography>
             <Typography variant="h5" color="secondary">Here's your work</Typography><br/>
-            <Typography variant="h6" color="secondary">{`You'll need aproximately ${estimatedTime} to finish your Tasks`}</Typography>
+            <Typography variant="h6" color="secondary">{`You'll need aproximately ${estimatedTime} minutes to finish your Tasks`}</Typography>
             <Box pt={4}>
                 <Typography variant="h6" >Pending Orders: {orders.length}</Typography>
                 <LoadingButton variant="contained" size="large" onClick={handleStartWork} loading={loading.startWorkBtn} >Start</LoadingButton>
