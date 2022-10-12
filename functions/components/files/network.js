@@ -5,12 +5,14 @@ import {createConfigObjectFromOrder, createOrderInvoicePdf} from './controller.j
 
 const router = express.Router()
 
-router.get('/order/invoice/:id', async (req, res) => {
-
-    req.query = {key:"_id", value:req.params.id}
-    
+router.get('/order/invoice/:_id', async (req, res) => {
     //* GET ORDER FROM ID
-    const order = await getFilteredOrders(res.locals.organization, req, false)
+    let order = await getFilteredOrders(res.locals.organization, req, false,  {key:"_id", value:req.params._id})
+
+    if(order) {
+        order = order.orders
+    }
+    console.log(order)
     if(order.length > 0) {
         order[0].products.forEach(prod => console.log(prod.packages))
         //*IF EXISTS THEN GENERATES CONFIG OBJECT FOR PDF FROM ORDER DATA
@@ -21,6 +23,7 @@ router.get('/order/invoice/:id', async (req, res) => {
             // res.download(filePath, (err) => {
             //     console.log('error: ' + err)
             // })
+            console.log(file)
             success(req, res, 200, "PDF obtained succesfully", file)
         })
         .catch((err) => {

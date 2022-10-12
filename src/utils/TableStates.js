@@ -10,6 +10,7 @@ import { UserDialog } from "../CoreComponents/UserFeedback/Dialog"
 import { BV_THEME } from "../theme/BV-theme"
 import { Button, Typography, Box, Accordion, AccordionSummary, AccordionDetails, Divider, CircularProgress } from "@mui/material"
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { LoadingButton } from "@mui/lab"
 
 export const productsColumns = [
     {
@@ -667,7 +668,7 @@ export const salesColumns = [
                             execute:() => {
                                 getOrderInvoice()
                                 .then((result) => {
-
+                                    console.log(result)
                                     const url = window.URL.createObjectURL(new Blob([new Uint8Array(result.data.data.data).buffer]))
                                     const link = document.createElement('a')
                                     link.href = url;
@@ -777,6 +778,7 @@ export const salesColumns = [
                     title={modal.title}
                     content={modal.content}
                     actions={modal.actions}
+                    loading={loading}
                     />
 
                     <UserDialog
@@ -787,7 +789,7 @@ export const salesColumns = [
                     actions={dialog.actions}
                     open={dialog.open}
                     />
-                    <Button variant="contained" onClick={handleModal} disabled={loading} sx={BV_THEME.button.table}>View</Button>
+                    <LoadingButton loading={loading} variant="contained" onClick={handleModal} disabled={loading} sx={BV_THEME.button.table}>View</LoadingButton>
                 </>
 
                 

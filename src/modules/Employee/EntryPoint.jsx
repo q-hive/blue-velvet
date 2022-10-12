@@ -266,52 +266,76 @@ export const EntryPoint = () => {
         { id: 2, col1: 'Harvesting', col2: Math.random()},
         { id: 3, col1: 'Seeding', col2: Math.random() },
     ];
+    const getOrders = async ()=> {
+        const ordersData = await api.api.get(`${api.apiVersion}/orders/uncompleted`,{
+            headers:{
+                "authorization":    credential._tokenResponse.idToken,
+                "user":             user
+            }
+        })
 
+        return ordersData.data
+    }
+    const getTimeEstimate = async () => {
+        const request = await api.api.get(`${api.apiVersion}/work/time/${user._id}`, {
+            headers: {
+                authorization:  credential._tokenResponse.idToken,
+                user:           user
+            }
+        })
+        
+
+        const reduced = request.data.data.reduce((prev, curr) => {
+            const prevseedTime = prev.times.seeding.time
+            const prevharvestTime = prev.times.harvest.time
+
+            const currseedTime = curr.times.seeding.time
+            const currharvestTime = curr.times.harvest.time
+
+            const prevTotal = prevseedTime + prevharvestTime
+            
+            const currTotal = currseedTime + currharvestTime
+
+            return {
+                times: {
+                    harvest: {
+                        time:prevseedTime + currseedTime
+                    }, 
+                    seeding: {
+                        time:prevharvestTime + currharvestTime
+                    }
+                }, 
+                total:prevTotal + currTotal
+            }
+        }, 
+        {
+            times: {
+                harvest: {
+                    time:0
+                }, 
+                seeding: {
+                    time:0
+                }
+            },
+            total:0
+        }) 
+        
+        return reduced
+    }
 
     useEffect(() => {
         const getData = async () => {
-            const getOrders = async ()=> {
-                const ordersData = await api.api.get(`${api.apiVersion}/orders/uncompleted?production=true`,{
-                    headers:{
-                        "authorization":    credential._tokenResponse.idToken,
-                        "user":             user
-                    }
-                })
-    
-                return ordersData.data
-            }
-            const getTimeEstimate = async () => {
-                const request = await api.api.get(`${api.apiVersion}/work/time/${user._id}`, {
-                    headers: {
-                        authorization:  credential._tokenResponse.idToken,
-                        user:           user
-                    }
-                })
-                
-                return request.data.data
-            }
-            const getFilteredOrders = async (param)=> {
-                const ordersData = await api.api.get(`${api.apiVersion}/orders/uncompleted`,{
-                    headers:{
-                        "authorization":    credential._tokenResponse.idToken,
-                        "user":             user
-                    }
-                })
-    
-                return ordersData.data
-            }
-    
             try {
                 const orders = await getOrders()
+                console.log(orders)
                 const time = await getTimeEstimate()
-                const filteredOrders = await getFilteredOrders()
-               
                 return {orders, time}
             } catch(err) {
                 console.log(err)
             }
         }
         
+        // getTimeEstimate()
         checkTime()
         getData()
         .then(({orders, time}) => {
@@ -328,7 +352,7 @@ export const EntryPoint = () => {
                 orders.data.splice(indexes[i],1);
             }
             setOrders(orders.data)
-            setEstimatedTime(time)
+            setEstimatedTime(time.total)
         })
         .catch((err) => {
             console.log(err)
@@ -343,7 +367,7 @@ export const EntryPoint = () => {
         <Container maxWidth="lg" sx={{paddingTop:4,paddingBottom:4,marginX:{xs:4,md:"auto"},marginTop:{xs:4,md:3}}}>
             <Typography variant="h2" color="primary">Welcome, {user.name}</Typography>
             <Typography variant="h5" color="secondary">Here's your work</Typography><br/>
-            <Typography variant="h6" color="secondary">{`You'll need aproximately ${getExpectedTime("all")} minutes to finish your Tasks`}</Typography>
+            <Typography variant="h6" color="secondary">{`You'll need aproximately ${estimatedTime} minutes to finish your Tasks`}</Typography>
             <Box pt={4}>
                 <Typography variant="h6" >Pending Orders: {orders.length}</Typography>
                 <LoadingButton variant="contained" size="large" onClick={handleStartWork} loading={loading.startWorkBtn} >Start</LoadingButton>

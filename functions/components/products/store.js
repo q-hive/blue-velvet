@@ -228,3 +228,50 @@ export const deleteProduct = (orgId, id) => {
         
     })
 }
+
+export const getProductById = (orgId, containerId,prodId) => {
+    return new Promise(async(resolve, reject) => {
+        try {
+            const found = await orgModel.aggregate(
+                [
+                    {
+                        "$match": {
+                            "_id": mongoose.Types.ObjectId(orgId),
+                            "containers": {
+                                "$elemMatch": {
+                                    "_id": mongoose.Types.ObjectId(containerId)
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "$unwind": "$containers"
+                    },
+                    {
+                        "$unwind": "$containers.products"
+                    },
+                    {
+                        "$match": {
+                            "containers.products._id":prodId
+                        }
+                    },
+                    {
+                        "$project":{
+                            "containers": {
+                                "_id":1,
+                                "products": {
+                                    "name":1,
+                                    "status":1,
+                                    "mix.isMix":1
+                                }
+                            }
+                        }
+                    }
+                ]
+            )
+            resolve(found[0].containers.products)
+        } catch (err){
+            reject(err)
+        }
+    })
+}
