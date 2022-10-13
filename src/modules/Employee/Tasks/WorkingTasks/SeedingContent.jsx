@@ -45,7 +45,7 @@ export const SeedingContent = (props) => {
         return array
     }
     
-    const totalTrays = Math.ceil(sumAllTrays())
+    const totalTrays = sumAllTrays()
 
     console.log("products SeedingContent", products)
 
@@ -53,9 +53,9 @@ export const SeedingContent = (props) => {
         let i;
         let trays = 0;
 
-        for (i = 0; i < products.length; i++) {
-          if(products[i].productionData != undefined)
-            trays += products[i].productionData.trays
+        for (i = 0; i < finalArray.length; i++) {
+          if(finalArray[i].trays != undefined)
+            trays += Math.ceil(finalArray[i].trays)
         }
         
         return trays;

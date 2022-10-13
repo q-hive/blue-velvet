@@ -70,7 +70,10 @@ export const FullChamber = () => {
         var productList = []
         ordersList.map((order, id)=>{
             order.products.map((product,idx)=>{
-                productList.push({...product,status:order.status})
+                productList.push(
+                    {...product,
+                        status:order.status,
+                        productionData:order.productionData[order.productionData.findIndex(x => x.product === product.name)]})
             })
             
         })
@@ -218,7 +221,7 @@ export const FullChamber = () => {
         acc[key].push({name:item.name,harvest:item.harvest,seeds:item.seeds,trays:item.trays,})
         
       }else
-        acc[key].push({...item.productionData,name:item.name})
+        acc[key].push({...item.productionData[0],name:item.name})
 
       return acc
   
