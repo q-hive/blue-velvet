@@ -197,7 +197,6 @@ export const parseProduction = (req,res,work) => {
     return new Promise((resolve, reject) => {
         const asyncMapWork = work.map(async (totalWork) => {
             const productData = await getProductById(res.locals.organization,req.query.container, totalWork.prodId)
-
             const newProductModel = {
                 "trays":    totalWork.trays,
                 "harvest":  totalWork.harvest,

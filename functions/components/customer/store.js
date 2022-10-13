@@ -18,7 +18,8 @@ export const createNewCustomer = (orgId, data) => {
                 name:   data.name,
                 email:  data.email,
                 image:  "",
-                address: data.address, 
+                address: data.address,
+                businessData: data.businessData
             } 
             
             orgDoc.customers.push(customerMapped)
