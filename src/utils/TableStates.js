@@ -865,7 +865,7 @@ export const CustomerColumns = [
             const {user, credential} = useAuth()
             const navigate = useNavigate()
             
-            const editCustomer = () => console.log("Edit customer")
+            const editCustomer = () => navigate(`/${user.uid}/admin/edition?type=customer`, {state:{ edition: {customer: params.row}}})
             const deleteCustomer = async () => {
                 setLoading(true)
                 const deleteCustomerOperation = await api.api.delete(`${api.apiVersion}/customers/${params.id}`, {

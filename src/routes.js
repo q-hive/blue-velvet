@@ -23,6 +23,7 @@ import { DeliveryTask } from "./modules/Employee/Tasks/StandaloneTasks/Delivery"
 import { MaintenanceTask } from "./modules/Employee/Tasks/StandaloneTasks/Maintenance";
 import { GrowingTask } from "./modules/Employee/Tasks/StandaloneTasks/Growing";
 import { TaskContainer} from "./modules/Employee/Tasks/WorkingTasks/TaskContainer";
+import { EditionAbstract } from "./CoreComponents/Edition/EditionAbstract";
 
 
 
@@ -45,6 +46,10 @@ export const AppRoutes  = [
         component:<NewProduct edit={true}/>
     },
     {
+        path:"/:uid/admin/edition",
+        component: <EditionAbstract/>
+    },
+    {
         path:"/:uid/admin/sales/",
         component:<SalesIndex/>
     },
@@ -58,7 +63,7 @@ export const AppRoutes  = [
     },
     {
         path:"/:uid/admin/client/NewCustomer",
-        component:<NewCustomer/>
+        component:<NewCustomer edit={{isEdition:false}}/>
     },
     {
         path:"/:uid/admin/employees",   
