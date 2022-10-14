@@ -6,7 +6,6 @@ import { updateOrganization } from '../organization/store.js'
 import { getAllOrders } from '../orders/store.js'
 
 const { ObjectId } = mongoose.Types
-const contModel = mongoose.model('containers', Container)
 const orgModel = mongoose.model('organizations', Organization)
 
 export const newContainer = (contData) => {
@@ -67,7 +66,23 @@ export const getContainers = (filters) => {
 }
 
 export const getContainerById = (id, orgId) => {
-    return contModel.findById(ObjectId(id))
+    return new Promise(async(resolve, reject) => {
+        try {
+            const orgWithContainer = await orgModel.findOne(
+                {
+                    "_id":ObjectId(orgId),
+                    "containers._id":ObjectId(id)
+                },
+                "containers -_id"
+            )
+    
+            resolve(orgWithContainer)
+        } catch (err) {
+            reject(err)
+        }
+        
+    })
+
 }
 
 export const updateContainer = (orgId,id, edit) => { 
