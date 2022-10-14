@@ -604,10 +604,11 @@ export const salesColumns = [
         minWidth:{xs:"25%",md:130},
         flex:1,
         renderCell:(params) => {
+            const navigate = useNavigate()
             const {user, credential} = useAuth()
             const [loading, setLoading] = useState(false)
             
-            const editOrder = () => console.log("Update Order")
+            const editOrder = () => navigate(`/${user.uid}/admin/edition?type=order`, {state: {edition: {isEdition:true, order:params.row}}})
             const deleteOrder = async () => {
                 setLoading(true)
                 const deleteOperation = await api.api.delete(`${api.apiVersion}/orders/custom/?key=_id&&value=${params.id}`, {
@@ -644,7 +645,6 @@ export const salesColumns = [
 
            
 
-            const navigate = useNavigate()
             
             const handleModal = () => {
                 setModal({
@@ -658,7 +658,6 @@ export const salesColumns = [
                             type:"privileged",
                             execute:() => {
                                 editOrder()
-                                // navigate(`/${user.uid}/${user.role}/production/editProduct/?id=${params.id}`)
                             }
                         },
                         {

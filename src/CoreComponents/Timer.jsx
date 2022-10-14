@@ -1,23 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState } from 'react'
 import { Typography } from '@mui/material'
-
-function useInterval(cb, delay) {
-  const savedCallBack = useRef();
-
-  useEffect(() => {
-    savedCallBack.current = cb;
-  });
-
-  useEffect(() => {
-    function tick() {
-      savedCallBack.current();
-    }
-
-    let timerId = setInterval(tick,delay)
-    
-    return () => clearInterval(timerId)
-  }, []);
-}
+import useInterval from './useInterval';
 
 export const Timer = ({contxt}) => {
     const [time, setTime] = useState(0);
