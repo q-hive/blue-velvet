@@ -86,7 +86,7 @@ export const getContainerById = (orgId, id) => {
 
 }
 
-export const updateContainer = (orgId,id, edit) => { 
+export const updateContainerById = (orgId,id, edit) => { 
     return new Promise(async (resolve, reject) => {
 
         try {

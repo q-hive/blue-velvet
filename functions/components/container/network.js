@@ -1,5 +1,5 @@
 import express from 'express'
-import { getContainerById, updateContainer } from './store.js'
+import { getContainerById, updateContainerById } from './store.js'
 import {success, error} from '../../network/response.js'
 const router = express.Router()
 
@@ -14,7 +14,7 @@ router.get('/:id', (req, res) => {
 })
 
 router.patch('/:id', (req, res) => {
-    updateContainer(res.locals.organization,req.params.id, req.query)
+    updateContainerById(res.locals.organization,req.params.id, req.query)
     .then((containerUpdated) => {
         success(req, res, 200, "Container updated succesfully", containerUpdated)
     })
