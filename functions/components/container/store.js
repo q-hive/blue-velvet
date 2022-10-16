@@ -4,6 +4,7 @@ import Organization from '../../models/organization.js'
 import {updateUser} from '../admin/store.js'
 import { updateOrganization } from '../organization/store.js'
 import { getAllOrders } from '../orders/store.js'
+import { getMongoQueryByObject } from '../../utils/getMongoQuery.js'
 
 const { ObjectId } = mongoose.Types
 const orgModel = mongoose.model('organizations', Organization)
@@ -65,7 +66,7 @@ export const getContainers = (filters) => {
 
 }
 
-export const getContainerById = (id, orgId) => {
+export const getContainerById = (orgId, id) => {
     return new Promise(async(resolve, reject) => {
         try {
             const orgWithContainer = await orgModel.findOne(
@@ -87,35 +88,30 @@ export const getContainerById = (id, orgId) => {
 
 export const updateContainer = (orgId,id, edit) => { 
     return new Promise(async (resolve, reject) => {
-        const stringForNestedDoc = edit
 
+        try {
+            const parsedEddit = {
+                query: {
+                    [getMongoQueryByObject(edit)]: {
+                        [edit.key]:edit.value
+                    },
+                }
                 
-        //*In order to update multiple containers, is necesary to check if the element share ordere
-        //*This is because orders define behavior on producction and tasks
-        const organization =  await orgModel.findOne({_id:orgId})
-        
-        const orders = organization.orders 
-        
-        const mappedOrders = organization.orders.map(async (order, idx) => {
-            const orders =  await getAllOrders(orgId, id, {key:"orders._id", value:order._id})
-            orgModel.updateOne({"$elemMatch":{_id:orgId, "orders":{"$elementMatch":{}}}})
-        })
-
-        Promise.all(mappedOrders)
-
-        
-        resolve("Container updated")
-        
-        // //*TODO: Change to one query because is updateContainer not updateProductInContainer
-        // let org = await orgModel.updateOne({_id:orgId}, {"$set": {
+            }
             
-        // }})
+            const queryOp = await orgModel.updateOne(
+                {
+                    "_id":orgId, 
+                    "containers._id":id
+                },
+                parsedEddit.query
+            )
 
-        
-        // org.containers[0][Object.keys(edit)[0]].push(edit[Object.keys(edit)[0]])
-        // await org.save()
-        // return org
-        
+            resolve(queryOp)
+        } catch(err) {
+            reject(err)
+        }
+
     })
 }
 

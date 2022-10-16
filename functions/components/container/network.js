@@ -1,5 +1,5 @@
 import express from 'express'
-import { getContainerById } from './store.js'
+import { getContainerById, updateContainer } from './store.js'
 import {success, error} from '../../network/response.js'
 const router = express.Router()
 
@@ -10,6 +10,16 @@ router.get('/:id', (req, res) => {
     })
     .catch((err) => {
         error(req, res, 500, 'Error getting container - GENERIC ERROR', err)
+    })
+})
+
+router.patch('/:id', (req, res) => {
+    updateContainer(res.locals.organization,req.params.id, req.query)
+    .then((containerUpdated) => {
+        success(req, res, 200, "Container updated succesfully", containerUpdated)
+    })
+    .catch((err) => {
+        error(req, res, 500, "Error updating container", err, err)
     })
 })
 

@@ -6,17 +6,15 @@
  *      value: Any
  * }
  */
-export const getMongoQueryByReq = (queryConfig) => {
+export const getMongoQueryByObject = (queryConfig) => {
     const {query} = queryConfig
+    const defaultConfig = "set"
     
-    switch(query){
-        case "set":
-            return '$set'
-        case "add":
-            return '$inc'
-        case "multiply":
-            return '$mul'
-        default:
-            break;
+    const queryKeys = {
+        "set": "$set",
+        "add": "$inc",
+        "multiply": "$mul"
     }
+
+    return queryKeys[queryConfig] ?? queryKeys[defaultConfig]
 }

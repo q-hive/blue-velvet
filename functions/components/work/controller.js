@@ -1,7 +1,7 @@
 import {mongoose} from '../../mongo.js'
 import { getEmployeeById } from "../employees/store.js"
 import Organization from '../../models/organization.js'
-import { getMongoQueryByReq } from '../../utils/getMongoQuery.js'
+import { getMongoQueryByObject } from '../../utils/getMongoQuery.js'
 import { getOrganizationById } from '../organization/store.js'
 import { getFilteredOrders } from '../orders/store.js'
 import { getProductById } from '../products/store.js'
@@ -40,7 +40,7 @@ export const updatePerformance = (orgId, id, array) => {
             const dbOp = await orgModel.updateOne(
                 {_id:orgId, "employees._id":id},
                 {
-                    [`${getMongoQueryByReq(queryConfig)}`]: {
+                    [`${getMongoQueryByObject(queryConfig)}`]: {
                         [`employees.$.performance.${Object.keys(queryConfig)[1]}`]:Object.entries(queryConfig)[1][1],
                         "employees.$.performance.updated":"$$NOW"
                     }
