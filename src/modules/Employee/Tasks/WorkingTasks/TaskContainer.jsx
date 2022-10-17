@@ -194,9 +194,7 @@ export const TaskContainer = (props) => {
                 expectedtTime = Number(Math.ceil(trays) * 2).toFixed(2)
                 content = <SeedingContent products={products} productsObj={productsByNameObj} index={activeStep}/>
                 steps=[
-                    {step:"Tools"},
-                    {step:"Setup trays"},
-                    {step:"Staple trays"},
+                    {step:"Setup"},
                     {step:"Spray Seeds"},
                     {step:"Shelf"},
                 ]
