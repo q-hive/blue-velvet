@@ -352,7 +352,8 @@ export const EntryPoint = () => {
                 orders.data.splice(indexes[i],1);
             }
             setOrders(orders.data)
-            setEstimatedTime(time.total)
+            setEstimatedTime(time)
+            console.log("estimated time",estimatedTime.times)
         })
         .catch((err) => {
             console.log(err)
@@ -367,10 +368,13 @@ export const EntryPoint = () => {
         <Container maxWidth="lg" sx={{paddingTop:4,paddingBottom:4,marginX:{xs:4,md:"auto"},marginTop:{xs:4,md:3}}}>
             <Typography variant="h2" color="primary">Welcome, {user.name}</Typography>
             <Typography variant="h5" color="secondary">Here's your work</Typography><br/>
-            <Typography variant="h6" color="secondary">{`You'll need aproximately ${estimatedTime} minutes to finish your Tasks`}</Typography>
+            <Typography variant="h6" color="secondary">{`You'll need aproximately ${estimatedTime.total != undefined ? estimatedTime.total.toFixed(2) : null} minutes to finish your Tasks`}</Typography>
             <Box pt={4}>
                 <Typography variant="h6" >Pending Orders: {orders.length}</Typography>
-                <LoadingButton variant="contained" size="large" onClick={handleStartWork} loading={loading.startWorkBtn} >Start</LoadingButton>
+                <Box display="flex" sx={{justifyContent:"space-between"}}>
+                    <LoadingButton variant="contained" size="large" onClick={handleStartWork} loading={loading.startWorkBtn} >Start Workday</LoadingButton>
+                    <LoadingButton variant="contained" size="large" >End Workday</LoadingButton>
+                </Box>
             </Box>
 
             <Grid container spacing={3} marginTop={3}>
@@ -404,16 +408,31 @@ export const EntryPoint = () => {
                         <>
                             {Object.keys(allStatusesObj).map((status,index)=>{ 
                                 return(
+                                    <>
                                     <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
                                         <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
                                             <Typography >
                                                 <b>Task: {capitalize(status)}</b>
                                             </Typography>
                                             <Typography >
-                                                <i>Expected Time: {getExpectedTime(status)}</i>
+                                                <i>Expected Time: {estimatedTime.times[status].time.toFixed(2)}</i>
                                             </Typography>
                                         </Box>
                                     </Paper>
+
+                                    {/*TESTING ONLY*/}
+                                    <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
+                                    <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
+                                        <Typography >
+                                            <b>Task: Harvesting</b>
+                                        </Typography>
+                                        <Typography >
+                                            <i>Expected Time: {estimatedTime.times["harvest"].time.toFixed(2)}</i>
+                                        </Typography>
+                                    </Box>
+                                    </Paper>
+                                    {/*END TESTING ONLY*/}
+                                    </>
                                 )
                             })}
                                 
