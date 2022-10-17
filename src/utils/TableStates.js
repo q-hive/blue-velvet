@@ -607,7 +607,7 @@ export const salesColumns = [
             const {user, credential} = useAuth()
             const [loading, setLoading] = useState(false)
             
-            const editOrder = () => console.log("Update Order")
+            const editOrder = () => navigate(`/${user.uid}/admin/edition?type=order`, {state:{ edition: {order: params.id}}})
             const deleteOrder = async () => {
                 setLoading(true)
                 const deleteOperation = await api.api.delete(`${api.apiVersion}/orders/custom/?key=_id&&value=${params.id}`, {

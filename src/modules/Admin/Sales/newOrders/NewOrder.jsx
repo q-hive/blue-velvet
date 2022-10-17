@@ -16,11 +16,27 @@ import useAuth from '../../../../contextHooks/useAuthContext'
 
 //*Network and API
 import api from '../../../../axios.js'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog'
 
 
-export const NewOrder = () => {
+export const NewOrder = (props) => {
+    const useQuery = () => new URLSearchParams(useLocation().search)
+    const query = useQuery()
+
+    const paramVerb = () => {
+        if(Boolean(query.get('type'))){
+            return "Update"
+        }
+
+        return "Save"
+    }
+
+    const isEdition = props.edit.isEdition
+    const prevOrderID = props.edit.values.order
+
+    
+
     //*Auth context
     const {user, credential} = useAuth()
 
@@ -93,6 +109,26 @@ export const NewOrder = () => {
         })
         return orderPDF
     }
+
+    const getPrevValues = async ()=> {
+        const ordersData = await api.api.get(`${api.apiVersion}/orders/?id=${prevOrderID}`,{
+            headers:{
+                "authorization":    credential._tokenResponse.idToken,
+                "user":             user
+            }
+        })
+
+        return ordersData.data
+    }
+
+    
+
+    
+
+    const pV = getPrevValues()
+
+
+    console.log("prevValues",pV)
     //
 
     //Dialog

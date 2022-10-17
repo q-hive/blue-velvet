@@ -89,6 +89,7 @@ export const EntryPoint = () => {
                 ...orders.length != 0 
                 ?
                     updateWorkDays()
+                    //context setIsWorking 
                     .then(() => {
                         navigate('./../tasks/work',
                             {state: {

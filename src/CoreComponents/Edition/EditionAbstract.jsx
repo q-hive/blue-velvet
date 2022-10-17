@@ -1,6 +1,7 @@
 import React from 'react'
 import { useLocation } from 'react-router-dom'
 import { NewCustomer } from '../../modules/Admin/Client/NewCustomer'
+import { NewOrder } from '../../modules/Admin/Sales/newOrders/NewOrder'
 import { EditionContainer } from './EditionContainer'
 
 export const EditionAbstract = () => {
@@ -12,6 +13,8 @@ export const EditionAbstract = () => {
         switch(params){
             case 'customer':
                 return <NewCustomer/>
+            case 'order':
+                return <NewOrder/>
             default:
                 return <div></div>
         }
