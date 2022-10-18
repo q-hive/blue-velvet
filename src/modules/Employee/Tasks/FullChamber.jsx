@@ -24,6 +24,14 @@ import useAuth from '../../../contextHooks/useAuthContext'
 import api from '../../../axios.js'
 
 
+export const globalTimeModel = {
+    "workDay": new Date(),
+    "started": undefined,
+    "finished": undefined,
+    "breaks": [],
+    "tasks": []
+}
+
 
 
 export const FullChamber = () => {
@@ -144,6 +152,9 @@ export const FullChamber = () => {
         //* if (real/expected) > 1 negative
     }
 
+    useEffect(() => {
+        console.log(globalTimeModel)
+    })
   return (
     <>
 
@@ -177,7 +188,7 @@ export const FullChamber = () => {
         
     </Carousel>
 
-    <Timer contxt="work"/>
+    <Timer contxt="global"/>
     
     <Snackbar  anchorOrigin={{vertical: "bottom",horizontal: "center" }} open={snack.open} autoHideDuration={5000} onClose={handleClose}>
         <Alert onClose={handleClose} severity={snack.status} sx={{ width: '100%' }}>

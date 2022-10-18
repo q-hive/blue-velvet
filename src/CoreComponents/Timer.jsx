@@ -19,6 +19,6 @@ export const Timer = ({contxt}) => {
     
     useInterval(updateTime, 1000)
   return (
-    <Typography>Current {contxt} time: {formattedTime}</Typography>
+    <Typography>Current {contxt === 'global' ? 'working' : 'task'} time: {formattedTime}</Typography>
   )
 }

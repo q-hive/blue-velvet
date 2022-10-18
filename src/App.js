@@ -11,6 +11,7 @@ import { AuthContext } from './contexts/AuthContext'
 import { Login } from './CoreComponents/Login/Login'
 import { PrivateRoutes } from './CoreComponents/PrivateRoutes'
 import { AppRoutes } from './routes.js'
+import { WorkingContextWrapper } from './contexts/EmployeeContext.js'
 
 export const App = () => {
 
@@ -28,7 +29,16 @@ export const App = () => {
                         element={
                             <>
                                 <PrivateRoutes>
-                                    {val.component}
+                                    {
+                                        val.path.split('/').includes('employee')
+                                        ?
+                                        <WorkingContextWrapper>
+                                            {val.component}
+                                        </WorkingContextWrapper>
+                                        :
+                                        val.component
+                                        
+                                    }
                                 </PrivateRoutes>
                             
                             </>

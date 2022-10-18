@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import TaskPerformance from './TaskPerformance'
+import TaskPerformance from './taskPerformance.js'
 
 const {ObjectId} = mongoose.Types
 

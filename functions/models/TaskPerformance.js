@@ -1,4 +1,6 @@
-import mongoose from 'monngoose'
+import mongoose from 'mongoose'
+
+const {ObjectId} = mongoose.Types
 
 const TaskPerformance = new mongoose.Schema({
     name: {

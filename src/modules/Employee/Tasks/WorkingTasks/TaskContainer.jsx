@@ -25,12 +25,14 @@ import { Timer } from '../../../../CoreComponents/Timer'
 import { ArrowCircleRightOutlined } from '@mui/icons-material'
 import { CleaningContent } from '../ContainerTasks/CleaningContent'
 import { MatCutContent } from '../ContainerTasks/MatCutContent'
+import useWorkingContext from '../../../../contextHooks/useEmployeeContext'
 
 export const TaskContainer = (props) => {
     const theme = useTheme(BV_THEME);
     
     const {user, credential} = useAuth()
-    
+    const {TrackWorkModel} = useWorkingContext()
+    console.log(TrackWorkModel)
     const {state} = useLocation();
 
     const [isFinished,setIsFinished] = useState(false)
@@ -50,10 +52,6 @@ export const TaskContainer = (props) => {
         ({type} = state);
     }
 
-    console.log("types",type,state.type)
-    
-    
-    
 
     let steps
     let contentTitle
@@ -164,8 +162,6 @@ export const TaskContainer = (props) => {
       
 
         
-    
-    console.log("type",type)
     switch (type){
         
             case "unpaid": {

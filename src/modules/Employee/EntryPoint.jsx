@@ -2,7 +2,7 @@ import { Add } from '@mui/icons-material'
 import { Alert, Box, Button, Container, Grid, Paper, Snackbar, Typography } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import useAuth from '../../contextHooks/useAuthContext'
-import { filterByKey } from './Tasks/FullChamber'
+import { filterByKey, globalTimeModel } from './Tasks/FullChamber'
 
 //*Netword and routing
 import { useNavigate } from 'react-router-dom'
@@ -50,11 +50,29 @@ export const EntryPoint = () => {
 
     };
 
+
+    /**
+     * @description checks if a request can be sent to the API based on 
+     * session storage workingdays.updated time stamp if today has been already updated, then wouldnt be sent
+     */
+    const daysCanBeUpdated = () => {
+        return false
+    }
+
     const updateWorkDays = async () => {
         setLoading({
             ...loading,
             startWorkBtn: true
         })
+
+        if(!daysCanBeUpdated()) {
+            setLoading({
+                ...loading,
+                startWorkBtn: false
+            })
+            return
+        }
+        
         //*Update workdays of employee
         const request = await api.api.patch(`${api.apiVersion}/work/performance/${user._id}`,{performance:[{query:"add",workdays:1}]}, {
             headers: {
@@ -62,7 +80,6 @@ export const EntryPoint = () => {
                 user:user
             }
         })
-
         return request
     }
 
@@ -90,6 +107,7 @@ export const EntryPoint = () => {
                 ?
                     updateWorkDays()
                     .then(() => {
+                        globalTimeModel.started = new Date()
                         navigate('./../tasks/work',
                             {state: {
                             orders: orders
@@ -101,7 +119,7 @@ export const EntryPoint = () => {
                     })
                     
                 :
-                setSnackState({open:true,label:"There are no orders!",severity:"success"})
+                setSnackState({open:true,label:"There is no work to be done!",severity:"success"})
             }
         :
         setSnackState({open:true,label:"You can't start working right now",severity:"error"})
@@ -370,7 +388,7 @@ export const EntryPoint = () => {
             <Typography variant="h5" color="secondary">Here's your work</Typography><br/>
             <Typography variant="h6" color="secondary">{`You'll need aproximately ${estimatedTime.total != undefined ? estimatedTime.total.toFixed(2) : null} minutes to finish your Tasks`}</Typography>
             <Box pt={4}>
-                <Typography variant="h6" >Pending Orders: {orders.length}</Typography>
+                {/* <Typography variant="h6" >Pending Orders: {orders.length}</Typography> */}
                 <Box display="flex" sx={{justifyContent:"space-between"}}>
                     <LoadingButton variant="contained" size="large" onClick={handleStartWork} loading={loading.startWorkBtn} >Start Workday</LoadingButton>
                     <LoadingButton variant="contained" size="large" >End Workday</LoadingButton>
