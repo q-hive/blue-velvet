@@ -2,7 +2,7 @@ import { Add } from '@mui/icons-material'
 import { Alert, Box, Button, Container, Grid, Paper, Snackbar, Typography } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import useAuth from '../../contextHooks/useAuthContext'
-import { filterByKey, globalTimeModel } from './Tasks/FullChamber'
+import { filterByKey } from './Tasks/FullChamber'
 
 //*Netword and routing
 import { useNavigate } from 'react-router-dom'
@@ -13,11 +13,13 @@ import { intlFormat } from 'date-fns'
 import { DataGrid } from '@mui/x-data-grid'
 import { Timer } from '../../CoreComponents/Timer'
 import { LoadingButton } from '@mui/lab'
+import useWorkingContext from '../../contextHooks/useEmployeeContext'
 
 export const EntryPoint = () => {
 
-    //*Auth context
+    //*contexts
     const {user, credential} = useAuth()
+    const {TrackWorkModel} = useWorkingContext() 
     const navigate = useNavigate()
     
     //*DATA STATES
@@ -25,12 +27,12 @@ export const EntryPoint = () => {
     const [estimatedTime, setEstimatedTime] = useState(0)
     const [employeeIsWorking, setEmployeeIsWorking] = useState(JSON.parse(window.localStorage.getItem("isWorking")) || false)
 
-    console.log("eiW",employeeIsWorking)
-    console.log("isWinit",localStorage.getItem("isWorking"))
+    // console.log("eiW",employeeIsWorking)
+    // console.log("isWinit",localStorage.getItem("isWorking"))
 
 
     //*Render states
-    const [orderSelected, setOrderSelected] = useState([])
+    // const [orderSelected, setOrderSelected] = useState([])
     const [loading, setLoading] = useState({
         startWorkBtn:false
     })
@@ -42,16 +44,13 @@ export const EntryPoint = () => {
     const [isOnTime, setIsOnTime] = useState(true)
 
     const checkTime = () => {
-        var today = new Date()
+        const today = new Date()
         
         if(today.getDay() == 2 || today.getDay() == 5){
             if(today.getHours() >= 4 && today.getHours() < 9){
                 setIsOnTime(true);
-                console.log("testDate",today.getDay(),today.getHours())
             }
         }
-
-
     };
 
 
@@ -60,7 +59,7 @@ export const EntryPoint = () => {
      * session storage workingdays.updated time stamp if today has been already updated, then wouldnt be sent
      */
     const daysCanBeUpdated = () => {
-        return false
+        return !(TrackWorkModel.started !== undefined)
     }
 
     const updateWorkDays = async () => {
@@ -69,21 +68,22 @@ export const EntryPoint = () => {
             startWorkBtn: true
         })
 
-        if(!daysCanBeUpdated()) {
+        if(daysCanBeUpdated()) {
             setLoading({
                 ...loading,
                 startWorkBtn: false
             })
-            return
+            return 0
         }
         
         //*Update workdays of employee
+        TrackWorkModel.started = new Date()
         const request = await api.api.patch(`${api.apiVersion}/work/performance/${user._id}`,{performance:[{query:"add",workdays:1}]}, {
             headers: {
                 authorization:credential._tokenResponse.idToken,
                 user:user
             }
-        })
+        })  
         return request
     }
 
@@ -102,51 +102,56 @@ export const EntryPoint = () => {
                     )
     }
 
-    const handleWorkButton = () => {
-        // Change to 'true' to test Full Chamber
+    const handleWorkButton = (finish = false) => {
+        if(finish) {
+            TrackWorkModel.finished = new Date()
+            window.localStorage.setItem("isWorking", "false")
+            setEmployeeIsWorking(JSON.parse(localStorage.getItem("isWorking")))
+            setSnackState({open:true,label:"Your work has been ended today",severity:"warning"})
+            return
+        }
         
-        !employeeIsWorking
-        ?
-            isOnTime
-                ? 
-                    {
-                        ...orders.length != 0 
-                        ?
-                            updateWorkDays()
-                            //context setIsWorking 
-                            .then(() => {
-                                globalTimeModel.started = new Date()
-                                window.localStorage.setItem("isWorking", "true")
-                                navigate('./../tasks/work',
-                                    {state: {
-                                    orders: orders
-                                    }}
-                                )
-                            })
-                            .catch(err => {
-                                setSnackState({open:true, label:"There was an error updating your data.", severity:"error"})
-                            })
-                            
-                        :
-                        setSnackState({open:true,label:"There are no orders!",severity:"success"})
-                    }
-                :
-                setSnackState({open:true,label:"You can't start working right now",severity:"error"})
-        :
-        
-                // Poner diálogo de "Estás seguro carnal?"
-                window.localStorage.setItem("isWorking", "false")
-                globalTimeModel.finished = new Date()
-                setEmployeeIsWorking(JSON.parse(localStorage.getItem("isWorking")))
-                console.log("isW",localStorage.getItem("isWorking"))
+        if(employeeIsWorking){
+            setSnackState({open:true, label:"You already started working today, continue where you left", severity:"success"})
+            window.localStorage.setItem("isWorking", "true")
+            setLoading({...loading, startWorkBtn:true})
+            setTimeout(() => {
+                setLoading({...loading, startWorkBtn:true})
+                setSnackState({open:false})
+                navigate('./../tasks/work',
+                    {state: {
+                        orders: orders
+                    }}
+                )
+            }, 2500)
             
-
+            return
+        }
         
-    
-         
+        if(isOnTime && orders.length != 0){
+            updateWorkDays()
+            .then((result) => {
+                window.localStorage.setItem("isWorking", "true")
+                navigate('./../tasks/work',
+                    {state: {
+                    orders: orders
+                    }}
+                )
+            })
+            .catch(err => {
+                setSnackState({open:true, label:"There was an error updating your data. Try again.", severity:"error"})
+            })
+        }
+
+        if(!isOnTime) {
+            setSnackState({open:true,label:"You can't start working right now",severity:"error"})
+        }
+
+        if(!orders.length != 0){
+            setSnackState({open:true,label:"There is no work to do!",severity:"success"})
+        }
     }
 
-    // Filter Tasks
     function getAllProducts(){
         var productList = []
         orders.map((order, id)=>{
@@ -161,93 +166,89 @@ export const EntryPoint = () => {
     const allProducts = getAllProducts()
     const allStatusesObj = filterByKey(allProducts,"status")
 
-    console.log("allstatusesobj",allStatusesObj)
+    // console.log("allstatusesobj",allStatusesObj)
 
-    function mixOpener(products) {
-        let arreglo = []
-        products.map((product,id)=>{
-            if(product.mix == true && product.products != undefined){
-                product.products.map((product2, id)=>{
-                    arreglo.push(product2)
-                })
-            }else 
-                arreglo.push(product)
-        })
-         return arreglo
-      }
+    // function mixOpener(products) {
+    //     let arreglo = []
+    //     products.map((product,id)=>{
+    //         if(product.mix == true && product.products != undefined){
+    //             product.products.map((product2, id)=>{
+    //                 arreglo.push(product2)
+    //             })
+    //         }else 
+    //             arreglo.push(product)
+    //     })
+    //      return arreglo
+    // }
     //
 
     // Get trays to calculte time
-    function getTraysTotal(producti,status){
-        let ttrays = 0
+    // function getTraysTotal(producti,status){
+    //     let ttrays = 0
 
-        producti.map((product, id) => {
-            let prev = ttrays
-            let curr
-            if(status != undefined && product.status === status){
-                { product.mix != undefined && product.mix===true  ?
-                    curr = getTraysTotal(product.products)
-                    :
-                    product.productionData != undefined ? 
-                        curr = product.productionData.trays 
-                        : 
-                        curr=product.trays
-                }
-                ttrays = prev + curr
-            }else if(status === undefined){
-                console.log(product.products)
-                { product.products != undefined && product.mix===true  ?
+    //     producti.map((product, id) => {
+    //         let prev = ttrays
+    //         let curr
+    //         if(status != undefined && product.status === status){
+    //             { product.mix != undefined && product.mix===true  ?
+    //                 curr = getTraysTotal(product.products)
+    //                 :
+    //                 product.productionData != undefined ? 
+    //                     curr = product.productionData.trays 
+    //                     : 
+    //                     curr=product.trays
+    //             }
+    //             ttrays = prev + curr
+    //         }else if(status === undefined){
+    //             console.log(product.products)
+    //             { product.products != undefined && product.mix===true  ?
                     
-                    curr = getTraysTotal(product.products)
-                    :
-                    product.productionData != undefined ? 
-                        curr = product.productionData.trays 
-                        : 
-                        curr=product.trays
-                }
-                ttrays = prev + curr
-            }
-        })
+    //                 curr = getTraysTotal(product.products)
+    //                 :
+    //                 product.productionData != undefined ? 
+    //                     curr = product.productionData.trays 
+    //                     : 
+    //                     curr=product.trays
+    //             }
+    //             ttrays = prev + curr
+    //         }
+    //     })
             
     
-        return ttrays
-    }
+    //     return ttrays
+    // }
 
-    function getExpectedTime(arr){
-        let trays = getTraysTotal(allProducts,arr)
+    // function getExpectedTime(arr){
+    //     let trays = getTraysTotal(allProducts,arr)
 
-        switch (arr) {
-            case "seeding":
-                return Number(Math.ceil(trays) * 2).toFixed(2)
-            case "all":
-                let seedingTrays=getTraysTotal(allProducts,"seeding")
-                let harvestTrays=getTraysTotal(allProducts,"harvestReady")
-                return Number((Math.ceil(seedingTrays) * 2+(Math.ceil(harvestTrays) * 3 )) ).toFixed(2)
+    //     switch (arr) {
+    //         case "seeding":
+    //             return Number(Math.ceil(trays) * 2).toFixed(2)
+    //         case "all":
+    //             let seedingTrays=getTraysTotal(allProducts,"seeding")
+    //             let harvestTrays=getTraysTotal(allProducts,"harvestReady")
+    //             return Number((Math.ceil(seedingTrays) * 2+(Math.ceil(harvestTrays) * 3 )) ).toFixed(2)
         
-            default:
-                break;
-        }
-    }
+    //         default:
+    //             break;
+    //     }
+    // }
     //
 
-    function capitalize(word) {
-        return word[0].toUpperCase() + word.slice(1).toLowerCase();
-      }
-      
-    const trays = getTraysTotal(allProducts)
+    // const trays = getTraysTotal(allProducts)
 
-    console.log("orders", orders)
-    console.log("unfiltered trays", trays)
+    // console.log("orders", orders)
+    // console.log("unfiltered trays", trays)
 
     
-    const status = "uncompleted"
+    // const status = "uncompleted"
 
-    const handleShowTasks = (id) => {
-        if(orders.length !== 0) {
-            const found = orders.find(order => order._id === id)
-            setOrderSelected([...orderSelected, found])
-        }
-    }
+    // const handleShowTasks = (id) => {
+    //     if(orders.length !== 0) {
+    //         const found = orders.find(order => order._id === id)
+    //         setOrderSelected([...orderSelected, found])
+    //     }
+    // }
 
     const fixedHeightPaper = {
         padding: BV_THEME.spacing(2),
@@ -257,8 +258,6 @@ export const EntryPoint = () => {
         height: 240
     }
     
-     let productTasks 
-
 
     const containerTasks = [ 
         {name:"Cut mats", type:"mats"},
@@ -270,6 +269,11 @@ export const EntryPoint = () => {
         { id: 2, col1: 'Harvesting', col2: Math.random()},
         { id: 3, col1: 'Seeding', col2: Math.random() },
     ];
+
+    function capitalize(word) {
+        return word[0].toUpperCase() + word.slice(1).toLowerCase();
+    }
+    
     const getOrders = async ()=> {
         const ordersData = await api.api.get(`${api.apiVersion}/orders/uncompleted?production=true`,{
             headers:{
@@ -366,7 +370,16 @@ export const EntryPoint = () => {
         
     }, [])
 
+    const getKey = (status) => {
+        const dflt = "seeding"
+        
+        const statusObj = {
+            "seeding": "seeding",
+            "harvestReady": "harvest"
+        }
 
+        return statusObj[`${status?? dflt}`]
+    }
   return (<>
     <Box component="div" display="flex"  >
 
@@ -377,8 +390,23 @@ export const EntryPoint = () => {
             <Box pt={4}>
                 {/* <Typography variant="h6" >Pending Orders: {orders.length}</Typography> */}
                 <Box display="flex" sx={{justifyContent:"space-between"}}>
-                    <LoadingButton variant="contained" size="large" onClick={handleWorkButton} loading={loading.startWorkBtn} >
-                        {employeeIsWorking ? "Finish Workday":"Start Workday"}</LoadingButton>
+                    <LoadingButton variant="contained" size="large" onClick={() => handleWorkButton(false)} loading={loading.startWorkBtn} >
+                        {employeeIsWorking ? "Continue work...":"Start Workday"}</LoadingButton>
+
+                    {
+                        employeeIsWorking 
+                        ? 
+                        <LoadingButton 
+                        variant="contained" 
+                        size="large" 
+                        onClick={() => handleWorkButton(true)} 
+                        loading={loading.startWorkBtn} 
+                        >
+                            Finish workday
+                        </LoadingButton>
+                        :
+                        null
+                    }
                 </Box>
             </Box>
 
@@ -417,10 +445,10 @@ export const EntryPoint = () => {
                                     <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
                                         <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
                                             <Typography >
-                                                <b>Task: {capitalize(status)}</b>
+                                                <b>Task: {capitalize(getKey(status))}</b>
                                             </Typography>
                                             <Typography >
-                                                <i>Expected Time: {estimatedTime?.times[status].time.toFixed(2)}</i>
+                                                <i>Expected Time: {estimatedTime?.times[getKey(status)].time.toFixed(2)}</i>
                                             </Typography>
                                         </Box>
                                     </Paper>
