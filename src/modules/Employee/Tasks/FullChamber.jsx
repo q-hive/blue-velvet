@@ -22,6 +22,7 @@ import { Clock } from '../../../CoreComponents/Clock'
 import useAuth from '../../../contextHooks/useAuthContext'
 
 import api from '../../../axios.js'
+import useWorkingContext from '../../../contextHooks/useEmployeeContext'
 
 
 export const globalTimeModel = {
@@ -46,6 +47,8 @@ export const FullChamber = () => {
 
     //*CONTEXTS
     const {user, credential} = useAuth()
+    const {TrackWorkModel} = useWorkingContext()
+
     
     //*render states
     const[canSeeNextTask,setCanSeeNexttask] = useState({value:false,counter:0})
@@ -152,9 +155,12 @@ export const FullChamber = () => {
         //* if (real/expected) > 1 negative
     }
 
-    useEffect(() => {
-        console.log(globalTimeModel)
-    })
+    const handleBreaks = () => {
+        console.log(TrackWorkModel.tasks[TrackWorkModel.tasks.length-1])
+        
+    }
+
+
   return (
     <>
 
@@ -201,6 +207,7 @@ export const FullChamber = () => {
         color="primary" 
         size="medium"
         aria-label="take a break"
+        onClick={handleBreaks}
         sx={{position:"absolute",bottom: 30,
         right: {xs:30,md:"40%"},}}
     >

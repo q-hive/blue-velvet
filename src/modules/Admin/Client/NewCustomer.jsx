@@ -27,6 +27,11 @@ export const NewCustomer = (props) => {
 
         return "Save"
     }
+
+    const isEdition = props.edit.isEdition
+    const prevValues = props.edit.values.customer
+
+    console.log("prevValues",prevValues)
     
     //*Contexts
     const {user, credential} = useAuth()
@@ -346,14 +351,14 @@ export const NewCustomer = (props) => {
                                 <CameraIcon sx={{fontSize:"5vh"}} />
                             </Fab>
                             
-                            <TextField defaultValue={props.edit.isEdition ? props.edit.values.customer.name : undefined} id="name"  onChange={(e) => handleInput(e,e.target.value,"input")} label="Name" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
-                            <TextField defaultValue={props.edit.isEdition ? props.edit.values.customer.email : undefined} id="email" onChange={(e) => handleInput(e,e.target.value,"input")} label="Email" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
+                            <TextField defaultValue={isEdition ? prevValues.name : undefined} id="name"  onChange={(e) => handleInput(e,e.target.value,"input")} label="Name" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
+                            <TextField defaultValue={isEdition ? prevValues.email : undefined} id="email" onChange={(e) => handleInput(e,e.target.value,"input")} label="Email" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
                             <Autocomplete
                                 options={options.roles}
                                 onChange={handleInput}
                                 id="role"
                                 sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})}
-                                defaultValue={props.edit.isEdition ? props.edit.values.customer.role : undefined}
+                                defaultValue={isEdition ? prevValues.role : undefined}
                                 renderInput={(params) => { 
                                     return <TextField
                                             {...params}
@@ -378,15 +383,15 @@ export const NewCustomer = (props) => {
                             </Typography>
                             <Divider variant="middle" sx={{width:{xs:"98%",sm:"50%",md:"50%"}, marginY:"1vh"}}/>
 
-                            <TextField defaultValue={props.edit.isEdition ? props.edit.values.customer?.address?.street : undefined} onChange={(e) => handleInput(e,e.target.value,"input")} id="street" label="Street" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
+                            <TextField defaultValue={isEdition ? prevValues?.address?.street : undefined} onChange={(e) => handleInput(e,e.target.value,"input")} id="street" label="Street" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
                             <Box display="flex" flexDirection="row" width={{xs:"99%",sm:"49%"}}>
-                                <TextField defaultValue={props.edit.isEdition ? props.edit.values.customer?.address?.stNumber : undefined} onChange={(e) => handleInput(e,e.target.value,"input")} id="number" label="No." type="number" sx={()=>({...BV_THEME.input.mobile.halfSize.desktop.halfSize})} />
-                                <TextField defaultValue={props.edit.isEdition ? props.edit.values.customer?.address?.zip : undefined} onChange={(e) => handleInput(e,e.target.value,"input")} id="ZipCode" label="ZipCode" type="text" sx={()=>({...BV_THEME.input.mobile.halfSize.desktop.halfSize})} />
+                                <TextField defaultValue={isEdition ? prevValues?.address?.stNumber : undefined} onChange={(e) => handleInput(e,e.target.value,"input")} id="number" label="No." type="number" sx={()=>({...BV_THEME.input.mobile.halfSize.desktop.halfSize})} />
+                                <TextField defaultValue={isEdition ? prevValues?.address?.zip : undefined} onChange={(e) => handleInput(e,e.target.value,"input")} id="ZipCode" label="ZipCode" type="text" sx={()=>({...BV_THEME.input.mobile.halfSize.desktop.halfSize})} />
                             </Box>
-                            <TextField defaultValue={props.edit.isEdition ? props.edit.values.customer?.address?.city : undefined} onChange={(e) => handleInput(e,e.target.value,"input")} id="city" label="City" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
-                            <TextField defaultValue={props.edit.isEdition ? props.edit.values.customer?.address?.state : undefined} onChange={(e) => handleInput(e,e.target.value,"input")} id="state" label="State" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
-                            <TextField defaultValue={props.edit.isEdition ? props.edit.values.customer?.address?.country : undefined} onChange={(e) => handleInput(e,e.target.value,"input")} id="country" label="Country" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
-                            <TextField defaultValue={props.edit.isEdition ? props.edit.values.customer?.address?.references : undefined} onChange={(e) => handleInput(e,e.target.value,"input")} id="references" multiline label="References" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
+                            <TextField defaultValue={isEdition ? prevValues?.address?.city : undefined} onChange={(e) => handleInput(e,e.target.value,"input")} id="city" label="City" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
+                            <TextField defaultValue={isEdition ? prevValues?.address?.state : undefined} onChange={(e) => handleInput(e,e.target.value,"input")} id="state" label="State" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
+                            <TextField defaultValue={isEdition ? prevValues?.address?.country : undefined} onChange={(e) => handleInput(e,e.target.value,"input")} id="country" label="Country" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
+                            <TextField defaultValue={isEdition ? prevValues?.address?.references : undefined} onChange={(e) => handleInput(e,e.target.value,"input")} id="references" multiline label="References" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
                         </Box>
                     </>
                 ) : null
@@ -402,8 +407,8 @@ export const NewCustomer = (props) => {
                             </Typography>
                             <Divider variant="middle" sx={{width:{xs:"98%",sm:"50%",md:"50%"}, marginY:"1vh"}}/>
 
-                            <TextField defaultValue={props.edit.isEdition ? props.edit.values.customer?.businessData?.name : undefined} onChange={(e) => handleInput(e, e.target.value,"input")} id="businessName" label="Name" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
-                            <TextField defaultValue={props.edit.isEdition ? props.edit.values.customer?.businessData?.bankAccount : undefined} onChange={(e) => handleInput(e, e.target.value,"input")} id="bnkAcc" label="Bank Account" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
+                            <TextField defaultValue={isEdition ? prevValues?.businessData?.name : undefined} onChange={(e) => handleInput(e, e.target.value,"input")} id="businessName" label="Name" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
+                            <TextField defaultValue={isEdition ? prevValues?.businessData?.bankAccount : undefined} onChange={(e) => handleInput(e, e.target.value,"input")} id="bnkAcc" label="Bank Account" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
 
                         </Box>
                     </>

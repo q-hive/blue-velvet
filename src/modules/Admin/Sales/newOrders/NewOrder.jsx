@@ -16,13 +16,29 @@ import useAuth from '../../../../contextHooks/useAuthContext'
 
 //*Network and API
 import api from '../../../../axios.js'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog'
 
 
 export const NewOrder = (props) => {
     const [products,setProducts]= useState([])
     
+    // const useQuery = () => new URLSearchParams(useLocation().search)
+    // const query = useQuery()
+
+    // const paramVerb = () => {
+    //     if(Boolean(query.get('type'))){
+    //         return "Update"
+    //     }
+
+    //     return "Save"
+    // }
+
+    // const isEdition = props.edit.isEdition
+    // const prevOrderID = props.edit.values.order
+
+    
+
     //*Auth context
     const getContextProducts = () => {
         let scopeProducts
@@ -33,8 +49,9 @@ export const NewOrder = (props) => {
             })
 
             products.push(scopeProducts)
-        }
 
+        }
+        return products
     }
     
     const {user, credential} = useAuth()
@@ -108,6 +125,26 @@ export const NewOrder = (props) => {
         })
         return orderPDF
     }
+
+    // const getPrevValues = async ()=> {
+    //     const ordersData = await api.api.get(`${api.apiVersion}/orders/?id=${prevOrderID}`,{
+    //         headers:{
+    //             "authorization":    credential._tokenResponse.idToken,
+    //             "user":             user
+    //         }
+    //     })
+
+    //     return ordersData.data
+    // }
+
+    
+
+    
+
+    // const pV = getPrevValues()
+
+
+    // console.log("prevValues",pV)
     //
 
     //Dialog
@@ -501,7 +538,7 @@ export const NewOrder = (props) => {
             ?
             <>
                 {
-                    props.order.edit.isEdition
+                    props.edit.isEdition
 
                     ?
                         <div>Must show component for DEFAULT PRODUCT FROM ROW OF DATA GRIS IN SALES MODULE</div>                    

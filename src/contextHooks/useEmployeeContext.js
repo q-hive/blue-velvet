@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { WorkingContext } from "../contexts/EmployeeContext";
 
-const useWorkingContext = () => seAuth(WorkingContext)
+const useWorkingContext = () => useContext(WorkingContext)
 
 export default useWorkingContext

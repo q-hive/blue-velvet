@@ -58,9 +58,9 @@ export const TaskContainer = (props) => {
     let content
     let expectedtTime
 
-    var trays 
-    var redplacedMixProducts
-    var productsByNameObj
+    let trays 
+    let redplacedMixProducts
+    let productsByNameObj
 
     const sumProdData = (arr, data) => {
         let result = 0;
@@ -133,7 +133,7 @@ export const TaskContainer = (props) => {
       function mixOpener(products) {
         let arreglo = []
         products.map((product,id)=>{
-            if(product.mix == true){
+            if(product.mix){
                 product.products.map((product2, id)=>{
                     arreglo.push(product2)
                 })
@@ -162,6 +162,33 @@ export const TaskContainer = (props) => {
       
 
         
+        const insertTasks = (type) => {
+            if(TrackWorkModel.tasks.length != 0){
+                for(let i = 0; i<TrackWorkModel.tasks; i++){
+                    let alreadyExists =  false
+    
+                    TrackWorkModel.tasks.push(type) 
+    
+                    
+                    for(j=i; j<TrackWorkModel.tasks-1; j++){
+                        if(TrackWorkModel[i] === TrackWorkModel[j]){
+                            alreadyExists = true        
+                        }
+                    }
+    
+                    if(alreadyExists){
+                        continue
+                    }
+    
+                }
+                return
+            }
+
+            TrackWorkModel.tasks.push(type)
+            
+
+        }
+        
     switch (type){
         
             case "unpaid": {
@@ -186,13 +213,12 @@ export const TaskContainer = (props) => {
                 } break;
 
             case "seeding": {
+                insertTasks(type)
                 contentTitle = "Seeding"
                 expectedtTime = Number(Math.ceil(trays) * 2).toFixed(2)
                 content = <SeedingContent products={products} productsObj={productsByNameObj} index={activeStep}/>
                 steps=[
-                    {step:"Tools"},
-                    {step:"Setup trays"},
-                    {step:"Staple trays"},
+                    {step:"Setup"},
                     {step:"Spray Seeds"},
                     {step:"Shelf"},
                 ]
@@ -206,6 +232,7 @@ export const TaskContainer = (props) => {
                 } break;
 
             case "harvestReady":{
+                insertTasks(type)
                 contentTitle = "Harvesting"
                 expectedtTime = Number(Math.ceil(trays) * 2).toFixed(2)
                 content = <HarvestingContent products={products} index={activeStep}/>
@@ -219,6 +246,7 @@ export const TaskContainer = (props) => {
 
             case "harvested":{
                 contentTitle = "Packing"
+                insertTasks("packing")
                 // expectedtTime = Number(Math.ceil(trays) * 2).toFixed(2)
                 {/*const totalPacks = order.products.map((product) => {
                     const total = product.packages.reduce((prev, curr) => {
@@ -241,6 +269,7 @@ export const TaskContainer = (props) => {
             } break;
 
             case "ready":{
+                insertTasks("delivery")
                 contentTitle = "Delivery"
                 content = <DeliveryContent index={activeStep}/>
                 steps=[{step:"Delivery"}]
@@ -249,12 +278,14 @@ export const TaskContainer = (props) => {
 
             case "cleaning":{
                 contentTitle = "Cleaning"
+                insertTasks(type)
                 content = <CleaningContent index={activeStep}/>
                 steps=[{step:"Cleaning"}]
                 } break;
 
             case "mats":{
                 contentTitle = "Cut Mats"
+                insertTasks("mats")
                 content = <MatCutContent index={activeStep}/>
                 steps=[{step:"Cut Mats"}]
                 } break;

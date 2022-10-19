@@ -2,12 +2,13 @@ import React, { useState } from 'react'
 
 //*MUI Components
     // import { DataGrid } from '@mui/x-data-grid'
-import { Box, Button, Fade, Typography } from '@mui/material'
+import { Box, Button, Fade, Stack, Typography } from '@mui/material'
 
 //*UTILS
 
 //THEME
 import { BV_THEME } from '../../../../theme/BV-theme'
+import useWorkingContext from '../../../../contextHooks/useEmployeeContext';
 
 const taskCard_sx = {
     display:"flex",
@@ -23,6 +24,8 @@ const estimated = 60*2.2;
 export const SeedingContent = (props) => {
 
     const products = props.products
+    const {TrackWorkModel} = useWorkingContext()
+    console.log(TrackWorkModel)
 
     const productsObj = props.productsObj
 
@@ -36,11 +39,11 @@ export const SeedingContent = (props) => {
 
         for(let i=0; i<llaves.length; i++){
             array.push({
-                    name:llaves[i].toString(),
-                    harvest:productsObj[llaves[i]].harvest,
-                    seeds:productsObj[llaves[i]].seeds,
-                    trays:productsObj[llaves[i]].trays
-                })
+                name:llaves[i].toString(),
+                harvest:productsObj[llaves[i]].harvest,
+                seeds:productsObj[llaves[i]].seeds,
+                trays:productsObj[llaves[i]].trays
+            })
         }
         return array
     }
@@ -79,14 +82,27 @@ export const SeedingContent = (props) => {
                         Gather what you need: <br /><br/>
                     </Typography>
                     <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                        Seeding-tools<br/><b>{totalTrays}</b> {totalTrays>1 ? "Trays": "Tray"} <br/> 
-                        <b>{totalTrays}</b> pre-cut {totalTrays>1 ? "Hemp-Mats": "Hemp-Mat"} <br/>
+                        <b>{totalTrays}</b> {totalTrays>1 ? "Trays": "Tray"} <br/> 
                     </Typography>
                     {finalArray.map((product,index)=>{return(
                         <Typography key={index} variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
                             <b>{parseFloat(product.seeds).toFixed(2)}</b> grs of <b>{product.name}</b> Seeds <br/>
                         </Typography>
                     )})}
+
+                    <Box sx={taskCard_sx}>
+                        <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+                        Place the {totalTrays} Trays on the Seeding-Table, and fill each of them with a pre-cut Hemp-Mat
+                        </Typography>
+                    </Box>
+
+                    <Box sx={taskCard_sx}>
+                        <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+                        Staple them under the Table.
+                        </Typography>
+                    </Box>
+
+
                     
                     
                 </Box>
@@ -94,31 +110,7 @@ export const SeedingContent = (props) => {
             </>
         );
 
-    if(props.index===1) 
-        return (
-            <>
-                <Box sx={taskCard_sx}>
-                    <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                    Place the {totalTrays} Trays on the Seeding-Table, and fill each of them with a pre-cut Hemp-Mat
-                    </Typography>
-                </Box>
-
-            </>
-        );
-
-    if(props.index===2) 
-        return (
-            <>
-                <Box sx={taskCard_sx}>
-                    <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                    Staple them under the Table.
-                    </Typography>
-                </Box>
-
-            </>
-        );
-
-    if(props.index===3){
+    if(props.index===1){
         const getSeeds = (product) => {
             if(product.productionData === undefined){
                 return parseFloat(product.seeds/product.trays).toFixed(2)
@@ -131,28 +123,30 @@ export const SeedingContent = (props) => {
             <Box sx={taskCard_sx}>
                 <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
                     Spread the seeds equally on the mats and softly spray them with the <i><b>triangle-spray.</b></i> <br/><br/>
-                    <b>Max seeds per tray:</b><br/>
                 </Typography>
 
+                
+                <Stack  sx={{display:"flex",justifyContent:"space-between"}}>
                 {
                     
                     uniqueByName(finalArray).map((product,index)=>{
                         return( 
-                            <Typography key={product+index+"2"} variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                                <b>{product.name}</b> :  <b>{getSeeds(product)}</b> grs of seeds <br/>
+                            <Typography key={product+index+"2"} variant="h5" align='justify' color={BV_THEME.textColor.lightGray} >
+                                <b>{product.name}</b> <br/>{Math.ceil(product.trays)} trays. Max seeds per tray:  <b>{getSeeds(product)}</b> g <br/><br/>
                             </Typography>
                         )
                     })
                 }
 
                 <br/>
+                </Stack>
             </Box>
 
         </>
         )
     } 
 
-    if(props.index===4) 
+    if(props.index===2) 
     return (
         <>
             <Box sx={taskCard_sx}>

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 //*MUI COMPONENTS
 import { Box, Button, Container, Grid, Paper, Stack, Typography, useTheme, LinearProgress} from '@mui/material'
@@ -11,13 +11,16 @@ import useAuth from '../../../contextHooks/useAuthContext'
 
 //*Routing
 import { useNavigate } from "react-router-dom";
+import api from "../../../axios"
 //Theme
 import { BV_THEME } from '../../../theme/BV-theme';
 import { DataGrid , GridRowsProp} from '@mui/x-data-grid';
 
 
 export const Dashboard = () => {
-    const {user} = useAuth()
+    const {user,credential} = useAuth()
+
+    const [containers, setContainers] = useState([])
 
     const theme = useTheme(BV_THEME)
 
@@ -28,6 +31,7 @@ export const Dashboard = () => {
         flexDirection: "column",
         height: 240
     }
+    const organizationID = "633b2e0cd069d81c46a18032"
 
     const rows = [
         { id: 1, col1: 'Eluis', col2: Math.random()},
@@ -41,7 +45,41 @@ export const Dashboard = () => {
         navigate(`/${user.uid}/admin/${e.target.id}`)
     }
 
-    const containers = [{name:"Panama Container",capacity:356,used:50},{name:"Colombia Container",capacity:356,used:150}]
+    const fakeContainers = [{name:"Panama Container",capacity:356,used:50},{name:"Colombia Container",capacity:356,used:150}]
+
+    const getContainers = async ()=> {
+        const containersData = await api.api.get(`${api.apiVersion}/organizations?_id=${organizationID}`,{
+            headers:{
+                "authorization":    credential._tokenResponse.idToken,
+                "user":             user
+            }
+        })
+
+        return containersData.data.data[0].containers
+    }
+
+    useEffect(() => {
+        const getData = async () => {
+            try {
+                const containers2 = await getContainers()
+                console.log("containers 2",containers2)
+                return containers2
+            } catch(err) {
+                console.log(err)
+            }
+        }
+
+        getData()
+        .then((response)=>{
+            setContainers(response)
+        })
+        .catch((err) =>{
+            console.log(err)
+        })
+        console.log("containers final",containers)
+        
+    }, [])
+
     
   return (
     <>
@@ -72,9 +110,9 @@ export const Dashboard = () => {
                         <Box sx={{display:"flex",flexDirection:"column", }}>
 
                             {containers.map((container,index) => { return(
-                                    <Paper variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"3px",paddingX:"2px",marginTop:"2vh",display:"flex", flexDirection:"row"}}>
+                                    <Paper key={index} variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"3px",paddingX:"2px",marginTop:"2vh",display:"flex", flexDirection:"row"}}>
                                         <Typography sx={{width:"98%"}}>
-                                            {container.name}:<br/><b>Max: </b>{container.capacity}<b> Used: </b>{container.used}{" "}<LinearProgress sx={{height:"3vh"}} variant="determinate" value={(container.used * 100) / container.capacity} />
+                                            {container.name}:<br/><b>Max: </b>{container.capacity}<b> Used: </b>{container.available}{" "}<LinearProgress sx={{height:"3vh"}} variant="determinate" value={(container.used * 100) / container.capacity} />
                                         </Typography>
                                         {/*<Button variant="contained" sx={{width:"34%"}} onClick={()=>handleViewTask(task.type)} color="primary" >
                                             View

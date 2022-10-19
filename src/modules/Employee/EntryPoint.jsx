@@ -23,6 +23,10 @@ export const EntryPoint = () => {
     //*DATA STATES
     const [orders, setOrders] = useState([])
     const [estimatedTime, setEstimatedTime] = useState(0)
+    const [employeeIsWorking, setEmployeeIsWorking] = useState(JSON.parse(window.localStorage.getItem("isWorking")) || false)
+
+    console.log("eiW",employeeIsWorking)
+    console.log("isWinit",localStorage.getItem("isWorking"))
 
 
     //*Render states
@@ -98,31 +102,47 @@ export const EntryPoint = () => {
                     )
     }
 
-    const handleStartWork = () => {
+    const handleWorkButton = () => {
         // Change to 'true' to test Full Chamber
-        isOnTime 
-        ? 
-            {
-                ...orders.length != 0 
-                ?
-                    updateWorkDays()
-                    .then(() => {
-                        globalTimeModel.started = new Date()
-                        navigate('./../tasks/work',
-                            {state: {
-                            orders: orders
-                            }}
-                        )
-                    })
-                    .catch(err => {
-                        setSnackState({open:true, label:"There was an error updating your data.", severity:"error"})
-                    })
-                    
+        
+        !employeeIsWorking
+        ?
+            isOnTime
+                ? 
+                    {
+                        ...orders.length != 0 
+                        ?
+                            updateWorkDays()
+                            //context setIsWorking 
+                            .then(() => {
+                                globalTimeModel.started = new Date()
+                                window.localStorage.setItem("isWorking", "true")
+                                navigate('./../tasks/work',
+                                    {state: {
+                                    orders: orders
+                                    }}
+                                )
+                            })
+                            .catch(err => {
+                                setSnackState({open:true, label:"There was an error updating your data.", severity:"error"})
+                            })
+                            
+                        :
+                        setSnackState({open:true,label:"There are no orders!",severity:"success"})
+                    }
                 :
-                setSnackState({open:true,label:"There is no work to be done!",severity:"success"})
-            }
+                setSnackState({open:true,label:"You can't start working right now",severity:"error"})
         :
-        setSnackState({open:true,label:"You can't start working right now",severity:"error"})
+        
+                // Poner diálogo de "Estás seguro carnal?"
+                window.localStorage.setItem("isWorking", "false")
+                globalTimeModel.finished = new Date()
+                setEmployeeIsWorking(JSON.parse(localStorage.getItem("isWorking")))
+                console.log("isW",localStorage.getItem("isWorking"))
+            
+
+        
+    
          
     }
 
@@ -238,45 +258,11 @@ export const EntryPoint = () => {
     }
     
      let productTasks 
-    
-     const setOrderTasks = (status) =>{
-        
-        switch(status){
-            case "seeding": productTasks = [{name:"Task 1", type:"seeding"}];
-                break;
-            case "growing": productTasks = [{name:"Status:", type:"growing"}];
-                break;
-            case "harvestReady": productTasks = [{name:"Task 2", type:"harvesting"}];
-                break;
-            case "harvested" : productTasks = [{name:"Task 3", type:"packing"}];
-                break;
-            case "ready" : productTasks = [{name:"Task 4", type:"delivery"}];
-                break;
-            case "delivered" : productTasks = [];
-                break;
-            case "unpaid" : productTasks = [];
-                break;
-            case "uncompleted" : productTasks = [];
-                break;
-            case "pending" : productTasks = [];
-                break;
-            default:  productTasks = [];
-         }
 
-     }
-
-    
 
     const containerTasks = [ 
         {name:"Cut mats", type:"mats"},
         {name:"Cleaning", type:"cleaning"},
-    ]
-
-    const completedTasks = [ 
-        {name:"Seeding", time:"5:04"},
-        {name:"Harvesting", time:"6:04"},
-        {name:"Seeding", time:"5:04"},
-        {name:"Harvesting", time:"6:04"},
     ]
 
     const completedTasksRows = [
@@ -285,7 +271,7 @@ export const EntryPoint = () => {
         { id: 3, col1: 'Seeding', col2: Math.random() },
     ];
     const getOrders = async ()=> {
-        const ordersData = await api.api.get(`${api.apiVersion}/orders/uncompleted`,{
+        const ordersData = await api.api.get(`${api.apiVersion}/orders/uncompleted?production=true`,{
             headers:{
                 "authorization":    credential._tokenResponse.idToken,
                 "user":             user
@@ -380,6 +366,7 @@ export const EntryPoint = () => {
         
     }, [])
 
+
   return (<>
     <Box component="div" display="flex"  >
 
@@ -390,8 +377,8 @@ export const EntryPoint = () => {
             <Box pt={4}>
                 {/* <Typography variant="h6" >Pending Orders: {orders.length}</Typography> */}
                 <Box display="flex" sx={{justifyContent:"space-between"}}>
-                    <LoadingButton variant="contained" size="large" onClick={handleStartWork} loading={loading.startWorkBtn} >Start Workday</LoadingButton>
-                    <LoadingButton variant="contained" size="large" >End Workday</LoadingButton>
+                    <LoadingButton variant="contained" size="large" onClick={handleWorkButton} loading={loading.startWorkBtn} >
+                        {employeeIsWorking ? "Finish Workday":"Start Workday"}</LoadingButton>
                 </Box>
             </Box>
 
@@ -433,22 +420,22 @@ export const EntryPoint = () => {
                                                 <b>Task: {capitalize(status)}</b>
                                             </Typography>
                                             <Typography >
-                                                <i>Expected Time: {estimatedTime.times[status].time.toFixed(2)}</i>
+                                                <i>Expected Time: {estimatedTime?.times[status].time.toFixed(2)}</i>
                                             </Typography>
                                         </Box>
                                     </Paper>
 
                                     {/*TESTING ONLY*/}
-                                    <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
+                                    {/* <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
                                     <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
                                         <Typography >
                                             <b>Task: Harvesting</b>
                                         </Typography>
                                         <Typography >
-                                            <i>Expected Time: {estimatedTime.times["harvest"].time.toFixed(2)}</i>
+                                            <i>Expected Time: {estimatedTime?.times["harvest"].time.toFixed(2)}</i>
                                         </Typography>
                                     </Box>
-                                    </Paper>
+                                    </Paper> */}
                                     {/*END TESTING ONLY*/}
                                     </>
                                 )
