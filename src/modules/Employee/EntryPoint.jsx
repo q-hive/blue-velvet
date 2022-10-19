@@ -1,22 +1,45 @@
-import { Add } from '@mui/icons-material'
-import { Alert, Box, Button, Container, Grid, Paper, Snackbar, Typography } from '@mui/material'
 import React, { useEffect, useState } from 'react'
+
+import { Alert, Box, Button, Container, Grid, Paper, Snackbar, Typography } from '@mui/material'
+import { LoadingButton } from '@mui/lab'
+import { DataGrid } from '@mui/x-data-grid'
+
 import useAuth from '../../contextHooks/useAuthContext'
 import { filterByKey } from './Tasks/FullChamber'
 
+import useWorkingContext from '../../contextHooks/useEmployeeContext'
+import { BV_THEME } from '../../theme/BV-theme'
+
 //*Netword and routing
 import { useNavigate } from 'react-router-dom'
-import { TaskContainer } from './Tasks/WorkingTasks/TaskContainer'
-import { BV_THEME } from '../../theme/BV-theme'
 import api from '../../axios.js'
-import { intlFormat } from 'date-fns'
-import { DataGrid } from '@mui/x-data-grid'
-import { Timer } from '../../CoreComponents/Timer'
-import { LoadingButton } from '@mui/lab'
-import useWorkingContext from '../../contextHooks/useEmployeeContext'
+
+//*UNUSED
+// import { Add } from '@mui/icons-material'
+// import { Timer } from '../../CoreComponents/Timer'
+// import { TaskContainer } from './Tasks/WorkingTasks/TaskContainer'
+// import { intlFormat } from 'date-fns'
 
 export const EntryPoint = () => {
 
+    //*Data declarations
+    const fixedHeightPaper = {
+        padding: BV_THEME.spacing(2),
+        display: "flex",
+        overflow: "auto",
+        flexDirection: "column",
+        height: 240
+    }
+    const containerTasks = [ 
+        {name:"Cut mats", type:"mats"},
+        {name:"Cleaning", type:"cleaning"},
+    ]
+    const completedTasksRows = [
+        { id: 1, col1: 'Seeding', col2: Math.random()},
+        { id: 2, col1: 'Harvesting', col2: Math.random()},
+        { id: 3, col1: 'Seeding', col2: Math.random() },
+    ];
+    
     //*contexts
     const {user, credential} = useAuth()
     const {TrackWorkModel} = useWorkingContext() 
@@ -27,20 +50,16 @@ export const EntryPoint = () => {
     const [estimatedTime, setEstimatedTime] = useState(0)
     const [employeeIsWorking, setEmployeeIsWorking] = useState(JSON.parse(window.localStorage.getItem("isWorking")) || false)
 
-    // console.log("eiW",employeeIsWorking)
-    // console.log("isWinit",localStorage.getItem("isWorking"))
-
 
     //*Render states
-    // const [orderSelected, setOrderSelected] = useState([])
     const [loading, setLoading] = useState({
         startWorkBtn:false
     })
 
-    //Snackbar
+    //*Snackbar
     const [snackState, setSnackState] = useState({open:false,label:"",severity:""});
 
-    //Time
+    //*Time
     const [isOnTime, setIsOnTime] = useState(true)
 
     const checkTime = () => {
@@ -53,38 +72,37 @@ export const EntryPoint = () => {
         }
     };
 
-
     /**
      * @description checks if a request can be sent to the API based on 
-     * session storage workingdays.updated time stamp if today has been already updated, then wouldnt be sent
+     * context of TrackWorkModel.statrted time stamp if today has been already updated, then days canot be updated
      */
     const daysCanBeUpdated = () => {
         return !(TrackWorkModel.started !== undefined)
     }
 
     const updateWorkDays = async () => {
-        setLoading({
-            ...loading,
-            startWorkBtn: true
-        })
-
         if(daysCanBeUpdated()) {
             setLoading({
                 ...loading,
-                startWorkBtn: false
+                startWorkBtn: true
             })
-            return 0
+            setSnackState({open:true, label:"Initializing workday", severity:"warning"})
+    
+            //*Update workdays of employee
+            TrackWorkModel.started = new Date()
+            //*SET THE TRACKMODEL IN LOCALSTORAGE
+            window.localStorage.setItem("TrackWorkModel", JSON.stringify(TrackWorkModel))
+            const request = await api.api.patch(`${api.apiVersion}/work/performance/${user._id}`,{performance:[{query:"add",workdays:1}]}, {
+                headers: {
+                    authorization:credential._tokenResponse.idToken,
+                    user:user
+                }
+            })  
+            return request
         }
         
-        //*Update workdays of employee
-        TrackWorkModel.started = new Date()
-        const request = await api.api.patch(`${api.apiVersion}/work/performance/${user._id}`,{performance:[{query:"add",workdays:1}]}, {
-            headers: {
-                authorization:credential._tokenResponse.idToken,
-                user:user
-            }
-        })  
-        return request
+        console.log('Cannot update days')
+        return 0
     }
 
     const handleClose = (event, reason) => {
@@ -116,7 +134,7 @@ export const EntryPoint = () => {
             window.localStorage.setItem("isWorking", "true")
             setLoading({...loading, startWorkBtn:true})
             setTimeout(() => {
-                setLoading({...loading, startWorkBtn:true})
+                setLoading({...loading, startWorkBtn:false})
                 setSnackState({open:false})
                 navigate('./../tasks/work',
                     {state: {
@@ -131,6 +149,7 @@ export const EntryPoint = () => {
         if(isOnTime && orders.length != 0){
             updateWorkDays()
             .then((result) => {
+                setSnackState({open:false})
                 window.localStorage.setItem("isWorking", "true")
                 navigate('./../tasks/work',
                     {state: {
@@ -151,6 +170,17 @@ export const EntryPoint = () => {
             setSnackState({open:true,label:"There is no work to do!",severity:"success"})
         }
     }
+    
+    const getKey = (status) => {
+        const dflt = "seeding"
+        
+        const statusObj = {
+            "seeding": "seeding",
+            "harvestReady": "harvest"
+        }
+
+        return statusObj[`${status?? dflt}`]
+    }
 
     function getAllProducts(){
         var productList = []
@@ -166,114 +196,9 @@ export const EntryPoint = () => {
     const allProducts = getAllProducts()
     const allStatusesObj = filterByKey(allProducts,"status")
 
-    // console.log("allstatusesobj",allStatusesObj)
-
-    // function mixOpener(products) {
-    //     let arreglo = []
-    //     products.map((product,id)=>{
-    //         if(product.mix == true && product.products != undefined){
-    //             product.products.map((product2, id)=>{
-    //                 arreglo.push(product2)
-    //             })
-    //         }else 
-    //             arreglo.push(product)
-    //     })
-    //      return arreglo
-    // }
-    //
-
-    // Get trays to calculte time
-    // function getTraysTotal(producti,status){
-    //     let ttrays = 0
-
-    //     producti.map((product, id) => {
-    //         let prev = ttrays
-    //         let curr
-    //         if(status != undefined && product.status === status){
-    //             { product.mix != undefined && product.mix===true  ?
-    //                 curr = getTraysTotal(product.products)
-    //                 :
-    //                 product.productionData != undefined ? 
-    //                     curr = product.productionData.trays 
-    //                     : 
-    //                     curr=product.trays
-    //             }
-    //             ttrays = prev + curr
-    //         }else if(status === undefined){
-    //             console.log(product.products)
-    //             { product.products != undefined && product.mix===true  ?
-                    
-    //                 curr = getTraysTotal(product.products)
-    //                 :
-    //                 product.productionData != undefined ? 
-    //                     curr = product.productionData.trays 
-    //                     : 
-    //                     curr=product.trays
-    //             }
-    //             ttrays = prev + curr
-    //         }
-    //     })
-            
-    
-    //     return ttrays
-    // }
-
-    // function getExpectedTime(arr){
-    //     let trays = getTraysTotal(allProducts,arr)
-
-    //     switch (arr) {
-    //         case "seeding":
-    //             return Number(Math.ceil(trays) * 2).toFixed(2)
-    //         case "all":
-    //             let seedingTrays=getTraysTotal(allProducts,"seeding")
-    //             let harvestTrays=getTraysTotal(allProducts,"harvestReady")
-    //             return Number((Math.ceil(seedingTrays) * 2+(Math.ceil(harvestTrays) * 3 )) ).toFixed(2)
-        
-    //         default:
-    //             break;
-    //     }
-    // }
-    //
-
-    // const trays = getTraysTotal(allProducts)
-
-    // console.log("orders", orders)
-    // console.log("unfiltered trays", trays)
-
-    
-    // const status = "uncompleted"
-
-    // const handleShowTasks = (id) => {
-    //     if(orders.length !== 0) {
-    //         const found = orders.find(order => order._id === id)
-    //         setOrderSelected([...orderSelected, found])
-    //     }
-    // }
-
-    const fixedHeightPaper = {
-        padding: BV_THEME.spacing(2),
-        display: "flex",
-        overflow: "auto",
-        flexDirection: "column",
-        height: 240
-    }
-    
-
-    const containerTasks = [ 
-        {name:"Cut mats", type:"mats"},
-        {name:"Cleaning", type:"cleaning"},
-    ]
-
-    const completedTasksRows = [
-        { id: 1, col1: 'Seeding', col2: Math.random()},
-        { id: 2, col1: 'Harvesting', col2: Math.random()},
-        { id: 3, col1: 'Seeding', col2: Math.random() },
-    ];
-
     function capitalize(word) {
         return word[0].toUpperCase() + word.slice(1).toLowerCase();
     }
-    
     const getOrders = async ()=> {
         const ordersData = await api.api.get(`${api.apiVersion}/orders/uncompleted?production=true`,{
             headers:{
@@ -370,16 +295,6 @@ export const EntryPoint = () => {
         
     }, [])
 
-    const getKey = (status) => {
-        const dflt = "seeding"
-        
-        const statusObj = {
-            "seeding": "seeding",
-            "harvestReady": "harvest"
-        }
-
-        return statusObj[`${status?? dflt}`]
-    }
   return (<>
     <Box component="div" display="flex"  >
 
@@ -390,8 +305,14 @@ export const EntryPoint = () => {
             <Box pt={4}>
                 {/* <Typography variant="h6" >Pending Orders: {orders.length}</Typography> */}
                 <Box display="flex" sx={{justifyContent:"space-between"}}>
-                    <LoadingButton variant="contained" size="large" onClick={() => handleWorkButton(false)} loading={loading.startWorkBtn} >
-                        {employeeIsWorking ? "Continue work...":"Start Workday"}</LoadingButton>
+                    <LoadingButton 
+                    variant="contained" 
+                    size="large" 
+                    onClick={() => handleWorkButton(false)} 
+                    loading={loading.startWorkBtn} 
+                    >
+                        {employeeIsWorking ? "Continue work...":"Start Workday"}
+                    </LoadingButton>
 
                     {
                         employeeIsWorking 

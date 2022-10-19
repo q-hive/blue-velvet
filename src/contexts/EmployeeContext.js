@@ -1,9 +1,9 @@
 import React, {context, createContext, useState} from 'react'
-import { globalTimeModel } from '../modules/Employee/Tasks/FullChamber'
+import { globalTimeModel } from '../utils/models.js'
 const WorkingContext = createContext()
 
 const WorkingContextWrapper = ({children}) => {
-    const [TrackWorkModel, setTrackWorkModel] = useState(globalTimeModel)
+    const [TrackWorkModel, setTrackWorkModel] = useState(JSON.parse(window.localStorage.getItem("TrackWorkModel")) || globalTimeModel)
     
     return(
         <WorkingContext.Provider value={{TrackWorkModel}}>

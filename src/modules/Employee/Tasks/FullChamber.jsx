@@ -1,13 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
 //*MUI Components
     // import { DataGrid } from '@mui/x-data-grid'
-import { Alert, Box, Button, Container, Fab, Snackbar, Stack, Typography } from '@mui/material'
-
-//*UTILS
-import { Add } from '@mui/icons-material'
-//THEME
-import {BV_THEME} from '../../../theme/BV-theme'
+import { Alert, Box, Button, Fab, Snackbar } from '@mui/material'
 
 //*Netword and routing
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -18,25 +13,18 @@ import { TaskContainer } from './WorkingTasks/TaskContainer'
 
 import LocalCafeIcon from '@mui/icons-material/LocalCafe';
 import { Timer } from '../../../CoreComponents/Timer.jsx'
-import { Clock } from '../../../CoreComponents/Clock'
 import useAuth from '../../../contextHooks/useAuthContext'
 
-import api from '../../../axios.js'
 import useWorkingContext from '../../../contextHooks/useEmployeeContext'
 
-
-export const globalTimeModel = {
-    "workDay": new Date(),
-    "started": undefined,
-    "finished": undefined,
-    "breaks": [],
-    "tasks": []
-}
-
-
+//*UNUSED
+// import api from '../../../axios.js'
+// import { Add } from '@mui/icons-material'
+//THEME
+// import {BV_THEME} from '../../../theme/BV-theme'
+// import { Clock } from '../../../CoreComponents/Clock'
 
 export const FullChamber = () => {
-    
     
     //*Netword and router
     const navigate = useNavigate()
@@ -51,11 +39,7 @@ export const FullChamber = () => {
 
     
     //*render states
-    const[canSeeNextTask,setCanSeeNexttask] = useState({value:false,counter:0})
-
-
-
-    //Snackbar
+    const [canSeeNextTask,setCanSeeNexttask] = useState({value:false,counter:0})
     const [snack, setSnack] = useState({
         open:false,
         state:"",
@@ -75,10 +59,10 @@ export const FullChamber = () => {
     };
 
     
-    const ordersList=orders
+    const ordersList = orders
 
     function getAllProducts(){
-        var productList = []
+        const productList = []
         ordersList.map((order, id)=>{
             order.products.map((product,idx)=>{
                 productList.push(
@@ -97,7 +81,7 @@ export const FullChamber = () => {
     {/* Products to send as props to TaskTest */}
     function getProductsByType(type){
         
-        var filteredProductList = []
+        const filteredProductList = []
 
         allProducts.map((product, id)=>{
             if(product.status===type)
@@ -107,21 +91,18 @@ export const FullChamber = () => {
 
     }
 
-    console.log("allproducts",allProducts)
+    {/* The keys of this object will allow us to generate a tasks by status */}
+    const allStatusesObj = filterByKey(allProducts,"status")
 
 
-    
+    const carouselChange = (item,index) => {
 
-    
-
-
-      {/* The keys of this object will allow us to generate a tasks by status */}
-      const allStatusesObj = filterByKey(allProducts,"status")
-
-
-    const carouselChange=(item,index)=>{
-        {item<canSeeNextTask.counter ?
-        setCanSeeNexttask({...canSeeNextTask,value:true}):setCanSeeNexttask({...canSeeNextTask,value:false})}
+        if(item < canSeeNextTask.counter){
+            setCanSeeNexttask({...canSeeNextTask,value:true})
+            return
+        }
+        
+        setCanSeeNexttask({...canSeeNextTask,value:false})
     }
 
     const carouselButtonSX = {
@@ -156,8 +137,7 @@ export const FullChamber = () => {
     }
 
     const handleBreaks = () => {
-        console.log(TrackWorkModel.tasks[TrackWorkModel.tasks.length-1])
-        
+        console.log(TrackWorkModel)
     }
 
 
