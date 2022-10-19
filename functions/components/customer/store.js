@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import Organization from '../../models/organization.js';
+import { getMongoQueryByObject } from '../../utils/getMongoQuery.js';
 
 const orgModel = mongoose.model('organizations', Organization)
 
@@ -128,5 +129,31 @@ export const deleteCustomer = (orgId, cId) => {
         .catch(err => {
             reject(err)
         })
+    })
+}
+
+export const updateCustomerById = (orgId, id, edit) => {
+    return new Promise(async(resolve, reject) => {
+        try {
+            const parsedEdit = {
+                query:{
+                    [getMongoQueryByObject(edit)]:{
+                        [edit.key]:edit.value
+                    }
+                }
+            }
+            
+            const queryOp = await orgModel.findOneAndUpdate(
+                {
+                    "_id":orgId,
+                    "customers._id": id
+                },
+                parsedEdit.query
+            )
+    
+            resolve(queryOp)
+        } catch (err) {
+            reject(err)
+        } 
     })
 }

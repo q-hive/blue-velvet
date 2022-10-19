@@ -8,7 +8,8 @@ import {
     adminRoutes, ordersRoutes, organizationRoutes, 
     productsRoutes, taskRoutes, passphraseRoutes, 
     customerRoutes, filesApi, workRoutes, 
-    employeesRoutes 
+    employeesRoutes, 
+    containerRoutes
 } from './network/routes.js'
 
 import { authRoutes } from './network/routes.js'
@@ -61,6 +62,7 @@ customerRoutes(app)
 filesApi(app)
 workRoutes(app)
 employeesRoutes(app)
+containerRoutes(app)
 
 const server = http.createServer(app)
 

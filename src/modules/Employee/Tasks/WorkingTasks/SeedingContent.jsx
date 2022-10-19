@@ -12,6 +12,7 @@ import api from "../../../../axios"
 //THEME
 import { BV_THEME } from '../../../../theme/BV-theme'
 import useAuth from '../../../../contextHooks/useAuthContext'
+import useWorkingContext from '../../../../contextHooks/useEmployeeContext';
 
 const taskCard_sx = {
     display:"flex",
@@ -27,6 +28,8 @@ export const SeedingContent = (props) => {
 
     const {user, credential} = useAuth()
     const [workProducts, setWorkProducts] = useState([])
+    const {TrackWorkModel} = useWorkingContext()
+    console.log(TrackWorkModel)
 
     function sumAllTrays() {
         let i;

@@ -21,28 +21,45 @@ import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog'
 
 
 export const NewOrder = (props) => {
-    const useQuery = () => new URLSearchParams(useLocation().search)
-    const query = useQuery()
+    const [products,setProducts]= useState([])
+    
+    // const useQuery = () => new URLSearchParams(useLocation().search)
+    // const query = useQuery()
 
-    const paramVerb = () => {
-        if(Boolean(query.get('type'))){
-            return "Update"
-        }
+    // const paramVerb = () => {
+    //     if(Boolean(query.get('type'))){
+    //         return "Update"
+    //     }
 
-        return "Save"
-    }
+    //     return "Save"
+    // }
 
-    const isEdition = props.edit.isEdition
-    const prevOrderID = props.edit.values.order
+    // const isEdition = props.edit.isEdition
+    // const prevOrderID = props.edit.values.order
 
     
 
     //*Auth context
+    const getContextProducts = () => {
+        let scopeProducts
+        
+        if(props.edit.isEdition){
+            scopeProducts = props.edit.order.products.map((product) => {
+                return product
+            })
+
+            products.push(scopeProducts)
+
+        }
+        return products
+    }
+    
     const {user, credential} = useAuth()
 
     const navigate = useNavigate()
     //*Data States
     const [loading,setLoading] = useState(false)
+    const [loadingWithDefault, setLoadingWithDefault] = useState()
     const [options, setOptions] = useState({
         customers:  [],
         products:   []
@@ -55,7 +72,6 @@ export const NewOrder = (props) => {
         size:               undefined,
         date:               undefined
     });
-    const [products,setProducts]= useState([])
 
     //*Render states
     const [productsInput, setProductsInput] = useState(false)
@@ -110,25 +126,25 @@ export const NewOrder = (props) => {
         return orderPDF
     }
 
-    const getPrevValues = async ()=> {
-        const ordersData = await api.api.get(`${api.apiVersion}/orders/?id=${prevOrderID}`,{
-            headers:{
-                "authorization":    credential._tokenResponse.idToken,
-                "user":             user
-            }
-        })
+    // const getPrevValues = async ()=> {
+    //     const ordersData = await api.api.get(`${api.apiVersion}/orders/?id=${prevOrderID}`,{
+    //         headers:{
+    //             "authorization":    credential._tokenResponse.idToken,
+    //             "user":             user
+    //         }
+    //     })
 
-        return ordersData.data
-    }
-
-    
+    //     return ordersData.data
+    // }
 
     
 
-    const pV = getPrevValues()
+    
+
+    // const pV = getPrevValues()
 
 
-    console.log("prevValues",pV)
+    // console.log("prevValues",pV)
     //
 
     //Dialog
@@ -302,9 +318,6 @@ export const NewOrder = (props) => {
             return 
         }
 
-        
-        
-
         const mapInput = () => {
             let mappedData
             let useProducts = false
@@ -338,12 +351,7 @@ export const NewOrder = (props) => {
                 "_id": input.product._id,
                 "packages": packages
             }
-            // //*If the size is larger, then the actual mappedProduct should change
-            // if(input.product.price.length === 3){
-            //     mappedProduct["packages"].push({number:input.largePackages, size:"large"})
 
-            // }
-            
             if(products.length>0){
                 useProducts = true
             }
@@ -529,29 +537,37 @@ export const NewOrder = (props) => {
             productsInput
             ?
             <>
-                <Autocomplete
-                id="product"
-                options={options.products}
-                sx={BV_THEME.input.mobile.fullSize.desktop.halfSize}
-                renderInput={(params) => { 
-                    const {product} = error
-                    return <TextField
-                            {...params}
-                            helperText={product.active ? product.message : ""}
-                            error={product.active}
-                            label="Product"
-                        />
-                }}
-                getOptionLabel={(opt) => opt.name ? opt.name : ""}
-                isOptionEqualToValue={(o,v) => {
-                    if(Object.keys(v).length === 0){
-                        return true
-                    }
-                    return o.name === v.name
-                }}
-                onChange={handleChangeInput}
-                value={Object.keys(input.product) !== 0 ? input.product : undefined}
-                />
+                {
+                    props.edit.isEdition
+
+                    ?
+                        <div>Must show component for DEFAULT PRODUCT FROM ROW OF DATA GRIS IN SALES MODULE</div>                    
+                    :
+                    <Autocomplete
+                    id="product"
+                    options={options.products}
+                    sx={BV_THEME.input.mobile.fullSize.desktop.halfSize}
+                    renderInput={(params) => { 
+                        const {product} = error
+                        return <TextField
+                                {...params}
+                                helperText={product.active ? product.message : ""}
+                                error={product.active}
+                                label="Product"
+                            />
+                    }}
+                    getOptionLabel={(opt) => opt.name ? opt.name : ""}
+                    isOptionEqualToValue={(o,v) => {
+                        if(Object.keys(v).length === 0){
+                            return true
+                        }
+                        return o.name === v.name
+                    }}
+                    onChange={handleChangeInput}
+                    value={Object.keys(input.product) !== 0 ? input.product : undefined}
+                    />
+                }
+            
 
                 {/* <TextField
                     id="packages"
@@ -683,7 +699,7 @@ export const NewOrder = (props) => {
                         </thead>
 
                 <tbody>
-                    {products.map((product,id)=>{
+                    {getContextProducts().map((product,id)=>{
                         return (
                             
                             <tr key={id}>

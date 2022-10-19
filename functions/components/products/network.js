@@ -17,7 +17,7 @@ import {
     deleteProduct,
     createNewMix
 } from './store.js'
-import { getContainerById, updateContainer } from '../container/store.js'
+import { getContainerById, updateContainerById } from '../container/store.js'
 
 const router = express.Router()
 

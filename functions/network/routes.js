@@ -11,6 +11,7 @@ import customersRouter from '../components/customer/network.js'
 import filesRouter from '../components/files/network.js'
 import workRouter from '../components/work/network.js'
 import employeesRouter from '../components/employees/network.js'
+import containerRouter from '../components/container/network.js'
 
 
 //*Middlewares
@@ -29,6 +30,10 @@ const authPath = `/auth`
 export const organizationRoutes = (app) => {
     const authorized = ["admin"]
     app.use(`${apiV1}/organizations`, isAuthenticated, isAuthorized(authorized), organizationRouter)
+}
+export const containerRoutes = (app) => {
+    const authorized = ["admin"]
+    app.use(`${apiV1}/container`, isAuthenticated, isAuthorized(authorized), containerRouter)
 }
 export const productsRoutes = (app) => {
     const authorized = ["admin"]

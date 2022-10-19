@@ -55,7 +55,7 @@ export const AppRoutes  = [
     },
     {
         path:"/:uid/admin/sales/new",
-        component:<NewOrder/>
+        component:<NewOrder edit={{isEdition:false}}/>
     },
     {
         path:"/:uid/admin/client",
@@ -71,7 +71,7 @@ export const AppRoutes  = [
     },
     {
         path:"/:uid/admin/employees/new",   
-        component:<NewEmployee/>
+        component:<NewEmployee edit={{isEdition:false}}/>
     },
 
     //EMPLOYEE ROUTES

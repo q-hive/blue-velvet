@@ -6,32 +6,16 @@ import { generateTasks } from '../components/tasks/store.js'
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
-import Task from './task.js'
+import GlobalWorkDay from './GlobalWorkDay.js';
 
 const Production = new Schema({
-    end:            { type: Date,       required: true, default: addTimeToDate(new Date(), { "w": 2 }) },
-    orders:         { type: [ObjectId], required: true, default: []                                    },
-    tasks:          { type: [Task],     required: true, default: generateTasks()                       },
-    completed:      { type: [ObjectId], required: true, default: []                                    },
-    products: {
-        type: [{
-            _id:        { type: ObjectId, required: true },
-            name:       { type: String,   required: true },
-            amount:     { type: Number,   required: true }, // * Measured in packages
-            surplus:    { type: Number,   required: true }, // * In tray numbers,used to manage 10% of unperiodic orders
-            seed:       { type: Number,   required: true },
-        }],
-        required: true
-    }
+   history: {type: [GlobalWorkDay], required:false},
 },
 {
     timestamps: {
         createdAt: "start",
         updatedAt: "updated"
     },
-    query: {
-        
-    }
 })
 
 export default Production
