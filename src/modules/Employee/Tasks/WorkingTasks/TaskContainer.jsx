@@ -135,11 +135,13 @@ export const TaskContainer = (props) => {
       function mixOpener(products) {
         let arreglo = []
         products.map((product,id)=>{
-            if(product.mix == true){
+            if(product.mix){
+                if(product.products){
                 product.products.map((product2, id)=>{
                     arreglo.push(product2)
-                })
-            }else 
+                }
+                )
+            }}else 
                 arreglo.push(product)
         })
          return arreglo

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 
 //*MUI Components
     // import { DataGrid } from '@mui/x-data-grid'
-import { Alert, Box, Button, Container, Fab, Snackbar, Stack, Typography } from '@mui/material'
+import { Alert, Box, Button, Container, Fab, Fade, Snackbar, Stack, Typography } from '@mui/material'
 
 //*UTILS
 import { Add } from '@mui/icons-material'
@@ -161,6 +161,8 @@ export const FullChamber = () => {
         {Object.keys(allStatusesObj).map((status,index)=>{ 
             return(
                 <Box key={index} height="80vh" component={"div"}>
+                    
+  <Fade in={true} timeout={1000} unmountOnExit>
                     {TaskContainer({ 
                         type: status || null, 
                         counter:canSeeNextTask.counter, 
@@ -170,6 +172,7 @@ export const FullChamber = () => {
                         updatePerformance: updateEmployeePerformance,
                         products: getProductsByType(status)
                     })}
+</Fade>
                 </Box>
             )
         })}
@@ -213,7 +216,7 @@ export const FullChamber = () => {
       if (!acc[key] ) { 
         acc[key] = []
       }
-      if(item["mix"]==true){
+      if(item["mix"]==true && item["products"]!=undefined){
         let mixProds = filterByKey(item.products,"item")
 
         
@@ -221,7 +224,7 @@ export const FullChamber = () => {
         acc[key].push({name:item.name,harvest:item.harvest,seeds:item.seeds,trays:item.trays,})
         
       }else
-        acc[key].push({...item.productionData[0],name:item.name})
+        acc[key].push({...item.productionData,name:item.name})
 
       return acc
   
