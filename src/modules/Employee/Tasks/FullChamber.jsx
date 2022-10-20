@@ -165,7 +165,8 @@ export const FullChamber = () => {
     <>
 
     <Carousel
-        emulatetouch={true} 
+        emulatetouch={true}
+        swipeable={false} 
         showThumbs={false} 
         showArrows={true}
         showStatus={false}
@@ -176,21 +177,21 @@ export const FullChamber = () => {
         onChange={carouselChange}
     >
         {Object.keys(allStatusesObj).map((status,index)=>{ 
-            return(
+            return(<>
+                
+        <Fade in={true} timeout={2000} unmountOnExit>
                 <Box key={index} height="80vh" component={"div"}>
-                    
-  <Fade in={true} timeout={1000} unmountOnExit>
-                    {TaskContainer({ 
-                        type: status || null, 
-                        counter:canSeeNextTask.counter, 
-                        setFinished:setCanSeeNexttask,
-                        setSnack:setSnack,
-                        snack:snack,
-                        updatePerformance: updateEmployeePerformance,
-                        products: getProductsByType(status)
-                    })}
-</Fade>
+                        {TaskContainer({ 
+                            type: status || null, 
+                            counter:canSeeNextTask.counter, 
+                            setFinished:setCanSeeNexttask,
+                            setSnack:setSnack,
+                            snack:snack,
+                            updatePerformance: updateEmployeePerformance,
+                            products: getProductsByType(status)
+                        })}
                 </Box>
+                </Fade> </>
             )
         })}
 

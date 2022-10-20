@@ -1,5 +1,5 @@
 import { Add } from '@mui/icons-material'
-import { Alert, Box, Button, Container, Grid, Paper, Snackbar, Typography } from '@mui/material'
+import { Alert, Box, Button, Container, Grid, Paper, Snackbar, Typography, Fade, Grow } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import useAuth from '../../contextHooks/useAuthContext'
 import { filterByKey } from './Tasks/FullChamber'
@@ -381,6 +381,7 @@ export const EntryPoint = () => {
         return statusObj[`${status?? dflt}`]
     }
   return (<>
+    <Fade in={true} timeout={1000} unmountOnExit>
     <Box component="div" display="flex"  >
 
         <Container maxWidth="lg" sx={{paddingTop:4,paddingBottom:4,marginX:{xs:4,md:"auto"},marginTop:{xs:4,md:3}}}>
@@ -435,8 +436,9 @@ export const EntryPoint = () => {
 
 
                 {/* Tasks */}
+                <Grow in={true} timeout={2000} unmountOnExit>
                 <Grid item xs={12} md={4} lg={4}>
-                    <Paper sx={fixedHeightPaper}>
+                    <Paper elevation={4} sx={fixedHeightPaper}>
                         <Typography variant="h6" color="secondary">Tasks</Typography>
                         <>
                             {Object.keys(allStatusesObj).map((status,index)=>{ 
@@ -453,18 +455,6 @@ export const EntryPoint = () => {
                                         </Box>
                                     </Paper>
 
-                                    {/*TESTING ONLY*/}
-                                    {/* <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
-                                    <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
-                                        <Typography >
-                                            <b>Task: Harvesting</b>
-                                        </Typography>
-                                        <Typography >
-                                            <i>Expected Time: {estimatedTime?.times["harvest"].time.toFixed(2)}</i>
-                                        </Typography>
-                                    </Box>
-                                    </Paper> */}
-                                    {/*END TESTING ONLY*/}
                                     </>
                                 )
                             })}
@@ -472,10 +462,12 @@ export const EntryPoint = () => {
                         </>
                     </Paper>
                 </Grid>
+                </Grow>
 
                 {/* Container's tasks */}
+                <Grow in={true} timeout={2000} unmountOnExit>
                 <Grid item xs={12} md={4}>
-                    <Paper sx={fixedHeightPaper}>
+                    <Paper elevation={4} sx={fixedHeightPaper}>
                         <Typography variant="h6" color="secondary">Container's Tasks</Typography>
                         {containerTasks.map((task,index) => { 
                             return(
@@ -489,10 +481,12 @@ export const EntryPoint = () => {
                         })}
                     </Paper>
                 </Grid>
+                </Grow>
 
                 {/*Completed tasks */}
+                <Grow in={true} timeout={2000} unmountOnExit>
                 <Grid item xs={12} md={8}>
-                    <Paper sx={{...fixedHeightPaper,height:400,
+                    <Paper elevation={4} sx={{...fixedHeightPaper,height:400,
                         "& .header-sales-table":{
                             backgroundColor:BV_THEME.palette.primary.main,
                             color:"white"
@@ -534,9 +528,11 @@ export const EntryPoint = () => {
                         
                     </Paper>
                 </Grid>
+                </Grow>
             </Grid>
         </Container>
     </Box>
+    </Fade>
     <Snackbar  anchorOrigin={{vertical: "top",horizontal: "center" }} open={snackState.open} autoHideDuration={1500} onClose={handleClose} sx={{marginTop:"8vh"}}>
         <Alert onClose={handleClose} severity={snackState.severity} sx={{ width: '100%' }}>
             {snackState.label}
