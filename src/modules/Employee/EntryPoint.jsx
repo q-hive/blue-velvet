@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-import { Add } from '@mui/icons-material'
-import { Alert, Box, Button, Container, Grid, Paper, Snackbar, Typography, Fade, Grow } from '@mui/material'
-=======
->>>>>>> develop
 import React, { useEffect, useState } from 'react'
 
 import { Alert, Box, Button, Container, Grid, Paper, Snackbar, Typography, Fade, Grow } from '@mui/material'
@@ -417,11 +412,6 @@ export const EntryPoint = () => {
                                             </Typography>
                                         </Box>
                                     </Paper>
-<<<<<<< HEAD
-
-                                    </>
-=======
->>>>>>> develop
                                 )
                             })}
                                 
