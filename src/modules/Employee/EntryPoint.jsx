@@ -1,46 +1,70 @@
+<<<<<<< HEAD
 import { Add } from '@mui/icons-material'
 import { Alert, Box, Button, Container, Grid, Paper, Snackbar, Typography, Fade, Grow } from '@mui/material'
+=======
+>>>>>>> develop
 import React, { useEffect, useState } from 'react'
+
+import { Alert, Box, Button, Container, Grid, Paper, Snackbar, Typography, Fade, Grow } from '@mui/material'
+import { LoadingButton } from '@mui/lab'
+import { DataGrid } from '@mui/x-data-grid'
+
 import useAuth from '../../contextHooks/useAuthContext'
 import { filterByKey } from './Tasks/FullChamber'
 
+import useWorkingContext from '../../contextHooks/useEmployeeContext'
+import { BV_THEME } from '../../theme/BV-theme'
+
 //*Netword and routing
 import { useNavigate } from 'react-router-dom'
-import { TaskContainer } from './Tasks/WorkingTasks/TaskContainer'
-import { BV_THEME } from '../../theme/BV-theme'
 import api from '../../axios.js'
-import { intlFormat } from 'date-fns'
-import { DataGrid } from '@mui/x-data-grid'
-import { Timer } from '../../CoreComponents/Timer'
-import { LoadingButton } from '@mui/lab'
-import useWorkingContext from '../../contextHooks/useEmployeeContext'
+
+//*UNUSED
+// import { Add } from '@mui/icons-material'
+// import { Timer } from '../../CoreComponents/Timer'
+// import { TaskContainer } from './Tasks/WorkingTasks/TaskContainer'
+// import { intlFormat } from 'date-fns'
 
 export const EntryPoint = () => {
 
+    //*Data declarations
+    const fixedHeightPaper = {
+        padding: BV_THEME.spacing(2),
+        display: "flex",
+        overflow: "auto",
+        flexDirection: "column",
+        height: 240
+    }
+    const containerTasks = [ 
+        {name:"Cut mats", type:"mats"},
+        {name:"Cleaning", type:"cleaning"},
+    ]
+    const completedTasksRows = [
+        { id: 1, col1: 'Seeding', col2: Math.random()},
+        { id: 2, col1: 'Harvesting', col2: Math.random()},
+        { id: 3, col1: 'Seeding', col2: Math.random() },
+    ];
+    
     //*contexts
     const {user, credential} = useAuth()
-    const {TrackWorkModel} = useWorkingContext() 
+    const {TrackWorkModel, WorkContext ,setWorkContext, employeeIsWorking, setEmployeeIsWorking} = useWorkingContext() 
     const navigate = useNavigate()
     
     //*DATA STATES
     const [orders, setOrders] = useState([])
     const [estimatedTime, setEstimatedTime] = useState(0)
-    const [employeeIsWorking, setEmployeeIsWorking] = useState(JSON.parse(window.localStorage.getItem("isWorking")) || false)
-
-    // console.log("eiW",employeeIsWorking)
-    // console.log("isWinit",localStorage.getItem("isWorking"))
 
 
     //*Render states
-    // const [orderSelected, setOrderSelected] = useState([])
     const [loading, setLoading] = useState({
         startWorkBtn:false
     })
 
-    //Snackbar
-    const [snackState, setSnackState] = useState({open:false,label:"",severity:""});
+    //*Snackbar
+    const defaultSeverity = "warning" //default value to avoid warning.
+    const [snackState, setSnackState] = useState({open:false,label:"",severity:defaultSeverity});
 
-    //Time
+    //*Time
     const [isOnTime, setIsOnTime] = useState(true)
 
     const checkTime = () => {
@@ -53,38 +77,37 @@ export const EntryPoint = () => {
         }
     };
 
-
     /**
      * @description checks if a request can be sent to the API based on 
-     * session storage workingdays.updated time stamp if today has been already updated, then wouldnt be sent
+     * context of TrackWorkModel.statrted time stamp if today has been already updated, then days canot be updated
      */
     const daysCanBeUpdated = () => {
         return !(TrackWorkModel.started !== undefined)
     }
 
     const updateWorkDays = async () => {
-        setLoading({
-            ...loading,
-            startWorkBtn: true
-        })
-
         if(daysCanBeUpdated()) {
             setLoading({
                 ...loading,
-                startWorkBtn: false
+                startWorkBtn: true
             })
-            return 0
+            setSnackState({open:true, label:"Initializing workday", severity:"warning"})
+    
+            //*Update workdays of employee
+            TrackWorkModel.started = Date.now()
+            //*SET THE TRACKMODEL IN LOCALSTORAGE
+            window.localStorage.setItem("TrackWorkModel", JSON.stringify(TrackWorkModel))
+            const request = await api.api.patch(`${api.apiVersion}/work/performance/${user._id}`,{performance:[{query:"add",workdays:1}]}, {
+                headers: {
+                    authorization:credential._tokenResponse.idToken,
+                    user:user
+                }
+            })  
+            return request
         }
         
-        //*Update workdays of employee
-        TrackWorkModel.started = new Date()
-        const request = await api.api.patch(`${api.apiVersion}/work/performance/${user._id}`,{performance:[{query:"add",workdays:1}]}, {
-            headers: {
-                authorization:credential._tokenResponse.idToken,
-                user:user
-            }
-        })  
-        return request
+        console.log('Cannot update days')
+        return 0
     }
 
     const handleClose = (event, reason) => {
@@ -102,178 +125,6 @@ export const EntryPoint = () => {
                     )
     }
 
-    const handleWorkButton = (finish = false) => {
-        if(finish) {
-            TrackWorkModel.finished = new Date()
-            window.localStorage.setItem("isWorking", "false")
-            setEmployeeIsWorking(JSON.parse(localStorage.getItem("isWorking")))
-            setSnackState({open:true,label:"Your work has been ended today",severity:"warning"})
-            return
-        }
-        
-        if(employeeIsWorking){
-            setSnackState({open:true, label:"You already started working today, continue where you left", severity:"success"})
-            window.localStorage.setItem("isWorking", "true")
-            setLoading({...loading, startWorkBtn:true})
-            setTimeout(() => {
-                setLoading({...loading, startWorkBtn:true})
-                setSnackState({open:false})
-                navigate('./../tasks/work',
-                    {state: {
-                        orders: orders
-                    }}
-                )
-            }, 2500)
-            
-            return
-        }
-        
-        if(isOnTime && orders.length != 0){
-            updateWorkDays()
-            .then((result) => {
-                window.localStorage.setItem("isWorking", "true")
-                navigate('./../tasks/work',
-                    {state: {
-                    orders: orders
-                    }}
-                )
-            })
-            .catch(err => {
-                setSnackState({open:true, label:"There was an error updating your data. Try again.", severity:"error"})
-            })
-        }
-
-        if(!isOnTime) {
-            setSnackState({open:true,label:"You can't start working right now",severity:"error"})
-        }
-
-        if(!orders.length != 0){
-            setSnackState({open:true,label:"There is no work to do!",severity:"success"})
-        }
-    }
-
-    function getAllProducts(){
-        var productList = []
-        orders.map((order, id)=>{
-            order.products.map((product,idx)=>{
-                productList.push({...product,status:order.status})
-            })
-            
-        })
-        return productList;
-    }
-
-    const allProducts = getAllProducts()
-    const allStatusesObj = filterByKey(allProducts,"status")
-
-    // console.log("allstatusesobj",allStatusesObj)
-
-    // function mixOpener(products) {
-    //     let arreglo = []
-    //     products.map((product,id)=>{
-    //         if(product.mix == true && product.products != undefined){
-    //             product.products.map((product2, id)=>{
-    //                 arreglo.push(product2)
-    //             })
-    //         }else 
-    //             arreglo.push(product)
-    //     })
-    //      return arreglo
-    // }
-    //
-
-    // Get trays to calculte time
-    // function getTraysTotal(producti,status){
-    //     let ttrays = 0
-
-    //     producti.map((product, id) => {
-    //         let prev = ttrays
-    //         let curr
-    //         if(status != undefined && product.status === status){
-    //             { product.mix != undefined && product.mix===true  ?
-    //                 curr = getTraysTotal(product.products)
-    //                 :
-    //                 product.productionData != undefined ? 
-    //                     curr = product.productionData.trays 
-    //                     : 
-    //                     curr=product.trays
-    //             }
-    //             ttrays = prev + curr
-    //         }else if(status === undefined){
-    //             console.log(product.products)
-    //             { product.products != undefined && product.mix===true  ?
-                    
-    //                 curr = getTraysTotal(product.products)
-    //                 :
-    //                 product.productionData != undefined ? 
-    //                     curr = product.productionData.trays 
-    //                     : 
-    //                     curr=product.trays
-    //             }
-    //             ttrays = prev + curr
-    //         }
-    //     })
-            
-    
-    //     return ttrays
-    // }
-
-    // function getExpectedTime(arr){
-    //     let trays = getTraysTotal(allProducts,arr)
-
-    //     switch (arr) {
-    //         case "seeding":
-    //             return Number(Math.ceil(trays) * 2).toFixed(2)
-    //         case "all":
-    //             let seedingTrays=getTraysTotal(allProducts,"seeding")
-    //             let harvestTrays=getTraysTotal(allProducts,"harvestReady")
-    //             return Number((Math.ceil(seedingTrays) * 2+(Math.ceil(harvestTrays) * 3 )) ).toFixed(2)
-        
-    //         default:
-    //             break;
-    //     }
-    // }
-    //
-
-    // const trays = getTraysTotal(allProducts)
-
-    // console.log("orders", orders)
-    // console.log("unfiltered trays", trays)
-
-    
-    // const status = "uncompleted"
-
-    // const handleShowTasks = (id) => {
-    //     if(orders.length !== 0) {
-    //         const found = orders.find(order => order._id === id)
-    //         setOrderSelected([...orderSelected, found])
-    //     }
-    // }
-
-    const fixedHeightPaper = {
-        padding: BV_THEME.spacing(2),
-        display: "flex",
-        overflow: "auto",
-        flexDirection: "column",
-        height: 240
-    }
-    
-
-    const containerTasks = [ 
-        {name:"Cut mats", type:"mats"},
-        {name:"Cleaning", type:"cleaning"},
-    ]
-
-    const completedTasksRows = [
-        { id: 1, col1: 'Seeding', col2: Math.random()},
-        { id: 2, col1: 'Harvesting', col2: Math.random()},
-        { id: 3, col1: 'Seeding', col2: Math.random() },
-    ];
-
-    function capitalize(word) {
-        return word[0].toUpperCase() + word.slice(1).toLowerCase();
-    }
-    
     const getOrders = async ()=> {
         const ordersData = await api.api.get(`${api.apiVersion}/orders/uncompleted?production=true`,{
             headers:{
@@ -307,10 +158,10 @@ export const EntryPoint = () => {
             return {
                 times: {
                     harvest: {
-                        time:prevseedTime + currseedTime
+                        time:prevharvestTime + currharvestTime
                     }, 
                     seeding: {
-                        time:prevharvestTime + currharvestTime
+                        time:prevseedTime + currseedTime
                     }
                 }, 
                 total:prevTotal + currTotal
@@ -330,15 +181,133 @@ export const EntryPoint = () => {
         
         return reduced
     }
+    const getWorkData = async ()=> {
+        const apiResponse = await api.api.get(`${api.apiVersion}/work/production/634061756424d08c50e58841?container=633b2e0cd069d81c46a18033`,{
+            headers:{
+                "authorization":    credential._tokenResponse.idToken,
+                "user":             user
+            }
+        })
+        return apiResponse.data.data
+    }
+
+    const handleWorkButton = (finish = false) => {
+        
+        if(finish) {
+            TrackWorkModel.finished = Date.now()
+            window.localStorage.setItem("isWorking", "false")
+            setEmployeeIsWorking(JSON.parse(localStorage.getItem("isWorking")))
+            //*Delete from localStorage since journal has been ended.
+            window.localStorage.removeItem("TrackWorkModel")
+            
+            setSnackState({open:true,label:"Your work has been ended today",severity:"warning"})
+            return
+        }
+        
+        if(employeeIsWorking){
+            setSnackState({open:true, label:"You already started working today, continue where you left", severity:"success"})
+            setLoading({...loading, startWorkBtn:true})
+            getWorkData()
+            .then((workData) => {
+                window.localStorage.setItem("isWorking", "true")
+                console.log(WorkContext)
+                setTimeout(() => {
+                    setLoading({...loading, startWorkBtn:false})
+                    setSnackState({open:false})
+                    navigate('./../tasks/work',
+                        {state: {
+                            orders: orders,
+                            workData: workData,
+                            time: estimatedTime
+                        }}
+                    )
+                }, 1500)
+            })
+            .catch(err => {
+                setSnackState({open:true, label:"There was an error getting your work data.", severity:"error"})
+            })
+            
+            return
+        }
+        
+        if(isOnTime && orders.length != 0){
+            updateWorkDays()
+            getWorkData()
+            .then((workData) => {
+                // setWorkContext({...WorkContext,})
+                // setWorkContext({...WorkContext, cicle: {
+                //     ...WorkContext.cicle,
+                //     []:{
+                //         ...WorkContext.cicle[Object.keys(WorkContext.cicle)[0]],
+                //         started: Date.now()
+                //     }
+                // }})
+
+                WorkContext.cicle[Object.keys(WorkContext.cicle)[0]].started = Date.now()
+                setSnackState({open:false})
+                window.localStorage.setItem("isWorking", "true")
+                window.localStorage.setItem("workData", JSON.stringify(workData))
+                window.localStorage.setItem("WorkContext", JSON.stringify(WorkContext))
+                navigate('./../tasks/work',
+                    {state: {
+                    orders: orders,
+                    workData: workData,
+                    time: estimatedTime
+                    }}
+                )
+            })
+            .catch(err => {
+                console.log(err)
+                setSnackState({open:true, label:"There was an error. Try again.", severity:"error"})
+            })
+        }
+
+        if(!isOnTime) {
+            setSnackState({open:true,label:"You can't start working right now",severity:"error"})
+        }
+
+        if(!orders.length != 0){
+            setSnackState({open:true,label:"There is no work to do!",severity:"success"})
+        }
+    }
+    
+    const getKey = (status) => {
+        const dflt = "seeding"
+        
+        const statusObj = {
+            "seeding": "seeding",
+            "harvestReady": "harvest"
+        }
+
+        return statusObj[`${status?? dflt}`]
+    }
+
+    function getAllProducts(){
+        var productList = []
+        orders.map((order, id)=>{
+            order.products.map((product,idx)=>{
+                productList.push({...product,status:order.status})
+            })
+            
+        })
+        return productList;
+    }
+
+    const allProducts = getAllProducts()
+    const allStatusesObj = filterByKey(allProducts,"status")
+
+    function capitalize(word) {
+        return word[0].toUpperCase() + word.slice(1).toLowerCase();
+    }
 
     useEffect(() => {
         const getData = async () => {
             try {
                 const orders = await getOrders()
-                console.log(orders)
                 const time = await getTimeEstimate()
                 return {orders, time}
             } catch(err) {
+                setSnackState({open: true, label:"There was an error fetching the data, please reload the page.", severity:"error"})
                 console.log(err)
             }
         }
@@ -361,7 +330,6 @@ export const EntryPoint = () => {
             }
             setOrders(orders.data)
             setEstimatedTime(time)
-            console.log("estimated time",estimatedTime.times)
         })
         .catch((err) => {
             console.log(err)
@@ -370,16 +338,6 @@ export const EntryPoint = () => {
         
     }, [])
 
-    const getKey = (status) => {
-        const dflt = "seeding"
-        
-        const statusObj = {
-            "seeding": "seeding",
-            "harvestReady": "harvest"
-        }
-
-        return statusObj[`${status?? dflt}`]
-    }
   return (<>
     <Fade in={true} timeout={1000} unmountOnExit>
     <Box component="div" display="flex"  >
@@ -391,8 +349,14 @@ export const EntryPoint = () => {
             <Box pt={4}>
                 {/* <Typography variant="h6" >Pending Orders: {orders.length}</Typography> */}
                 <Box display="flex" sx={{justifyContent:"space-between"}}>
-                    <LoadingButton variant="contained" size="large" onClick={() => handleWorkButton(false)} loading={loading.startWorkBtn} >
-                        {employeeIsWorking ? "Continue work...":"Start Workday"}</LoadingButton>
+                    <LoadingButton 
+                    variant="contained" 
+                    size="large" 
+                    onClick={() => handleWorkButton(false)} 
+                    loading={loading.startWorkBtn} 
+                    >
+                        {employeeIsWorking ? "Continue work...":"Start Workday"}
+                    </LoadingButton>
 
                     {
                         employeeIsWorking 
@@ -443,7 +407,6 @@ export const EntryPoint = () => {
                         <>
                             {Object.keys(allStatusesObj).map((status,index)=>{ 
                                 return(
-                                    <>
                                     <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
                                         <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
                                             <Typography >
@@ -454,8 +417,11 @@ export const EntryPoint = () => {
                                             </Typography>
                                         </Box>
                                     </Paper>
+<<<<<<< HEAD
 
                                     </>
+=======
+>>>>>>> develop
                                 )
                             })}
                                 

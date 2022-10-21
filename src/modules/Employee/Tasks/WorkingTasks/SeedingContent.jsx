@@ -27,18 +27,15 @@ const taskCard_sx = {
 export const SeedingContent = (props) => {
 
     const {user, credential} = useAuth()
-    const [workProducts, setWorkProducts] = useState([])
+    const [workProducts, setWorkProducts] = useState(props.workData.production.products)
     const {TrackWorkModel} = useWorkingContext()
-    console.log(TrackWorkModel)
 
     function sumAllTrays() {
         let i;
         let trays = 0;
 
         for (i = 0; i < workProducts.length; i++) {
-            console.log(workProducts[i])
           if(workProducts[i].productData.trays != undefined)
-            
             trays += Math.ceil(workProducts[i].productData.trays)
         }
         
@@ -54,38 +51,11 @@ export const SeedingContent = (props) => {
     //     });
     //   }
 
-      const getWorkData = async ()=> {
-        const workData = await api.api.get(`${api.apiVersion}/work/production/634061756424d08c50e58841?container=633b2e0cd069d81c46a18033`,{
-            headers:{
-                "authorization":    credential._tokenResponse.idToken,
-                "user":             user
-            }
-        })
-
-        return workData
-    }
-
     
     
     const totalTrays = sumAllTrays()
 
-    console.log("work data",workProducts)
-    console.log("tt",totalTrays)
 
-    useEffect(() => {
-        getWorkData()
-        .then((data)=>{
-            console.log("data",data)
-            setWorkProducts(data.data.data.production.products)
-        })
-        .catch((err) => {
-            console.log(err)
-        })
-        
-        
-    }, [])
-    
-    
     if(props.index===0)
         return (
             <>

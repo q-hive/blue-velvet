@@ -18,7 +18,7 @@ const AuthContext = ({children}) => {
       signOut(auth)
       .then(() => {
         setUser(null)
-        window.localStorage.clear()
+        // window.localStorage.clear()
         navigate('/')
       })
       .catch(err => {

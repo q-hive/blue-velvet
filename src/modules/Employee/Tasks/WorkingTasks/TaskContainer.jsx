@@ -31,8 +31,8 @@ export const TaskContainer = (props) => {
     const theme = useTheme(BV_THEME);
     
     const {user, credential} = useAuth()
-    const {TrackWorkModel} = useWorkingContext()
-    console.log(TrackWorkModel)
+    const {WorkContext} = useWorkingContext()
+    
     const {state} = useLocation();
 
     const [isFinished,setIsFinished] = useState(false)
@@ -159,84 +159,51 @@ export const TaskContainer = (props) => {
             }
         }
 
-        
 
-      
-
-        
-        const insertTasks = (type) => {
-            if(TrackWorkModel.tasks.length != 0){
-                for(let i = 0; i<TrackWorkModel.tasks; i++){
-                    let alreadyExists =  false
-    
-                    TrackWorkModel.tasks.push(type) 
-    
-                    
-                    for(j=i; j<TrackWorkModel.tasks-1; j++){
-                        if(TrackWorkModel[i] === TrackWorkModel[j]){
-                            alreadyExists = true        
-                        }
-                    }
-    
-                    if(alreadyExists){
-                        continue
-                    }
-    
-                }
-                return
-            }
-
-            TrackWorkModel.tasks.push(type)
-            
-
-        }
         
     switch (type){
-        
-            case "unpaid": {
-                contentTitle = "Unpaid"
-                expectedtTime = 0
-                content = <Typography>The order is in UNPAID status, please wait until the Order is Ready</Typography>
-                steps=[{step:"Unpaid"}]
-                } break;
+            // case "unpaid":
+            //     contentTitle = "Unpaid"
+            //     expectedtTime = 0
+            //     content = <Typography>The order is in UNPAID status, please wait until the Order is Ready</Typography>
+            //     steps=[{step:"Unpaid"}]
+            // break;
 
-            case "pending": {
-                contentTitle = "Pending"
-                expectedtTime = 0
-                content = <Typography>The order is in PENDING status, please wait until the Order is Ready</Typography>
-                steps=[{step:"Pending"}]
-                } break;
+            // case "pending": 
+            //     contentTitle = "Pending"
+            //     expectedtTime = 0
+            //     content = <Typography>The order is in PENDING status, please wait until the Order is Ready</Typography>
+            //     steps=[{step:"Pending"}]
+            // break;
 
-            case "uncompleted": {
-                contentTitle = "Unpaid"
-                expectedtTime = 0
-                content = <Typography>The order is in UNPAID status, please wait until the Order is Ready</Typography>
-                steps=[{step:"Unpaid"}]
-                } break;
+            // case "uncompleted":
+            //     contentTitle = "Unpaid"
+            //     expectedtTime = 0
+            //     content = <Typography>The order is in UNPAID status, please wait until the Order is Ready</Typography>
+            //     steps=[{step:"Unpaid"}]
+            //  break;
 
-            case "seeding": {
-                insertTasks(type)
+            case "seeding":
                 contentTitle = "Seeding"
-                expectedtTime = Number(Math.ceil(trays) * 2).toFixed(2)
-                content = <SeedingContent products={products} productsObj={productsByNameObj} index={activeStep}/>
+                expectedtTime = Math.ceil(state.time.times.seeding.time) 
+                content = <SeedingContent products={products} productsObj={productsByNameObj} workData={state.workData} index={activeStep}/>
                 steps=[
                     {step:"Setup"},
                     {step:"Spray Seeds"},
                     {step:"Shelf"},
                 ]
-                } break;
+            break;
             
 
-            case "growing": {
+            case "growing":
                 contentTitle = "Growing"
                 content = <Typography>The order is in growing status, please wait until the products are ready to harvest</Typography>
                 steps=[{step:"Growing"}]
-                } break;
+            break;
 
-            case "harvestReady":{
-                insertTasks(type)
+            case "harvestReady":
                 contentTitle = "Harvesting"
-                expectedtTime = Number(Math.ceil(trays) * 2).toFixed(2)
+                expectedtTime = Math.ceil(state.time.times.harvest.time)
                 content = <HarvestingContent products={products} index={activeStep}/>
                 steps=[
                     {step:"Setup"},
@@ -244,11 +211,10 @@ export const TaskContainer = (props) => {
                     {step:"Dry Rack"},
                     {step:"Dry Station"},
                 ]
-            } break;
+            break;
 
-            case "harvested":{
+            case "harvested":
                 contentTitle = "Packing"
-                insertTasks("packing")
                 // expectedtTime = Number(Math.ceil(trays) * 2).toFixed(2)
                 {/*const totalPacks = order.products.map((product) => {
                     const total = product.packages.reduce((prev, curr) => {
@@ -268,44 +234,40 @@ export const TaskContainer = (props) => {
                     {step:"Packing Greens"},
                     {step:"Boxing"},
                 ]
-            } break;
+            break;
 
-            case "ready":{
-                insertTasks("delivery")
+            case "ready":
                 contentTitle = "Delivery"
                 content = <DeliveryContent index={activeStep}/>
                 steps=[{step:"Delivery"}]
-                } break;
+            break;
 
 
-            case "cleaning":{
+            case "cleaning":
                 contentTitle = "Cleaning"
-                insertTasks(type)
                 content = <CleaningContent index={activeStep}/>
                 steps=[{step:"Cleaning"}]
-                } break;
+            break;
 
-            case "mats":{
+            case "mats":
                 contentTitle = "Cut Mats"
-                insertTasks("mats")
                 content = <MatCutContent index={activeStep}/>
                 steps=[{step:"Cut Mats"}]
-                } break;
+            break;
             
-            default: { 
+            default: 
                 contentTitle = "Error"
                 content = <Typography>Error</Typography>
                 steps=[{step:"error"}] 
-                } break;
+            break;
             
     }
     
     //Finish Task
     const handleCompleteTask = () => {
         props.setFinished({value:true,counter:props.counter+1});
-        setIsFinished(true)
-        //*save (set context) task name with completion time and order id relation
         
+        setIsFinished(true)
         
         const updateTask = async () => {
             let path = {path:"status", value:undefined}
@@ -444,8 +406,6 @@ export const TaskContainer = (props) => {
     }
 
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    
   return (
     <div style={{}}>
         
@@ -501,7 +461,7 @@ export const TaskContainer = (props) => {
                 <Box sx={{ width:{xs:"100%",sm:"65%"}, display:"flex", flexDirection:"column", padding:"5%", alignItems:"center" }}>          
                     <Typography variant="h3" color="primary">{contentTitle}</Typography>
                     <Typography>Expected time: {expectedtTime} Minutes</Typography>
-                    <Timer contxt="task"/>
+                    <Timer contxt="task" from={WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]]}/>
                     {content}
                     
                 </Box>

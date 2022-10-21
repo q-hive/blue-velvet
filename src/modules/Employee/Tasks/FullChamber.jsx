@@ -2,12 +2,7 @@ import React, { useEffect, useState } from 'react'
 
 //*MUI Components
     // import { DataGrid } from '@mui/x-data-grid'
-import { Alert, Box, Button, Container, Fab, Fade, Snackbar, Stack, Typography } from '@mui/material'
-
-//*UTILS
-import { Add } from '@mui/icons-material'
-//THEME
-import {BV_THEME} from '../../../theme/BV-theme'
+import { Alert, Box, Button, Fab, Fade, Snackbar } from '@mui/material'
 
 //*Netword and routing
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -18,27 +13,20 @@ import { TaskContainer } from './WorkingTasks/TaskContainer'
 
 import LocalCafeIcon from '@mui/icons-material/LocalCafe';
 import { Timer } from '../../../CoreComponents/Timer.jsx'
-import { Clock } from '../../../CoreComponents/Clock'
 import useAuth from '../../../contextHooks/useAuthContext'
 
-import api from '../../../axios.js'
 import useWorkingContext from '../../../contextHooks/useEmployeeContext'
+import { tasksCicleObj } from '../../../utils/models';
 
-
-export const globalTimeModel = {
-    "workDay": new Date(),
-    "started": undefined,
-    "finished": undefined,
-    "breaks": [],
-    "tasks": []
-}
-
-
+//*UNUSED
+// import api from '../../../axios.js'
+// import { Add } from '@mui/icons-material'
+//THEME
+// import {BV_THEME} from '../../../theme/BV-theme'
+// import { Clock } from '../../../CoreComponents/Clock'
 
 export const FullChamber = () => {
-    
-    
-    //*Netword and router
+    //*Network and router
     const navigate = useNavigate()
     const {state}= useLocation();
 
@@ -47,15 +35,11 @@ export const FullChamber = () => {
 
     //*CONTEXTS
     const {user, credential} = useAuth()
-    const {TrackWorkModel} = useWorkingContext()
+    const {TrackWorkModel, WorkContext, setWorkContext, employeeIsWorking} = useWorkingContext()
 
     
     //*render states
-    const[canSeeNextTask,setCanSeeNexttask] = useState({value:false,counter:0})
-
-
-
-    //Snackbar
+    const [canSeeNextTask,setCanSeeNexttask] = useState({value:false,counter:0})
     const [snack, setSnack] = useState({
         open:false,
         state:"",
@@ -75,10 +59,10 @@ export const FullChamber = () => {
     };
 
     
-    const ordersList=orders
+    const ordersList = orders
 
     function getAllProducts(){
-        var productList = []
+        const productList = []
         ordersList.map((order, id)=>{
             order.products.map((product,idx)=>{
                 productList.push(
@@ -97,7 +81,7 @@ export const FullChamber = () => {
     {/* Products to send as props to TaskTest */}
     function getProductsByType(type){
         
-        var filteredProductList = []
+        const filteredProductList = []
 
         allProducts.map((product, id)=>{
             if(product.status===type)
@@ -107,21 +91,31 @@ export const FullChamber = () => {
 
     }
 
-    console.log("allproducts",allProducts)
-
-
-    
-
-    
-
-
-      {/* The keys of this object will allow us to generate a tasks by status */}
-      const allStatusesObj = filterByKey(allProducts,"status")
-
-
-    const carouselChange=(item,index)=>{
-        {item<canSeeNextTask.counter ?
-        setCanSeeNexttask({...canSeeNextTask,value:true}):setCanSeeNexttask({...canSeeNextTask,value:false})}
+    {/* The keys of this object will allow us to generate a tasks by status */}
+    const carouselChange = (index,element) => {
+        // setWorkContext({
+        //     ...WorkContext,
+        //     current:index
+        // })
+        WorkContext.current = index
+        if(WorkContext.cicle[Object.keys(WorkContext.cicle)[index]].started === undefined){
+            console.log("Started time in " + Object.keys(WorkContext.cicle)[index] + " is undefined")
+            // WorkContext.cicle[Object.keys(WorkContext.cicle)[index]].started = Date.now()
+            
+            setWorkContext({...WorkContext, cicle: {
+                ...WorkContext.cicle,
+                [Object.keys(WorkContext.cicle)[index]]:{
+                    ...WorkContext.cicle[Object.keys(WorkContext.cicle)[index]],
+                    started: Date.now()
+                }
+            }})
+        }
+        if(index < canSeeNextTask.counter){
+            setCanSeeNexttask({...canSeeNextTask,value:true})
+            return
+        }
+        
+        setCanSeeNexttask({...canSeeNextTask,value:false})
     }
 
     const carouselButtonSX = {
@@ -156,10 +150,30 @@ export const FullChamber = () => {
     }
 
     const handleBreaks = () => {
-        console.log(TrackWorkModel.tasks[TrackWorkModel.tasks.length-1])
-        
+        console.log(TrackWorkModel)
+        console.log(WorkContext)
     }
 
+
+    useEffect(() => {
+        return () => {
+            setWorkContext(() => {
+                return (
+                    {
+                        ...WorkContext, 
+                        cicle: {
+                            ...WorkContext.cicle,
+                            [Object.keys(WorkContext.cicle)[WorkContext.current]]:{
+                                ...WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]],
+                                stopped: Date.now()
+                            }
+                        }
+                    }
+                )
+            }
+            )
+        }
+    }, [])
 
   return (
     <>
@@ -169,36 +183,36 @@ export const FullChamber = () => {
         swipeable={false} 
         showThumbs={false} 
         showArrows={true}
-        showStatus={false}
+        showStatus={true}
         renderArrowNext={arrowNext}
         renderArrowPrev={arrowPrev}
         renderIndicator={false}
-        selectedItem={canSeeNextTask.counter}
+        selectedItem={employeeIsWorking ? WorkContext.current : canSeeNextTask.counter}
         onChange={carouselChange}
     >
-        {Object.keys(allStatusesObj).map((status,index)=>{ 
-            return(<>
-                
-        <Fade in={true} timeout={2000} unmountOnExit>
-                <Box key={index} height="80vh" component={"div"}>
-                        {TaskContainer({ 
-                            type: status || null, 
-                            counter:canSeeNextTask.counter, 
-                            setFinished:setCanSeeNexttask,
-                            setSnack:setSnack,
-                            snack:snack,
-                            updatePerformance: updateEmployeePerformance,
-                            products: getProductsByType(status)
-                        })}
-                </Box>
-                </Fade> </>
+        {Object.keys(tasksCicleObj.cicle).map((status,index)=>{ 
+            return( 
+                <Fade in={true} timeout={2000} unmountOnExit>
+                    <Box key={index} height="80vh" component={"div"}>
+                            {
+                            TaskContainer({ 
+                                type: status || null, 
+                                counter:canSeeNextTask.counter, 
+                                setFinished:setCanSeeNexttask,
+                                setSnack:setSnack,
+                                snack:snack,
+                                updatePerformance: updateEmployeePerformance,
+                                products: getProductsByType(status)
+                            })}
+                    </Box>
+                </Fade> 
             )
         })}
 
         
     </Carousel>
 
-    <Timer contxt="global"/>
+    <Timer contxt="global" from="global"/>
     
     <Snackbar  anchorOrigin={{vertical: "bottom",horizontal: "center" }} open={snack.open} autoHideDuration={5000} onClose={handleClose}>
         <Alert onClose={handleClose} severity={snack.status} sx={{ width: '100%' }}>
