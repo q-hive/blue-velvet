@@ -42,13 +42,12 @@ export const EntryPoint = () => {
     
     //*contexts
     const {user, credential} = useAuth()
-    const {TrackWorkModel} = useWorkingContext() 
+    const {TrackWorkModel, WorkContext ,setWorkContext, employeeIsWorking, setEmployeeIsWorking} = useWorkingContext() 
     const navigate = useNavigate()
     
     //*DATA STATES
     const [orders, setOrders] = useState([])
     const [estimatedTime, setEstimatedTime] = useState(0)
-    const [employeeIsWorking, setEmployeeIsWorking] = useState(JSON.parse(window.localStorage.getItem("isWorking")) || false)
 
 
     //*Render states
@@ -57,7 +56,8 @@ export const EntryPoint = () => {
     })
 
     //*Snackbar
-    const [snackState, setSnackState] = useState({open:false,label:"",severity:""});
+    const defaultSeverity = "warning" //default value to avoid warning.
+    const [snackState, setSnackState] = useState({open:false,label:"",severity:defaultSeverity});
 
     //*Time
     const [isOnTime, setIsOnTime] = useState(true)
@@ -89,7 +89,7 @@ export const EntryPoint = () => {
             setSnackState({open:true, label:"Initializing workday", severity:"warning"})
     
             //*Update workdays of employee
-            TrackWorkModel.started = new Date()
+            TrackWorkModel.started = Date.now()
             //*SET THE TRACKMODEL IN LOCALSTORAGE
             window.localStorage.setItem("TrackWorkModel", JSON.stringify(TrackWorkModel))
             const request = await api.api.patch(`${api.apiVersion}/work/performance/${user._id}`,{performance:[{query:"add",workdays:1}]}, {
@@ -120,45 +120,140 @@ export const EntryPoint = () => {
                     )
     }
 
+    const getOrders = async ()=> {
+        const ordersData = await api.api.get(`${api.apiVersion}/orders/uncompleted?production=true`,{
+            headers:{
+                "authorization":    credential._tokenResponse.idToken,
+                "user":             user
+            }
+        })
+
+        return ordersData.data
+    }
+    const getTimeEstimate = async () => {
+        const request = await api.api.get(`${api.apiVersion}/work/time/${user._id}`, {
+            headers: {
+                authorization:  credential._tokenResponse.idToken,
+                user:           user
+            }
+        })
+        
+
+        const reduced = request.data.data.reduce((prev, curr) => {
+            const prevseedTime = prev.times.seeding.time
+            const prevharvestTime = prev.times.harvest.time
+
+            const currseedTime = curr.times.seeding.time
+            const currharvestTime = curr.times.harvest.time
+
+            const prevTotal = prevseedTime + prevharvestTime
+            
+            const currTotal = currseedTime + currharvestTime
+
+            return {
+                times: {
+                    harvest: {
+                        time:prevharvestTime + currharvestTime
+                    }, 
+                    seeding: {
+                        time:prevseedTime + currseedTime
+                    }
+                }, 
+                total:prevTotal + currTotal
+            }
+        }, 
+        {
+            times: {
+                harvest: {
+                    time:0
+                }, 
+                seeding: {
+                    time:0
+                }
+            },
+            total:0
+        }) 
+        
+        return reduced
+    }
+    const getWorkData = async ()=> {
+        const apiResponse = await api.api.get(`${api.apiVersion}/work/production/634061756424d08c50e58841?container=633b2e0cd069d81c46a18033`,{
+            headers:{
+                "authorization":    credential._tokenResponse.idToken,
+                "user":             user
+            }
+        })
+        return apiResponse.data.data
+    }
+
     const handleWorkButton = (finish = false) => {
+        
         if(finish) {
-            TrackWorkModel.finished = new Date()
+            TrackWorkModel.finished = Date.now()
             window.localStorage.setItem("isWorking", "false")
             setEmployeeIsWorking(JSON.parse(localStorage.getItem("isWorking")))
+            //*Delete from localStorage since journal has been ended.
+            window.localStorage.removeItem("TrackWorkModel")
+            
             setSnackState({open:true,label:"Your work has been ended today",severity:"warning"})
             return
         }
         
         if(employeeIsWorking){
             setSnackState({open:true, label:"You already started working today, continue where you left", severity:"success"})
-            window.localStorage.setItem("isWorking", "true")
             setLoading({...loading, startWorkBtn:true})
-            setTimeout(() => {
-                setLoading({...loading, startWorkBtn:false})
-                setSnackState({open:false})
-                navigate('./../tasks/work',
-                    {state: {
-                        orders: orders
-                    }}
-                )
-            }, 2500)
+            getWorkData()
+            .then((workData) => {
+                window.localStorage.setItem("isWorking", "true")
+                console.log(WorkContext)
+                setTimeout(() => {
+                    setLoading({...loading, startWorkBtn:false})
+                    setSnackState({open:false})
+                    navigate('./../tasks/work',
+                        {state: {
+                            orders: orders,
+                            workData: workData,
+                            time: estimatedTime
+                        }}
+                    )
+                }, 1500)
+            })
+            .catch(err => {
+                setSnackState({open:true, label:"There was an error getting your work data.", severity:"error"})
+            })
             
             return
         }
         
         if(isOnTime && orders.length != 0){
             updateWorkDays()
-            .then((result) => {
+            getWorkData()
+            .then((workData) => {
+                // setWorkContext({...WorkContext,})
+                // setWorkContext({...WorkContext, cicle: {
+                //     ...WorkContext.cicle,
+                //     []:{
+                //         ...WorkContext.cicle[Object.keys(WorkContext.cicle)[0]],
+                //         started: Date.now()
+                //     }
+                // }})
+
+                WorkContext.cicle[Object.keys(WorkContext.cicle)[0]].started = Date.now()
                 setSnackState({open:false})
                 window.localStorage.setItem("isWorking", "true")
+                window.localStorage.setItem("workData", JSON.stringify(workData))
+                window.localStorage.setItem("WorkContext", JSON.stringify(WorkContext))
                 navigate('./../tasks/work',
                     {state: {
-                    orders: orders
+                    orders: orders,
+                    workData: workData,
+                    time: estimatedTime
                     }}
                 )
             })
             .catch(err => {
-                setSnackState({open:true, label:"There was an error updating your data. Try again.", severity:"error"})
+                console.log(err)
+                setSnackState({open:true, label:"There was an error. Try again.", severity:"error"})
             })
         }
 
@@ -199,71 +294,15 @@ export const EntryPoint = () => {
     function capitalize(word) {
         return word[0].toUpperCase() + word.slice(1).toLowerCase();
     }
-    const getOrders = async ()=> {
-        const ordersData = await api.api.get(`${api.apiVersion}/orders/uncompleted?production=true`,{
-            headers:{
-                "authorization":    credential._tokenResponse.idToken,
-                "user":             user
-            }
-        })
-
-        return ordersData.data
-    }
-    const getTimeEstimate = async () => {
-        const request = await api.api.get(`${api.apiVersion}/work/time/${user._id}`, {
-            headers: {
-                authorization:  credential._tokenResponse.idToken,
-                user:           user
-            }
-        })
-        
-
-        const reduced = request.data.data.reduce((prev, curr) => {
-            const prevseedTime = prev.times.seeding.time
-            const prevharvestTime = prev.times.harvest.time
-
-            const currseedTime = curr.times.seeding.time
-            const currharvestTime = curr.times.harvest.time
-
-            const prevTotal = prevseedTime + prevharvestTime
-            
-            const currTotal = currseedTime + currharvestTime
-
-            return {
-                times: {
-                    harvest: {
-                        time:prevseedTime + currseedTime
-                    }, 
-                    seeding: {
-                        time:prevharvestTime + currharvestTime
-                    }
-                }, 
-                total:prevTotal + currTotal
-            }
-        }, 
-        {
-            times: {
-                harvest: {
-                    time:0
-                }, 
-                seeding: {
-                    time:0
-                }
-            },
-            total:0
-        }) 
-        
-        return reduced
-    }
 
     useEffect(() => {
         const getData = async () => {
             try {
                 const orders = await getOrders()
-                console.log(orders)
                 const time = await getTimeEstimate()
                 return {orders, time}
             } catch(err) {
+                setSnackState({open: true, label:"There was an error fetching the data, please reload the page.", severity:"error"})
                 console.log(err)
             }
         }
@@ -286,7 +325,6 @@ export const EntryPoint = () => {
             }
             setOrders(orders.data)
             setEstimatedTime(time)
-            console.log("estimated time",estimatedTime.times)
         })
         .catch((err) => {
             console.log(err)
@@ -362,7 +400,6 @@ export const EntryPoint = () => {
                         <>
                             {Object.keys(allStatusesObj).map((status,index)=>{ 
                                 return(
-                                    <>
                                     <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
                                         <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
                                             <Typography >
@@ -373,20 +410,6 @@ export const EntryPoint = () => {
                                             </Typography>
                                         </Box>
                                     </Paper>
-
-                                    {/*TESTING ONLY*/}
-                                    {/* <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
-                                    <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
-                                        <Typography >
-                                            <b>Task: Harvesting</b>
-                                        </Typography>
-                                        <Typography >
-                                            <i>Expected Time: {estimatedTime?.times["harvest"].time.toFixed(2)}</i>
-                                        </Typography>
-                                    </Box>
-                                    </Paper> */}
-                                    {/*END TESTING ONLY*/}
-                                    </>
                                 )
                             })}
                                 
