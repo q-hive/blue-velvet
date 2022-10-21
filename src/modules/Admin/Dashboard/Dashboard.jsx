@@ -88,7 +88,7 @@ export const Dashboard = () => {
 
         <Container maxWidth="lg" sx={{paddingTop:4,paddingBottom:4,marginX:{xs:4,md:"auto"},marginTop:{xs:4,md:3}}}>
             <Typography variant="h2" color="primary">Welcome, Admin</Typography>
-            <Typography variant="h5" color="secondary">Here's your dashboard</Typography>
+            <Typography variant="h5" color="secondary.dark">Here's your dashboard</Typography>
 
 
             <Grid container spacing={3} marginTop={3}>
@@ -97,7 +97,7 @@ export const Dashboard = () => {
                 <Grow in={true} timeout={2000} unmountOnExit>
                     <Grid item xs={12} md={4} lg={4}>
                         <Paper elevation={4} sx={fixedHeightPaper}>
-                            <Typography variant="h6" color="secondary">Tasks</Typography>
+                            <Typography variant="h6" color="secondary.dark">Tasks</Typography>
                             <Box sx={{display:"flex",flexDirection:"column", }}>
 
                                 
@@ -111,13 +111,16 @@ export const Dashboard = () => {
                 <Grow in={true} timeout={2000} unmountOnExit>
                     <Grid item xs={12} md={4} lg={4}>
                         <Paper elevation={4} sx={fixedHeightPaper}>
-                            <Typography variant="h6" color="secondary">Containers' capacity</Typography>
+                            <Typography variant="h6" color="secondary.dark">Containers' capacity</Typography>
                             <Box sx={{display:"flex",flexDirection:"column", }}>
 
                                 {containers.map((container,index) => { return(
-                                        <Paper key={index} variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"3px",paddingX:"2px",marginTop:"2vh",display:"flex", flexDirection:"row"}}>
+                                        <Paper key={index} variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"1vh",paddingX:".5vh",marginTop:"2vh",display:"flex", flexDirection:"column"}}>
+                                            <Typography variant="h6" color="primary.dark" sx={{width:"98%",}}>
+                                                {container.name}:<br/>
+                                                </Typography>
                                             <Typography sx={{width:"98%"}}>
-                                                {container.name}:<br/><b>Max: </b>{container.capacity}<b> Used: </b>{container.available}{" "}<LinearProgress sx={{height:"3vh"}} variant="determinate" value={(container.used * 100) / container.capacity} />
+                                                <b>Max: </b>{container.capacity}<b> Used: </b>{container.available}{" "}<LinearProgress sx={{height:"3vh"}} variant="determinate" value={(container.used * 100) / container.capacity} />
                                             </Typography>
                                             {/*<Button variant="contained" sx={{width:"34%"}} onClick={()=>handleViewTask(task.type)} color="primary" >
                                                 View
@@ -142,7 +145,7 @@ export const Dashboard = () => {
                                 backgroundColor:BV_THEME.palette.primary.main,
                                 color:"white"
                             }}}>
-                            <Typography variant="h6" color="secondary">Employee Performance</Typography>
+                            <Typography variant="h6" color="secondary.dark">Employee Performance</Typography>
                             <DataGrid
                             columns={[{
                                 field:"col1",

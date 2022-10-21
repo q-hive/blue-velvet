@@ -13,6 +13,7 @@ import { Divider, Drawer, } from '@mui/material'
 //Icons
 import MenuIcon from '@mui/icons-material/Menu';
 import GroupsIcon from '@mui/icons-material/Groups';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 import RequestPageIcon from '@mui/icons-material/RequestPage';
 import WorkspacesIcon from '@mui/icons-material/Workspaces';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
@@ -112,7 +113,7 @@ const BV_Layout = (props) => {
     const employeeOptions = [
       {
         label:'Dashboard',
-        icon:<GroupsIcon color="primary"/>,
+        icon:<DashboardIcon color="primary"/>,
       }, 
       {
         label:'Production',
@@ -159,18 +160,25 @@ const BV_Layout = (props) => {
     const drawer = (
         <>
           <Toolbar />
-          <Toolbar alignitems="center" sx={{backgroundColor: "#93cf0f" , p:2}}>
-            <Typography 
-                variant="h6"  
-                component="div" 
-                color="grey.A100" 
-                justifyContent="center" 
-                display="block" 
-                sx={{margin:"7%",}}
+          <Toolbar sx={{backgroundColor: "#93cf0f",padding:6}}>
+            
+            <Box  alignitems="justify" 
+                  sx={{
+                    justifyContent:"center",
+                    textAlign:"center",
+                    width:"100%",
+                    margin:2,
+                  }}
             >
-                {user.role === "employee" ?  "Employee Options" : "Administrator Options" }
-            </Typography>
-
+              <Typography 
+                  variant="h5"  
+                  component="div" 
+                  color="grey.A100" 
+                  display="block" 
+              >
+                  {user.role === "employee" ?  "Employee Options" : "Administrator Options" }
+              </Typography>
+            </Box>
           </Toolbar>
           
           <Divider />
