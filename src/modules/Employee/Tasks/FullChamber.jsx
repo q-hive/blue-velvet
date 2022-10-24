@@ -17,6 +17,7 @@ import useAuth from '../../../contextHooks/useAuthContext'
 
 import useWorkingContext from '../../../contextHooks/useEmployeeContext'
 import { tasksCicleObj } from '../../../utils/models';
+import { UserDialog } from '../../../CoreComponents/UserFeedback/Dialog';
 
 //*UNUSED
 // import api from '../../../axios.js'
@@ -45,6 +46,12 @@ export const FullChamber = () => {
         state:"",
         message:""
     });
+    const [dialog, setDialog] = useState({
+        open:       false,
+        title:      "",
+        message:    "",
+        actions:    []
+    })
 
 
     const handleClose = (event, reason) => {
@@ -152,6 +159,19 @@ export const FullChamber = () => {
     const handleBreaks = () => {
         console.log(TrackWorkModel)
         console.log(WorkContext)
+        // TrackWorkModel.breaks.push(este break)
+        setDialog({
+            ...dialog,
+            open:true,
+            title:"You are on a break ",
+            message:"Rest. Breathe. Your time is still being tracked",
+            actions: [
+                {
+                    label:"Continue Working",
+                    execute: () => setDialog({...dialog,open:false})
+                },
+            ]
+        })
     }
 
 
@@ -211,6 +231,9 @@ export const FullChamber = () => {
 
         
     </Carousel>
+
+    <UserDialog dialog={dialog} setDialog={setDialog} open={dialog.open} title={dialog.title} content={dialog.message} actions={dialog.actions}>
+    <Timer contxt="global" from="global"/></UserDialog>
 
     <Timer contxt="global" from="global"/>
     

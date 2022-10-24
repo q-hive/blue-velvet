@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 //*MUI components
-import { Button, TextField, useTheme, Fab, AutoComplete, Typography, Stepper, Step, StepLabel, StepContent, Paper, Tooltip, IconButton} from '@mui/material'
+import { Button, TextField, useTheme, Fab, AutoComplete, Typography, Stepper, Step, StepLabel, StepContent, Paper, Fade, IconButton} from '@mui/material'
 import CameraIcon from '@mui/icons-material/AddPhotoAlternate';
 import { Box } from '@mui/system'
 import LightModeOutlinedIcon from '@mui/icons-material/LightModeOutlined';
@@ -422,6 +422,7 @@ export const SimpleProductForm = ({editing, product}) => {
     // },[error])
   return (
     <div style={{width:"100%"}}>
+        <Fade in={true} timeout={1000} unmountOnExit>
         <Box sx={
             {
                 display:"flex",
@@ -515,6 +516,7 @@ export const SimpleProductForm = ({editing, product}) => {
                 </Box>
             </Box>
         </Box>
+        </Fade>
 
         <UserDialog
         dialog={dialog}

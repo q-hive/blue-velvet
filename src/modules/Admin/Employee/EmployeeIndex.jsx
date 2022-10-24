@@ -1,5 +1,5 @@
 import { Add } from '@mui/icons-material'
-import { Box, Button, Container, LinearProgress, Typography } from '@mui/material'
+import { Box, Button, Container, LinearProgress, Typography, Fade } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -42,6 +42,7 @@ export const EmployeeIndex = () => {
     
   return (
     <>
+    <Fade in={true} timeout={1000} unmountOnExit>
     <Box width="100%" height="100%">
         <Container sx={{padding:"2%"}}>
             <Box sx={{
@@ -84,6 +85,7 @@ export const EmployeeIndex = () => {
             </Box>
         </Container>  
     </Box>
+    </Fade>
     </>
   )
 }

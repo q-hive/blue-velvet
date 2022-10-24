@@ -80,17 +80,16 @@ const BV_Layout = (props) => {
       console.log("task finished");
     };
     
-    
     const handleSeeAllTasks = () => {
         navigate(`/${user.uid}/employee/tasks`)
     };
 
-    //TASKS icons
-    const importantTask = <NearbyErrorIcon large color="primary" />;
-    const normalTask = <TollIcon large color="primary" />;
-
     //Admin Options Drawer buttons content (label and Icon)
     const adminOptions = [
+                    {
+                      label:'Dashboard',
+                      icon:<DashboardIcon color="primary"/>,
+                    }, 
                     {
                       label:'Employees',
                       icon:<GroupsIcon color="primary"/>,
@@ -111,27 +110,14 @@ const BV_Layout = (props) => {
 
     // Options Drawer for Employees 
     const employeeOptions = [
-      {
-        label:'Dashboard',
-        icon:<DashboardIcon color="primary"/>,
-      }, 
-      {
-        label:'Production',
-        icon:<WorkspacesIcon color="primary"/>,
-      }, 
-    ];
-    
-    
-    //Drawer Task array (TESTING PURPOSES)
-    const employeeTasks = [
                     {
-                      label:'Harvesting',
-                      icon:<AgricultureIcon  color="primary" />,
+                      label:'Dashboard',
+                      icon:<DashboardIcon color="primary"/>,
                     }, 
                     {
-                      label:'Growing',
-                      icon:<GrassIcon  color="primary" />,
-                    }
+                      label:'Production',
+                      icon:<WorkspacesIcon color="primary"/>,
+                    }, 
                   ];
 
     //Settings to show when user avatar is clicked
@@ -204,52 +190,6 @@ const BV_Layout = (props) => {
             }
               
               
-            
-          </Box> 
-            
-          <Divider />
-        </>
-      );
-
-
-      // FRAGMENT , children of Drawer Component if Employee
-      const tasks = (
-        <>
-          <Toolbar alignItems="center" sx={{backgroundColor: "#0958bf", p:1}}>
-            <Typography 
-                variant="h6"  
-                component="div" 
-                color="grey.A100" 
-                justifyContent="center" 
-                display="block" 
-                sx={{marginLeft:"7%",margin:"3%"}}
-            >
-                Pending Tasks
-            </Typography>
-
-          </Toolbar>
-          
-          <Box display="flex" sx={{display:"flex", flexDirection:"column", width:"auto", height:"auto", p:2}}>
-            {employeeTasks.length != 0 ?
-            
-            employeeTasks.map((option) => (
-                
-              <FormGroup key={option.label} sx={{}}>
-                <Box display="flex" flexDirection="row">
-                  <Button sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleShowTask} >
-                    {option.label}
-                  </Button>
-                  <Button variant="outlined" sx={theme.button.task_done} onClick={handleFinishTask}>Done</Button>
-                </Box>
-              </FormGroup>
-          ))
-        
-            
-            : 
-            
-            <Typography>You currently don't have any pending tasks</Typography>}
-
-            <Button onClick={handleSeeAllTasks}>See all Tasks</Button>
             
           </Box> 
             

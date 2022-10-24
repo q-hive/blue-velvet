@@ -1,7 +1,7 @@
 import React, {useState} from 'react'
 
 //*MUI COMPONENTS
-import { Autocomplete, Box, Button, Divider, Fab, TextField, Typography } from '@mui/material'
+import { Autocomplete, Box, Button, Divider, Fab, TextField, Typography, Fade } from '@mui/material'
 import CameraIcon from '@mui/icons-material/AddPhotoAlternate'
 
 //*CONTEXTS
@@ -143,6 +143,7 @@ export const NewEmployee = () => {
     }
   return (
     <>
+    <Fade in={true} timeout={1000} unmountOnExit>
     <Box sx={
         {
             display:"flex",
@@ -209,6 +210,7 @@ export const NewEmployee = () => {
         </Box>
         
     </Box>
+    </Fade>
     <UserDialog
         setDialog={setDialog}
         dialog={dialog}
