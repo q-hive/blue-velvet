@@ -1,8 +1,6 @@
-import { Add } from '@mui/icons-material'
-import { Alert, Box, Button, Container, Grid, Paper, Snackbar, Typography, Fade, Grow } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 
-// import { Alert, Box, Button, Container, Grid, Paper, Snackbar, Typography } from '@mui/material'
+import { Alert, Box, Button, Container, Grid, Paper, Snackbar, Typography, Fade, Grow } from '@mui/material'
 import { LoadingButton } from '@mui/lab'
 import { DataGrid } from '@mui/x-data-grid'
 
@@ -419,7 +417,7 @@ export const EntryPoint = () => {
                         <Typography variant="h6" color="secondary">Container's Tasks</Typography>
                         {containerTasks.map((task,index) => { 
                             return(
-                                <Paper key={index} variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"3px",paddingX:"2px",marginTop:"2vh",display:"flex", flexDirection:"row"}}>
+                                <Paper key={index} variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"1.5vh",paddingX:"1.5vh",marginTop:"1vh",display:"flex", flexDirection:"row"}}>
                                     <Typography><b>{task.name}</b></Typography>
                                     <Button variant="contained" sx={{width:"34%"}} onClick={()=>handleViewTask(task.type)} color="primary" >
                                         View
@@ -433,7 +431,7 @@ export const EntryPoint = () => {
 
                 {/*Completed tasks */}
                 <Grow in={true} timeout={2000} unmountOnExit>
-                <Grid item xs={12} md={8}>
+                <Grid item xs={12} md={4}>
                     <Paper elevation={4} sx={{...fixedHeightPaper,height:400,
                         "& .header-sales-table":{
                             backgroundColor:BV_THEME.palette.primary.main,

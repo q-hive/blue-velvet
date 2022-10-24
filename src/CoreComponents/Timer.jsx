@@ -54,14 +54,14 @@ export const Timer = ({contxt}) => {
     })
   }, [WorkContext.current])
     
-  useInterval(updateTime, 1000)  
   
   if(currentTaskFinished){
     return (
       <Typography>Achieved time: {formatTime(WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved)}</Typography>
-    )
+      )
   }
-  
+    
+    useInterval(updateTime, 1000)  
   return (
     <Typography>Current {contxt === 'global' ? 'working' : 'task'} time: {formatTime(time)}</Typography>
   )

@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react'
 //*MUI Components
 import { 
     Autocomplete, TextField, 
-    Typography, Button, Box, FormHelperText, getInputUtilityClass, Snackbar, Alert, Stack, CircularProgress 
+    Typography, Button, Box, FormHelperText, getInputUtilityClass, Snackbar, Alert, Stack, CircularProgress, Fade 
 } from '@mui/material'
 import {DatePicker, LocalizationProvider} from '@mui/x-date-pickers'
 import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns'
@@ -521,7 +521,7 @@ export const NewOrder = (props) => {
                 />
 
     
-
+    <Fade in={true} timeout={1000} unmountOnExit>
     <Box sx={
         {
             display:"flex",
@@ -755,6 +755,7 @@ export const NewOrder = (props) => {
 
 
     </Box>
+    </Fade>
     <Snackbar open={open} anchorOrigin={{vertical: "bottom",horizontal: "center" }} autoHideDuration={5000} onClose={handleClose}>
         <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
             Order generated succesfully!

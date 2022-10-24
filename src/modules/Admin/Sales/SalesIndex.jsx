@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 
 //*MUI Components
 import { DataGrid } from '@mui/x-data-grid'
-import { Box, Button, Container, LinearProgress, Stack, Typography } from '@mui/material'
+import { Box, Button, Container, Fade, LinearProgress, Stack, Typography } from '@mui/material'
 
 //*UTILS
 import { salesColumns } from '../../../utils/TableStates'
@@ -123,7 +123,7 @@ export const SalesIndex = () => {
   return (
     <>
 
-
+    <Fade in={true} timeout={1000} unmountOnExit>
     <Box width="100%" height="100%">
         <Container sx={{padding:"2%"}}>
             <Box sx={{
@@ -167,6 +167,7 @@ export const SalesIndex = () => {
             </Box>
         </Container>  
     </Box>
+    </Fade>
 
 
 

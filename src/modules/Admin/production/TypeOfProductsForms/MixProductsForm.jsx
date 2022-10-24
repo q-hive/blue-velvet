@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { 
     Autocomplete, Box, Button, 
     TextField, Typography, useTheme, 
-    Fab,
+    Fab, Fade,
     Stepper, Step, StepLabel, StepContent, Paper, InputAdornment, 
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add';
@@ -505,6 +505,8 @@ export const MixProductsForm = ({editing, product}) => {
         actions={dialog.actions}
         />
         
+        <Fade in={true} timeout={1000} unmountOnExit>
+        
         <Box sx={{display:"flex", width:"100%", marginTop:"5vh",justifyContent:"center",justifyItems:"center", alignItems:"center", flexDirection:"column"}}>
         
         
@@ -734,8 +736,9 @@ export const MixProductsForm = ({editing, product}) => {
 
                     
                         
-                        </Box></Box>
-                        
+                        </Box>
+        </Box>
+        </Fade>                
     </div>
     
 
