@@ -28,15 +28,25 @@ import { MatCutContent } from '../ContainerTasks/MatCutContent'
 import useWorkingContext from '../../../../contextHooks/useEmployeeContext'
 
 export const TaskContainer = (props) => {
+    //*Variables declarations
+    let steps
+    let contentTitle
+    let content
+    let expectedtTime
+    
+    let trays 
+    let redplacedMixProducts
+    let productsByNameObj
+    
+    
     const theme = useTheme(BV_THEME);
     
     const {user, credential} = useAuth()
-    const {WorkContext} = useWorkingContext()
+    const {WorkContext, employeeIsWorking} = useWorkingContext()
     
     const {state} = useLocation();
 
     const [isFinished,setIsFinished] = useState(false)
-    
     //* STEPPER
     const [activeStep, setActiveStep] = useState(0)
 
@@ -52,15 +62,109 @@ export const TaskContainer = (props) => {
         ({type} = state);
     }
 
+    switch (type){
+        // case "unpaid":
+        //     contentTitle = "Unpaid"
+        //     expectedtTime = 0
+        //     content = <Typography>The order is in UNPAID status, please wait until the Order is Ready</Typography>
+        //     steps=[{step:"Unpaid"}]
+        // break;
 
-    let steps
-    let contentTitle
-    let content
-    let expectedtTime
+        // case "pending": 
+        //     contentTitle = "Pending"
+        //     expectedtTime = 0
+        //     content = <Typography>The order is in PENDING status, please wait until the Order is Ready</Typography>
+        //     steps=[{step:"Pending"}]
+        // break;
 
-    let trays 
-    let redplacedMixProducts
-    let productsByNameObj
+        // case "uncompleted":
+        //     contentTitle = "Unpaid"
+        //     expectedtTime = 0
+        //     content = <Typography>The order is in UNPAID status, please wait until the Order is Ready</Typography>
+        //     steps=[{step:"Unpaid"}]
+        //  break;
+
+        case "seeding":
+            contentTitle = "Seeding"
+            expectedtTime = Math.ceil(state.time.times.seeding.time) 
+            content = <SeedingContent products={products} productsObj={productsByNameObj} workData={state.workData} index={activeStep}/>
+            steps=[
+                {step:"Setup"},
+                {step:"Spray Seeds"},
+                {step:"Shelf"},
+            ]
+        break;
+        
+
+        case "growing":
+            contentTitle = "Growing"
+            content = <Typography>The order is in growing status, please wait until the products are ready to harvest</Typography>
+            steps=[{step:"Growing"}]
+        break;
+
+        case "harvestReady":
+            contentTitle = "Harvesting"
+            expectedtTime = Math.ceil(state.time.times.harvest.time)
+            content = <HarvestingContent products={products} index={activeStep}/>
+            steps=[
+                {step:"Setup"},
+                {step:"Recolection"},
+                {step:"Dry Rack"},
+                {step:"Dry Station"},
+            ]
+        break;
+
+        case "harvested":
+            contentTitle = "Packing"
+            // expectedtTime = Number(Math.ceil(trays) * 2).toFixed(2)
+            {/*const totalPacks = order.products.map((product) => {
+                const total = product.packages.reduce((prev, curr) => {
+                    return prev + curr.number
+                },0)
+
+                return total
+            })
+
+            expectedtTime = Number((0.5*totalPacks[0])).toFixed(2)
+            */}
+            expectedtTime = 3
+            content = <PackingContent index={activeStep}/>
+            steps=[
+                {step:"Tools"},
+                {step:"Calibration"},
+                {step:"Packing Greens"},
+                {step:"Boxing"},
+            ]
+        break;
+
+        case "ready":
+            contentTitle = "Delivery"
+            content = <DeliveryContent index={activeStep}/>
+            steps=[{step:"Delivery"}]
+        break;
+
+
+        case "cleaning":
+            contentTitle = "Cleaning"
+            content = <CleaningContent index={activeStep}/>
+            steps=[{step:"Cleaning"}]
+        break;
+
+        case "mats":
+            contentTitle = "Cut Mats"
+            content = <MatCutContent index={activeStep}/>
+            steps=[{step:"Cut Mats"}]
+        break;
+        
+        default: 
+            contentTitle = "Error"
+            content = <Typography>Error</Typography>
+            steps=[{step:"error"}] 
+        break;
+        
+    }
+
+
 
     const sumProdData = (arr, data) => {
         let result = 0;
@@ -98,233 +202,135 @@ export const TaskContainer = (props) => {
 
 
       
-      function filterByKey(obj, prop) {
-        {/* 
-            Returns an object with objects' desired prop as key, 
-            letting you have a "status as Key" object or a "name as key" object 
-            to name a few 
-        */}
-        return obj.reduce(function (acc, item) {
-      
-          let key = item[prop]
-      
-          if (!acc[key] ) { 
-            acc[key] = []
-          }
-          if(item["mix"]==true && item["products"]!=undefined){
-            let mixProds = filterByKey(item.products,"item")
-            console.log("solo soy uno",mixProds)
-
-            
-          }else if(!item.productionData){
-            acc[key].push({name:item.name,harvest:item.harvest,seeds:item.seeds,trays:item.trays,})
-            
-          }else
-            acc[key].push({...item.productionData,name:item.name})
-
-          return acc
-      
-        }, {})
-      
-      }
-
-      
-
-      function mixOpener(products) {
-        let arreglo = []
-        products.map((product,id)=>{
-            if(product.mix){
-                if(product.products){
-                product.products.map((product2, id)=>{
-                    arreglo.push(product2)
-                }
-                )
-            }}else 
-                arreglo.push(product)
-        })
-         return arreglo
-      }
-
-
-        
-
-        function setFinalProductionData(){
-            for(const key in productsByNameObj){
-
-                const h = sumProdData(productsByNameObj[key], 'harvest');
-                const s = sumProdData(productsByNameObj[key], 'seeds');
-                const t = sumProdData(productsByNameObj[key], 'trays');
-                
-                productsByNameObj[key]={harvest:h,seeds:s,trays:t}
-            }
-        }
-
-
-        
-    switch (type){
-            // case "unpaid":
-            //     contentTitle = "Unpaid"
-            //     expectedtTime = 0
-            //     content = <Typography>The order is in UNPAID status, please wait until the Order is Ready</Typography>
-            //     steps=[{step:"Unpaid"}]
-            // break;
-
-            // case "pending": 
-            //     contentTitle = "Pending"
-            //     expectedtTime = 0
-            //     content = <Typography>The order is in PENDING status, please wait until the Order is Ready</Typography>
-            //     steps=[{step:"Pending"}]
-            // break;
-
-            // case "uncompleted":
-            //     contentTitle = "Unpaid"
-            //     expectedtTime = 0
-            //     content = <Typography>The order is in UNPAID status, please wait until the Order is Ready</Typography>
-            //     steps=[{step:"Unpaid"}]
-            //  break;
-
-            case "seeding":
-                contentTitle = "Seeding"
-                expectedtTime = Math.ceil(state.time.times.seeding.time) 
-                content = <SeedingContent products={products} productsObj={productsByNameObj} workData={state.workData} index={activeStep}/>
-                steps=[
-                    {step:"Setup"},
-                    {step:"Spray Seeds"},
-                    {step:"Shelf"},
-                ]
-            break;
-            
-
-            case "growing":
-                contentTitle = "Growing"
-                content = <Typography>The order is in growing status, please wait until the products are ready to harvest</Typography>
-                steps=[{step:"Growing"}]
-            break;
-
-            case "harvestReady":
-                contentTitle = "Harvesting"
-                expectedtTime = Math.ceil(state.time.times.harvest.time)
-                content = <HarvestingContent products={products} index={activeStep}/>
-                steps=[
-                    {step:"Setup"},
-                    {step:"Recolection"},
-                    {step:"Dry Rack"},
-                    {step:"Dry Station"},
-                ]
-            break;
-
-            case "harvested":
-                contentTitle = "Packing"
-                // expectedtTime = Number(Math.ceil(trays) * 2).toFixed(2)
-                {/*const totalPacks = order.products.map((product) => {
-                    const total = product.packages.reduce((prev, curr) => {
-                        return prev + curr.number
-                    },0)
-
-                    return total
-                })
-
-                expectedtTime = Number((0.5*totalPacks[0])).toFixed(2)
-                */}
-                expectedtTime = 3
-                content = <PackingContent index={activeStep}/>
-                steps=[
-                    {step:"Tools"},
-                    {step:"Calibration"},
-                    {step:"Packing Greens"},
-                    {step:"Boxing"},
-                ]
-            break;
-
-            case "ready":
-                contentTitle = "Delivery"
-                content = <DeliveryContent index={activeStep}/>
-                steps=[{step:"Delivery"}]
-            break;
-
-
-            case "cleaning":
-                contentTitle = "Cleaning"
-                content = <CleaningContent index={activeStep}/>
-                steps=[{step:"Cleaning"}]
-            break;
-
-            case "mats":
-                contentTitle = "Cut Mats"
-                content = <MatCutContent index={activeStep}/>
-                steps=[{step:"Cut Mats"}]
-            break;
-            
-            default: 
-                contentTitle = "Error"
-                content = <Typography>Error</Typography>
-                steps=[{step:"error"}] 
-            break;
-            
-    }
+    function filterByKey(obj, prop) {
+    {/* 
+        Returns an object with objects' desired prop as key, 
+        letting you have a "status as Key" object or a "name as key" object 
+        to name a few 
+    */}
+    return obj.reduce(function (acc, item) {
     
+        let key = item[prop]
+    
+        if (!acc[key] ) { 
+        acc[key] = []
+        }
+        if(item["mix"]==true && item["products"]!=undefined){
+        let mixProds = filterByKey(item.products,"item")
+        console.log("solo soy uno",mixProds)
+
+        
+        }else if(!item.productionData){
+        acc[key].push({name:item.name,harvest:item.harvest,seeds:item.seeds,trays:item.trays,})
+        
+        }else
+        acc[key].push({...item.productionData,name:item.name})
+
+        return acc
+    
+    }, {})
+    
+    }
+
+      
+
+    function mixOpener(products) {
+    let arreglo = []
+    products.map((product,id)=>{
+        if(product.mix){
+            if(product.products){
+            product.products.map((product2, id)=>{
+                arreglo.push(product2)
+            }
+            )
+        }}else 
+            arreglo.push(product)
+    })
+        return arreglo
+    }
+
+
+        
+
+    function setFinalProductionData(){
+        for(const key in productsByNameObj){
+
+            const h = sumProdData(productsByNameObj[key], 'harvest');
+            const s = sumProdData(productsByNameObj[key], 'seeds');
+            const t = sumProdData(productsByNameObj[key], 'trays');
+            
+            productsByNameObj[key]={harvest:h,seeds:s,trays:t}
+        }
+    }
+
+
+    if(WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved) {
+        content = <div>Yo already finished the task.</div>
+        let haventFinishedActualTask = WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved === undefined
+
+        
+        
+        if(employeeIsWorking && haventFinishedActualTask){
+            //*We should know in which step employee is working
+            return setActiveStep(0)
+        }
+        
+        return setActiveStep(steps.length - 1) 
+    }
+
     //Finish Task
     const handleCompleteTask = () => {
-        props.setFinished({value:true,counter:props.counter+1});
-        
-        setIsFinished(true)
-        
-        const updateTask = async () => {
+        const updateTask = () => {
             let path = {path:"status", value:undefined}
             let response
-            switch(type){
-                case "seeding":
-                    //*  ->Growing
-                    response = await api.api.patch(`${api.apiVersion}/orders/${order._id}`, {paths:[{...path, value:"growing"}]}, {
-                        headers:{
-                            authorization: credential._tokenResponse.idToken,
-                            user:          user
-                        }
-                    })
-                    return response
-                case "harvesting":
-                    //*  ->Harvested
-                    response = await api.api.patch(`${api.apiVersion}/orders/${order._id}`, {paths:[{...path, value:"harvested"}]}, {
-                        headers:{
-                            authorization: credential._tokenResponse.idToken,
-                            user:          user
-                        }
-                    })
-                    return response
-                case "packing":
-                    //*  ->ready
-                    response = await api.api.patch(`${api.apiVersion}/orders/${order._id}`, {paths:[{...path, value:"ready"}]}, {
-                        headers:{
-                            authorization: credential._tokenResponse.idToken,
-                            user:          user
-                        }
-                    })
-                    return response
-                case "ready":
-                    //*  ->delivered
-                    response = await api.api.patch(`${api.apiVersion}/orders/${order._id}`, {paths:[{...path, value:"delivered"}]}, {
-                        headers:{
-                            authorization: credential._tokenResponse.idToken,
-                            user:          user
-                        }
-                    })
-                    return response
-                default:
-                    response = ""
-                    return response
-            }
-        
+            // switch(type){
+            //     case "seeding":
+            //         //*  ->Growing
+            //         response = await api.api.patch(`${api.apiVersion}/orders/${order._id}`, {paths:[{...path, value:"growing"}]}, {
+            //             headers:{
+            //                 authorization: credential._tokenResponse.idToken,
+            //                 user:          user
+            //             }
+            //         })
+            //         return response
+            //     case "harvesting":
+            //         //*  ->Harvested
+            //         response = await api.api.patch(`${api.apiVersion}/orders/${order._id}`, {paths:[{...path, value:"harvested"}]}, {
+            //             headers:{
+            //                 authorization: credential._tokenResponse.idToken,
+            //                 user:          user
+            //             }
+            //         })
+            //         return response
+            //     case "packing":
+            //         //*  ->ready
+            //         response = await api.api.patch(`${api.apiVersion}/orders/${order._id}`, {paths:[{...path, value:"ready"}]}, {
+            //             headers:{
+            //                 authorization: credential._tokenResponse.idToken,
+            //                 user:          user
+            //             }
+            //         })
+            //         return response
+            //     case "ready":
+            //         //*  ->delivered
+            //         response = await api.api.patch(`${api.apiVersion}/orders/${order._id}`, {paths:[{...path, value:"delivered"}]}, {
+            //             headers:{
+            //                 authorization: credential._tokenResponse.idToken,
+            //                 user:          user
+            //             }
+            //         })
+            //         return response
+            //     default:
+            //         response = ""
+            //         return response
+            // }
+            return
         }
-
-        updateTask()
-        .then((response) => {
-            console.log("response",response)
-            props.setSnack({...props.snack, open:true, message:"Task updated succesfully", status:"success"})
-        })
-        .catch(err => {
-            console.log("err",err)
-        })
-
+        WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved = Date.now() - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].started 
+        WorkContext.current = WorkContext.current + 1 
+        props.setSnack({...props.snack, open:true, message:"Task updated succesfully", status:"success"})
+        props.setFinished({value:true,counter:props.counter+1});
+        setIsFinished(true)
     }
 
 
@@ -343,7 +349,6 @@ export const TaskContainer = (props) => {
         return index == steps.length - 1
 
     };
-
     
     // Stepper Navigation buttons
     const getStepContent = (step,index) => {
@@ -405,7 +410,12 @@ export const TaskContainer = (props) => {
 
     }
 
+    useEffect(() => {
+        if((WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved !== undefined) || WorkContext.cicle[Object.keys(WorkContext.cicle)[props.counter]].achieved !== undefined){
+            setIsFinished(() => true)
+        }
 
+    },[])
   return (
     <div style={{}}>
         
@@ -461,7 +471,7 @@ export const TaskContainer = (props) => {
                 <Box sx={{ width:{xs:"100%",sm:"65%"}, display:"flex", flexDirection:"column", padding:"5%", alignItems:"center" }}>          
                     <Typography variant="h3" color="primary">{contentTitle}</Typography>
                     <Typography>Expected time: {expectedtTime} Minutes</Typography>
-                    <Timer contxt="task" from={WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]]}/>
+                    <Timer contxt="task"/>
                     {content}
                     
                 </Box>

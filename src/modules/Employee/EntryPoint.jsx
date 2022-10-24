@@ -1,6 +1,8 @@
+import { Add } from '@mui/icons-material'
+import { Alert, Box, Button, Container, Grid, Paper, Snackbar, Typography, Fade, Grow } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 
-import { Alert, Box, Button, Container, Grid, Paper, Snackbar, Typography, Fade, Grow } from '@mui/material'
+// import { Alert, Box, Button, Container, Grid, Paper, Snackbar, Typography } from '@mui/material'
 import { LoadingButton } from '@mui/lab'
 import { DataGrid } from '@mui/x-data-grid'
 
@@ -205,7 +207,6 @@ export const EntryPoint = () => {
             getWorkData()
             .then((workData) => {
                 window.localStorage.setItem("isWorking", "true")
-                console.log(WorkContext)
                 setTimeout(() => {
                     setLoading({...loading, startWorkBtn:false})
                     setSnackState({open:false})
@@ -229,20 +230,14 @@ export const EntryPoint = () => {
             updateWorkDays()
             getWorkData()
             .then((workData) => {
-                // setWorkContext({...WorkContext,})
-                // setWorkContext({...WorkContext, cicle: {
-                //     ...WorkContext.cicle,
-                //     []:{
-                //         ...WorkContext.cicle[Object.keys(WorkContext.cicle)[0]],
-                //         started: Date.now()
-                //     }
-                // }})
-
-                WorkContext.cicle[Object.keys(WorkContext.cicle)[0]].started = Date.now()
                 setSnackState({open:false})
+                
+                setEmployeeIsWorking(true)
+                WorkContext.cicle[Object.keys(WorkContext.cicle)[0]].started = Date.now()
                 window.localStorage.setItem("isWorking", "true")
                 window.localStorage.setItem("workData", JSON.stringify(workData))
                 window.localStorage.setItem("WorkContext", JSON.stringify(WorkContext))
+                
                 navigate('./../tasks/work',
                     {state: {
                     orders: orders,
@@ -399,7 +394,6 @@ export const EntryPoint = () => {
                 <Grid item xs={12} md={4} lg={4}>
                     <Paper elevation={4} sx={fixedHeightPaper}>
                         <Typography variant="h6" color="secondary">Tasks</Typography>
-                        <>
                             {Object.keys(allStatusesObj).map((status,index)=>{ 
                                 return(
                                     <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
@@ -414,8 +408,6 @@ export const EntryPoint = () => {
                                     </Paper>
                                 )
                             })}
-                                
-                        </>
                     </Paper>
                 </Grid>
                 </Grow>

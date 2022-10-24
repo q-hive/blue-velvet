@@ -76,7 +76,6 @@ export const Dashboard = () => {
         .catch((err) =>{
             console.log(err)
         })
-        console.log("containers final",containers)
         
     }, [])
 
