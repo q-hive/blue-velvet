@@ -38,7 +38,7 @@ export const tasksCicleObj = {
         //    "workingOrders": "", 
         //    "breaks": "", 
         // },
-        "ready": {...taskPerformanceModel, name:"Packaging"},
+        "ready": {...taskPerformanceModel, name:"Delivery"},
         "cleaning": {...taskPerformanceModel, name:"Cleaning"},
         "mats":{...taskPerformanceModel, name:"Mats"},
     },

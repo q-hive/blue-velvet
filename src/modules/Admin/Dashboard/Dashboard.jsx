@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 
 //*MUI COMPONENTS
-import { Box, Button, Container, Grid, Paper, Stack, Typography, useTheme, LinearProgress} from '@mui/material'
+import { Box, Button, Container, Grid, Paper, Stack, Typography, useTheme, LinearProgress, Grow, Fade} from '@mui/material'
 
 //*ROUTER
 import { navigate } from '../../../utils/router'
@@ -76,13 +76,13 @@ export const Dashboard = () => {
         .catch((err) =>{
             console.log(err)
         })
-        console.log("containers final",containers)
         
     }, [])
 
     
   return (
     <>
+    <Fade in={true} timeout={1000} unmountOnExit>
     <Box component="div" display="flex"  >
 
         <Container maxWidth="lg" sx={{paddingTop:4,paddingBottom:4,marginX:{xs:4,md:"auto"},marginTop:{xs:4,md:3}}}>
@@ -93,76 +93,84 @@ export const Dashboard = () => {
             <Grid container spacing={3} marginTop={3}>
 
                 {/* Tasks */}
-                <Grid item xs={12} md={4} lg={4}>
-                    <Paper sx={fixedHeightPaper}>
-                        <Typography variant="h6" color="secondary">Tasks</Typography>
-                        <Box sx={{display:"flex",flexDirection:"column", }}>
+                <Grow in={true} timeout={2000} unmountOnExit>
+                    <Grid item xs={12} md={4} lg={4}>
+                        <Paper elevation={4} sx={fixedHeightPaper}>
+                            <Typography variant="h6" color="secondary">Tasks</Typography>
+                            <Box sx={{display:"flex",flexDirection:"column", }}>
 
-                            
-                        </Box> 
-                    </Paper>
-                </Grid>
+                                
+                            </Box> 
+                        </Paper>
+                    </Grid>
+                </Grow>
 
                 {/* Capacity */}
-                <Grid item xs={12} md={4} lg={4}>
-                    <Paper sx={fixedHeightPaper}>
-                        <Typography variant="h6" color="secondary">Containers' capacity</Typography>
-                        <Box sx={{display:"flex",flexDirection:"column", }}>
+                
+                <Grow in={true} timeout={2000} unmountOnExit>
+                    <Grid item xs={12} md={4} lg={4}>
+                        <Paper elevation={4} sx={fixedHeightPaper}>
+                            <Typography variant="h6" color="secondary">Containers' capacity</Typography>
+                            <Box sx={{display:"flex",flexDirection:"column", }}>
 
-                            {containers.map((container,index) => { return(
-                                    <Paper key={index} variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"3px",paddingX:"2px",marginTop:"2vh",display:"flex", flexDirection:"row"}}>
-                                        <Typography sx={{width:"98%"}}>
-                                            {container.name}:<br/><b>Max: </b>{container.capacity}<b> Used: </b>{container.available}{" "}<LinearProgress sx={{height:"3vh"}} variant="determinate" value={(container.used * 100) / container.capacity} />
-                                        </Typography>
-                                        {/*<Button variant="contained" sx={{width:"34%"}} onClick={()=>handleViewTask(task.type)} color="primary" >
-                                            View
-                                        </Button>*/}
-                                    </Paper>
-                                                                        
-                                )
-                            })}
-                        </Box> 
+                                {containers.map((container,index) => { return(
+                                        <Paper key={index} variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"3px",paddingX:"2px",marginTop:"2vh",display:"flex", flexDirection:"row"}}>
+                                            <Typography sx={{width:"98%"}}>
+                                                {container.name}:<br/><b>Max: </b>{container.capacity}<b> Used: </b>{container.available}{" "}<LinearProgress sx={{height:"3vh"}} variant="determinate" value={(container.used * 100) / container.capacity} />
+                                            </Typography>
+                                            {/*<Button variant="contained" sx={{width:"34%"}} onClick={()=>handleViewTask(task.type)} color="primary" >
+                                                View
+                                            </Button>*/}
+                                        </Paper>
+                                                                            
+                                    )
+                                })}
+                            </Box> 
+                                
                             
-                        
-                        
-                    </Paper>
-                </Grid>
+                            
+                        </Paper>
+                    </Grid>
+                </Grow>
 
                 {/* Employee Performance */}
-                <Grid item xs={12} md={4}>
-                    <Paper sx={{...fixedHeightPaper,height:400,
-                        "& .header-sales-table":{
-                            backgroundColor:BV_THEME.palette.primary.main,
-                            color:"white"
-                        }}}>
-                        <Typography variant="h6" color="secondary">Employee Performance</Typography>
-                        <DataGrid
-                        columns={[{
-                            field:"col1",
-                            headerName:"Employee",
-                            headerAlign:"center",
-                            align:"center",
-                            headerClassName:"header-sales-table",
-                            minWidth:{xs:"25%",md:130},
-                            flex:1
-                        },{
-                            field:"col2",
-                            headerName:"Performance rate",
-                            headerAlign:"center",
-                            align:"center",
-                            headerClassName:"header-sales-table",
-                            minWidth:{xs:"25%",md:130},
-                            flex:1
-                        },]}
-                        rows={rows}
-                        sx={{marginY:"2vh",}}>
-                        </DataGrid>
-                        
-                    </Paper>
-                </Grid>
+                <Grow in={true} timeout={2000} unmountOnExit>
+                    <Grid item xs={12} md={4}>
+                        <Paper elevation={4} sx={{...fixedHeightPaper,height:400,
+                            "& .header-sales-table":{
+                                backgroundColor:BV_THEME.palette.primary.main,
+                                color:"white"
+                            }}}>
+                            <Typography variant="h6" color="secondary">Employee Performance</Typography>
+                            <DataGrid
+                            columns={[{
+                                field:"col1",
+                                headerName:"Employee",
+                                headerAlign:"center",
+                                align:"center",
+                                headerClassName:"header-sales-table",
+                                minWidth:{xs:"25%",md:130},
+                                flex:1
+                            },{
+                                field:"col2",
+                                headerName:"Performance rate",
+                                headerAlign:"center",
+                                align:"center",
+                                headerClassName:"header-sales-table",
+                                minWidth:{xs:"25%",md:130},
+                                flex:1
+                            },]}
+                            rows={rows}
+                            sx={{marginY:"2vh",}}>
+                            </DataGrid>
+                            
+                        </Paper>
+                    </Grid>
+                </Grow>
             </Grid>
         </Container>
     </Box>
+    </Fade>
     
     
     

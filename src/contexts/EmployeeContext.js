@@ -7,9 +7,9 @@ const WorkingContextWrapper = ({children}) => {
     const [WorkContext, setWorkContext] = useState(JSON.parse(window.localStorage.getItem("WorkContext")) || tasksCicleObj)
     const [employeeIsWorking, setEmployeeIsWorking] = useState(JSON.parse(window.localStorage.getItem("isWorking")) || false)
 
-    // useEffect(() => {
-    //     window.localStorage.setItem("WorkContext", JSON.stringify(WorkContext))
-    // }, [WorkContext])
+    useEffect(() => {
+        window.localStorage.setItem("WorkContext", JSON.stringify(WorkContext))
+    }, [WorkContext])
     return(
         <WorkingContext.Provider value={{TrackWorkModel, WorkContext, setWorkContext, employeeIsWorking, setEmployeeIsWorking}}>
             {children}
