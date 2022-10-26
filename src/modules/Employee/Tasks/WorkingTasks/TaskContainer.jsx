@@ -301,16 +301,15 @@ export const TaskContainer = (props) => {
         }
         updateProduction()
         .then((result) => {
-        
+            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved = Date.now() - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].started 
+            WorkContext.current = WorkContext.current + 1 
+            props.setSnack({...props.snack, open:true, message:"Production updated succesfully", status:"success"})
+            props.setFinished({value:true,counter:props.counter+1});
+            setIsFinished(true)
         })
         .catch(err => {
-        
+            props.setSnack({...props.snack, open:true, message:"Error updating production, please finish the task again.", status:"error"})
         })
-        WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved = Date.now() - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].started 
-        WorkContext.current = WorkContext.current + 1 
-        props.setSnack({...props.snack, open:true, message:"Production updated succesfully", status:"success"})
-        props.setFinished({value:true,counter:props.counter+1});
-        setIsFinished(true)
     }
 
 
