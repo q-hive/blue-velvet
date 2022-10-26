@@ -37,14 +37,10 @@ export const FullChamber = () => {
     //*CONTEXTS
     const {user, credential} = useAuth()
     const {TrackWorkModel, WorkContext, setWorkContext, employeeIsWorking} = useWorkingContext()
-    const contextValidation = () => {
-        return (employeeIsWorking) && (WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved !== undefined)
-    }
-    const step = WorkContext.current || 0
 
     
     //*render states
-    const [canSeeNextTask,setCanSeeNexttask] = useState({value:contextValidation(),counter:step})
+    const [canSeeNextTask,setCanSeeNexttask] = useState({value:false,counter:0})
     const [snack, setSnack] = useState({
         open:false,
         state:"",
@@ -104,18 +100,15 @@ export const FullChamber = () => {
 
     {/* The keys of this object will allow us to generate a tasks by status */}
     const carouselChange = (index,element) => {
-        console.log(":Carrousel changing")
-        if(index < canSeeNextTask.counter){
-            WorkContext.currentRender = index
-            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].stopped = Date.now()
-            setCanSeeNexttask({...canSeeNextTask,value:true})
-            return
-        }
-        
-        const nextTask = Object.keys(WorkContext.cicle)[index]
-        
-        if(WorkContext.cicle[nextTask].started === undefined){
+        // setWorkContext({
+        //     ...WorkContext,
+        //     current:index
+        // })
+        WorkContext.current = index
+        if(WorkContext.cicle[Object.keys(WorkContext.cicle)[index]].started === undefined){
             console.log("Started time in " + Object.keys(WorkContext.cicle)[index] + " is undefined")
+            // WorkContext.cicle[Object.keys(WorkContext.cicle)[index]].started = Date.now()
+            
             setWorkContext({...WorkContext, cicle: {
                 ...WorkContext.cicle,
                 [Object.keys(WorkContext.cicle)[index]]:{
@@ -124,8 +117,11 @@ export const FullChamber = () => {
                 }
             }})
         }
-        WorkContext.current = index
-        WorkContext.currentRender = index
+        if(index < canSeeNextTask.counter){
+            setCanSeeNexttask({...canSeeNextTask,value:true})
+            return
+        }
+        
         setCanSeeNexttask({...canSeeNextTask,value:false})
     }
 
@@ -133,56 +129,27 @@ export const FullChamber = () => {
             position: 'absolute',
             zIndex: 2,
             top:{xs:"80%", md:'calc(95% - 15px)'}
-    }
+        }
 
-    const arrowNext = (onClickHandler) =>{
-        const handleClick = () => {
-            const currentTask = WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext?.currentRender ?? WorkContext.current]]
-            if(currentTask !== undefined && currentTask?.achieved !== undefined){
-                onClickHandler()
-                return
-            }
-            
-            setSnack({...snack, open:true, status:"warning", message:"You havent finished the task." })
-        }
-        
-        
-        return (
-            <Button 
-            disabled={!canSeeNextTask.value} 
-            variant="contained" 
-            onClick={handleClick} 
-            title={"next task"} 
-            sx={()=>({...carouselButtonSX,right:"5%"})}
-            >
-                Next Task
-            </Button>
-        )
+    const arrowNext = (onClickHandler, hasNext, label) =>
+    hasNext && (
+        <Button disabled={false/*canSeeNextTask.value == false*/} variant="contained" onClick={onClickHandler} title={"next task"} 
+                sx={()=>({...carouselButtonSX,right:"5%"})}>
+            {"Next Task"}
+        </Button>
+    )
     
-    }
-    
-    
-    const arrowPrev = (onClickHandler, hasPrev, label) => {
-        const handleClick = () => {
-            onClickHandler()
-        }
-        
-        if(!hasPrev){
-            return null
-        }
-        
-        return (
-            <Button 
-            variant="contained" 
-            onClick={handleClick} 
-            title={"previous task"} 
-            sx={()=>({...carouselButtonSX,left:{xs:"5%", md:"5%"}})}
-            >
-                Prev Task
-            </Button>
-        )
-    }
-    
+    const arrowPrev = (onClickHandler, hasPrev, label) =>
+    hasPrev && (
+        <Button 
+        variant="contained" 
+        onClick={onClickHandler} 
+        title={"previous task"} 
+        sx={()=>({...carouselButtonSX,left:{xs:"5%", md:"5%"}})}
+        >
+            Prev Task
+        </Button>
+    )
 
     const updateEmployeePerformance = (expected, real) => {
         //*EMPLOYEE PERFORMANCE = container capacity (real/expected)
@@ -210,18 +177,17 @@ export const FullChamber = () => {
 
     useEffect(() => {
         return () => {
-            console.log("Full chamber unmount, set local storage context")
-            setWorkContext((wrkctx) => {
+            setWorkContext(() => {
                 return (
                     {
-                        ...wrkctx, 
+                        ...WorkContext, 
                         cicle: {
-                            ...wrkctx.cicle,
-                            [Object.keys(wrkctx.cicle)[wrkctx.current]]:{
-                                ...wrkctx.cicle[Object.keys(wrkctx.cicle)[wrkctx.current]],
+                            ...WorkContext.cicle,
+                            [Object.keys(WorkContext.cicle)[WorkContext.current]]:{
+                                ...WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]],
                                 stopped: Date.now()
                             }
-                        },
+                        }
                     }
                 )
             }
