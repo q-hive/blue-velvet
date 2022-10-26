@@ -280,55 +280,17 @@ export const TaskContainer = (props) => {
 
     //Finish Task
     const handleCompleteTask = () => {
-        const updateTask = () => {
-            let path = {path:"status", value:undefined}
-            let response
-            // switch(type){
-            //     case "seeding":
-            //         //*  ->Growing
-            //         response = await api.api.patch(`${api.apiVersion}/orders/${order._id}`, {paths:[{...path, value:"growing"}]}, {
-            //             headers:{
-            //                 authorization: credential._tokenResponse.idToken,
-            //                 user:          user
-            //             }
-            //         })
-            //         return response
-            //     case "harvesting":
-            //         //*  ->Harvested
-            //         response = await api.api.patch(`${api.apiVersion}/orders/${order._id}`, {paths:[{...path, value:"harvested"}]}, {
-            //             headers:{
-            //                 authorization: credential._tokenResponse.idToken,
-            //                 user:          user
-            //             }
-            //         })
-            //         return response
-            //     case "packing":
-            //         //*  ->ready
-            //         response = await api.api.patch(`${api.apiVersion}/orders/${order._id}`, {paths:[{...path, value:"ready"}]}, {
-            //             headers:{
-            //                 authorization: credential._tokenResponse.idToken,
-            //                 user:          user
-            //             }
-            //         })
-            //         return response
-            //     case "ready":
-            //         //*  ->delivered
-            //         response = await api.api.patch(`${api.apiVersion}/orders/${order._id}`, {paths:[{...path, value:"delivered"}]}, {
-            //             headers:{
-            //                 authorization: credential._tokenResponse.idToken,
-            //                 user:          user
-            //             }
-            //         })
-            //         return response
-            //     default:
-            //         response = ""
-            //         return response
-            // }
+        const updateProduction =  () => {
+            //*Update orders to growing status and request worker service for growing monitoring.
+            if(WorkContext.current === 0){
+                console.log(WorkContext.cicle)
+            }
             return
         }
+        updateProduction()
         WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved = Date.now() - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].started 
         WorkContext.current = WorkContext.current + 1 
-        props.setSnack({...props.snack, open:true, message:"Task updated succesfully", status:"success"})
+        props.setSnack({...props.snack, open:true, message:"Production updated succesfully", status:"success"})
         props.setFinished({value:true,counter:props.counter+1});
         setIsFinished(true)
     }

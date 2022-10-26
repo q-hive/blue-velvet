@@ -2,6 +2,7 @@ export const globalTimeModel = {
     "workDay": new Date(),
     "started": undefined,
     "finished": undefined,
+    "expected": undefined,
     "breaks": [],
     "tasks": []
 }
