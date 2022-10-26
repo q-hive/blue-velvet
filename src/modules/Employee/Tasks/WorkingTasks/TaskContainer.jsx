@@ -10,7 +10,7 @@ import {
 //*THEME
 import { BV_THEME } from '../../../../theme/BV-theme'
 //*NETWORK AND API
-import { useLocation, useNavigate } from 'react-router-dom'
+import { json, useLocation, useNavigate } from 'react-router-dom'
 import useAuth from '../../../../contextHooks/useAuthContext'
 
 import api from '../../../../axios.js'
@@ -280,14 +280,32 @@ export const TaskContainer = (props) => {
 
     //Finish Task
     const handleCompleteTask = () => {
-        const updateProduction =  () => {
+        const updateProduction = async () => {
             //*Update orders to growing status and request worker service for growing monitoring.
             if(WorkContext.current === 0){
                 console.log(WorkContext.cicle)
+                const updateToGrowing = await api.api.post(`${api.apiVersion}/work/production/growing`,
+                {
+                    workData: json.parse(window.localStorage.getItem("workData"))  
+                }, 
+                {
+                    headers: {
+                        authorization: credential._tokenResponse.idToken,
+                        user: user
+                    }
+                })
+
+                return updateToGrowing
             }
             return
         }
         updateProduction()
+        .then((result) => {
+        
+        })
+        .catch(err => {
+        
+        })
         WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved = Date.now() - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].started 
         WorkContext.current = WorkContext.current + 1 
         props.setSnack({...props.snack, open:true, message:"Production updated succesfully", status:"success"})
