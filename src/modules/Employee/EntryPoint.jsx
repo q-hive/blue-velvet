@@ -42,7 +42,7 @@ export const EntryPoint = () => {
     
     //*contexts
     const {user, credential} = useAuth()
-    const {TrackWorkModel, WorkContext ,setWorkContext, employeeIsWorking, setEmployeeIsWorking} = useWorkingContext() 
+    const {TrackWorkModel, setTrackWorkModel,WorkContext ,setWorkContext, employeeIsWorking, setEmployeeIsWorking} = useWorkingContext() 
     const navigate = useNavigate()
     
     //*DATA STATES
@@ -87,11 +87,7 @@ export const EntryPoint = () => {
                 startWorkBtn: true
             })
             setSnackState({open:true, label:"Initializing workday", severity:"warning"})
-    
-            //*Update workdays of employee
-            TrackWorkModel.started = Date.now()
-            //*SET THE TRACKMODEL IN LOCALSTORAGE
-            window.localStorage.setItem("TrackWorkModel", JSON.stringify(TrackWorkModel))
+
             const request = await api.api.patch(`${api.apiVersion}/work/performance/${user._id}`,{performance:[{query:"add",workdays:1}]}, {
                 headers: {
                     authorization:credential._tokenResponse.idToken,
@@ -101,7 +97,7 @@ export const EntryPoint = () => {
             return request
         }
         
-        console.log('Cannot update days')
+       
         return 0
     }
 
@@ -186,6 +182,26 @@ export const EntryPoint = () => {
         return apiResponse.data.data
     }
 
+    const setWorkingContext = (workDataModel) => {
+        //*Employee started working identification
+        setEmployeeIsWorking(true)
+
+        setTrackWorkModel({
+            ...TrackWorkModel,
+            started:Date.now(),
+            expected:estimatedTime
+        }) 
+        
+        //*Production data
+        window.localStorage.setItem("workData", JSON.stringify(workDataModel))
+        
+        Object.keys(WorkContext.cicle).forEach((value,index) => {
+            WorkContext.cicle[value].production = workDataModel.production
+        })
+        WorkContext.cicle[Object.keys(WorkContext.cicle)[0]].started = Date.now()
+        window.localStorage.setItem("WorkContext", JSON.stringify(WorkContext))
+    }
+
     const handleWorkButton = (finish = false) => {
         
         if(finish) {
@@ -229,12 +245,8 @@ export const EntryPoint = () => {
             getWorkData()
             .then((workData) => {
                 setSnackState({open:false})
-                
-                setEmployeeIsWorking(true)
-                WorkContext.cicle[Object.keys(WorkContext.cicle)[0]].started = Date.now()
-                window.localStorage.setItem("isWorking", "true")
-                window.localStorage.setItem("workData", JSON.stringify(workData))
-                window.localStorage.setItem("WorkContext", JSON.stringify(WorkContext))
+                //*Working context
+                setWorkingContext(workData)
                 
                 navigate('./../tasks/work',
                     {state: {

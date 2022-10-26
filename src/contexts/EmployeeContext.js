@@ -10,8 +10,17 @@ const WorkingContextWrapper = ({children}) => {
     useEffect(() => {
         window.localStorage.setItem("WorkContext", JSON.stringify(WorkContext))
     }, [WorkContext])
+
+    useEffect(() => {
+        window.localStorage.setItem("isWorking", `${employeeIsWorking}`)
+    }, [employeeIsWorking])
+
+    useEffect(() => {
+        //*SET THE TRACKMODEL IN LOCALSTORAGE
+        window.localStorage.setItem("TrackWorkModel", JSON.stringify(TrackWorkModel))
+    }, [TrackWorkModel])
     return(
-        <WorkingContext.Provider value={{TrackWorkModel, WorkContext, setWorkContext, employeeIsWorking, setEmployeeIsWorking}}>
+        <WorkingContext.Provider value={{TrackWorkModel,setTrackWorkModel, WorkContext, setWorkContext, employeeIsWorking, setEmployeeIsWorking}}>
             {children}
         </WorkingContext.Provider>
     )
