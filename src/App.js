@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react'
 
 //*Router
-import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
+import {BrowserRouter as Router, Routes, Route, Navigate, } from 'react-router-dom'
 import history from './history.js'
+
+import {ErrorBoundary} from 'react-error-boundary'
 
 //*Contexts
 import { AuthContext } from './contexts/AuthContext'
@@ -12,6 +14,7 @@ import { Login } from './CoreComponents/Login/Login'
 import { PrivateRoutes } from './CoreComponents/PrivateRoutes'
 import { AppRoutes } from './routes.js'
 import { WorkingContextWrapper } from './contexts/EmployeeContext.js'
+import { ErrorPage } from './CoreComponents/ErrorPage.jsx'
 
 export const App = () => {
 
@@ -32,9 +35,11 @@ export const App = () => {
                                     {
                                         val.path.split('/').includes('employee')
                                         ?
+                                        <ErrorBoundary FallbackComponent={ErrorPage}>
                                         <WorkingContextWrapper>
                                             {val.component}
                                         </WorkingContextWrapper>
+                                        </ErrorBoundary>
                                         :
                                         val.component
                                         
