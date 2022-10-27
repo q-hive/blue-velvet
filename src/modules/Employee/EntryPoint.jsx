@@ -275,8 +275,12 @@ export const EntryPoint = () => {
         const dflt = "seeding"
         
         const statusObj = {
-            "seeding": "seeding",
-            "harvestReady": "harvest"
+            "seeding":"seeding",
+            "harvestReady": "harvest",
+            "mats":"cut Mats",
+            "growing":"growing",
+            "cleaning":"cleaning",
+            "ready":"delivery"
         }
 
         return statusObj[`${status?? dflt}`]
@@ -404,7 +408,7 @@ export const EntryPoint = () => {
                 <Grid item xs={12} md={4} lg={4}>
                     <Paper elevation={4} sx={fixedHeightPaper}>
                         <Typography variant="h6" color="secondary">Tasks</Typography>
-                            {Object.keys(allStatusesObj).map((status,index)=>{ 
+                            {Object.keys(WorkContext.cicle).map((status,index)=>{ 
                                 return(
                                     <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
                                         <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
@@ -412,7 +416,11 @@ export const EntryPoint = () => {
                                                 <b>Task: {capitalize(getKey(status))}</b>
                                             </Typography>
                                             <Typography >
-                                                <i>Expected Time: {estimatedTime?.times[getKey(status)].time.toFixed(2)}</i>
+                                                <i>Expected Time: {(getKey(status)==="seeding" || getKey(status)==="harvest") ? 
+                                                    estimatedTime.times ? 
+                                                        estimatedTime.times[getKey(status)].time.toFixed(2) 
+                                                    : "getting" 
+                                                :"TBD"} </i>
                                             </Typography>
                                         </Box>
                                     </Paper>
