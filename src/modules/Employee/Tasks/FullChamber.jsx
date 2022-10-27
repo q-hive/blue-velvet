@@ -164,6 +164,9 @@ export const FullChamber = () => {
         console.log("TWM",TrackWorkModel)
         console.log("workcontxt",WorkContext)
         // TrackWorkModel.breaks.push(este break)
+        let started= new Date()
+        
+
         
         setDialog({
             ...dialog,
@@ -173,7 +176,11 @@ export const FullChamber = () => {
             actions: [
                 {
                     label:"Continue Working",
-                    execute: () => setDialog({...dialog,open:false})
+                    execute: () => {
+                        let finished = new Date()
+                        let elapsed = finished - started
+                        WorkContext.cicle[cycleKeys[WorkContext.current]].breaks.push({task:cycleKeys[WorkContext.current],started:started,finished:finished,elapsed:elapsed})
+                        setDialog({...dialog,open:false})}
                 },
             ]
         })
