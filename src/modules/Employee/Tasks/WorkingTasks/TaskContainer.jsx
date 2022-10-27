@@ -281,12 +281,13 @@ export const TaskContainer = (props) => {
     //Finish Task
     const handleCompleteTask = () => {
         const updateProduction = async () => {
+            let wd = JSON.parse(window.localStorage.getItem("workData"))
             //*Update orders to growing status and request worker service for growing monitoring.
-            if(WorkContext.current === 0){
+            if(WorkContext.current == 0){
                 console.log(WorkContext.cicle)
                 const updateToGrowing = await api.api.post(`${api.apiVersion}/work/production/growing`,
                 {
-                    workData: json.parse(window.localStorage.getItem("workData"))  
+                    workData: wd.production 
                 }, 
                 {
                     headers: {
@@ -301,10 +302,10 @@ export const TaskContainer = (props) => {
         }
         updateProduction()
         .then((result) => {
-            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved = Date.now() - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].started 
-            WorkContext.current = WorkContext.current + 1 
+            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved = Date.now() - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].started
             props.setSnack({...props.snack, open:true, message:"Production updated succesfully", status:"success"})
             props.setFinished({value:true,counter:props.counter+1});
+            WorkContext.current = WorkContext.current + 1 
             setIsFinished(true)
         })
         .catch(err => {
