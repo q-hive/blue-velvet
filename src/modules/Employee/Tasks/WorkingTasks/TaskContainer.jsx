@@ -309,6 +309,7 @@ export const TaskContainer = (props) => {
             setIsFinished(true)
         })
         .catch(err => {
+            console.log(err)
             props.setSnack({...props.snack, open:true, message:"Error updating production, please finish the task again.", status:"error"})
         })
     }
