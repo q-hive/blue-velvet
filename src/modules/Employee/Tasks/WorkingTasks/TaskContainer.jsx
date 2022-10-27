@@ -286,7 +286,7 @@ export const TaskContainer = (props) => {
             if(WorkContext.current === 0){
                 const updateToGrowing = await api.api.post(`${api.apiVersion}/work/production/growing`,
                 {
-                    workData: JSON.parse(window.localStorage.getItem("workData")).production  
+                    workData: json.parse(window.localStorage.getItem("workData")).production  
                 }, 
                 {
                     headers: {
@@ -308,7 +308,7 @@ export const TaskContainer = (props) => {
             setIsFinished(true)
         })
         .catch(err => {
-            console.log(err)
+            console.log()
             props.setSnack({...props.snack, open:true, message:"Error updating production, please finish the task again.", status:"error"})
         })
     }
