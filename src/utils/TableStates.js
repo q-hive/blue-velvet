@@ -105,6 +105,15 @@ export const productsColumns = [
         flex:1
     },
     {
+        field:"performance",
+        headerClassName:"header-products-table",
+        headerAlign:"center",
+        align:"center",
+        headerName:"Performance",
+        minWidth:150,
+        flex:1,
+    },
+    {
         field:"actions",
         headerClassName:"header-products-table",
         headerAlign:"center",
@@ -819,6 +828,15 @@ export const CustomerColumns = [
     {
         field:"sales",
         headerName: "$ Sales",
+        headerAlign: "center",
+        align:"center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1
+    },
+    {
+        field:"monthlySales",
+        headerName: "$ This Month's Sales",
         headerAlign: "center",
         align:"center",
         headerClassName:"header-sales-table",

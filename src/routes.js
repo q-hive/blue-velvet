@@ -11,7 +11,7 @@ import { EmployeeIndex } from "./modules/Admin/Employee/EmployeeIndex";
 import { NewEmployee } from "./modules/Admin/Employee/NewEmployee";
 
 //*Employee
-import { ContainerEmployeeComponent } from "./modules/Employee/Start";
+import { Profile } from "./modules/Employee/EmployeeProfile";
 import { EntryPoint } from "./modules/Employee/EntryPoint";
 import { FullChamber } from "./modules/Employee/Tasks/FullChamber";
 
@@ -80,12 +80,12 @@ export const AppRoutes  = [
         component:<EntryPoint/>
     },
     {
-        path:"/:uid/employee/dashboard/taskTest",
-        component:<TaskContainer/>
+        path:"/:uid/employee/profile",
+        component:<Profile/>
     },
     {
-        path:"/:uid/employee/home",
-        component:<ContainerEmployeeComponent/>
+        path:"/:uid/employee/dashboard/taskTest",
+        component:<TaskContainer/>
     },
     {
         path:"/:uid/employee/production",

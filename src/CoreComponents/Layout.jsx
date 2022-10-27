@@ -51,14 +51,9 @@ const BV_Layout = (props) => {
 
     const handleRedirect = (e) => {
       console.log(user.role)
-      
       navigate(`/${user.uid}/${user.role}/${e.target.id}`)
     }
 
-  const handleShowTask = (e) => {
-    //Should redirect to a page section, but router doesn't support it. Looking for Alternatives
-    navigate(`/${user.uid}/employee/tasks/${e.target.id}`)
-  }
     const { window } = props;
     const [mobileOpen, setMobileOpen] = React.useState(false);
   
@@ -73,15 +68,6 @@ const BV_Layout = (props) => {
     };
     const handleCloseUserMenu = () => {
       setAnchorElUser(null);
-    };
-
-    const handleFinishTask = () => {
-
-      console.log("task finished");
-    };
-    
-    const handleSeeAllTasks = () => {
-        navigate(`/${user.uid}/employee/tasks`)
     };
 
     //Admin Options Drawer buttons content (label and Icon)
@@ -124,15 +110,7 @@ const BV_Layout = (props) => {
     const userSettings = [
                     {
                       label:  'Profile',
-                      action: () => console.log("Unavailable") 
-                    },
-                    {
-                      label:  'Account',
-                      action: () => console.log("Unavailable") 
-                    },
-                    {
-                      label:  'Dashboard',
-                      action: () => console.log("Unavailable") 
+                      action: () => navigate(`/${user.uid}/${user.role}/profile`) 
                     },
                     {
                       label:  'Logout',
@@ -225,7 +203,7 @@ const BV_Layout = (props) => {
                         />
                       </Box>
                       
-                      <Clock/>
+                      <Clock color="secondary.dark"/> 
                       
                       <IconButton
                         size="large" edge={false}
@@ -238,7 +216,7 @@ const BV_Layout = (props) => {
                       <Box sx={{ flexGrow: 0 }}>
                         <Tooltip title="Open settings">
                           <IconButton edge={false} onClick={handleOpenUserMenu} sx={{ p: 0 , m: 2}}>
-                            <Avatar alt="test admin" src="/static/images/avatar/2.jpg" />
+                            <Avatar alt="Cockpit User" src="/static/images/avatar/2.jpg" />
                           </IconButton>
                         </Tooltip>
                         <Menu

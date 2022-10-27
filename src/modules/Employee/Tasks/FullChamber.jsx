@@ -53,6 +53,9 @@ export const FullChamber = () => {
         actions:    []
     })
 
+    const cycleKeys = Object.keys(WorkContext.cicle)
+    console.log("cicle arr",cycleKeys)
+
 
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
@@ -105,14 +108,15 @@ export const FullChamber = () => {
         //     current:index
         // })
         WorkContext.current = index
-        if(WorkContext.cicle[Object.keys(WorkContext.cicle)[index]].started === undefined){
-            console.log("Started time in " + Object.keys(WorkContext.cicle)[index] + " is undefined")
+        console.log("wc1",WorkContext)
+        if(WorkContext.cicle[cycleKeys[index]].started === undefined){
+            console.log("Started time in " + cycleKeys[index] + " is undefined")
             // WorkContext.cicle[Object.keys(WorkContext.cicle)[index]].started = Date.now()
             
             setWorkContext({...WorkContext, cicle: {
                 ...WorkContext.cicle,
                 [Object.keys(WorkContext.cicle)[index]]:{
-                    ...WorkContext.cicle[Object.keys(WorkContext.cicle)[index]],
+                    ...WorkContext.cicle[cycleKeys[index]],
                     started: Date.now()
                 }
             }})
@@ -157,9 +161,13 @@ export const FullChamber = () => {
     }
 
     const handleBreaks = () => {
-        console.log(TrackWorkModel)
-        console.log(WorkContext)
+        console.log("TWM",TrackWorkModel)
+        console.log("workcontxt",WorkContext)
         // TrackWorkModel.breaks.push(este break)
+        let started= new Date()
+        
+
+        
         setDialog({
             ...dialog,
             open:true,
@@ -168,7 +176,11 @@ export const FullChamber = () => {
             actions: [
                 {
                     label:"Continue Working",
-                    execute: () => setDialog({...dialog,open:false})
+                    execute: () => {
+                        let finished = new Date()
+                        let elapsed = finished - started
+                        WorkContext.cicle[cycleKeys[WorkContext.current]].breaks.push({task:cycleKeys[WorkContext.current],started:started,finished:finished,elapsed:elapsed})
+                        setDialog({...dialog,open:false})}
                 },
             ]
         })
@@ -183,8 +195,8 @@ export const FullChamber = () => {
                         ...WorkContext, 
                         cicle: {
                             ...WorkContext.cicle,
-                            [Object.keys(WorkContext.cicle)[WorkContext.current]]:{
-                                ...WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]],
+                            [cycleKeys[WorkContext.current]]:{
+                                ...WorkContext.cicle[cycleKeys[WorkContext.current]],
                                 stopped: Date.now()
                             }
                         }
@@ -210,7 +222,8 @@ export const FullChamber = () => {
         selectedItem={employeeIsWorking ? WorkContext.current : canSeeNextTask.counter}
         onChange={carouselChange}
     >
-        {Object.keys(tasksCicleObj.cicle).map((status,index)=>{ 
+        {cycleKeys.map((status,index)=>{
+            console.log("ciclo mapeado", status) 
             return( 
                 <Fade in={true} timeout={2000} unmountOnExit>
                     <Box key={index} height="80vh" component={"div"}>

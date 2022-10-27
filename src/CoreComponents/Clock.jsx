@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import { Typography } from '@mui/material'
 import useInterval from './useInterval'
 
-export const Clock = ({withTimer}) => {
+export const Clock = ({withTimer,color}) => {
     const [time, setTime] = useState(new Date())
     
     function addZero(i) {
@@ -28,8 +28,8 @@ export const Clock = ({withTimer}) => {
         })
     },1000)
   return (
-    <Typography color="black">
-        {normalizeDate(time)}
+    <Typography color={color || "black"} >
+        <b><i>{normalizeDate(time)}</i></b>
     </Typography>
   )
 }
