@@ -283,10 +283,10 @@ export const TaskContainer = (props) => {
         const updateProduction = async () => {
             //*Update orders to growing status and request worker service for growing monitoring.
             if(WorkContext.current === 0){
-                console.log(WorkContext.cicle)
+                console.log(window.localStorage.getItem("workData"))
                 const updateToGrowing = await api.api.post(`${api.apiVersion}/work/production/growing`,
                 {
-                    workData: json.parse(window.localStorage.getItem("workData"))  
+                    workData: JSON.parse(window.localStorage.getItem("workData")).production  
                 }, 
                 {
                     headers: {
@@ -308,6 +308,7 @@ export const TaskContainer = (props) => {
             setIsFinished(true)
         })
         .catch(err => {
+            console.log(err)
             props.setSnack({...props.snack, open:true, message:"Error updating production, please finish the task again.", status:"error"})
         })
     }

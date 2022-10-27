@@ -173,6 +173,10 @@ export const EntryPoint = () => {
         return reduced
     }
     const getWorkData = async ()=> {
+        if(window.localStorage.getItem("workData")){
+            return window.localStorage.getItem("workData")
+        }
+        
         const apiResponse = await api.api.get(`${api.apiVersion}/work/production/634061756424d08c50e58841?container=633b2e0cd069d81c46a18033`,{
             headers:{
                 "authorization":    credential._tokenResponse.idToken,
