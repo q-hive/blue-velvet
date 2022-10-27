@@ -43,6 +43,7 @@ export const TaskContainer = (props) => {
     
     const {user, credential} = useAuth()
     const {WorkContext, employeeIsWorking} = useWorkingContext()
+    const contextCicleKeys = Object.keys(WorkContext.cicle)
     
     const {state} = useLocation();
 
@@ -264,9 +265,9 @@ export const TaskContainer = (props) => {
     }
 
 
-    if(WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved) {
+    if(WorkContext.cicle[contextCicleKeys[WorkContext.current]].achieved) {
         content = <div>Yo already finished the task.</div>
-        let haventFinishedActualTask = WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved === undefined
+        let haventFinishedActualTask = WorkContext.cicle[contextCicleKeys[WorkContext.current]].achieved === undefined
 
         
         
@@ -283,7 +284,6 @@ export const TaskContainer = (props) => {
         const updateProduction = async () => {
             //*Update orders to growing status and request worker service for growing monitoring.
             if(WorkContext.current === 0){
-                console.log(window.localStorage.getItem("workData"))
                 const updateToGrowing = await api.api.post(`${api.apiVersion}/work/production/growing`,
                 {
                     workData: JSON.parse(window.localStorage.getItem("workData")).production  
@@ -301,7 +301,7 @@ export const TaskContainer = (props) => {
         }
         updateProduction()
         .then((result) => {
-            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved = Date.now() - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].started 
+            WorkContext.cicle[contextCicleKeys[WorkContext.current]].achieved = Date.now() - WorkContext.cicle[contextCicleKeys[WorkContext.current]].started 
             WorkContext.current = WorkContext.current + 1 
             props.setSnack({...props.snack, open:true, message:"Production updated succesfully", status:"success"})
             props.setFinished({value:true,counter:props.counter+1});
@@ -391,7 +391,7 @@ export const TaskContainer = (props) => {
     }
 
     useEffect(() => {
-        if((WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved !== undefined) || WorkContext.cicle[Object.keys(WorkContext.cicle)[props.counter]].achieved !== undefined){
+        if((WorkContext.cicle[contextCicleKeys[WorkContext.current]].achieved !== undefined) || WorkContext.cicle[contextCicleKeys[props.counter]].achieved !== undefined){
             setIsFinished(() => true)
         }
 
