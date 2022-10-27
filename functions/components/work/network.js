@@ -1,6 +1,6 @@
 import express from 'express'
 import { error, success } from '../../network/response.js'
-import {getProductionWorkById, getWorkTimeByEmployee, parseProduction, setPerformance, updatePerformance} from './controller.js'
+import {getProductionWorkById, getWorkTimeByEmployee, parseProduction, setPerformance, updatePerformance, updateProductionByStatus} from './controller.js'
 
 
 const router = express.Router()
@@ -26,6 +26,17 @@ router.patch('/performance/:id', (req, res) => {
     })
 })
 
+
+router.post('/production/:status', (req, res) => {
+    //*Update products inn body based on status received in query param
+    updateProductionByStatus(req, res,req.body.workData.products)
+    .then((result) => {
+        success(req, res, 200, "Production updated succesfully", result)
+    })
+    .catch((err) => {
+        error(req, res, 500, "Error updating products by production data", err, err)
+    })
+})
 
 //*Response with an object containing estimated times for all tasks, calculated from the total production that needs to be executed
 router.get('/time/:id', (req, res) => {

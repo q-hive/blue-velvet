@@ -4,9 +4,27 @@ import Organization from '../../models/organization.js'
 import { getMongoQueryByObject } from '../../utils/getMongoQuery.js'
 import { getOrganizationById } from '../organization/store.js'
 import { getFilteredOrders } from '../orders/store.js'
-import { getProductById } from '../products/store.js'
+import { getProductById, updateProduct } from '../products/store.js'
 
 const orgModel = mongoose.model('organization', Organization)
+
+export const updateProductionByStatus = (req, res, production) => {
+    return new Promise((resolve, reject) => {
+        const updateByMapping = production.map(async(productionData, index) => {
+            const updateOp = await updateProduct(res.locals.organization, productionData.productData.prodId, "status", req.params.status)
+            return updateOp
+        })
+
+        Promise.all(updateByMapping)
+        .then((result) => {
+            resolve(result)
+        })
+        .catch(err => {
+            reject(err)
+        })
+    })
+    
+}
 /**
  *
  * @param {*} array

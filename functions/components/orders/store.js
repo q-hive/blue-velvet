@@ -234,7 +234,7 @@ export const createNewOrder = (orgId, order) => {
             })
 
             await orgModel.updateOne({_id:orgId,"containers.0.products":{"$elemMatch":{_id:product._id}}},{"$set":{
-                "containers.0.products.$.status":"production"
+                "containers.0.products.$.status":"seeding"
             }})
         
             return {
@@ -341,7 +341,6 @@ export const updateOrder = (org, orderId, body) => {
                     dbOrder[path] = value
                 })
 
-                
                 organization.save((err, doc) => {
                     if(err) reject(JSON.stringify({"message":"Error saving organization", "status": 500, "processError":err}))
 
