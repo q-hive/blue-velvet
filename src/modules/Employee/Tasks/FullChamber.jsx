@@ -103,11 +103,17 @@ export const FullChamber = () => {
 
     {/* The keys of this object will allow us to generate a tasks by status */}
     const carouselChange = (index,element) => {
-        WorkContext.current = index
-        if(WorkContext.cicle[cycleKeys[index]].started === undefined){
-            console.log("Started time in " + cycleKeys[index] + " is undefined")
-            // WorkContext.cicle[Object.keys(WorkContext.cicle)[index]].started = Date.now()
-            
+        if(index < canSeeNextTask.counter){
+            WorkContext.currentRender = index
+            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].stopped = Date.now()
+            setCanSeeNexttask({...canSeeNextTask,value:true})
+            return
+        }
+        
+        const nextTask = Object.keys(WorkContext.cicle)[index]
+        
+        if(WorkContext.cicle[nextTask].started === undefined){
+            console.log("Started time in " + Object.keys(WorkContext.cicle)[index] + " is undefined")
             setWorkContext({...WorkContext, cicle: {
                 ...WorkContext.cicle,
                 [Object.keys(WorkContext.cicle)[index]]:{
