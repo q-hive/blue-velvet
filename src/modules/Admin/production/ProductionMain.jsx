@@ -78,7 +78,7 @@ export const ProductionMain = () => {
     useEffect(() => {
         const requests = async () => {
             //*API SHOULD ACCEPT PARAMETERS IN ORDER TO GET THE MERGED DATA FROM ORDERS AND TASKS
-            const productsRequest = await api.api.get(`${api.apiVersion}/products/?orders&&tasks`, {
+            const productsRequest = await api.api.get(`${api.apiVersion}/products/?orders&tasks&performance`, {
                 headers:{
                     user:user,
                     authorization:credential._tokenResponse.idToken

@@ -15,7 +15,8 @@ import {
     insertManyProducts,
     updateProduct,
     deleteProduct,
-    createNewMix
+    createNewMix,
+    getProductById
 } from './store.js'
 import { getContainerById, updateContainerById } from '../container/store.js'
 
@@ -52,11 +53,16 @@ router.get('/', (req, res) => {
 })
 
 //*separated from all route because of network performance improvement
-//*! IF THE CLIENT REQUEST ALL PRODUCTS AND ITS RELATED TASKS AND ORDERS WE DONT WANT TO RECEIVE MANY REQUESTS IF THEY NEED THIS RELATION BE DONE WITH VARIOUS PRODUCTS, INSTEAD MAKE ONE REQUEST AND ASK FOR ALL THE RELATED DATA
 //*returns a specific product and if requested all its related tasks and orders
 router.get('/:id', (req, res) => {
     console.log(req.params)
-    success(req, res, 200, "Request succeded")
+    getProductById(res.locals.organization, req.query.container, req.params.id)
+    .then((result) => {
+        success(req, res, 200, "Products obtained succesfully", result)
+    })
+    .catch((err) => {
+        error(req, res, 500, "Error getting product", err, err)
+    })
 })
 
 router.post('/', (req, res) => {

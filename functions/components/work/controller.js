@@ -3,7 +3,7 @@ import { getEmployeeById } from "../employees/store.js"
 import Organization from '../../models/organization.js'
 import { getMongoQueryByObject } from '../../utils/getMongoQuery.js'
 import { getOrganizationById } from '../organization/store.js'
-import { getFilteredOrders } from '../orders/store.js'
+import { getFilteredOrders, updateOrder } from '../orders/store.js'
 import { getProductById, updateProduct } from '../products/store.js'
 
 const orgModel = mongoose.model('organization', Organization)
@@ -11,8 +11,10 @@ const orgModel = mongoose.model('organization', Organization)
 export const updateProductionByStatus = (req, res, production) => {
     return new Promise((resolve, reject) => {
         const updateByMapping = production.map(async(productionData, index) => {
-            const updateOp = await updateProduct(res.locals.organization, productionData.productData.prodId, "status", req.params.status)
-            return updateOp
+            const updateProductOp = await updateProduct(res.locals.organization, productionData.productData.prodId, "status", req.params.status)
+
+            const completeProdObj = await getProductById(res.locals.organization, "633b2e0cd069d81c46a18033", productionData.productData.prodId)
+            return {...productionData, productData: {...productionData.productData, ...completeProdObj.parameters}}
         })
 
         Promise.all(updateByMapping)

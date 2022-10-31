@@ -301,28 +301,30 @@ export const createNewOrder = (orgId, order) => {
 export const getOrdersByProd = (orgId, id) => {
     return new Promise(async (resolve, reject) => {
         // TODO: Corregir query
-        const org = await orgModel.findById(orgId)
+        const orgOrdersByProd = await orgModel.aggregate(
+            [
+                {
+                    "$match": {
+                        "_id": mongoose.Types.ObjectId(orgId),
+                        "orders.products._id": mongoose.Types.ObjectId(id)
+                    }
+                },
+                {
+                    "$unwind": "$orders"
+                },
+                {
+                    "$match": {
+                        "orders.products._id": mongoose.Types.ObjectId(id)
+                    }
+                },
+            ]
+        )
+        console.log(orgOrdersByProd.length)
+        const mapOrdersFromAggregation = orgOrdersByProd.map((orgModel) => {
+            return orgModel.orders 
+        }) 
 
-        if(!org){
-            return reject("No organization found")
-        }
-
-        const orders = org.orders
-        
-        if(!orders ||  orders.length == 0) {
-            return resolve(orders)
-        }
-
-        const orderByProd = orders.map((order) => {
-            const hasProd = order.products.find((prod) => prod._id.equals(id))
-            if(hasProd !== undefined && hasProd !== null){
-                return order
-            }
-
-            return false
-        })
-
-        resolve(orderByProd)
+        resolve(mapOrdersFromAggregation)
     })
 }
 
