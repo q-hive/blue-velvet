@@ -42,7 +42,7 @@ export const TaskContainer = (props) => {
     const theme = useTheme(BV_THEME);
     
     const {user, credential} = useAuth()
-    const {WorkContext, employeeIsWorking} = useWorkingContext()
+    const {TrackWorkModel, setTrackWorkModel, WorkContext, setWorkContext, employeeIsWorking} = useWorkingContext()
     
     const {state} = useLocation();
 
@@ -298,15 +298,57 @@ export const TaskContainer = (props) => {
 
                 return updateToGrowing
             }
+
+            switch (WorkContext.current) {
+                case 0: 
+                        const updateToGrowing = await api.api.post(`${api.apiVersion}/work/production/growing`,
+                        {
+                            workData: wd.production 
+                        }, 
+                        {
+                            headers: {
+                                authorization: credential._tokenResponse.idToken,
+                                user: user
+                            }
+                        })
+
+                        return updateToGrowing
+                case 2: 
+                        const updateToReady = await api.api.post(`${api.apiVersion}/work/production/ready`,
+                        {
+                            workData: wd.production 
+                        }, 
+                        {
+                            headers: {
+                                authorization: credential._tokenResponse.idToken,
+                                user: user
+                            }
+                        })
+
+                        return updateToReady
+
+            
+                default:
+                    break;
+            }
             return
         }
+
+
         updateProduction()
         .then((result) => {
-            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved = Date.now() - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].started
+
+            // hooks
+            let finished = Date.now()
+            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].finished = finished
+            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved =  finished - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].started
+            TrackWorkModel.tasks.push(WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]])
+            setTrackWorkModel({...TrackWorkModel, tasks:TrackWorkModel.tasks})
+            WorkContext.current = WorkContext.current + 1
+            setWorkContext({...WorkContext, current:WorkContext.current}) 
+            
             props.setSnack({...props.snack, open:true, message:"Production updated succesfully", status:"success"})
             props.setFinished({value:true,counter:props.counter+1});
-            WorkContext.current = WorkContext.current + 1 
-            setIsFinished(true)
         })
         .catch(err => {
             console.log(err)
