@@ -226,28 +226,6 @@ export const EntryPoint = () => {
         return finishedTasksArr
     }
 
-    const getAllBreaks = () => {
-        let breakAcum =[]
-        for(let i = 0; i < Object.keys(WorkContext.cicle).length ; i++){
-            WorkContext.cicle[Object.keys(WorkContext.cicle)[i]].breaks.length > 0 
-            ? 
-
-                
-                    breakAcum.concat(WorkContext.cicle[Object.keys(WorkContext.cicle)[i]].breaks)
-                    
-                   
-            :
-                null
-
-            console.log("break acummm",breakAcum)
-
-        }
-        console.log("break acum", breakAcum)
-        return breakAcum
-    }
-
-    getAllBreaks()
-
     const handleWorkButton = (finish = false) => {
         
         if(finish) {
@@ -288,7 +266,7 @@ export const EntryPoint = () => {
             return
         }
         
-        if(isOnTime && orders.length != 0){
+        if(isOnTime && orders.length != 0 && !employeeIsWorking){
             updateWorkDays()
             getWorkData()
             .then((workData) => {

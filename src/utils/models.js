@@ -43,6 +43,7 @@ export const tasksCicleObj = {
         "cleaning": {...taskPerformanceModel, name:"Cleaning"},
         "mats":{...taskPerformanceModel, name:"Mats"},
     },
-    "current": 0
+    "current": 0,
+    "currentRender":0
     
 }
