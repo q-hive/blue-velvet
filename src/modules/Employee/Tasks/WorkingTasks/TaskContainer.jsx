@@ -43,7 +43,6 @@ export const TaskContainer = (props) => {
     
     const {user, credential} = useAuth()
     const {WorkContext, employeeIsWorking} = useWorkingContext()
-    const contextCicleKeys = Object.keys(WorkContext.cicle)
     
     const {state} = useLocation();
 
@@ -284,18 +283,11 @@ export const TaskContainer = (props) => {
         const updateProduction = async () => {
             let wd = JSON.parse(window.localStorage.getItem("workData"))
             //*Update orders to growing status and request worker service for growing monitoring.
-<<<<<<< HEAD
-            if(WorkContext.current === 0){
-                const updateToGrowing = await api.api.post(`${api.apiVersion}/work/production/growing`,
-                {
-                    workData: json.parse(window.localStorage.getItem("workData")).production  
-=======
             if(WorkContext.current == 0){
                 console.log(WorkContext.cicle)
                 const updateToGrowing = await api.api.post(`${api.apiVersion}/work/production/growing`,
                 {
                     workData: wd.production 
->>>>>>> 243b61d35f0eb48c195384e94211ddd73385a1ab
                 }, 
                 {
                     headers: {
@@ -306,20 +298,48 @@ export const TaskContainer = (props) => {
 
                 return updateToGrowing
             }
+
+            switch (WorkContext.current) {
+                case 0: 
+                        const updateToGrowing = await api.api.post(`${api.apiVersion}/work/production/growing`,
+                        {
+                            workData: wd.production 
+                        }, 
+                        {
+                            headers: {
+                                authorization: credential._tokenResponse.idToken,
+                                user: user
+                            }
+                        })
+
+                        return updateToGrowing
+                case 2: 
+                        const updateToReady = await api.api.post(`${api.apiVersion}/work/production/ready`,
+                        {
+                            workData: wd.production 
+                        }, 
+                        {
+                            headers: {
+                                authorization: credential._tokenResponse.idToken,
+                                user: user
+                            }
+                        })
+
+                        return updateToReady
+
+            
+                default:
+                    break;
+            }
             return
         }
+
+
         updateProduction()
         .then((result) => {
-<<<<<<< HEAD
-            WorkContext.cicle[contextCicleKeys[WorkContext.current]].achieved = Date.now() - WorkContext.cicle[contextCicleKeys[WorkContext.current]].started 
-            WorkContext.current = WorkContext.current + 1 
-=======
             WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved = Date.now() - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].started
->>>>>>> 243b61d35f0eb48c195384e94211ddd73385a1ab
             props.setSnack({...props.snack, open:true, message:"Production updated succesfully", status:"success"})
             props.setFinished({value:true,counter:props.counter+1});
-            WorkContext.current = WorkContext.current + 1 
-            setIsFinished(true)
         })
         .catch(err => {
             console.log()

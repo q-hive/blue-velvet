@@ -6,30 +6,45 @@ import useWorkingContext from '../contextHooks/useEmployeeContext';
 
 export const Timer = ({contxt}) => {
   const {TrackWorkModel, WorkContext, employeeIsWorking} = useWorkingContext()
-  let currentTaskFinished = false
+  
+  const [time, setTime] = useState(0);
+  
+  let currentTaskFinished = (employeeIsWorking) && (WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.currentRender]].achieved !== undefined) || false
+
   const getCurrentContextTime = (context) => {
     let currentContextTime = 0;
+    
     if(context === "global"){
       currentContextTime = (Date.now()) - (TrackWorkModel.started)
     }
     
     if(context === "task"){
-      let from = WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]]?.stopped
-      const actualTask = Object.keys(WorkContext.cicle)[WorkContext.current]
-      if(from){
-        currentContextTime = from - WorkContext.cicle[actualTask].started
+
+      const actualTask = Object.keys(WorkContext.cicle)[WorkContext.currentRender]
+      const workingOnThisTask = WorkContext.current === WorkContext.currentRender
+
+
+      if(WorkContext.current > WorkContext.currentRender ){
+        currentContextTime=WorkContext.cicle[actualTask].achieved
       }
-      currentTaskFinished = (employeeIsWorking) && (WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved !== undefined)
+
+      if(workingOnThisTask)
+        currentContextTime=Date.now() - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].started
     }
 
     return currentContextTime
   }
 
+
   
-  const [time, setTime] = useState(getCurrentContextTime(contxt) || 0);
     
   const updateTime = () => {
-    setTime(time+1000)
+    if(!currentTaskFinished && WorkContext.current === WorkContext.currentRender || contxt == "global" )
+      setTime(time+1000)
+    
+    if(WorkContext.current < WorkContext.currentRender && contxt != "global" )
+      setTime(0)
+
   }
 
   function addZero(i) {
@@ -52,17 +67,18 @@ export const Timer = ({contxt}) => {
     setTime(() => {
       return getCurrentContextTime(contxt)
     })
-  }, [WorkContext.current])
+  }, [WorkContext.currentRender])
     
+  useInterval(updateTime, 1000)  
   
-  if(currentTaskFinished){
+  if(currentTaskFinished && contxt != "global"){
     return (
-      <Typography>Achieved time: {formatTime(WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved)}</Typography>
+      <Typography>Achieved time: {formatTime(WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.currentRender]].achieved)}</Typography>
       )
   }
     
-    useInterval(updateTime, 1000)  
-  return (
-    <Typography>Current {contxt === 'global' ? 'working' : 'task'} time: {formatTime(time)}</Typography>
-  )
+     
+      return (
+      <Typography>Current {contxt === 'global' ? 'working' : 'task'} time: {formatTime(time)}</Typography>
+    )
 }
