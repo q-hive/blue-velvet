@@ -345,7 +345,8 @@ export const TaskContainer = (props) => {
             TrackWorkModel.tasks.push(WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]])
             setTrackWorkModel({...TrackWorkModel, tasks:TrackWorkModel.tasks})
             WorkContext.current = WorkContext.current + 1
-            setWorkContext({...WorkContext, current:WorkContext.current}) 
+            setWorkContext({...WorkContext, current:WorkContext.current})
+            localStorage.setItem("WorkContext", JSON.stringify(WorkContext)) 
             
             props.setSnack({...props.snack, open:true, message:"Production updated succesfully", status:"success"})
             props.setFinished({value:true,counter:props.counter+1});

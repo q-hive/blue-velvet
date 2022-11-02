@@ -112,7 +112,7 @@ export const FullChamber = () => {
             setCanSeeNexttask({...canSeeNextTask,value:true})
             return
         }
-        if(WorkContext.cicle[cycleKeys[index]].started === undefined){
+        if(WorkContext.cicle[cycleKeys[index]].started === undefined && index == WorkContext.current){
             console.log("Started time in " + cycleKeys[index] + " is undefined")
             // WorkContext.cicle[Object.keys(WorkContext.cicle)[index]].started = Date.now()
             
@@ -123,6 +123,9 @@ export const FullChamber = () => {
                     started: Date.now()
                 }
             }})
+        }
+        if(element==null){
+
         }
         
         
@@ -190,10 +193,9 @@ export const FullChamber = () => {
 
 
     useEffect(() => {
-        return () => {
+        
             setWorkContext(() => {
-                return (
-                    {
+                return ({
                         ...WorkContext, 
                         cicle: {
                             ...WorkContext.cicle,
@@ -202,12 +204,9 @@ export const FullChamber = () => {
                                 stopped: Date.now()
                             }
                         }
-                    }
-                )
-            }
-            )
-        }
-    }, [])
+                    })
+            })
+    }, [WorkContext.current])
 
   return (
     <>
@@ -221,8 +220,9 @@ export const FullChamber = () => {
         renderArrowNext={arrowNext}
         renderArrowPrev={arrowPrev}
         renderIndicator={false}
-        selectedItem={employeeIsWorking ? WorkContext.current : canSeeNextTask.counter}
+        selectedItem={employeeIsWorking ? WorkContext.current : 0}
         onChange={carouselChange}
+        transitionTime={1000}
     >
         {cycleKeys.map((status,index)=>{
             console.log("ciclo mapeado", status) 
