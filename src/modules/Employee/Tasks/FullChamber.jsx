@@ -109,11 +109,10 @@ export const FullChamber = () => {
             setCanSeeNexttask({...canSeeNextTask,value:true})
             return
         }
-        
-        const nextTask = Object.keys(WorkContext.cicle)[index]
-        
-        if(WorkContext.cicle[nextTask].started === undefined){
-            console.log("Started time in " + Object.keys(WorkContext.cicle)[index] + " is undefined")
+        if(WorkContext.cicle[cycleKeys[index]].started === undefined){
+            console.log("Started time in " + cycleKeys[index] + " is undefined")
+            // WorkContext.cicle[Object.keys(WorkContext.cicle)[index]].started = Date.now()
+            
             setWorkContext({...WorkContext, cicle: {
                 ...WorkContext.cicle,
                 [Object.keys(WorkContext.cicle)[index]]:{
@@ -122,10 +121,7 @@ export const FullChamber = () => {
                 }
             }})
         }
-        if(index < canSeeNextTask.counter){
-            setCanSeeNexttask({...canSeeNextTask,value:true})
-            return
-        }
+        
         
         setCanSeeNexttask({...canSeeNextTask,value:false})
     }
@@ -133,12 +129,12 @@ export const FullChamber = () => {
     const carouselButtonSX = {
             position: 'absolute',
             zIndex: 2,
-            top:{xs:"80%", md:'calc(95% - 15px)'}
+            top:{xs:"3%", md:'calc(95% - 15px)'}
         }
 
     const arrowNext = (onClickHandler, hasNext, label) =>
     hasNext && (
-        <Button disabled={false/*canSeeNextTask.value == false*/} variant="contained" onClick={onClickHandler} title={"next task"} 
+        <Button disabled={false/*canSeeNextTask.value == false*/} variant="contained" onClick={onClickHandler} title={"next task"}
                 sx={()=>({...carouselButtonSX,right:"5%"})}>
             {"Next Task"}
         </Button>
@@ -166,9 +162,6 @@ export const FullChamber = () => {
         console.log("workcontxt",WorkContext)
         // TrackWorkModel.breaks.push(este break)
         let started= new Date()
-        
-
-        
         setDialog({
             ...dialog,
             open:true,
@@ -180,7 +173,11 @@ export const FullChamber = () => {
                     execute: () => {
                         let finished = new Date()
                         let elapsed = finished - started
-                        WorkContext.cicle[cycleKeys[WorkContext.current]].breaks.push({task:cycleKeys[WorkContext.current],started:started,finished:finished,elapsed:elapsed})
+                        let thisBreak = {task:cycleKeys[WorkContext.current],started:started,finished:finished,elapsed:elapsed}
+                        WorkContext.cicle[cycleKeys[WorkContext.current]].breaks.push(thisBreak)
+                        TrackWorkModel.breaks.push(thisBreak)
+                        console.log("current task breaks", WorkContext.cicle[cycleKeys[WorkContext.current]].breaks)
+                        console.log("trackwork model breaks ", TrackWorkModel.breaks)
                         setDialog({...dialog,open:false})}
                 },
             ]
@@ -216,7 +213,7 @@ export const FullChamber = () => {
         swipeable={false} 
         showThumbs={false} 
         showArrows={true}
-        showStatus={true}
+        showStatus={false}
         renderArrowNext={arrowNext}
         renderArrowPrev={arrowPrev}
         renderIndicator={false}
@@ -227,7 +224,7 @@ export const FullChamber = () => {
             console.log("ciclo mapeado", status) 
             return( 
                 <Fade in={true} timeout={2000} unmountOnExit>
-                    <Box key={index} height="80vh" component={"div"}>
+                    <Box key={index} height="80vh" component={"div"} sx={{overflow:"auto"}}>
                             {
                             TaskContainer({ 
                                 type: status || null, 

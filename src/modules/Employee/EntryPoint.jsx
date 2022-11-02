@@ -174,7 +174,7 @@ export const EntryPoint = () => {
     }
     const getWorkData = async ()=> {
         if(window.localStorage.getItem("workData")){
-            return window.localStorage.getItem("workData")
+            return JSON.parse(window.localStorage.getItem("workData"))
         }
         
         const apiResponse = await api.api.get(`${api.apiVersion}/work/production/634061756424d08c50e58841?container=633b2e0cd069d81c46a18033`,{
@@ -206,10 +206,54 @@ export const EntryPoint = () => {
         window.localStorage.setItem("WorkContext", JSON.stringify(WorkContext))
     }
 
+    const getFinishedTasks = () => {
+        let finishedTasksArr =[]
+        for(let i = 0; i < Object.keys(WorkContext.cicle).length ; i++){
+            WorkContext.cicle[Object.keys(WorkContext.cicle)[i]].finished != undefined 
+            ? 
+                finishedTasksArr.push(
+                    {
+                        task:Object.keys(WorkContext.cicle)[i],
+                        achieved:WorkContext.cicle[Object.keys(WorkContext.cicle)[i]].achieved,
+                        workingOrders:WorkContext.cicle[Object.keys(WorkContext.cicle)[i]].workingOrders
+                    }
+                )
+            :
+                null
+
+        }
+
+        return finishedTasksArr
+    }
+
+    const getAllBreaks = () => {
+        let breakAcum =[]
+        for(let i = 0; i < Object.keys(WorkContext.cicle).length ; i++){
+            WorkContext.cicle[Object.keys(WorkContext.cicle)[i]].breaks.length > 0 
+            ? 
+
+                
+                    breakAcum.concat(WorkContext.cicle[Object.keys(WorkContext.cicle)[i]].breaks)
+                    
+                   
+            :
+                null
+
+            console.log("break acummm",breakAcum)
+
+        }
+        console.log("break acum", breakAcum)
+        return breakAcum
+    }
+
+    getAllBreaks()
+
     const handleWorkButton = (finish = false) => {
         
         if(finish) {
             TrackWorkModel.finished = Date.now()
+            TrackWorkModel.tasks = getFinishedTasks()
+            TrackWorkModel.breaks = getAllBreaks()
             window.localStorage.setItem("isWorking", "false")
             setEmployeeIsWorking(JSON.parse(localStorage.getItem("isWorking")))
             //*Delete from localStorage since journal has been ended.
@@ -279,8 +323,12 @@ export const EntryPoint = () => {
         const dflt = "seeding"
         
         const statusObj = {
-            "seeding": "seeding",
-            "harvestReady": "harvest"
+            "seeding":"seeding",
+            "harvestReady": "harvest",
+            "mats":"cut Mats",
+            "growing":"growing",
+            "cleaning":"cleaning",
+            "ready":"delivery"
         }
 
         return statusObj[`${status?? dflt}`]
@@ -408,7 +456,7 @@ export const EntryPoint = () => {
                 <Grid item xs={12} md={4} lg={4}>
                     <Paper elevation={4} sx={fixedHeightPaper}>
                         <Typography variant="h6" color="secondary">Tasks</Typography>
-                            {Object.keys(allStatusesObj).map((status,index)=>{ 
+                            {Object.keys(WorkContext.cicle).map((status,index)=>{ 
                                 return(
                                     <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
                                         <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
@@ -416,7 +464,11 @@ export const EntryPoint = () => {
                                                 <b>Task: {capitalize(getKey(status))}</b>
                                             </Typography>
                                             <Typography >
-                                                <i>Expected Time: {estimatedTime?.times[getKey(status)].time.toFixed(2)}</i>
+                                                <i>Expected Time: {(getKey(status)==="seeding" || getKey(status)==="harvest") ? 
+                                                    estimatedTime.times ? 
+                                                        estimatedTime.times[getKey(status)].time.toFixed(2) 
+                                                    : "getting" 
+                                                :"TBD"} </i>
                                             </Typography>
                                         </Box>
                                     </Paper>
