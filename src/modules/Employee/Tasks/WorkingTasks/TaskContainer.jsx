@@ -42,7 +42,7 @@ export const TaskContainer = (props) => {
     const theme = useTheme(BV_THEME);
     
     const {user, credential} = useAuth()
-    const {WorkContext,setWorkContext,employeeIsWorking} = useWorkingContext()
+    const {WorkContext,TrackWorkModel,employeeIsWorking} = useWorkingContext()
     const {state} = useLocation();
 
     const [isFinished,setIsFinished] = useState(false)
@@ -263,18 +263,9 @@ export const TaskContainer = (props) => {
     }
 
 
-    if(WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved) {
+    let haventFinishedActualTask = WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved === undefined
+    if(!haventFinishedActualTask) {
         content = <div>Yo already finished the task.</div>
-        let haventFinishedActualTask = WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved === undefined
-
-        
-        
-        if(employeeIsWorking && haventFinishedActualTask){
-            //*We should know in which step employee is working
-            return setActiveStep(0)
-        }
-        
-        return setActiveStep(steps.length - 1) 
     }
 
     //Finish Task
@@ -345,17 +336,17 @@ export const TaskContainer = (props) => {
             
         updateProduction()
         .then((result) => {
-            // props.setWorkContext({
-            //     ...WorkContext,
-            //     cicle:{
-            //         ...WorkContext.cicle,
-            //         [`${WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]]}`]:{
-            //             achieved: Date.now() - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].started
-            //         }
-            //     },
-            // })
-            WorkContext.cicle[WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]]].achieved = Date.now() - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].started
-            WorkContext.current+=1
+
+            // hooks
+            let finished = Date.now()
+            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].finished = finished
+            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved =  finished - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].started
+            TrackWorkModel.tasks.push(WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]])
+            // setTrackWorkModel({...TrackWorkModel, tasks:TrackWorkModel.tasks})
+            WorkContext.current = WorkContext.current + 1
+            // setWorkContext({...WorkContext, current:WorkContext.current})
+            // localStorage.setItem("WorkContext", JSON.stringify(WorkContext)) 
+            
             props.setSnack({...props.snack, open:true, message:"Production updated succesfully", status:"success"})
             props.setFinished({value:true,counter:props.counter+1});
         })
@@ -443,10 +434,17 @@ export const TaskContainer = (props) => {
     }
 
     useEffect(() => {
-        if((WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved !== undefined) || WorkContext.cicle[Object.keys(WorkContext.cicle)[props.counter]].achieved !== undefined){
-            setIsFinished(() => true)
-        }
+        setActiveStep(() => {
+            if(employeeIsWorking && haventFinishedActualTask){
+                return 0
+            }
 
+            return steps.length - 1
+        })
+        
+        setIsFinished(() => {
+            return (WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved !== undefined) || WorkContext.cicle[Object.keys(WorkContext.cicle)[props.counter]].achieved !== undefined
+        })
     },[])
   return (
     <div style={{}}>

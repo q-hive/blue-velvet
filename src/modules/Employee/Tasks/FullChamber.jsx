@@ -107,22 +107,39 @@ export const FullChamber = () => {
     const carouselChange = (index,element) => {
         setWorkContext({...WorkContext, currentRender:index}) 
 
-        if(index < canSeeNextTask.counter){    
-            setCanSeeNexttask({...canSeeNextTask,value:true})
+        setCanSeeNexttask((cnSee) => {
+            if(index < canSeeNextTask.counter){
+                return {
+                    ...cnSee,value:true
+                }    
+            }
+
+            return {...cnSee}
+        })
+
+        if(index < canSeeNextTask.counter){
             return
         }
-        if(WorkContext.cicle[cycleKeys[index]].started === undefined){
-            console.log("Started time in " + cycleKeys[index] + " is undefined")
-            // WorkContext.cicle[Object.keys(WorkContext.cicle)[index]].started = Date.now()
-            
-            setWorkContext({...WorkContext, cicle: {
-                ...WorkContext.cicle,
-                [Object.keys(WorkContext.cicle)[index]]:{
-                    ...WorkContext.cicle[cycleKeys[index]],
-                    started: Date.now()
+
+        setWorkContext((wrkContext) => {
+                if(WorkContext.cicle[cycleKeys[index]].started === undefined && index == WorkContext.current){
+                    return (
+                        {
+                            ...wrkContext, cicle: {
+                                ...WorkContext.cicle,
+                                [Object.keys(WorkContext.cicle)[index]]:{
+                                    ...WorkContext.cicle[cycleKeys[index]],
+                                    started: Date.now()
+                                }
+                            }
+                        }
+                    )
                 }
-            }})
-        }
+
+                return {...wrkContext}
+                
+            }
+        )
         
         
         setCanSeeNexttask({...canSeeNextTask,value:false})
@@ -186,24 +203,19 @@ export const FullChamber = () => {
 
 
     useEffect(() => {
-        return () => {
             setWorkContext(() => {
-                return (
-                    {
-                        ...WorkContext, 
-                        cicle: {
-                            ...WorkContext.cicle,
-                            [cycleKeys[WorkContext.current]]:{
-                                ...WorkContext.cicle[cycleKeys[WorkContext.current]],
-                                stopped: Date.now()
-                            }
+                return {
+                    ...WorkContext, 
+                    cicle: {
+                        ...WorkContext.cicle,
+                        [cycleKeys[WorkContext.current]]:{
+                            ...WorkContext.cicle[cycleKeys[WorkContext.current]],
+                            stopped: Date.now()
                         }
                     }
-                )
-            }
-            )
-        }
-    }, [])
+                }
+            })
+    }, [WorkContext.current])
 
   return (
     <>
@@ -217,8 +229,9 @@ export const FullChamber = () => {
         renderArrowNext={arrowNext}
         renderArrowPrev={arrowPrev}
         renderIndicator={false}
-        selectedItem={employeeIsWorking ? WorkContext.current : canSeeNextTask.counter}
+        selectedItem={employeeIsWorking ? WorkContext.current : 0}
         onChange={carouselChange}
+        transitionTime={1000}
     >
         {cycleKeys.map((status,index)=>{
             return( 

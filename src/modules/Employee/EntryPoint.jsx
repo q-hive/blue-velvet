@@ -185,22 +185,30 @@ export const EntryPoint = () => {
 
     const setWorkingContext = (workDataModel) => {
         //*Employee started working identification
-        setEmployeeIsWorking(true)
+        if(!employeeIsWorking){
+            setEmployeeIsWorking(true)
 
-        setTrackWorkModel({
-            ...TrackWorkModel,
-            started:Date.now(),
-            expected:estimatedTime
-        }) 
+            setTrackWorkModel({
+                ...TrackWorkModel,
+                started:Date.now(),
+                expected:estimatedTime
+            }) 
+            
+            //*Production data
+            window.localStorage.setItem("workData", JSON.stringify(workDataModel))
+            
+            Object.keys(WorkContext.cicle).forEach((value,index) => {
+                WorkContext.cicle[value].production = workDataModel.production
+            })
+            WorkContext.cicle[Object.keys(WorkContext.cicle)[0]].started = Date.now()
+            window.localStorage.setItem("WorkContext", JSON.stringify(WorkContext))
+        }
+
+        else {
+            setWorkContext({...WorkContext,current:getFinishedTasks().length})
+            window.localStorage.setItem("WorkContext", JSON.stringify(WorkContext))
+        }
         
-        //*Production data
-        window.localStorage.setItem("workData", JSON.stringify(workDataModel))
-        
-        Object.keys(WorkContext.cicle).forEach((value,index) => {
-            WorkContext.cicle[value].production = workDataModel.production
-        })
-        WorkContext.cicle[Object.keys(WorkContext.cicle)[0]].started = Date.now()
-        window.localStorage.setItem("WorkContext", JSON.stringify(WorkContext))
     }
 
     const getFinishedTasks = () => {
@@ -243,7 +251,6 @@ export const EntryPoint = () => {
             setLoading({...loading, startWorkBtn:true})
             getWorkData()
             .then((workData) => {
-                window.localStorage.setItem("isWorking", "true")
                 setTimeout(() => {
                     setLoading({...loading, startWorkBtn:false})
                     setSnackState({open:false})
@@ -252,8 +259,9 @@ export const EntryPoint = () => {
                             orders: orders,
                             workData: workData,
                             time: estimatedTime
-                        }}
+                        }},
                     )
+                    setWorkingContext()
                 }, 1500)
             })
             .catch(err => {
