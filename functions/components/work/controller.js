@@ -36,8 +36,8 @@ export const setPerformance = (orgId, id, array) => {
     return new Promise((resolve, reject) => {
         const queries = array.map(async (queryConfig) => {
             const dbOp = await orgModel.updateOne(
-                {_id:orgId, "employees._id":id},
-                {$set:{[`employees.$.performance.${Object.keys(queryConfig)[1]}`]:Object.entries(queryConfig)[1][1]}}
+                {_id:mongoose.Types.ObjectId(orgId), "employees._id":mongoose.Types.ObjectId(id)},
+                {"$set":{[`employees.$.performance.${Object.keys(queryConfig)[1]}`]:Object.entries(queryConfig)[1][1]}}
             )
 
             return dbOp
@@ -57,15 +57,19 @@ export const updatePerformance = (orgId, id, array) => {
     return new Promise((resolve, reject) => {
 
         const queries = array.map(async (queryConfig) => {
+            console.log(`${getMongoQueryByObject(queryConfig)} employees.$.performance.${Object.keys(queryConfig)[1]}: ${typeof Object.entries(queryConfig)[1][1]}`)
+            
             const dbOp = await orgModel.updateOne(
-                {_id:orgId, "employees._id":id},
+                {
+                    "_id":mongoose.Types.ObjectId(orgId), 
+                    "employees._id":mongoose.Types.ObjectId(id)},
                 {
                     [`${getMongoQueryByObject(queryConfig)}`]: {
                         [`employees.$.performance.${Object.keys(queryConfig)[1]}`]:Object.entries(queryConfig)[1][1],
-                        "employees.$.performance.updated":"$$NOW"
                     }
                 }
             )
+
             return dbOp
         })
 

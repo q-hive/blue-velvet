@@ -16,5 +16,11 @@ export const getMongoQueryByObject = (queryConfig) => {
         "multiply": "$mul"
     }
 
-    return queryKeys[queryConfig] ?? queryKeys[defaultConfig]
+    let selected = queryKeys[query]
+
+    if(!selected){
+        selected = queryKeys[defaultConfig]
+    }
+
+    return selected
 }

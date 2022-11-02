@@ -174,7 +174,7 @@ export const EntryPoint = () => {
             return JSON.parse(window.localStorage.getItem("workData"))
         }
         
-        const apiResponse = await api.api.get(`${api.apiVersion}/work/production/634061756424d08c50e58841?container=633b2e0cd069d81c46a18033`,{
+        const apiResponse = await api.api.get(`${api.apiVersion}/work/production/${user._id}?container=633b2e0cd069d81c46a18033`,{
             headers:{
                 "authorization":    credential._tokenResponse.idToken,
                 "user":             user
@@ -228,7 +228,7 @@ export const EntryPoint = () => {
         if(finish) {
             TrackWorkModel.finished = Date.now()
             TrackWorkModel.tasks = getFinishedTasks()
-            TrackWorkModel.breaks = getAllBreaks()
+            // TrackWorkModel.breaks = getAllBreaks()
             window.localStorage.setItem("isWorking", "false")
             setEmployeeIsWorking(JSON.parse(localStorage.getItem("isWorking")))
             //*Delete from localStorage since journal has been ended.

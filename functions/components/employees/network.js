@@ -5,7 +5,7 @@ import adminAuth from '../../firebaseAdmin.js'
 import {mongoose} from '../../mongo.js'
 import Organization from "../../models/organization.js";
 import { deleteFromFirebase } from "../admin/store.js";
-import { deleteEmployeeFromDB } from "./store.js";
+import { deleteEmployeeFromDB, getEmployeeById } from "./store.js";
 
 const orgModel = mongoose.model('organizations', Organization)
 
@@ -18,6 +18,16 @@ router.get('/', (req, res) => {
     })
     .catch((err) => {
         error(req, res, 500, "Generic ERROR - Error getting employees", err, err)
+    })
+})
+
+router.get('/:id', (req, res) => {
+    getEmployeeById(res.locals.organization, req.params.id)
+    .then((result) => {
+        success(req, res, 200, "Employee obtained succesfully", result)
+    })
+    .catch(err => {
+    
     })
 })
 

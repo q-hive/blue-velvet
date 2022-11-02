@@ -15,10 +15,13 @@ const Employee = new Schema({
     address:        { type: Address,    required: true              },
     performance:    { type: 
         {
+            level:              { type: Number,     required: true  },
             allocationRatio:    Number,
             workdays:           Number,
             packages:           Number,
+            harvested:          Number,
             penalties:          Number,
+            seeds:              Number
         },                              
                                         required: false             }
 },

@@ -108,7 +108,6 @@ export const FullChamber = () => {
         setWorkContext({...WorkContext, currentRender:index}) 
 
         if(index < canSeeNextTask.counter){    
-            
             setCanSeeNexttask({...canSeeNextTask,value:true})
             return
         }
@@ -161,9 +160,6 @@ export const FullChamber = () => {
     }
 
     const handleBreaks = () => {
-        console.log("TWM",TrackWorkModel)
-        console.log("workcontxt",WorkContext)
-        // TrackWorkModel.breaks.push(este break)
         let started= new Date()
         setDialog({
             ...dialog,
@@ -225,7 +221,6 @@ export const FullChamber = () => {
         onChange={carouselChange}
     >
         {cycleKeys.map((status,index)=>{
-            console.log("ciclo mapeado", status) 
             return( 
                 <Fade in={true} timeout={2000} unmountOnExit>
                     <Box key={index} height="80vh" component={"div"} sx={{overflow:"auto"}}>
@@ -237,6 +232,7 @@ export const FullChamber = () => {
                                 setSnack:setSnack,
                                 snack:snack,
                                 updatePerformance: updateEmployeePerformance,
+                                setWorkContext: setWorkContext,
                                 products: getProductsByType(status)
                             })}
                     </Box>

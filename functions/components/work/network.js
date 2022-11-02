@@ -19,6 +19,7 @@ router.post('/performance/:id', (req, res) => {
 router.patch('/performance/:id', (req, res) => {
     updatePerformance(res.locals.organization,req.params.id,req.body.performance)
     .then((result) => {
+        console.log(result)
         success(req, res, 204, "Performance updated successfully")
     })
     .catch(err => {

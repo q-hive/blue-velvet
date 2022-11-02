@@ -252,23 +252,21 @@ export const getProductById = (orgId, containerId,prodId) => {
                     },
                     {
                         "$match": {
-                            "containers.products._id":prodId
+                            "containers.products._id":mongoose.Types.ObjectId(prodId)
                         }
                     },
                     {
                         "$project":{
                             "containers": {
                                 "_id":1,
-                                "products": {
-                                    "name":1,
-                                    "status":1,
-                                    "mix.isMix":1
-                                }
+                                "products":1
                             }
                         }
                     }
                 ]
             )
+
+            console.log(found)
             resolve(found[0].containers.products)
         } catch (err){
             reject(err)

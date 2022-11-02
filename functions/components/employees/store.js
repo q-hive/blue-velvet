@@ -5,19 +5,36 @@ import { getOrganizationById } from "../organization/store.js";
 const orgModel = mongoose.model('organization', Organization)
 
 export const getEmployeeById = (orgId, employeeId) => {
-    return new Promise((resolve, reject) =>{
-        getOrganizationById(orgId)
-        .then((org) => {
-            if(org){
-                const employee = org.employees.find((employee) => employee._id.equals(employeeId))
-                resolve(employee)
-            }
+    return new Promise(async (resolve, reject) =>{
+        try {
+            const result  =  await orgModel.findOne(
+                {
+                    "_id": mongoose.Types.ObjectId(orgId),
+                    "employees._id": mongoose.Types.ObjectId(employeeId)
+                },
+                {
+                    "employees.$":true
+                }
+            )
+            resolve(result.employees)
 
-            reject(org)
-        })
-        .catch((err) => {
+        } catch (err) {
             reject(err)
-        })
+        }
+        
+       
+        // getOrganizationById(orgId)
+        // .then((org) => {
+        //     if(org){
+        //         const employee = org.employees.find((employee) => employee._id.equals(employeeId))
+        //         resolve(employee)
+        //     }
+
+        //     reject(org)
+        // })
+        // .catch((err) => {
+        //     reject(err)
+        // })
     })
 }
 
