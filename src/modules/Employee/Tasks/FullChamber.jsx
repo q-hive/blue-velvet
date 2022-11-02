@@ -18,6 +18,7 @@ import useAuth from '../../../contextHooks/useAuthContext'
 import useWorkingContext from '../../../contextHooks/useEmployeeContext'
 import { tasksCicleObj } from '../../../utils/models';
 import { UserDialog } from '../../../CoreComponents/UserFeedback/Dialog';
+import { BV_THEME } from '../../../theme/BV-theme';
 
 //*UNUSED
 // import api from '../../../axios.js'
@@ -36,7 +37,7 @@ export const FullChamber = () => {
 
     //*CONTEXTS
     const {user, credential} = useAuth()
-    const {TrackWorkModel, WorkContext, setWorkContext, employeeIsWorking} = useWorkingContext()
+    const {TrackWorkModel, setTrackWorkModel, WorkContext, setWorkContext, employeeIsWorking} = useWorkingContext()
 
     
     //*render states
@@ -54,6 +55,8 @@ export const FullChamber = () => {
     })
 
     const cycleKeys = Object.keys(WorkContext.cicle)
+
+
     console.log("cicle arr",cycleKeys)
 
 
@@ -101,11 +104,11 @@ export const FullChamber = () => {
 
     }
 
-    {/* The keys of this object will allow us to generate a tasks by status */}
     const carouselChange = (index,element) => {
-        if(index < canSeeNextTask.counter){
-            WorkContext.currentRender = index
-            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].stopped = Date.now()
+        setWorkContext({...WorkContext, currentRender:index}) 
+
+        if(index < canSeeNextTask.counter){    
+            
             setCanSeeNexttask({...canSeeNextTask,value:true})
             return
         }
@@ -136,7 +139,7 @@ export const FullChamber = () => {
     hasNext && (
         <Button disabled={false/*canSeeNextTask.value == false*/} variant="contained" onClick={onClickHandler} title={"next task"}
                 sx={()=>({...carouselButtonSX,right:"5%"})}>
-            {"Next Task"}
+                    {"Next Task"}
         </Button>
     )
     
@@ -176,6 +179,7 @@ export const FullChamber = () => {
                         let thisBreak = {task:cycleKeys[WorkContext.current],started:started,finished:finished,elapsed:elapsed}
                         WorkContext.cicle[cycleKeys[WorkContext.current]].breaks.push(thisBreak)
                         TrackWorkModel.breaks.push(thisBreak)
+                        setTrackWorkModel({...TrackWorkModel, breaks:TrackWorkModel.breaks})
                         console.log("current task breaks", WorkContext.cicle[cycleKeys[WorkContext.current]].breaks)
                         console.log("trackwork model breaks ", TrackWorkModel.breaks)
                         setDialog({...dialog,open:false})}

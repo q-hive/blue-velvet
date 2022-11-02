@@ -20,6 +20,7 @@ export const App = () => {
 
   return (
     <Router history={history}>
+        <ErrorBoundary FallbackComponent={ErrorPage}>
         <AuthContext>
             <Routes>
                 <Route path="/" element={<Login/>}></Route>
@@ -35,11 +36,10 @@ export const App = () => {
                                     {
                                         val.path.split('/').includes('employee')
                                         ?
-                                        <ErrorBoundary FallbackComponent={ErrorPage}>
+                                        
                                         <WorkingContextWrapper>
                                             {val.component}
                                         </WorkingContextWrapper>
-                                        </ErrorBoundary>
                                         :
                                         val.component
                                         
@@ -55,6 +55,7 @@ export const App = () => {
                 
             </Routes>
         </AuthContext>
+    </ErrorBoundary>
     </Router>
         
   )

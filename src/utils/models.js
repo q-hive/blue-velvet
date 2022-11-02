@@ -29,7 +29,7 @@ export const tasksCicleObj = {
         //     "workingOrders": "",
         //     "breaks": "",
         // },
-        "growing":{...taskPerformanceModel, name:"Growing microgreens"},
+        //"growing":{...taskPerformanceModel, name:"Growing microgreens"},
         "harvestReady": {...taskPerformanceModel, name:"Harvest"},
         // "harvested": {
         //    "name": "TaskName", 

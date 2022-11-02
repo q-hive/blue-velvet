@@ -4,6 +4,7 @@ import useInterval from './useInterval';
 import useWorkingContext from '../contextHooks/useEmployeeContext';
 
 
+
 export const Timer = ({contxt}) => {
   const {TrackWorkModel, WorkContext, employeeIsWorking} = useWorkingContext()
   
@@ -47,18 +48,7 @@ export const Timer = ({contxt}) => {
 
   }
 
-  function addZero(i) {
-    if (i < 10) {i = "0" + i}
-    return i;
-  }
-  function formatTime(value){
-    let h = addZero(Math.floor((value/(60000*60))%60));
-    let m = addZero(Math.floor((value/60000)%60));
-    let s = addZero(Math.floor((value/1000)%60));
-      
-    let formattedTime = h + ":" + m + ":" + s;
-    return formattedTime
-  }
+  
 
 
   
@@ -81,4 +71,18 @@ export const Timer = ({contxt}) => {
       return (
       <Typography>Current {contxt === 'global' ? 'working' : 'task'} time: {formatTime(time)}</Typography>
     )
+}
+
+export function formatTime(value){
+  function addZero(i) {
+    if (i < 10) {i = "0" + i}
+    return i;
+  }
+  
+  let h = addZero(Math.floor((value/(60000*60))%60));
+  let m = addZero(Math.floor((value/60000)%60));
+  let s = addZero(Math.floor((value/1000)%60));
+    
+  let formattedTime = h + ":" + m + ":" + s;
+  return formattedTime
 }

@@ -13,6 +13,7 @@ import { BV_THEME } from '../../theme/BV-theme'
 //*Netword and routing
 import { useNavigate } from 'react-router-dom'
 import api from '../../axios.js'
+import { formatTime } from '../../CoreComponents/Timer'
 
 //*UNUSED
 // import { Add } from '@mui/icons-material'
@@ -34,11 +35,6 @@ export const EntryPoint = () => {
         {name:"Cut mats", type:"mats"},
         {name:"Cleaning", type:"cleaning"},
     ]
-    const completedTasksRows = [
-        { id: 1, col1: 'Seeding', col2: Math.random()},
-        { id: 2, col1: 'Harvesting', col2: Math.random()},
-        { id: 3, col1: 'Seeding', col2: Math.random() },
-    ];
     
     //*contexts
     const {user, credential} = useAuth()
@@ -79,6 +75,7 @@ export const EntryPoint = () => {
     const daysCanBeUpdated = () => {
         return !(TrackWorkModel.started !== undefined)
     }
+
 
     const updateWorkDays = async () => {
         if(daysCanBeUpdated()) {
@@ -330,6 +327,24 @@ export const EntryPoint = () => {
         return word[0].toUpperCase() + word.slice(1).toLowerCase();
     }
 
+    function getCompletedTasksRows(){
+        
+        let completedTasksRows =[];
+
+
+        if(TrackWorkModel.tasks.length > 0) 
+            TrackWorkModel.tasks.map((task,index)=>{
+
+                completedTasksRows.push({
+                    id: index+1, 
+                    col1: task.name, 
+                    col2: formatTime(task.achieved)
+                })
+            })
+
+        return completedTasksRows
+    }
+
     useEffect(() => {
         const getData = async () => {
             try {
@@ -483,7 +498,7 @@ export const EntryPoint = () => {
                             backgroundColor:BV_THEME.palette.primary.main,
                             color:"white"
                         }}}>
-                        <Typography variant="h6" color="secondary">Your Completed Tasks</Typography>
+                        <Typography variant="h6" color="secondary">Today's Completed Tasks</Typography>
                         <DataGrid
                             columns={[
                                 {
@@ -514,7 +529,7 @@ export const EntryPoint = () => {
                                     flex:1
                                 },
                             ]}
-                            rows={completedTasksRows}
+                            rows={getCompletedTasksRows()}
                             sx={{marginY:"2vh",}}>
                         </DataGrid>
                         

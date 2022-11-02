@@ -5,6 +5,7 @@ import auth from '../firebaseInit.js'
 import { useNavigate } from 'react-router-dom'
 
 import api from '../axios.js'
+import { useErrorHandler } from 'react-error-boundary'
 
 const AuthContextProv = createContext()
 
@@ -13,6 +14,8 @@ const AuthContext = ({children}) => {
   const [loading, setLoading] = useState(true)
   const [credential, setCredential] = useState(undefined)
   const navigate = useNavigate()
+
+  const handleError = useErrorHandler();
 
   const logout = () => {
       signOut(auth)
@@ -53,11 +56,7 @@ const AuthContext = ({children}) => {
               return {...response.data.data.user}
             })
             setLoading(() => false)
-          })
-          .catch(err => {
-            console.log("Error getting data refreshed")
-          })
-          
+          }, (error)=>handleError(error))
         })
         .catch((err) => {
           console.log("Error while getting token after reloading.")
