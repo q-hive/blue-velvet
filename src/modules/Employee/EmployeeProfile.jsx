@@ -20,7 +20,7 @@ export const Profile = () => {
                     <Grid container spacing={3} marginTop={3}>
                     
                         {/* Profile Picture */}
-                        <Grow in={true} timeout={2000} unmountOnExit>
+                        <Grow in={true} timeout={1000} style={{ transformOrigin: '0 0 0' }} unmountOnExit>
                         <Grid item xs={4} md={3} lg={3}>
                             <Avatar
                                 alt="employee pic"
@@ -35,7 +35,7 @@ export const Profile = () => {
                         </Grow>
 
                         {/* User Info */}
-                        <Grow in={true} timeout={2000} unmountOnExit>
+                        <Grow in={true} timeout={1500} style={{ transformOrigin: '0 0 0' }} unmountOnExit>
                         <Grid item xs={8} md={9} lg={9}>
                             
                             
@@ -70,7 +70,7 @@ export const Profile = () => {
                         </Grow>
 
                         {/* Chart 1 */}
-                        <Grow in={true} timeout={2000} unmountOnExit>
+                        <Grow in={true} timeout={4000} style={{ transformOrigin: '0 0 0' }} unmountOnExit>
                         <Grid item xs={12} md={12} lg={6}>
                             <Paper elevation={4} sx={{width: {xs:"95%",}, height: 450, m:3}}>
                                 <Typography color="gray">Illustrative chart</Typography>
@@ -81,7 +81,7 @@ export const Profile = () => {
 
 
                         {/* Chart 2 */}
-                        <Grow in={true} timeout={2000} unmountOnExit>
+                        <Grow in={true} timeout={5000} style={{ transformOrigin: '0 0 0' }} unmountOnExit>
                         <Grid item xs={12} md={12} lg={6}>
                             <Paper elevation={4} sx={{width: {xs:"95%",}, height: 450, m:3}}>
                                 <Typography color="gray">Illustrative chart</Typography>
