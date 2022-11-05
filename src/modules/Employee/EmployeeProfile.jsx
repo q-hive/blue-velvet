@@ -1,9 +1,8 @@
+import React, {useEffect} from 'react'
 import { Avatar, Box, Button, CircularProgress, Container, Fade, Paper, Stack, Typography, useTheme, Grid, Grow } from '@mui/material'
-import React from 'react'
 import useAuth from '../../contextHooks/useAuthContext';
 import { BV_THEME } from '../../theme/BV-theme';
 import api from '../../axios.js'
-import useAuth from '../../contextHooks/useAuthContext';
 
 
 export const Profile = () => {
@@ -65,9 +64,8 @@ export const Profile = () => {
                                 alignSelf: 'center', mb:2}}
                                         
                             />
-                            <Stack direction="row" spacing={{xs:8 ,md:30}} textAlign="center">
-                                <Typography variant="h6">Level : {profileData.level}</Typography>
-                            </Stack>
+                        </Grid>
+                        </Grow>
 
                         {/* User Info */}
                         <Grow in={true} timeout={1500} style={{ transformOrigin: '0 0 0' }} unmountOnExit>
