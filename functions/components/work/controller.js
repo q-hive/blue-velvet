@@ -5,20 +5,108 @@ import { getMongoQueryByObject } from '../../utils/getMongoQuery.js'
 import { getOrganizationById } from '../organization/store.js'
 import { getFilteredOrders, updateOrder } from '../orders/store.js'
 import { getProductById, updateProduct } from '../products/store.js'
+import axios from 'axios'
+import nodeCron from 'node-cron'
 
 const orgModel = mongoose.model('organization', Organization)
 
-export const updateProductionByStatus = (req, res, production) => {
-    return new Promise((resolve, reject) => {
-        const updateByMapping = production.map(async(productionData, index) => {
-            const updateProductOp = await updateProduct(res.locals.organization, productionData.productData.prodId, "status", req.params.status)
+// export const updateProduct = async (options) => {
+//     const request = await axios[`${options.requestConfig.method}`](`http://localhost:9999${options.requestConfig.path}`,
+//     {   
+//         data:options.data
+//     },
+//     {
+//         headers:options.requestConfig.headers
+//     }
+//     )
+//     return request
+// }
 
-            const completeProdObj = await getProductById(res.locals.organization, "633b2e0cd069d81c46a18033", productionData.productData.prodId)
+export const setupGrowing = (workData) => {
+    const growingSetup = workData.map((productionObj) => {
+        console.log(productionObj)
+        const lightTime = productionObj.productData.day
+        const darkTime = productionObj.productData.night
+        
+        const triggerHarvestTime = Date.now() + (((((lightTime*24)*60)*60)*1000) + ((((darkTime*24)*60)*60)*1000))
+
+        console.log(`The product -> ${productionObj.productData.name} needs a total time of ${darkTime + lightTime} days to grow. scheduling monitoring task...`)
+        const triggerParsedDate = new Date(triggerHarvestTime)
+        triggerParsedDate.setHours(4,0,0)
+
+        return {_id:productionObj.productData.prodId, name:productionObj.productData.name, harvest:productionObj.productData.harvest, orders:productionObj.productData.orders, date:triggerParsedDate, workData:{...productionObj}}
+    })
+    
+    return growingSetup
+}
+
+export const scheduleTask = (config) => {
+    console.log(`The ${config.name} update will be executed on: ${new Date(config.scheduleInDate)}`)
+
+    return nodeCron.schedule(`0 ${new Date(config.scheduleInDate).getHours()} ${new Date(config.scheduleInDate).getDate()} ${new Date(config.scheduleInDate).getMonth()} ${new Date(config.scheduleInDate).getDay()}`, () => config.task(config))
+    
+    // setTimeout(() => {
+        
+    // }, 1000)
+
+}
+
+export const startGrowing = (config) => {
+    return new Promise((resolve, reject) => {
+        try{
+                config.growingSetup.map((products) => {
+                    const scheduledTask = scheduleTask(
+                        {
+                            ...products,
+                            scheduleInMs:products.date.getTime() - Date.now(),
+                            scheduleInDate: products.date,
+                            task:() => updateProductionByStatus(config.status, config.organization, config.production).then(() => console.log("Completed")).catch(() => console.log("Failed"))
+                        }
+                    )
+                    return scheduledTask
+                })
+        } catch (err) {
+            reject(err)
+        }
+    })
+}
+
+
+export const updateProductionByStatus = (status, organization, production) => {
+    return new Promise((resolve, reject) => {
+        const flatOrders = production.flatMap((prodData) => prodData.productData.orders)
+        const nonRepeatedOrders = Array.from(new Set(flatOrders))
+
+        const updateOrdersbyMapping = nonRepeatedOrders.map(async (order) => {
+            const result = await updateOrder(organization, order, {
+                paths: [{path:"status", value:status}]
+            })
+            return result
+        })
+        
+        const updateProductsByMapping = production.map(async(productionData, index) => {
+            await updateProduct(organization, productionData.productData.prodId, "status", status)
+            const completeProdObj = await getProductById(organization, "633b2e0cd069d81c46a18033", productionData.productData.prodId)
             return {...productionData, productData: {...productionData.productData, ...completeProdObj.parameters}}
         })
 
-        Promise.all(updateByMapping)
+
+
+        Promise.all(updateOrdersbyMapping)
+        Promise.all(updateProductsByMapping)
         .then((result) => {
+            if(status === "growing"){
+                console.log("Starting schedule job...")
+                const growingSetup = setupGrowing(result)
+                startGrowing({ organization, status:"harvestReady", production, growingSetup})
+                .then((result) => {
+                    resolve(result)
+                })
+                .catch((err) => {
+                    reject(err)
+                })
+            }
+            
             resolve(result)
         })
         .catch(err => {

@@ -31,7 +31,9 @@ router.patch('/performance/:id', (req, res) => {
 router.post('/production/:status', (req, res) => {
     console.log('REQUEST IN PRODUCTION')
     //*Update products and orders received in body based on status received in query param  
-    updateProductionByStatus(req, res,req.body.workData.products)
+    console.log(req.params)
+    
+    updateProductionByStatus(req.params.status, res.locals.organization,req.body.workData.products)
     .then((result) => {
         success(req, res, 200, "Production updated succesfully", result)
     })

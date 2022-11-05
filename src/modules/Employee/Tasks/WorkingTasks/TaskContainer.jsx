@@ -273,6 +273,36 @@ export const TaskContainer = (props) => {
         const updateProduction = async () => {
             let wd = JSON.parse(window.localStorage.getItem("workData"))
             //*Update orders to growing status and request worker service for growing monitoring.
+            let totalSeeds
+            let totalHarvest
+            let totalTrays
+            try{
+                const reducedProduction = wd.production.products.reduce((prev, curr) => {
+                    return {
+                        productData: {
+                            seeds:prev.productData.seeds + curr.productData.seeds,
+                            harvest:prev.productData.harvest + curr.productData.harvest,
+                            trays:prev.productData.trays + curr.productData.trays,
+                        }
+                    }
+                },{
+                    "productData":{
+                        "seeds": 0,
+                        "harvest":0,
+                        "trays":0
+                    }
+                })
+                totalSeeds = reducedProduction.productData.seeds
+                totalharvest = reducedProduction.productData.harvest
+            } catch(err){
+                console.log(`Error reducing production data`, err)
+                totalSeeds = 0;
+                totalHarvest = 0;
+                Promise.reject(err)
+                return
+            }
+            
+            
             switch (WorkContext.current) {
                 case 0: 
                         const updateToGrowing = await api.api.post(`${api.apiVersion}/work/production/growing`,
@@ -285,20 +315,6 @@ export const TaskContainer = (props) => {
                                 user: user
                             }
                         })
-
-                        let totalSeeds
-                        try{
-
-                            totalSeeds = workData.production.products.reduce((prev, curr) => {
-                                return prev.productData.seeds + curr.productData.seeds
-                            },{
-                                "productData":{
-                                    "seeds": 0,
-                                }
-                            })
-                        } catch(err){
-                            totalSeeds = 0;
-                        }
 
                         const updateSeedsInPerformance = await api.api.patch(`${api.apiVersion}/work/performance/${user._id}`, {
                             performance: [

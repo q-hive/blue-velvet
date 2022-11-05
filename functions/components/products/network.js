@@ -136,8 +136,6 @@ router.patch('/', (req, res) => {
         const field = req.query.field
         const value = req.body.value
 
-        console.log(req.query)
-        
         //*TODO IF THERE IS AN ORDER RELATED TO A PRODUCT. NOTIFY CLIENT THAT MUST FIRST CANCEL THE ORDER
         //*TODO TRIGGER TASKS RELATED TO A PRODUCT CANCELLATION
         //*TODO WHEN AL THIS PROCESSES ARE COMPLETED, THEN UPDATE THE PRODUCT STATE
