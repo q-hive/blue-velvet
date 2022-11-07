@@ -1,6 +1,6 @@
 import express from 'express'
 import { error, success } from '../../network/response.js'
-import {getProductionWorkById, getWorkTimeByEmployee, parseProduction, setPerformance, updatePerformance, updateProductionByStatus} from './controller.js'
+import {getProductionWorkById, getWorkTimeByEmployee, parseProduction, setPerformance, updateOrgTasksHistory, updatePerformance, updateProductionByStatus} from './controller.js'
 
 
 const router = express.Router()
@@ -36,6 +36,18 @@ router.post('/production/:status', (req, res) => {
     updateProductionByStatus(req.params.status, res.locals.organization,req.body.workData.products)
     .then((result) => {
         success(req, res, 200, "Production updated succesfully", result)
+    })
+    .catch((err) => {
+        error(req, res, 500, "Error updating products by production data", err, err)
+    })
+})
+
+router.patch('/production/taskHistory', (req, res) => {
+    console.log('REQUEST IN PRODUCTION')
+    //*Update products and orders received in body based on status received in query param  
+    updateOrgTasksHistory(res.locals.organization, req.body)
+    .then((result) => {
+        success(req, res, 200, "Task history updated succesfully", result)
     })
     .catch((err) => {
         error(req, res, 500, "Error updating products by production data", err, err)

@@ -42,7 +42,7 @@ export const TaskContainer = (props) => {
     const theme = useTheme(BV_THEME);
     
     const {user, credential} = useAuth()
-    const {WorkContext,TrackWorkModel,employeeIsWorking} = useWorkingContext()
+    const {WorkContext,TrackWorkModel,employeeIsWorking, workData} = useWorkingContext()
     const {state} = useLocation();
 
     const [isFinished,setIsFinished] = useState(false)
@@ -270,12 +270,16 @@ export const TaskContainer = (props) => {
 
     //Finish Task
     const handleCompleteTask = () => {
+        let finished = Date.now()
+        let achieved =  finished - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].started
+
         const updateProduction = async () => {
             let wd = JSON.parse(window.localStorage.getItem("workData"))
             //*Update orders to growing status and request worker service for growing monitoring.
             let totalSeeds
             let totalHarvest
             let totalTrays
+
             try{
                 const reducedProduction = wd.production.products.reduce((prev, curr) => {
                     return {
@@ -293,7 +297,7 @@ export const TaskContainer = (props) => {
                     }
                 })
                 totalSeeds = reducedProduction.productData.seeds
-                totalharvest = reducedProduction.productData.harvest
+                totalHarvest = reducedProduction.productData.harvest
             } catch(err){
                 console.log(`Error reducing production data`, err)
                 totalSeeds = 0;
@@ -302,6 +306,28 @@ export const TaskContainer = (props) => {
                 return
             }
             
+            
+
+            //*When this model is sent also updates the performance of the employee on the allocationRatio key.
+            const taskHistoryModel = {
+                executedBy:     user._id,
+                expectedTime:   TrackWorkModel.expected.times[Object.keys(WorkContext.cicle)[WorkContext.current]].time,
+                achievedTime:   achieved,  
+                orders:         state.orders.map((order) => order._id),
+                taskType:       Object.keys(WorkContext.cicle)[WorkContext.current],
+                workDay:        TrackWorkModel.workDay   
+            }  
+            
+            await api.api.patch(`${api.apiVersion}/work/production/taskHistory`, 
+            {
+                ...taskHistoryModel
+            },
+            {
+                headers: {
+                    authorization: credential._tokenResponse.idToken,
+                    user: user
+                }
+            })
             
             switch (WorkContext.current) {
                 case 0: 
@@ -316,7 +342,7 @@ export const TaskContainer = (props) => {
                             }
                         })
 
-                        const updateSeedsInPerformance = await api.api.patch(`${api.apiVersion}/work/performance/${user._id}`, {
+                        const updateEmployeePerformance = await api.api.patch(`${api.apiVersion}/work/performance/${user._id}`, {
                             performance: [
                                 {
                                     query:"add", 
@@ -330,7 +356,7 @@ export const TaskContainer = (props) => {
                             }
                         })
 
-                        return {updateToGrowing, updateSeedsInPerformance}
+                        return {updateToGrowing, updateEmployeePerformance}
                 case 2: 
                         const updateToReady = await api.api.post(`${api.apiVersion}/work/production/ready`,
                         {
@@ -343,7 +369,7 @@ export const TaskContainer = (props) => {
                             }
                         })
 
-                        return updateToReady
+                        return {updateToReady}
                 default:
                     break;
                 }
@@ -354,9 +380,8 @@ export const TaskContainer = (props) => {
         .then((result) => {
 
             // hooks
-            let finished = Date.now()
             WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].finished = finished
-            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved =  finished - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].started
+            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved =  achieved
             TrackWorkModel.tasks.push(WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]])
             // setTrackWorkModel({...TrackWorkModel, tasks:TrackWorkModel.tasks})
             WorkContext.current = WorkContext.current + 1

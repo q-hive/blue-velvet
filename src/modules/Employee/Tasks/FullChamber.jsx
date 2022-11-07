@@ -123,17 +123,16 @@ export const FullChamber = () => {
 
         setWorkContext((wrkContext) => {
                 if(WorkContext.cicle[cycleKeys[index]].started === undefined && index == WorkContext.current){
-                    return (
-                        {
-                            ...wrkContext, cicle: {
-                                ...WorkContext.cicle,
-                                [Object.keys(WorkContext.cicle)[index]]:{
-                                    ...WorkContext.cicle[cycleKeys[index]],
-                                    started: Date.now()
-                                }
+                    return {
+                        ...wrkContext, cicle: {
+                            ...WorkContext.cicle,
+                            [Object.keys(WorkContext.cicle)[index]]:{
+                                ...WorkContext.cicle[cycleKeys[index]],
+                                started: Date.now()
                             }
                         }
-                    )
+                    }
+                    
                 }
 
                 return {...wrkContext}

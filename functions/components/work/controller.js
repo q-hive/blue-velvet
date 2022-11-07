@@ -7,6 +7,7 @@ import { getFilteredOrders, updateOrder } from '../orders/store.js'
 import { getProductById, updateProduct } from '../products/store.js'
 import axios from 'axios'
 import nodeCron from 'node-cron'
+import Task from '../../models/task.js'
 
 const orgModel = mongoose.model('organization', Organization)
 
@@ -337,5 +338,42 @@ export const parseProduction = (req,res,work) => {
         .catch(err => {
             reject(err)
         })
+    })
+}
+
+export const updateOrgTasksHistory = (orgId, taskModel) => {
+    return new Promise( async (resolve, reject) => {
+        let mappedTaskModel
+            
+        try {
+
+            mappedTaskModel = {
+                executedBy:    mongoose.Types.ObjectId(taskModel.executedBy),
+                expectedTime:  Number(taskModel.expectedTime),
+                achievedTime:  Number(taskModel.achievedTime),    
+                orders:        taskModel.orders.map((orderId) => mongoose.Types.ObjectId(orderId)),
+                taskType:      taskModel.taskType,
+                workDay:       taskModel.workDay
+            }
+
+            // const mongooseTaskModel = mongoose.model('task', mappedTaskModel)
+            const operation = await orgModel.findOneAndUpdate(
+                {
+                    "_id": mongoose.Types.ObjectId(orgId)
+                },
+                {
+                    "$push": {
+                        "tasksHistory": mappedTaskModel
+                    }
+                }, 
+                {
+                    "upsert":true,
+                }
+            ).exec()
+
+            resolve(operation)
+        } catch (err) {
+            reject(err)
+        }
     })
 }
