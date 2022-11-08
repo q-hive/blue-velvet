@@ -105,7 +105,9 @@ export const FullChamber = () => {
     }
 
     const carouselChange = (index,element) => {
-        setWorkContext({...WorkContext, currentRender:index}) 
+        setWorkContext({...WorkContext, currentRender:index})
+        
+        if(index < 0){}
 
         if(index < canSeeNextTask.counter){    
             
@@ -181,8 +183,9 @@ export const FullChamber = () => {
                         let elapsed = finished - started
                         let thisBreak = {task:cycleKeys[WorkContext.current],started:started,finished:finished,elapsed:elapsed}
                         WorkContext.cicle[cycleKeys[WorkContext.current]].breaks.push(thisBreak)
+                        setWorkContext({...WorkContext})
                         TrackWorkModel.breaks.push(thisBreak)
-                        setTrackWorkModel({...TrackWorkModel, breaks:TrackWorkModel.breaks})
+                        setTrackWorkModel({...TrackWorkModel})
                         console.log("current task breaks", WorkContext.cicle[cycleKeys[WorkContext.current]].breaks)
                         console.log("trackwork model breaks ", TrackWorkModel.breaks)
                         setDialog({...dialog,open:false})}
@@ -236,6 +239,7 @@ export const FullChamber = () => {
                                 setFinished:setCanSeeNexttask,
                                 setSnack:setSnack,
                                 snack:snack,
+                                stepInList:index,
                                 updatePerformance: updateEmployeePerformance,
                                 products: getProductsByType(status)
                             })}
