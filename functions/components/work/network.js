@@ -1,6 +1,6 @@
 import express from 'express'
 import { error, success } from '../../network/response.js'
-import {getProductionWorkById, getWorkTimeByEmployee, parseProduction, setPerformance, updatePerformance, updateProductionByStatus} from './controller.js'
+import {getProductionWorkById, getWorkTimeByEmployee, parseProduction, setPerformance, updateOrgTasksHistory, updatePerformance, updateProductionByStatus} from './controller.js'
 
 
 const router = express.Router()
@@ -19,6 +19,7 @@ router.post('/performance/:id', (req, res) => {
 router.patch('/performance/:id', (req, res) => {
     updatePerformance(res.locals.organization,req.params.id,req.body.performance)
     .then((result) => {
+        console.log(result)
         success(req, res, 204, "Performance updated successfully")
     })
     .catch(err => {
@@ -28,10 +29,25 @@ router.patch('/performance/:id', (req, res) => {
 
 
 router.post('/production/:status', (req, res) => {
-    //*Update products inn body based on status received in query param
-    updateProductionByStatus(req, res,req.body.workData.products)
+    console.log('REQUEST IN PRODUCTION')
+    //*Update products and orders received in body based on status received in query param  
+    console.log(req.params)
+    
+    updateProductionByStatus(req.params.status, res.locals.organization,req.body.workData.products)
     .then((result) => {
         success(req, res, 200, "Production updated succesfully", result)
+    })
+    .catch((err) => {
+        error(req, res, 500, "Error updating products by production data", err, err)
+    })
+})
+
+router.patch('/production/taskHistory', (req, res) => {
+    console.log('REQUEST IN PRODUCTION')
+    //*Update products and orders received in body based on status received in query param  
+    updateOrgTasksHistory(res.locals.organization, req.body)
+    .then((result) => {
+        success(req, res, 200, "Task history updated succesfully", result)
     })
     .catch((err) => {
         error(req, res, 500, "Error updating products by production data", err, err)

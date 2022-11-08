@@ -1,7 +1,9 @@
+import React, {useEffect} from 'react'
 import { Avatar, Box, Button, CircularProgress, Container, Fade, Paper, Stack, Typography, useTheme, Grid, Grow } from '@mui/material'
-import React from 'react'
 import useAuth from '../../contextHooks/useAuthContext';
 import { BV_THEME } from '../../theme/BV-theme';
+import api from '../../axios.js'
+
 
 export const Profile = () => {
      
@@ -13,6 +15,37 @@ export const Profile = () => {
 
 
     const theme = useTheme(BV_THEME);
+
+    useEffect(() => {
+        api.api.get(`${api.apiVersion}/employees/${user._id}`, {
+            headers:{
+                authorization:  credential._tokenResponse.idToken,
+                user:           user
+            }
+        })
+        .then((response) => {
+            let responseMapped
+            try {
+                responseMapped =  response.data.data[0]
+            } catch (err) {
+                responseMapped = {
+                    performance: {
+                        level: 0
+                    }
+                }
+            }
+            setProfileData((pfd) => {
+                return (
+                    {...pfd, level:responseMapped.performance.level}
+                )
+            })
+            
+            
+        })
+        .catch((err) => {
+            console.log('There was an error getting your data')
+        })
+    }, [])
     return (
        <Box component="div" minHeight="100vh" display="flex"  >
             <Fade in={true} timeout={1000} unmountOnExit>

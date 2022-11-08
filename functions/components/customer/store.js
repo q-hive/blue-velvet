@@ -51,12 +51,65 @@ export const getAllCustomers = (orgId) => {
             status: 500,
             message:"An error ocurred while finding organization",
         }
+
         
         orgModel.findById(orgId).exec()
         .then(orgDoc => {
+            const getMonthlySalesByCustomer = (organization, customerId) => {
+                return new Promise(async (resolve, reject) => {
+                    const models = await orgModel.aggregate(
+                        [
+                            {
+                                "$match": {
+                                    "_id":mongoose.Types.ObjectId(orgId)
+                                }
+                            },
+                            {
+                                "$unwind":"$orders"
+                            },
+                            {
+                                "$match":{
+                                    "orders.customer": mongoose.Types.ObjectId(customerId),
+                                    "orders.date": {"$gte": new Date(new Date().getFullYear(), new Date().getMonth(), 1), "$lte": new Date()}
+                                }
+                            },
+                            {
+                                "$project": {
+                                    "orders":true
+                                }
+                            }
+                            // {
+                            //     "$unwind":"$orders"
+                            // },
+                            // {
+                            //     "$addFields": {
+                            //         "total": {
+                            //             "$sum":"$orders.price"
+                            //         }
+                            //     }
+                            // }
+                        ]    
+                    )
+
+                    const mapped = models.map((orgModel) => {
+                        return orgModel.orders
+                    })
+
+                    const extracted = mapped.map((model, index) => {
+                        return model.price  
+                    })
+                    
+                    const reduced = extracted.reduce((prev,curr) => {
+                        return prev + curr
+                    }, 0)
+                    resolve(reduced)
+                })
+            }
             if(orgDoc.customers.length > 0){
-                const mappedCustomers = orgDoc.customers.map(customer => {
+                const mappedCustomers = orgDoc.customers.map(async customer => {
                     const allOrders = orgDoc.orders.filter((order) => (order.customer.equals(customer._id) && order.status !== "delivered"))
+                    const monthlySales = await getMonthlySalesByCustomer(orgId, customer._id)
+                    
                     let totalSales = 0
                     if(allOrders.length>0){
                         totalSales = allOrders.reduce((prev, current) => {
@@ -64,10 +117,18 @@ export const getAllCustomers = (orgId) => {
                         }, 0)
                     }
                     const mutableCustomer = customer.toObject()
-                    return {...mutableCustomer, orders:allOrders, sales:totalSales}
+                    return {...mutableCustomer, orders:allOrders, sales:totalSales, monthlySales: monthlySales}
                 })
                 
-                return resolve(mappedCustomers)
+                Promise.all(mappedCustomers)
+                .then((result) => {
+                    resolve(result)
+                })
+                .catch((err) => {
+                    reject(err)
+                })
+
+                return
             }
 
             return resolve(orgDoc.customers)

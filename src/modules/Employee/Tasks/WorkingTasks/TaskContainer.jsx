@@ -42,8 +42,7 @@ export const TaskContainer = (props) => {
     const theme = useTheme(BV_THEME);
     
     const {user, credential} = useAuth()
-    const {TrackWorkModel, setTrackWorkModel, WorkContext, setWorkContext, employeeIsWorking} = useWorkingContext()
-    
+    const {WorkContext,TrackWorkModel,employeeIsWorking, workData} = useWorkingContext()
     const {state} = useLocation();
 
     const [isFinished,setIsFinished] = useState(false)
@@ -264,41 +263,72 @@ export const TaskContainer = (props) => {
     }
 
 
-    if(WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved) {
+    let haventFinishedActualTask = WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved === undefined
+    if(!haventFinishedActualTask) {
         content = <div>Yo already finished the task.</div>
-        let haventFinishedActualTask = WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved === undefined
-
-        
-        
-        if(employeeIsWorking && haventFinishedActualTask){
-            //*We should know in which step employee is working
-            return setActiveStep(0)
-        }
-        
-        return setActiveStep(steps.length - 1) 
     }
 
     //Finish Task
     const handleCompleteTask = () => {
+        let finished = Date.now()
+        let achieved =  finished - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].started
+
         const updateProduction = async () => {
             let wd = JSON.parse(window.localStorage.getItem("workData"))
             //*Update orders to growing status and request worker service for growing monitoring.
-            if(WorkContext.current == 0){
-                console.log(WorkContext.cicle)
-                const updateToGrowing = await api.api.post(`${api.apiVersion}/work/production/growing`,
-                {
-                    workData: wd.production 
-                }, 
-                {
-                    headers: {
-                        authorization: credential._tokenResponse.idToken,
-                        user: user
+            let totalSeeds
+            let totalHarvest
+            let totalTrays
+
+            try{
+                const reducedProduction = wd.production.products.reduce((prev, curr) => {
+                    return {
+                        productData: {
+                            seeds:prev.productData.seeds + curr.productData.seeds,
+                            harvest:prev.productData.harvest + curr.productData.harvest,
+                            trays:prev.productData.trays + curr.productData.trays,
+                        }
+                    }
+                },{
+                    "productData":{
+                        "seeds": 0,
+                        "harvest":0,
+                        "trays":0
                     }
                 })
-
-                return updateToGrowing
+                totalSeeds = reducedProduction.productData.seeds
+                totalHarvest = reducedProduction.productData.harvest
+            } catch(err){
+                console.log(`Error reducing production data`, err)
+                totalSeeds = 0;
+                totalHarvest = 0;
+                Promise.reject(err)
+                return
             }
+            
+            
 
+            //*When this model is sent also updates the performance of the employee on the allocationRatio key.
+            const taskHistoryModel = {
+                executedBy:     user._id,
+                expectedTime:   TrackWorkModel.expected.times[Object.keys(WorkContext.cicle)[WorkContext.current]].time,
+                achievedTime:   achieved,  
+                orders:         state.orders.map((order) => order._id),
+                taskType:       Object.keys(WorkContext.cicle)[WorkContext.current],
+                workDay:        TrackWorkModel.workDay   
+            }  
+            
+            await api.api.patch(`${api.apiVersion}/work/production/taskHistory`, 
+            {
+                ...taskHistoryModel
+            },
+            {
+                headers: {
+                    authorization: credential._tokenResponse.idToken,
+                    user: user
+                }
+            })
+            
             switch (WorkContext.current) {
                 case 0: 
                         const updateToGrowing = await api.api.post(`${api.apiVersion}/work/production/growing`,
@@ -312,7 +342,21 @@ export const TaskContainer = (props) => {
                             }
                         })
 
-                        return updateToGrowing
+                        const updateEmployeePerformance = await api.api.patch(`${api.apiVersion}/work/performance/${user._id}`, {
+                            performance: [
+                                {
+                                    query:"add", 
+                                    seeds:totalSeeds
+                                }
+                            ]
+                        }, {
+                            headers: {
+                                authorization: credential._tokenResponse.idToken,
+                                user: user
+                            }
+                        })
+
+                        return {updateToGrowing, updateEmployeePerformance}
                 case 2: 
                         const updateToReady = await api.api.post(`${api.apiVersion}/work/production/ready`,
                         {
@@ -325,28 +369,24 @@ export const TaskContainer = (props) => {
                             }
                         })
 
-                        return updateToReady
-
-            
+                        return {updateToReady}
                 default:
                     break;
-            }
-            return
+                }
+                return
         }
-
-
+            
         updateProduction()
         .then((result) => {
 
             // hooks
-            let finished = Date.now()
             WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].finished = finished
-            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved =  finished - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].started
+            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved =  achieved
             TrackWorkModel.tasks.push(WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]])
-            setTrackWorkModel({...TrackWorkModel, tasks:TrackWorkModel.tasks})
+            // setTrackWorkModel({...TrackWorkModel, tasks:TrackWorkModel.tasks})
             WorkContext.current = WorkContext.current + 1
-            setWorkContext({...WorkContext, current:WorkContext.current})
-            localStorage.setItem("WorkContext", JSON.stringify(WorkContext)) 
+            // setWorkContext({...WorkContext, current:WorkContext.current})
+            // localStorage.setItem("WorkContext", JSON.stringify(WorkContext)) 
             
             props.setSnack({...props.snack, open:true, message:"Production updated succesfully", status:"success"})
             props.setFinished({value:true,counter:props.counter+1});
@@ -435,10 +475,17 @@ export const TaskContainer = (props) => {
     }
 
     useEffect(() => {
-        if((WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved !== undefined) || WorkContext.cicle[Object.keys(WorkContext.cicle)[props.counter]].achieved !== undefined){
-            setIsFinished(() => true)
-        }
+        setActiveStep(() => {
+            if(employeeIsWorking && haventFinishedActualTask){
+                return 0
+            }
 
+            return steps.length - 1
+        })
+        
+        setIsFinished(() => {
+            return (WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved !== undefined) || WorkContext.cicle[Object.keys(WorkContext.cicle)[props.counter]].achieved !== undefined
+        })
     },[])
   return (
     <div style={{}}>

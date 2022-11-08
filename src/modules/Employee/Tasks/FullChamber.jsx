@@ -109,26 +109,38 @@ export const FullChamber = () => {
         
         if(index < 0){}
 
-        if(index < canSeeNextTask.counter){    
-            
-            setCanSeeNexttask({...canSeeNextTask,value:true})
+        setCanSeeNexttask((cnSee) => {
+            if(index < canSeeNextTask.counter){
+                return {
+                    ...cnSee,value:true
+                }    
+            }
+
+            return {...cnSee}
+        })
+
+        if(index < canSeeNextTask.counter){
             return
         }
-        if(WorkContext.cicle[cycleKeys[index]].started === undefined && index == WorkContext.current){
-            console.log("Started time in " + cycleKeys[index] + " is undefined")
-            // WorkContext.cicle[Object.keys(WorkContext.cicle)[index]].started = Date.now()
-            
-            setWorkContext({...WorkContext, cicle: {
-                ...WorkContext.cicle,
-                [Object.keys(WorkContext.cicle)[index]]:{
-                    ...WorkContext.cicle[cycleKeys[index]],
-                    started: Date.now()
-                }
-            }})
-        }
-        if(element==null){
 
-        }
+        setWorkContext((wrkContext) => {
+                if(WorkContext.cicle[cycleKeys[index]].started === undefined && index == WorkContext.current){
+                    return {
+                        ...wrkContext, cicle: {
+                            ...WorkContext.cicle,
+                            [Object.keys(WorkContext.cicle)[index]]:{
+                                ...WorkContext.cicle[cycleKeys[index]],
+                                started: Date.now()
+                            }
+                        }
+                    }
+                    
+                }
+
+                return {...wrkContext}
+                
+            }
+        )
         
         
         setCanSeeNexttask({...canSeeNextTask,value:false})
@@ -166,9 +178,6 @@ export const FullChamber = () => {
     }
 
     const handleBreaks = () => {
-        console.log("TWM",TrackWorkModel)
-        console.log("workcontxt",WorkContext)
-        // TrackWorkModel.breaks.push(este break)
         let started= new Date()
         setDialog({
             ...dialog,
@@ -196,18 +205,17 @@ export const FullChamber = () => {
 
 
     useEffect(() => {
-        
             setWorkContext(() => {
-                return ({
-                        ...WorkContext, 
-                        cicle: {
-                            ...WorkContext.cicle,
-                            [cycleKeys[WorkContext.current]]:{
-                                ...WorkContext.cicle[cycleKeys[WorkContext.current]],
-                                stopped: Date.now()
-                            }
+                return {
+                    ...WorkContext, 
+                    cicle: {
+                        ...WorkContext.cicle,
+                        [cycleKeys[WorkContext.current]]:{
+                            ...WorkContext.cicle[cycleKeys[WorkContext.current]],
+                            stopped: Date.now()
                         }
-                    })
+                    }
+                }
             })
     }, [WorkContext.current])
 
@@ -228,7 +236,6 @@ export const FullChamber = () => {
         transitionTime={1000}
     >
         {cycleKeys.map((status,index)=>{
-            console.log("ciclo mapeado", status) 
             return( 
                 <Fade in={true} timeout={2000} unmountOnExit>
                     <Box key={index} height="80vh" component={"div"} sx={{overflow:"auto"}}>
@@ -241,6 +248,7 @@ export const FullChamber = () => {
                                 snack:snack,
                                 stepInList:index,
                                 updatePerformance: updateEmployeePerformance,
+                                setWorkContext: setWorkContext,
                                 products: getProductsByType(status)
                             })}
                     </Box>
