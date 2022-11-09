@@ -210,7 +210,7 @@ export const EntryPoint = () => {
             Object.keys(WorkContext.cicle).forEach((value,index) => {
                 
                 if(!statusesInProds.includes(value)){
-                    delete WorkContext.cicle[value]
+                    // delete WorkContext.cicle[value]
                     setWorkContext({...WorkContext})
                 }else{
                     WorkContext.cicle[value].production = workDataModel.production
