@@ -216,7 +216,7 @@ const BV_Layout = (props) => {
                       <Box sx={{ flexGrow: 0 }}>
                         <Tooltip title="Open settings">
                           <IconButton edge={false} onClick={handleOpenUserMenu} sx={{ p: 0 , m: 2}}>
-                            <Avatar alt="Cockpit User" src="/static/images/avatar/2.jpg" />
+                            <Avatar alt={user.name} src="/static/images/avatar/2.jpg" />
                           </IconButton>
                         </Tooltip>
                         <Menu
