@@ -306,6 +306,7 @@ export const EntryPoint = () => {
             })
             .catch(err => {
                 console.log(err)
+                setLoading({...loading, startWorkBtn:true})
                 setSnackState({open:true, label:"There was an error. Try again.", severity:"error"})
             })
         }
