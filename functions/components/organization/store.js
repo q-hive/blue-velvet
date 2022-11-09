@@ -1,7 +1,7 @@
 import { mongoose } from '../../mongo.js'
 import Organization from '../../models/organization.js'
 
-const orgModel = new mongoose.model('organizations', Organization)
+const orgModel = mongoose.model('organization', Organization)
 
 export const newOrganization = (orgData) => {
     return new Promise((resolve, reject) => {
@@ -32,18 +32,38 @@ export const newOrganization = (orgData) => {
     })
 }
 
-export const getOrganizations = () => {
+export const getOrganizations = (filter) => {
     return new Promise((resolve, reject) => {  
-        orgModel.find({}).exec((err, docs) => {
+        orgModel.find(filter).exec((err, docs) => {
             if (err) reject(err)
-
+            
             resolve(docs)
         })
     })   
 }
 
+export const getOrganizationByOwner = (ownerId) => {
+    return new Promise((resolve, reject) => {
+        getOrganizations({"owner":mongoose.Types.ObjectId(ownerId)})
+        .then((result) => {
+            resolve(result)
+        })
+        .catch(err => {
+            reject(err)
+        })
+    })
+}
+
 export const getOrganizationById = (id, clean=false) => {
     return new Promise((resolve, reject) => {
+        orgModel.find({"_id":mongoose.Types.ObjectId(id)})
+        .then((result) => {
+            resolve(result[0])
+        })
+        .catch((err) => {
+            console.log(id)
+            reject(err)
+        })
         // if(clean) {
         //     orgModel.find({_id:id}, {lean:true}).exec((err, doc) => {
         //         if (err) reject(err)
@@ -52,11 +72,11 @@ export const getOrganizationById = (id, clean=false) => {
         //     })
         // }
         
-        orgModel.findById(id).exec((err, doc) => {
-            if (err) reject(err)
+        // orgModel.findById(mongoose.Types.ObjectId(id)).exec((err, doc) => {
+        //     if (err) reject(err)
 
-            resolve(doc)
-        })
+        //     resolve(doc)
+        // })
     }) 
 }
 

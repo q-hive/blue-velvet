@@ -197,16 +197,33 @@ export const EntryPoint = () => {
             //*Production data
             window.localStorage.setItem("workData", JSON.stringify(workDataModel))
             
-            Object.keys(WorkContext.cicle).forEach((value,index) => {
-                WorkContext.cicle[value].production = workDataModel.production
+            let statusesInProds = []
+            workDataModel.production.products.map((prod,id)=>{
+                if(!statusesInProds.includes(prod.productData.status))
+                    statusesInProds.push(prod.productData.status)
             })
+
+            console.log("statuses in prods arr", statusesInProds)
+
+            
+
+            Object.keys(WorkContext.cicle).forEach((value,index) => {
+                
+                if(!statusesInProds.includes(value)){
+                    // delete WorkContext.cicle[value]
+                    setWorkContext({...WorkContext})
+                }else{
+                    WorkContext.cicle[value].production = workDataModel.production
+                }
+            })
+
+
             WorkContext.cicle[Object.keys(WorkContext.cicle)[0]].started = Date.now()
             window.localStorage.setItem("WorkContext", JSON.stringify(WorkContext))
         }
 
         else {
             setWorkContext({...WorkContext,current:getFinishedTasks().length})
-            window.localStorage.setItem("WorkContext", JSON.stringify(WorkContext))
         }
         
     }
@@ -289,6 +306,7 @@ export const EntryPoint = () => {
             })
             .catch(err => {
                 console.log(err)
+                setLoading({...loading, startWorkBtn:true})
                 setSnackState({open:true, label:"There was an error. Try again.", severity:"error"})
             })
         }

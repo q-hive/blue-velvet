@@ -336,8 +336,11 @@ export const updateOrder = (org, orderId, body) => {
                 const dbOrder = organization.orders.find((order) => order._id.equals(orderId))
     
                 if(!dbOrder) {
-                    return reject(new Error(JSON.stringify({"message":"No order found", "status":204})))
+                    return reject(dbOrder)
                 }
+
+                //**VALID STATUSES FOR ORDERS about production: ["received","production", "packed", "delivered"] */
+                //**VALID STATUSES FOR ORDERS about payment: ["unpaid","paid","pending"] */
 
                 body.paths.forEach(({path, value}, index) => {
                     dbOrder[path] = value

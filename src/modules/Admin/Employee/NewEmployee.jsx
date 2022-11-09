@@ -88,31 +88,8 @@ export const NewEmployee = () => {
             }
         })
         .then((res) => {
-            if(res.status === 500 || res.status === 400){
-                setDialog({
-                    ...dialog,
-                    open:true,
-                    title:"Employee could not be added",
-                    actions:[ 
-                        {
-                            label:"Retry",
-                            btn_color:"primary",
-                            execute:() => {
-                                window.location.reload()
-                            }
-                        },
-                        {
-                            label:"Close",
-                            btn_color:"secondary",
-                            execute:() => {
-                                setDialog({...dialog,open:false})
-                            }
-                        }
-                    ]
-                    
-                }) 
-            }
-            if(res.status === 201){
+            
+            if(res.response.status === 201){
                 setDialog({
                     ...dialog,
                     open:true,
@@ -138,7 +115,31 @@ export const NewEmployee = () => {
             }
         })
         .catch((err) => {
-            console.log(err)
+            console.log("error  ",err)
+            if(err.response.status === 500 || err.response.status === 400){
+                setDialog({
+                    ...dialog,
+                    open:true,
+                    title:"Employee could not be added",
+                    actions:[ 
+                        {
+                            label:"Retry",
+                            btn_color:"primary",
+                            execute:() => {
+                                window.location.reload()
+                            }
+                        },
+                        {
+                            label:"Close",
+                            btn_color:"secondary",
+                            execute:() => {
+                                setDialog({...dialog,open:false})
+                            }
+                        }
+                    ]
+                    
+                }) 
+            }
         })
     }
   return (

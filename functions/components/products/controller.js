@@ -12,6 +12,7 @@ const hasEveryKey = (valid, current) => {
     console.log(Object.keys(valid))
     if(Object.keys(valid).every(key => Object.keys(current).includes(key))){
         console.log("Has all keys")
+        console.log()
         for (const key of Object.keys(valid)) {
             if(typeof valid[key] === "object"){
                 console.log("Validating nested object")
@@ -25,7 +26,6 @@ const hasEveryKey = (valid, current) => {
 }
 
 export const isValidProductObject = (json) => {
-        console.log(json)
         let productModel 
     
         if(json.mix && json.mix.isMix === false){
@@ -77,7 +77,6 @@ export const relateOrdersAndTasks = (orgId) => {
                     const orders = await getOrdersByProd(orgId, prod._id)
 
                     // mutableProd.tasks = tasks
-                    console.log(mutableProd)
                     mutableProd.orders = orders
                     return {...mutableProd}
                 })
@@ -90,7 +89,6 @@ export const relateOrdersAndTasks = (orgId) => {
 
         getAndRelateData()
         .then((data) => {
-            // console.log(data)
             resolve(data)
         })
         .catch(err => {

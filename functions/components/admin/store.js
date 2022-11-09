@@ -44,7 +44,7 @@ export function newEmployee(res,data) {
 
             getOrganizationById(res.locals.organization)
             .then(org => {
-                
+                console.log(data)
                 let empData = {
                     uid:            userRecord.uid,  
                     email:          data.email,

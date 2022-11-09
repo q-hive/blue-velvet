@@ -4,7 +4,7 @@ import { isEmailValid, validateBodyNotEmpty } from './secureHelpers.js'
 import userCreationRouter from '../admin/network.js'
 import {  } from '../admin/store.js'
 
-import { getOrganizationById } from '../organization/store.js'
+import { getOrganizationById, getOrganizationByOwner } from '../organization/store.js'
 
 // * Authentication
 import { isAuthenticated, isAuthorized, getPassphraseByUid } from './controller.js'
@@ -75,22 +75,21 @@ authRouter.post('/login/admin', (req, res) => {
         adminAuth.verifyIdToken(user._tokenResponse.idToken)
         .then(claims => {
             if (claims.role === 'admin') {
-                console.log(user.user)
                 getPassphraseByUid(user.user.uid)
                 .then(async data => {
-                    console.log(data)
                     let token
                     try {
                         token = await adminAuth.createCustomToken(user.user.uid)
                         if (data.passphrase == hashPassphrase(req.body.passphrase)) {
-    
+                            // const userOrganization = await getOrganizationByOwner(data._id)
                             return success(req, res, 200, "Successfully logged as admin", {                                                                                                  
                                             user: {
                                                 id:     data._id,
                                                 role:   claims.role,
                                                 uid:    user.user.uid,
                                                 email:  user.user.email,
-                                                photo:  user.user.photoURL
+                                                photo:  user.user.photoURL,
+                                                organization: claims.organization
                                             },
                                             token: user._tokenResponse.idToken,
                                             cToken: token
@@ -140,6 +139,8 @@ authRouter.post('/refresh', (req, res) => {
                     user:       admin
                 })
             }
+
+
             const employee = org.employees.find((empl) => empl.uid === claims.uid)
             try {
                 if(employee){
@@ -148,6 +149,8 @@ authRouter.post('/refresh', (req, res) => {
             } catch(err){
                 console.log("Error trying to create token")
             }
+
+            employee.organization = claims.organization
 
             return success(req, res, 200, "User verified succesfully, re-auth done", {
                 isAdmin:false,
