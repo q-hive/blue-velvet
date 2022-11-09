@@ -31,8 +31,6 @@ export const Dashboard = () => {
         flexDirection: "column",
         height: 240
     }
-    const organizationID = "633b2e0cd069d81c46a18032"
-
     const rows = [
         { id: 1, col1: 'Eluis', col2: Math.random()},
         { id: 2, col1: 'Eluis2', col2: Math.random()},
@@ -48,7 +46,9 @@ export const Dashboard = () => {
     const fakeContainers = [{name:"Panama Container",capacity:356,used:50},{name:"Colombia Container",capacity:356,used:150}]
 
     const getContainers = async ()=> {
-        const containersData = await api.api.get(`${api.apiVersion}/organizations?_id=${organizationID}`,{
+        const userOrg = user.organization || JSON.parse(window.localStorage.getItem("usermeta"))?.organization
+        
+        const containersData = await api.api.get(`${api.apiVersion}/organizations?_id=${userOrg}`,{
             headers:{
                 "authorization":    credential._tokenResponse.idToken,
                 "user":             user

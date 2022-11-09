@@ -249,15 +249,16 @@ export const getProductionTotal = (req, res) => {
                 const accumProduction = []
                 for(const id of filtered) {
                     const filteredProduction = productionData.filter((prddata) => prddata.id.equals(id))
-
+                    console.log(filteredProduction)
                     let productionById = filteredProduction.reduce((prev, curr) => {
                         return {
                             "seeds": prev.seeds + curr.seeds,
                             "harvest": prev.harvest + curr.harvest,
                             "trays": prev.trays + curr.trays,
                             "prodId":id,
+                            "status":prev.status
                         }
-                    }, {seeds:0, harvest:0, trays:0, id:undefined})
+                    }, {seeds:0, harvest:0, trays:0, id:undefined, status:undefined})
 
                     if(matchOrders){
                         productionById = insertOrdersInProduction(productionById, orders)

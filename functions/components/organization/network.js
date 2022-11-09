@@ -24,17 +24,23 @@ router.post('/new', (req, res) => {
 router.get('/:id', (req, res) => {
     getOrganizationById(req.params.id)
     .then(org => {
-        return success(req, res, 200, 'Organization found', org)
+        success(req, res, 200, 'Organization found', org)
     })
     .catch(err => {
-        return error(req, res, 400, 'Exception occurrer', err)
+        error(req, res, 400, 'Error getting organization', err, err)
     })
 })
 
 // * READ MANY
 router.get('/', (req, res) =>{
     // ? FILTERS
-    getOrganizations(req.body)
+    let filter = {}
+
+    if(req.query !== null){
+        filter = {[`${Object.keys(req.query)[0]}`]:Object.entries(req.query)[0][1]}
+    }
+
+    getOrganizations(filter)
     .then(orgs => {
         return success(req, res, 200, 'Organizations found', orgs)
     })

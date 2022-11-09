@@ -53,7 +53,7 @@ router.get('/:status', (req, res) => {
 */
 router.delete('/custom/', (req, res) => {
     getFilteredOrders(res.locals.organization, req)
-    .then((orders) => {
+    .then(({orders}) => {
         deleteOrders(res.locals.organization, orders)
         .then((status) => {
             success(req, res, 200, "Orders deleted")

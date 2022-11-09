@@ -16,10 +16,6 @@ const Container = new Schema({
     address:        { type: Address,        required: false                }
 },    
 {
-    timestamps: {
-        createdAt: "created",
-        updatedAt: "updated"
-    },
     query: {
         byName(name) {
             return this.where({ name: new RegExp(name, "i") })
