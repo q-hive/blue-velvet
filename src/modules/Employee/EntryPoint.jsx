@@ -197,15 +197,8 @@ export const EntryPoint = () => {
             //*Production data
             window.localStorage.setItem("workData", JSON.stringify(workDataModel))
             
-            let statusesInProds = []
-            workDataModel.production.products.map((prod,id)=>{
-                if(!statusesInProds.includes(prod.productData.status))
-                    statusesInProds.push(prod.productData.status)
-            })
 
-            console.log("statuses in prods arr", statusesInProds)
-
-            
+            let statusesInProds = getActiveProductsStatuses()
 
             Object.keys(WorkContext.cicle).forEach((value,index) => {
                 
@@ -226,6 +219,19 @@ export const EntryPoint = () => {
             setWorkContext({...WorkContext,current:getFinishedTasks().length})
         }
         
+    }
+
+    function getActiveProductsStatuses (workDataModel) {
+        let statusesInProds = []
+            
+            workDataModel.production.products.map((prod,id)=>{
+                console.log("prod status", prod.productData)
+                if(!statusesInProds.includes(prod.productData.status))
+                    statusesInProds.push(prod.productData.status)
+            })
+
+            console.log("statuses in prods arr", statusesInProds)
+            return statusesInProds
     }
 
     const getFinishedTasks = () => {
@@ -288,28 +294,45 @@ export const EntryPoint = () => {
             return
         }
         
-        if(isOnTime && orders.length != 0 && !employeeIsWorking){
-            updateWorkDays()
+        if(isOnTime && !employeeIsWorking){
+            
             getWorkData()
             .then((workData) => {
-                setSnackState({open:false})
-                //*Working context
-                setWorkingContext(workData)
-                
-                navigate('./../tasks/work',
-                    {state: {
-                    orders: orders,
-                    workData: workData,
-                    time: estimatedTime
-                    }}
-                )
+                console.log("wd", workData)
+                let statusesArr = getActiveProductsStatuses(workData)
+                    if(statusesArr.length!==0){
+                        if(statusesArr.length == 1 && statusesArr[0]=="growing"){
+                            setSnackState({open:true,label:"There's nothing for you to do right now",severity:"success"})
+                        }
+                        else{
+                            setSnackState({open:false})
+                            //*Working context
+                            setWorkingContext(workData)
+                            
+                            navigate('./../tasks/work',
+                                {state: {
+                                orders: orders,
+                                workData: workData,
+                                time: estimatedTime
+                                }}
+                            )
+
+                        }
+                    }
+                    else{
+                        setSnackState({open:true,label:"There's nothing for you to do right now",severity:"success"})
+   
+                    }
             })
             .catch(err => {
                 console.log(err)
                 setLoading({...loading, startWorkBtn:true})
                 setSnackState({open:true, label:"There was an error. Try again.", severity:"error"})
             })
+
         }
+                    
+        
 
         if(!isOnTime) {
             setSnackState({open:true,label:"You can't start working right now",severity:"error"})
@@ -352,6 +375,27 @@ export const EntryPoint = () => {
     function capitalize(word) {
         return word[0].toUpperCase() + word.slice(1).toLowerCase();
     }
+
+    function displayTaskCards (){
+        
+        Object.keys(WorkContext.cicle).map((status,index)=>{ 
+        return(
+            <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
+                <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
+                    <Typography >
+                        <b>Task: {capitalize(getKey(status))}</b>
+                    </Typography>
+                    <Typography >
+                        <i>Expected Time: {(getKey(status)==="seeding" || getKey(status)==="harvest") ? 
+                            estimatedTime.times ? 
+                                estimatedTime.times[getKey(status)].time.toFixed(2) 
+                            : "getting" 
+                        :"TBD"} </i>
+                    </Typography>
+                </Box>
+            </Paper>
+        )
+    })}
 
     function getCompletedTasksRows(){
         
@@ -409,6 +453,11 @@ export const EntryPoint = () => {
         
     }, [])
 
+    useEffect(()=>{
+        displayTaskCards()
+
+    }, [WorkContext.cicle])
+
   return (<>
     <Fade in={true} timeout={1000} unmountOnExit>
     <Box component="div" display="flex"  >
@@ -424,7 +473,7 @@ export const EntryPoint = () => {
                     variant="contained" 
                     size="large" 
                     onClick={() => handleWorkButton(false)} 
-                    loading={loading.startWorkBtn} 
+                    loading={loading.startWorkBtn}
                     >
                         {employeeIsWorking ? "Continue work...":"Start Workday"}
                     </LoadingButton>
@@ -475,24 +524,7 @@ export const EntryPoint = () => {
                 <Grid item xs={12} md={4} lg={4}>
                     <Paper elevation={4} sx={fixedHeightPaper}>
                         <Typography variant="h6" color="secondary">Tasks</Typography>
-                            {Object.keys(WorkContext.cicle).map((status,index)=>{ 
-                                return(
-                                    <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
-                                        <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
-                                            <Typography >
-                                                <b>Task: {capitalize(getKey(status))}</b>
-                                            </Typography>
-                                            <Typography >
-                                                <i>Expected Time: {(getKey(status)==="seeding" || getKey(status)==="harvest") ? 
-                                                    estimatedTime.times ? 
-                                                        estimatedTime.times[getKey(status)].time.toFixed(2) 
-                                                    : "getting" 
-                                                :"TBD"} </i>
-                                            </Typography>
-                                        </Box>
-                                    </Paper>
-                                )
-                            })}
+                            {displayTaskCards()}
                     </Paper>
                 </Grid>
                 </Grow>

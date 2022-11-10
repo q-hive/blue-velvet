@@ -16,7 +16,7 @@ export const NewProduct = (props) => {
   return (
     <div>
         {
-            isMix
+            isMix || productToEdit.mix.isMix 
             ?
             <MixProductsForm editing={props.edit} product={productToEdit}/>
             :
