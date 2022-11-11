@@ -1200,3 +1200,24 @@ export const EmployeeColumns = [
         }
     }
 ]
+
+export const adminDashboardEmployees = [
+{
+    field:"name",
+    headerName:"Employee",
+    headerAlign:"center",
+    align:"center",
+    headerClassName:"header-sales-table",
+    minWidth:{xs:"25%",md:130},
+    flex:1
+},
+{
+    field:"level",
+    headerName:"Level",
+    headerAlign:"center",
+    align:"center",
+    headerClassName:"header-sales-table",
+    minWidth:{xs:"25%",md:130},
+    flex:1
+}
+]

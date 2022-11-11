@@ -15,12 +15,14 @@ import api from "../../../axios"
 //Theme
 import { BV_THEME } from '../../../theme/BV-theme';
 import { DataGrid , GridRowsProp} from '@mui/x-data-grid';
+import { adminDashboardEmployees } from '../../../utils/TableStates';
 
 
 export const Dashboard = () => {
     const {user,credential} = useAuth()
 
     const [containers, setContainers] = useState([])
+    const [employeesPerformanceRows,  setEmployeesPerformanceRows] = useState([])
 
     const theme = useTheme(BV_THEME)
 
@@ -32,9 +34,9 @@ export const Dashboard = () => {
         height: 240
     }
     const rows = [
-        { id: 1, col1: 'Eluis', col2: Math.random()},
-        { id: 2, col1: 'Eluis2', col2: Math.random()},
-        { id: 3, col1: 'Eluis3', col2: Math.random() },
+        { id: 1, name: 'Eluis', level: Math.random()},
+        { id: 2, name: 'Eluis2', level: Math.random()},
+        { id: 3, name: 'Eluis3', level: Math.random() },
       ];
 
     const navigate = useNavigate()
@@ -58,20 +60,47 @@ export const Dashboard = () => {
         return containersData.data.data[0].containers
     }
 
+    const getEmployees = async () => {
+        const employeesPerformance = await api.api.get(`${api.apiVersion}/employees/analytics/performance`, {
+            headers:{
+                "authorization":    credential._tokenResponse.idToken,
+                "user":             user
+            }
+        })
+        return employeesPerformance.data.data.employees
+    }
+
+    const mapEmployeesData = (employees) => {
+        let array = []
+        if(Array.isArray(employees)){
+            array = employees.map((data) => {
+                return {name:data.name, level:data.performance.level, _id:data._id}
+            })
+
+            return array
+        }
+
+        throw "Function for mapping employees data is not receiving an array"
+    }
+    
     useEffect(() => {
         const getData = async () => {
             try {
                 const containers2 = await getContainers()
-                console.log("containers 2",containers2)
-                return containers2
+                const employeesData = await getEmployees()
+
+                const mappedEmployees = mapEmployeesData(employeesData)
+                return {containers2, mappedEmployees}
             } catch(err) {
                 console.log(err)
+                throw "There was an error trying to get data for dashboard"
             }
         }
 
         getData()
         .then((response)=>{
-            setContainers(response)
+            setContainers(response.containers2)
+            setEmployeesPerformanceRows(response.mappedEmployees)
         })
         .catch((err) =>{
             console.log(err)
@@ -144,26 +173,13 @@ export const Dashboard = () => {
                                 backgroundColor:BV_THEME.palette.primary.main,
                                 color:"white"
                             }}}>
-                            <Typography variant="h6" color="secondary.dark">Employee Performance</Typography>
+                            <Typography variant="h6" color="secondary.dark">Employee level</Typography>
                             <DataGrid
-                            columns={[{
-                                field:"col1",
-                                headerName:"Employee",
-                                headerAlign:"center",
-                                align:"center",
-                                headerClassName:"header-sales-table",
-                                minWidth:{xs:"25%",md:130},
-                                flex:1
-                            },{
-                                field:"col2",
-                                headerName:"Performance rate",
-                                headerAlign:"center",
-                                align:"center",
-                                headerClassName:"header-sales-table",
-                                minWidth:{xs:"25%",md:130},
-                                flex:1
-                            },]}
-                            rows={rows}
+                            columns={adminDashboardEmployees}
+                            rows={employeesPerformanceRows}
+                            getRowId={(row) => {
+                                return row._id
+                            }}
                             sx={{marginY:"2vh",}}>
                             </DataGrid>
                             

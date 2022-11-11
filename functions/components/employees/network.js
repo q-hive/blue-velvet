@@ -6,6 +6,7 @@ import {mongoose} from '../../mongo.js'
 import Organization from "../../models/organization.js";
 import { deleteFromFirebase } from "../admin/store.js";
 import { deleteEmployeeFromDB, getEmployeeById } from "./store.js";
+import { getEmployeesPerformance } from "./controller.js";
 
 const orgModel = mongoose.model('organizations', Organization)
 
@@ -28,6 +29,16 @@ router.get('/:id', (req, res) => {
     })
     .catch(err => {
     
+    })
+})
+
+router.get('/analytics/performance', (req, res) => {
+    getEmployeesPerformance(res.locals.organization)
+    .then(data => {
+        success(req, res, 200, "Employees performance obtained succesfully", data)
+    })
+    .catch(err => {
+        error(req, res, 500, "Error getting employees performance", err, err)
     })
 })
 

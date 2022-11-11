@@ -85,6 +85,7 @@ export const LoginInputs = ({
                     variant="outlined" 
                     name="passphrase"
                     id="passphrase" 
+                    type="password"
                     disabled={loading}
                     onChange={handleLoginData}
                     required

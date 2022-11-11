@@ -60,3 +60,17 @@ export const deleteEmployeeFromDB = (req, res) => {
         
     })
 }
+
+export const getEmployeesWithAggregation = (orgId, aggregationObject) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const aggregationStages = aggregationObject
+            const queryResult = await orgModel.findOne({"_id":orgId}, aggregationStages)
+            resolve(queryResult)
+        } catch (err) {
+            reject(err)
+        }
+        
+
+    })
+}
