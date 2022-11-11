@@ -73,6 +73,10 @@ export const AppRoutes  = [
         path:"/:uid/admin/employees/new",   
         component:<NewEmployee edit={{isEdition:false}}/>
     },
+    {
+        path:"/:uid/admin/employees/editEmployee",   
+        component:<NewEmployee edit={{isEdition:true}}/>
+    },
 
     //EMPLOYEE ROUTES
     {

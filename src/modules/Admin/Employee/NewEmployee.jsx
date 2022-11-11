@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 
 //*MUI COMPONENTS
 import { Autocomplete, Box, Button, Divider, Fab, TextField, Typography, Fade } from '@mui/material'
@@ -15,9 +15,10 @@ import api from '../../../axios.js'
 import { BV_THEME } from '../../../theme/BV-theme'
 import { UserDialog } from '../../../CoreComponents/UserFeedback/Dialog'
 
-export const NewEmployee = () => {
+export const NewEmployee = (props) => {
     const {user, credential} = useAuth()
     const navigate = useNavigate()
+    const [edition,setEdition] = useState(false)
 
     const [dialog, setDialog] = useState({
         open:false,
@@ -25,23 +26,67 @@ export const NewEmployee = () => {
         message:"",
         actions:[]
     })
-    
+
     const [input, setInput] = useState({
-        name:           undefined,
-        email:          undefined,
-        phone:          undefined,
-        lname:          undefined,
-        password:       undefined,
-        salary:         undefined,
-        image:          undefined,
-        street:         undefined,
-        number:         undefined,
-        ZipCode:        undefined,
-        city:           undefined,
-        state:          undefined,
-        country:        undefined,
-        references:     undefined,
+        name:           "",
+        email:          "",
+        phone:          "",
+        lname:          "",
+        password:       "",
+        salary:         "",
+        image:          "",
+        street:         "",
+        number:         "",
+        ZipCode:        "",
+        city:           "",
+        state:          "",
+        country:        "",
+        references:     "",
     })
+
+    let UserInEdition
+
+    useEffect(()=>{
+        if(props.edit.isEdition){    
+            setEdition(true)
+            let id = new URLSearchParams(window.location.search).get("id")
+            api.api.get(`${api.apiVersion}/employees/${id}`, {
+                headers:{
+                    authorization:credential._tokenResponse.idToken,
+                    user: user
+                }
+            })
+            .then((res) => {
+                UserInEdition=res.data.data[0]
+                console.log("user in edition",UserInEdition)
+                setInput({...input, 
+                    name:           UserInEdition.name, 
+                    email:          UserInEdition.email,
+                    phone:          UserInEdition.phone,
+                    lname:          UserInEdition.lname,
+                    password:       UserInEdition.password,
+                    salary:         UserInEdition.salary,
+                    image:          UserInEdition.image,
+                    street:         UserInEdition.address.street,
+                    number:         UserInEdition.address.stNumber,
+                    ZipCode:        UserInEdition.address.zip,
+                    city:           UserInEdition.address.city,
+                    state:          UserInEdition.address.state,
+                    country:        UserInEdition.address.country,
+                    references:     UserInEdition.address.references,
+    
+                })
+            })
+            .catch((err) => {
+                console.log(err)
+            })
+
+            
+        }
+
+
+    },[])
+    
     
     const handleInput = (e,v,r) => {
         let id
@@ -89,7 +134,7 @@ export const NewEmployee = () => {
         })
         .then((res) => {
             
-            if(res.response.status === 201){
+            if(res.status === 201){
                 setDialog({
                     ...dialog,
                     open:true,
@@ -126,7 +171,8 @@ export const NewEmployee = () => {
                             label:"Retry",
                             btn_color:"primary",
                             execute:() => {
-                                window.location.reload()
+                                handleCreateEmployee()
+                                setDialog({...dialog,open:false})
                             }
                         },
                         {
@@ -172,24 +218,24 @@ export const NewEmployee = () => {
             <Divider variant="middle" sx={{width:{xs:"98%",sm:"50%",md:"50%"}, marginY:"1vh"}}/>
 
             <Box sx={{width:{xs:"98%",sm:"49%"}}} >
-                <TextField id="name"  onChange={(e) => handleInput(e,e.target.value,"input")} label="First Name" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
-                <TextField id="lname"  onChange={(e) => handleInput(e,e.target.value,"input")} label="Last Name" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
+                <TextField id="name" value={input.name} onChange={(e) => handleInput(e,e.target.value,"input")} label="First Name" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} InputLabelProps={{ shrink: edition ? true:false }} />
+                <TextField id="lname" value={input.lname} onChange={(e) => handleInput(e,e.target.value,"input")} label="Last Name" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
             </Box>
-            <TextField id="salary" type="number" onChange={(e) => handleInput(e,e.target.value,"input")} label="Salary" InputProps={{endAdornment: <Typography>/HR</Typography>}} sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.thirdSize})} />
+            <TextField id="salary" type="number" value={input.salary}  onChange={(e) => handleInput(e,e.target.value,"input")} label="Salary" InputProps={{endAdornment: <Typography>/HR</Typography>}} sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.thirdSize})} />
 
             
             <Typography variant="h6" mt="4vh">
                 Address 
             </Typography>
-            <TextField onChange={(e) => handleInput(e,e.target.value,"input")} id="street" label="Street" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
+            <TextField  onChange={(e) => handleInput(e,e.target.value,"input")} id="street" value={input.street}  label="Street" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
             <Box sx={{width:{xs:"98%",sm:"49%"}}} >
-                <TextField onChange={(e) => handleInput(e,e.target.value,"input")} id="number" label="No." type="number" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
-                <TextField onChange={(e) => handleInput(e,e.target.value,"input")} id="ZipCode" label="ZipCode" type="text" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
+                <TextField onChange={(e) => handleInput(e,e.target.value,"input")} id="number" value={input.number} label="No." type="number" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
+                <TextField onChange={(e) => handleInput(e,e.target.value,"input")} id="ZipCode" value={input.ZipCode} label="ZipCode" type="text" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
             </Box>
-            <TextField onChange={(e) => handleInput(e,e.target.value,"input")} id="city" label="City" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
-            <TextField onChange={(e) => handleInput(e,e.target.value,"input")} id="state" label="State" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
-            <TextField onChange={(e) => handleInput(e,e.target.value,"input")} id="country" label="Country" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
-            <TextField onChange={(e) => handleInput(e,e.target.value,"input")} id="references" multiline label="References" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
+            <TextField onChange={(e) => handleInput(e,e.target.value,"input")} id="city" value={input.city} label="City" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
+            <TextField onChange={(e) => handleInput(e,e.target.value,"input")} id="state" value={input.state} label="State" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
+            <TextField onChange={(e) => handleInput(e,e.target.value,"input")} id="country" value={input.country} label="Country" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
+            <TextField onChange={(e) => handleInput(e,e.target.value,"input")} id="references" value={input.street} multiline label="References" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
 
 
 
@@ -199,8 +245,8 @@ export const NewEmployee = () => {
             </Typography>
             <Divider variant="middle" sx={{width:{xs:"98%",sm:"50%",md:"50%"}, marginY:"1vh"}}/>
 
-            <TextField id="email" onChange={(e) => handleInput(e,e.target.value,"input")} label="Email" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
-            <TextField id="phone" onChange={(e) => handleInput(e,e.target.value,"input")} label="Phone" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
+            <TextField id="email" onChange={(e) => handleInput(e,e.target.value,"input")} label="Email" value={input.email} sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
+            <TextField id="phone" onChange={(e) => handleInput(e,e.target.value,"input")} label="Phone" value={input.phone} sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
             <TextField id="password" onChange={(e) => handleInput(e, e.target.value,"input")} type="password" label="Set a password" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
 
             <Button variant="contained" onClick={handleCreateEmployee} sx={{marginTop:"2vh"}}>

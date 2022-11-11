@@ -1107,7 +1107,7 @@ export const EmployeeColumns = [
                             type:"privileged",
                             execute:() => {
                                 editCustomer()
-                                // navigate(`/${user.uid}/${user.role}/production/editProduct/?id=${params.id}`)
+                                navigate(`/${user.uid}/${user.role}/employees/editEmployee/?id=${params.id}`)
                             }
                         },
                         {
