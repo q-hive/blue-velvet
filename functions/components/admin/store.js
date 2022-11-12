@@ -44,7 +44,6 @@ export function newEmployee(res,data) {
 
             getOrganizationById(res.locals.organization)
             .then(org => {
-                console.log(data)
                 let empData = {
                     uid:            userRecord.uid,  
                     email:          data.email,
@@ -53,7 +52,16 @@ export function newEmployee(res,data) {
                     phone:          data.phone,
                     image:          data.image,
                     salary:         data.salary,
-                    address:        data.address
+                    address:        data.address,
+                    performance: {
+                        level:0,
+                        allocationRatio:0,
+                        workdays:0,
+                        packages:0,
+                        harvested:0,
+                        seeds:0,
+                        penalties:0,
+                    }
                 }
 
                 // * Add employee to record

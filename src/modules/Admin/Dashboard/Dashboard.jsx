@@ -67,6 +67,8 @@ export const Dashboard = () => {
                 "user":             user
             }
         })
+
+        console.log(employeesPerformance)
         return employeesPerformance.data.data.employees
     }
 

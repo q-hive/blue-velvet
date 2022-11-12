@@ -70,7 +70,5 @@ export const getEmployeesWithAggregation = (orgId, aggregationObject) => {
         } catch (err) {
             reject(err)
         }
-        
-
     })
 }

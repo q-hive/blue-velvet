@@ -358,7 +358,7 @@ export const updateOrgTasksHistory = (orgId, taskModel) => {
             }
 
             // const mongooseTaskModel = mongoose.model('task', mappedTaskModel)
-            const operation = await orgModel.findOneAndUpdate(
+            const query = await orgModel.findOneAndUpdate(
                 {
                     "_id": mongoose.Types.ObjectId(orgId)
                 },
@@ -372,7 +372,9 @@ export const updateOrgTasksHistory = (orgId, taskModel) => {
                 }
             ).exec()
 
-            resolve(operation)
+            const updateEmployeePerformance = await updatePerformance(orgId, taskModel.executedBy, [{query:"set", allocationRatio:""}])
+            
+            resolve(query)
         } catch (err) {
             reject(err)
         }
