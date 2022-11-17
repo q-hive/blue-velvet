@@ -158,17 +158,14 @@ export const ProductionMain = () => {
                         />
                         
 
-                        <Typography variant="h4" textAlign={"center"} margin={theme.margin.mainHeader}>
+                        <Typography variant="h4" color="secondary" textAlign={"center"} margin={theme.margin.mainHeader}>
                             Production management (products)
                         </Typography>
-                        <Box sx={{
-                                display:"flex", 
-                                justifyContent:{xs:"center",sm:"flex-end"}
-                                }}>
-                            <Button variant="contained" startIcon={<Add/>} onClick={handleNewProduct} color="primary" disabled={user.role === "employee"} >
-                                Add new product
-                            </Button>
-                        </Box>
+                        <Box sx={{display:"flex", justifyContent:"space-between",marginBottom:"3vh"}} >
+                        <Button variant='contained' color='primary' startIcon={<Add/>} onClick={handleNewProduct} sx={{minWidth:"20%"}}>
+                            Add New Product
+                        </Button>
+                    </Box>
                         
                         {
                             loading

@@ -36,7 +36,7 @@ export const NewOrder = (props) => {
 
     // const isEdition = props.edit.isEdition
     // const prevOrderID = props.edit.values.order
-
+    console.log("props",props)
     
 
     //*Auth context
@@ -44,6 +44,7 @@ export const NewOrder = (props) => {
         let scopeProducts
         
         if(props.edit.isEdition){
+            console.log("isEdition")
             scopeProducts = props.edit.order.products.map((product) => {
                 return product
             })
@@ -65,7 +66,7 @@ export const NewOrder = (props) => {
         products:   []
     })
     const [input, setInput] = useState({
-        customer:           {},
+        customer:           props.edit.isEdition? props.edit.values.order.customer : {},
         product:            {},
         smallPackages:      undefined,
         mediumPackages:     undefined,
@@ -640,6 +641,7 @@ export const NewOrder = (props) => {
                 <Autocomplete
                     id="customer"
                     options={options.customers}
+                    defaultValue={props.edit.isEdition ? props.edit.values.order.customer : ""}
                     sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})}
                     renderInput={(params) => { 
                         const {customer} = error
