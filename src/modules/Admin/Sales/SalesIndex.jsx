@@ -136,7 +136,7 @@ export const SalesIndex = () => {
                     }}
             >
                 
-                <Typography variant="h4" textAlign={"center"} margin={BV_THEME.margin.mainHeader}>
+                <Typography variant="h4" color="secondary" textAlign={"center"} margin={BV_THEME.margin.mainHeader}>
                     Sales management
                 </Typography>
 

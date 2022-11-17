@@ -55,7 +55,7 @@ export const EmployeeIndex = () => {
                 }}
             >
                 
-                <Typography variant="h4" textAlign={"center"} margin={BV_THEME.margin.mainHeader}>
+                <Typography variant="h4" color="secondary" textAlign={"center"} margin={BV_THEME.margin.mainHeader}>
                     Employee management
                 </Typography>
 
