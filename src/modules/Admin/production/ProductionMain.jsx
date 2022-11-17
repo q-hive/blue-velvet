@@ -27,7 +27,7 @@ export const ProductionMain = () => {
     
     //*Render states
     const [columnsState, setColumnsState] = useState(productsColumns)
-    const [rows, setRows] = useState([])
+    const [rows, setRows] = useState(JSON.parse(window.localStorage.getItem('products')) || [])
     const [loading, setLoading] = useState(false)
     const [dialog, setDialog] = useState({
         open:false,

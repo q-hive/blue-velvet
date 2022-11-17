@@ -1,3 +1,4 @@
+
 const sortProductsPrices = (order,products) => {
     const orderProducts = order.products.map((prod) => {
         return {prodId: prod._id, packages: prod.packages}
@@ -115,13 +116,28 @@ export const getOrdersPrice = (order, products) => {
     return orderTotal
 }
 
+export const getEstimatedHarvestDate = (product) => {
+    try {
+        const lightTime = product.parameters.day
+        const darkTime = product.parameters.night
+        const estimatedTime = Date.now() + (((((lightTime*24)*60)*60)*1000) + ((((darkTime*24)*60)*60)*1000))
+    
+        const estimatedDate = new Date(estimatedTime)  
+        estimatedDate.setHours(4,0,0)  
+
+        return estimatedDate
+    } catch (err) {
+        throw Error("Error getting estimation for harvesting date")
+    }
+}
+
 export const getOrderProdData = (order, dbproducts, perProduct = false) => {
     //*SORT PRICES IN DBPRODUCTS
-    const sortedProductPrices = sortProductsPrices(order, dbproducts)
+    // const sortedProductPrices = sortProductsPrices(order, dbproducts)
     //*Add grams per size to order product packages
     order.products.forEach((prod, pidx) => {
         //*Find the product in database
-        const prodFound = sortedProductPrices.find((fprod) => fprod._id.equals(prod._id))
+        const prodFound = dbproducts.find((fprod) => fprod._id.equals(prod._id))
         prod.packages.forEach((pkg, idx) => {
             switch(pkg.size){
                 case "small":
@@ -155,22 +171,29 @@ export const getOrderProdData = (order, dbproducts, perProduct = false) => {
                 const mixProds = prodFound.toObject().mix.products
                 
                 const mappedMixComposition = mixProds.map((mprod) => {
-                    const mixFound = sortedProductPrices.find((fprod) => fprod._id.equals(mprod.strain)).toObject()
+                    
+                    const mixFound = dbproducts.find((fprod) => fprod._id.equals(mprod.strain)).toObject()
+                    const mixProductHarvestDate = getEstimatedHarvestDate(mixFound)
                     
                     delete mixFound.mix
                     delete mixFound.price
                     delete mprod.strain
                     mixFound.productionData = {
-                        name:   mixFound.name,
-                        harvest: harvest * (mprod.amount/100),
-                        seeds: harvest * (mixFound.parameters.seedingRate/mixFound.parameters.harvestRate),
-                        trays:  (harvest * (mixFound.parameters.seedingRate/mixFound.parameters.harvestRate)) / mixFound.parameters.seedingRate
+                        ProductName:            mixFound.name,
+                        ProductionStatus:       "seeding",
+                        ProductionOrder:        order._id,
+                        EstimatedHarvestDate:   mixProductHarvestDate,
+                        ProductID:              mixFound._id,
+                        harvest:                harvest * (mprod.amount/100),
+                        seeds:                  harvest * (mixFound.parameters.seedingRate/mixFound.parameters.harvestRate),
+                        trays:                  (harvest * (mixFound.parameters.seedingRate/mixFound.parameters.harvestRate)) / mixFound.parameters.seedingRate
                     }
 
                     return {...mprod, ...mixFound, mix:true}
                 })
 
                 prod.products = mappedMixComposition
+                prod.productionData = mappedMixComposition.map((productOfMix) => productOfMix.productionData)
                 
             } else {
                 prod.mix = {isMix: false}
@@ -178,42 +201,55 @@ export const getOrderProdData = (order, dbproducts, perProduct = false) => {
                 prod["seedingRate"] = prodFound.parameters.seedingRate
                 //* Get harvestRate (in grams) per tray
                 prod["harvestRate"] = prodFound.parameters.harvestRate
+                prod["productionData"] = [{
+                        ProductName:            prodFound.name,
+                        ProductionStatus:       "seeding",
+                        ProductionOrder:        order._id,
+                        ProductID:              prodFound._id,
+                        EstimatedHarvestDate:   getEstimatedHarvestDate(prodFound)
+                }]
+
             }
         }
         
-        const seeds = harvest / (prod.harvestRate / prod.seedingRate)
-        const trays = seeds / prod.seedingRate
+        // const seeds = harvest / (prod.harvestRate / prod.seedingRate)
+        // const trays = seeds / prod.seedingRate
         
-        prod["productionData"] = {harvest, seeds, trays}
+        // prod["productionData"] = [{...prod.productionData, harvest, seeds, trays}]
     })
 
-    if(perProduct){
-        let productionData
+    // if(perProduct){
+    //     let productionData
 
-        productionData = order.products.flatMap((prod) => {
-            if(prod.mix){
-                return prod.products.map((mxprod) => {
-                    return {id:mxprod._id,mixId:prod._id,orderId:order._id, ...mxprod.productionData, mix:true}
-                })
-            }
+    //     productionData = order.products.flatMap((prod) => {
+    //         if(prod.mix){
+    //             return prod.products.map((mxprod) => {
+    //                 return {
+    //                     ...mxprod.productionData, 
+    //                     ProductID:mxprod._id,
+    //                     mixId:prod._id,
+    //                     mix:true
+    //                 }
+    //             })
+    //         }
             
-            return {...prod.productionData, id:prod._id}
-        })
+    //         return {...prod.productionData, id:prod._id}
+    //     })
         
-        return productionData
-    }
+    //     return productionData
+    // }
     
-    const productionData = order.products.map((prod) => {
-        if(prod.mix.isMix){
-            const mappedProducionData = prod.products.map((mxprod) => {
-                return {product:mxprod.name, ...mxprod.productionData}
-            })
+    const productionData = order.products.flatMap((prod) => {
+        // if(prod.mix.isMix){
+        //     const mappedProducionData = prod.products.map((mxprod) => {
+        //         return {product:mxprod.name, ...mxprod.productionData}
+        //     })
 
-            return mappedProducionData
-        }
-        
-        return {product:prod.name,id:prod._id,...prod.productionData}
+        //     return mappedProducionData
+        // }
+        return prod.productionData
     })
 
+    
     return productionData
 }

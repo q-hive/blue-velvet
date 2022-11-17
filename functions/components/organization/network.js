@@ -2,7 +2,7 @@ import express from 'express'
 import { mongoose } from '../../mongo.js'
 
 import { success, error } from '../../network/response.js'
-import { getOrganizations, getOrganizationById, newOrganization } from './store.js'
+import { getOrganizations, getOrganizationById, newOrganization, updateOrganization } from './store.js'
 import { modelsValidationError } from '../../utils/errorHandler.js'
 
 var router = new express.Router()

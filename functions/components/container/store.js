@@ -51,18 +51,20 @@ export const getContainers = (filters) => {
      ?   sort
      */
 
-    let contModelFiltered = contModel 
+    // let contModelFiltered = contModel 
+    let containers = orgModel.findOne({"_id":filters.organization},{"containers":true})
 
-    // * Apply filters if requested
-    if (filters.organization !== undefined && filters.organization !== null) {
-        contModelFiltered = contModelFiltered.where({ organization: filters.organization })
-    }
+    
+    // // * Apply filters if requested
+    // if (filters.organization !== undefined && filters.organization !== null) {
+    //     contModelFiltered = contModelFiltered.where({ organization: filters.organization })
+    // }
 
-    if (filters.admin !== undefined && filters.admin !== null) {
-        contModelFiltered = contModelFiltered.where({ admin: filters.admin })
-    }
+    // if (filters.admin !== undefined && filters.admin !== null) {
+    //     contModelFiltered = contModelFiltered.where({ admin: filters.admin })
+    // }
 
-    return contModelFiltered.find({})
+    return containers
 
 }
 
@@ -119,4 +121,15 @@ export const updateContainers = async (ids, edit) => {
     let cont = await contModel.updateMany({ _id: { $in: ids }}, edit, { multi: true, new: true })
 
     return cont
+}
+
+export const removeContainer = (orgId, containerId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const op = await orgModel.findOneAndUpdate({"_id":mongoose.Types.ObjectId(orgId)}, {"$pull":{"containers._id":mongoose.Types.ObjectId(containerId)}})
+            resolve(op)
+        } catch (err) {
+            reject(err)
+        }
+    })
 }
