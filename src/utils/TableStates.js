@@ -667,6 +667,7 @@ export const salesColumns = [
                             type:"privileged",
                             execute:() => {
                                 editOrder()
+                                navigate
                             }
                         },
                         {
@@ -804,6 +805,84 @@ export const salesColumns = [
             )
         } 
     }
+]
+
+export const recentSalesColumns = [
+    {
+        field:"id",
+        headerName:"ID",
+        headerAlign:"center",
+        align:"center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1
+    },
+    {
+        field:"customer",
+        headerName:"Customer",
+        headerAlign:"center",
+        align:"center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1
+    },
+    {
+        field:"income",
+        headerName:"Income",
+        headerClassName:"header-sales-table",
+        headerAlign:"center",
+        align:"center",
+        minWidth:{xs:"25%",md:130},
+        flex:1
+    },
+    {
+        field:"date2",
+        headerName:"Delivery Date",
+        headerClassName:"header-sales-table",
+        headerAlign:"center",
+        align:"center",
+        minWidth:{xs:"25%",md:100},
+        flex:1
+    },
+]
+
+export const deliveredSalesColumns = [
+    {
+        field:"id",
+        headerName:"ID",
+        headerAlign:"center",
+        align:"center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1
+    },
+    {
+        field:"customer",
+        headerName:"Customer",
+        headerAlign:"center",
+        align:"center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1
+    },
+    {
+        field:"income",
+        headerName:"Income",
+        headerClassName:"header-sales-table",
+        headerAlign:"center",
+        align:"center",
+        minWidth:{xs:"25%",md:130},
+        flex:1
+    },
+    {
+        field:"date2",
+        headerName:"Delivery Date",
+        headerClassName:"header-sales-table",
+        headerAlign:"center",
+        align:"center",
+        minWidth:{xs:"25%",md:100},
+        flex:1
+    },
 ]
 
 export const CustomerColumns = [
