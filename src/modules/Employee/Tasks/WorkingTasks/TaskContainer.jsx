@@ -17,6 +17,7 @@ import api from '../../../../axios.js'
 
 
 ///tasks steps test
+import { PreSoakingContent } from './PreSoakingContent'
 import { SeedingContent } from './SeedingContent.jsx';
 import { HarvestingContent } from './HarvestingContent.jsx';
 import { PackingContent } from './PackingContent.jsx';
@@ -83,6 +84,15 @@ export const TaskContainer = (props) => {
         //     steps=[{step:"Unpaid"}]
         //  break;
 
+        case "preSoaking":
+            contentTitle = "Pre Soaking"
+            expectedtTime = 60*12//Math.ceil(state.time.times.seeding.time) 
+            content = <PreSoakingContent products={products} productsObj={productsByNameObj} workData={state.workData} index={activeStep}/>
+            steps=[
+                {step:"Pre Soak"},
+            ]
+        break;
+
         case "seeding":
             contentTitle = "Seeding"
             expectedtTime = Math.ceil(state.time.times.seeding.time) 
@@ -93,6 +103,8 @@ export const TaskContainer = (props) => {
                 {step:"Shelf"},
             ]
         break;
+
+        
         
 
         case "growing":

@@ -24,7 +24,7 @@ const taskCard_sx = {
 }
 
 
-export const preSoakingContent = (props) => {
+export const PreSoakingContent = (props) => {
 
     const {user, credential} = useAuth()
     const [workProducts, setWorkProducts] = useState(props.workData.production.products)
