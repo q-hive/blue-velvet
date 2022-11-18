@@ -57,8 +57,6 @@ export const isValidProductObject = (json) => {
         return hasEveryKey(productModel, json)
 }
 
-
-
 export const relateOrdersAndTasks = (orgId) => {
     return new Promise((resolve, reject) => {
         //*ASK FOR PRODUCTS ARRAY

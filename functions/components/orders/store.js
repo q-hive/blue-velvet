@@ -1,3 +1,4 @@
+//*db
 import { mongoose } from '../../mongo.js'
 let { ObjectId } = mongoose.Types
 
@@ -5,12 +6,18 @@ let { ObjectId } = mongoose.Types
 import Organization from '../../models/organization.js'
 import Order from '../../models/order.js'
 
-import { getProductionForOrder } from '../production/store.js'
+//*UTILS
 import { addTimeToDate } from '../../utils/time.js'
+
+//*Org controllers
 import { getOrganizationById } from '../organization/store.js'
-import { getOrdersPrice, getOrderProdData, getEstimatedHarvestDate } from './controller.js'
+
+//*PRODUCTS CONTROLLERS
 import { getAllProducts } from '../products/store.js'
-import { updateContainerById } from '../container/store.js'
+
+
+import { buildProductionDataFromOrder } from '../production/controller.js'
+import { getOrdersPrice, newOrderDateValidation } from './controller.js'
 
 const orgModel = mongoose.model('organization', Organization)
 
@@ -233,8 +240,12 @@ export const createNewOrder = (orgId, order) => {
         
         try {
         
+            
+            //*Get all products of container to make validations (products on order have no the complete data)
             allProducts = await getAllProducts(orgId)
-
+            
+            newOrderDateValidation(order, allProducts)
+            
             mappedProducts = order.products.map(async (prod) => {
                 const dbProduct = allProducts.find((product) => {
                     return product._id.equals(prod._id)
@@ -260,11 +271,13 @@ export const createNewOrder = (orgId, order) => {
             mappedAndUpdatedProducts = await Promise.all(mappedProducts)
 
             let prc = getOrdersPrice(order, allProducts)
+            
             if(prc === undefined || prc === null){
                 return reject(new Error(JSON.stringify(priceFailure)))
             }
+            
             let end = addTimeToDate(new Date(), { w: 2 })
-            let production = getOrderProdData({...order, _id:id}, allProducts)
+            let production = buildProductionDataFromOrder({...order, _id:id}, allProducts)
 
         
             if(allProducts && allProducts.length >0){

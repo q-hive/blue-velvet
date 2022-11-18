@@ -12,7 +12,7 @@ const Production = new Schema({
     ProductName:         String,
     ProductID:           ObjectId,
     ProductionStatus:    String,
-    ProductionOrder:     ObjectId,
+    RelatedOrder:     ObjectId,
     EstimatedHarvestDate: Date,
     seeds:               Number,
     harvest:             Number,

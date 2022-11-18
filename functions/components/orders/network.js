@@ -12,8 +12,7 @@ router.post('/', (req, res) => {
         success(req, res, 201, 'New order created succesfully', order)
     })
     .catch((err) => {
-        
-        error(req, res, 500, "Error creating new order - GENERIC ERROR", err)
+        error(req, res, 500, "Error creating new order - GENERIC ERROR", err, err)
         
     })
 })
