@@ -809,15 +809,6 @@ export const salesColumns = [
 
 export const recentSalesColumns = [
     {
-        field:"id",
-        headerName:"ID",
-        headerAlign:"center",
-        align:"center",
-        headerClassName:"header-sales-table",
-        minWidth:{xs:"25%",md:130},
-        flex:1
-    },
-    {
         field:"customer",
         headerName:"Customer",
         headerAlign:"center",
