@@ -1,7 +1,7 @@
 import { getProductById } from "../products/store.js"
 
 //*Estimate date to harvest the product if it is seeded today.
-export const getEstimatedHarvestDate = async (product) => {
+export const getEstimatedHarvestDate = (product) => {
     try {
 
         const lightTime = product.parameters.day
@@ -66,7 +66,7 @@ export const buildProductionDataFromOrder = (order, dbproducts) => {
                     mixFound.productionData = {
                         ProductName:            mixFound.name,
                         ProductionStatus:       "pre-soaking",
-                        ProductionOrder:        order._id,
+                        RelatedOrder:           order._id,
                         EstimatedHarvestDate:   mixProductHarvestDate,
                         ProductID:              mixFound._id,
                         harvest:                harvest * (mprod.amount/100),
@@ -89,9 +89,12 @@ export const buildProductionDataFromOrder = (order, dbproducts) => {
                 prod["productionData"] = [{
                         ProductName:            prodFound.name,
                         ProductionStatus:       "pre-soaking",
-                        ProductionOrder:        order._id,
+                        RelatedOrder:           order._id,
                         ProductID:              prodFound._id,
-                        EstimatedHarvestDate:   getEstimatedHarvestDate(prodFound)
+                        EstimatedHarvestDate:   getEstimatedHarvestDate(prodFound),
+                        harvest:                harvest,
+                        seeds:                  harvest * (prodFound.parameters.seedingRate / prodFound.parameters.harvestRate),
+                        trays:                  (harvest * (prodFound.parameters.seedingRate / prodFound.parameters.harvestRate)) / prodFound.parameters.seedingRate 
                 }]
 
             }

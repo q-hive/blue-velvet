@@ -119,10 +119,32 @@ export const getOrdersPrice = (order, products) => {
 
 
 export const newOrderDateValidation = (order, allProducts = undefined) => {
-    const deliveryDateLeftDays = parseInt((((new Date(order.date) - new Date()/1000)/60)/60)/24)
+    const deliveryDateLeftDays = parseInt(((((new Date(order.date) - new Date())/1000)/60)/60)/24)
     
     if(deliveryDateLeftDays < 7) {
         throw new Error("Invalid date, must be a delivery date after the total production times.")
     }
 
+    const completeObjectProducts = order.products.map((orderProduct) => allProducts.find((dbProduct) => dbProduct._id.equals(orderProduct._id)))
+
+    const times = completeObjectProducts.flatMap((product) => {
+        if(product.mix.isMix){
+            const mixProductsCompleteObjects = product.mix.products.map((mixProd) => allProducts.find((dbProd) => dbProd._id.equals(mixProd.strain)))
+
+            const mixTimes = mixProductsCompleteObjects.map((mixProd) => mixProd.parameters.day + mixProd.parameters.night)
+
+            return mixTimes
+        }
+        return product.parameters.day + product.parameters.night
+    })
+
+    console.log(deliveryDateLeftDays)
+    console.log(times)
+
+    const maxTime = Math.max(...times)
+
+    
+    if(deliveryDateLeftDays < maxTime){
+        throw new Error("Invalid date, must be a delivery date after the total production times.")
+    }
 } 

@@ -275,7 +275,7 @@ export const createNewOrder = (orgId, order) => {
             if(prc === undefined || prc === null){
                 return reject(new Error(JSON.stringify(priceFailure)))
             }
-            
+
             let end = addTimeToDate(new Date(), { w: 2 })
             let production = buildProductionDataFromOrder({...order, _id:id}, allProducts)
 
@@ -289,7 +289,7 @@ export const createNewOrder = (orgId, order) => {
                     date:           order.date,
                     end:            end,
                     products:       mappedAndUpdatedProducts,
-                    status:         order.status
+                    status:         "production"
                 }
                 
                 getOrganizationById(orgId)
@@ -299,8 +299,6 @@ export const createNewOrder = (orgId, order) => {
                     }
                     
                     organization.orders.push(orderMapped)
-
-                    console.log(production)
 
                     production.forEach((productionModel) => {
                         organization.containers[0].production.push(productionModel)
