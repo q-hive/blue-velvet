@@ -57,6 +57,14 @@ export const isValidProductObject = (json) => {
         return hasEveryKey(productModel, json)
 }
 
+export const calculatePerformance = (product) => {
+    if(product.mix.isMix){
+        return 0
+    }
+    
+    return (product.parameters.harvestRate / product.parameters.seedingRate) * (product.price[0].packageSize / product.price[0].amount)
+}
+
 export const relateOrdersAndTasks = (orgId) => {
     return new Promise((resolve, reject) => {
         //*ASK FOR PRODUCTS ARRAY
@@ -68,14 +76,13 @@ export const relateOrdersAndTasks = (orgId) => {
                 //* ITERATE ARRAY
                 const mappedProd = products.map(async (prod) => {
                     const mutableProd = prod.toObject()
-                    //* AND SEARCH IN TASKS BY PRODUCTS
-                    // const tasks = await getTaskByProdId(orgId ,prod._id)
                     //*This function returns the orders, that have a different status of delivered and that includes the products we are asking for
                     //*SEARCH IN ORDERS BY PRODUCT ID
                     const orders = await getOrdersByProd(orgId, prod._id)
 
-                    // mutableProd.tasks = tasks
-                    mutableProd.orders = orders
+                    mutableProd.orders = orders.map((order) => order._id)
+
+                    mutableProd.performance = calculatePerformance(mutableProd)
                     return {...mutableProd}
                 })
                 const mappedData = await Promise.all(mappedProd)
