@@ -75,7 +75,7 @@ export const NewOrder = (props) => {
     });
 
     //*Render states
-    const [productsInput, setProductsInput] = useState(false)
+    const [productsInput, setProductsInput] = useState(true)
     const [canSendOrder, setCanSendOrder] = useState(false)
     const [error, setError] = useState({
         customer:{
@@ -297,6 +297,26 @@ export const NewOrder = (props) => {
         console.log("tempArr",arr)
         
     }
+
+    function disableNonAvailableDays(date) {
+        const day = date.getDay()
+        return  day === 0 || 
+                day === 1 || 
+                day === 3 || 
+                day === 4 || 
+                day === 6;
+      }
+
+    function calculateMinDate() {
+        let minDate
+        const hoy = new Date()
+        const getMaxGrowingDays = () =>{
+            products
+        }
+        
+        hoy.setDate(hoy.getDate() + 7);
+        return hoy
+    }
     
     const handleSetOrder = async (e) => {
         if(e.target.id === "accept") {
@@ -313,8 +333,15 @@ export const NewOrder = (props) => {
                 }
             })
 
+            /*
             if(input.date !== undefined && Object.keys(input.customer).length !== 0){
-                setProductsInput(true)
+                
+            }
+            */
+        }
+        if(e.target.id === "test") {
+            if( products !== 0){
+                setProductsInput(false)
             }
             return 
         }
@@ -362,7 +389,7 @@ export const NewOrder = (props) => {
             mappedData = {
                 "customer": input.customer,
                 "products": useProducts ? products : [mappedInput],
-                "status":"seeding",
+                "status":"preSoaking",
                 "date": input.date
             }
 
@@ -396,6 +423,8 @@ export const NewOrder = (props) => {
                             label:loading ? <CircularProgress/> : "Print Order's Invoice",
                             btn_color:"secondary",
                             execute:() => {
+                                
+                                setLoading(true)
                                 getOrderInvoice(response.data.data).then((result) => {
 
                                     const url = window.URL.createObjectURL(new Blob([new Uint8Array(result.data.data.data).buffer]))
@@ -498,17 +527,23 @@ export const NewOrder = (props) => {
         const validatePackages = () => {
             return Boolean(input.smallPackages) || Boolean(input.mediumPackages)
         }
+
+        const validateCustomerAndDate = () => {
+            return Boolean(input.customer) && Boolean(input.date)   
+        }
+
         
         const validProduct = Object.keys(input.product) !== 0
         const validPackages = validatePackages()
+        const validDate = validateCustomerAndDate()
         
-        if(validProduct && validPackages){
+        if(/* validProduct && validPackages && */ validDate ){
             setCanSendOrder(() => {
                 return true
             })
         }
     
-    }, [input.product, input.smallPackages,input.mediumPackages, input.size])
+    }, [input.product, input.smallPackages,input.mediumPackages, input.size, input.customer,input.date])
 
   return (
     <>
@@ -632,6 +667,10 @@ export const NewOrder = (props) => {
                 <Button id="add" sx={{marginTop:"2vh"}} onClick={handleAddToOrder}>
                     Add product
                 </Button>
+
+                <Button variant="contained" id="test" onClick={handleSetOrder} disabled={products.length<1} sx={{marginTop:"2vh", color:{...BV_THEME.palette.white_btn}}}>
+                    Select customer and Delivery Date
+                </Button>
             
             </>
             :
@@ -653,7 +692,7 @@ export const NewOrder = (props) => {
                                 />
                             }}
                     onChange={handleChangeInput}
-                    getOptionLabel={(opt) => opt.name}
+                    getOptionLabel={(opt) => opt.name? opt.name : ""}
                 />
 
                 <Typography variant="h6" mb="1vh" mt="4vh">Delivery date</Typography>
@@ -671,17 +710,18 @@ export const NewOrder = (props) => {
                         }}
                         value={input.date}
                         sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize,})}
+                        disablePast={true}
+                        shouldDisableDate={disableNonAvailableDays}
+                        minDate={calculateMinDate()}
                     />
                 </LocalizationProvider>
-                <Button variant="contained" id="accept" onClick={handleSetOrder} sx={{marginTop:"2vh", color:{...BV_THEME.palette.white_btn}}}>
-                    Select products
+                <Button id="accept" variant="contained" onClick={handleSetOrder} disabled={!canSendOrder} sx={{marginTop:"2vh", color:{...BV_THEME.palette.white_btn}}}>
+                    Set Order
                 </Button>
             </>
             }
 
-            <Button id="order" variant="contained" onClick={handleSetOrder} disabled={!canSendOrder} sx={{marginTop:"2vh", color:{...BV_THEME.palette.white_btn}}}>
-                Set Order
-            </Button>
+            
 
             {/* Generate Feedback table */}
             {products.length != 0 ? 
