@@ -347,6 +347,7 @@ export const EntryPoint = () => {
         const dflt = "seeding"
         
         const statusObj = {
+            "preSoaking":"pre Soaking",
             "seeding":"seeding",
             "harvestReady": "harvest",
             "mats":"cut Mats",
