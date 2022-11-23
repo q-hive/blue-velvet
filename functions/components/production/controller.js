@@ -33,6 +33,7 @@ export const getEstimatedStartProductionDate = (orderDate,product) => {
         throw Error("Error getting estimation to start production date")
     }
 }
+
 //*Build model for production control based on order packages and products parameters
 export const buildProductionDataFromOrder = (order, dbproducts) => {
     //*Add grams per size to order product packages
@@ -274,8 +275,15 @@ export const getProductionWorkByContainerId = (req,res) => {
     return new Promise((resolve, reject) => {
         getProductionInContainer(res.locals.organization, req.query.containerId)
         .then((production) => {
-            const productionGrouped = grouPProductionForWorkDay(production)
-            resolve(productionGrouped)
+            
+            //*If no production is returned then return empty array
+            if(production.length >0){
+                const productionGrouped = grouPProductionForWorkDay(production)
+                resolve(productionGrouped)
+                return
+            }
+
+            resolve(production)
         })
         .catch(err => {
             reject(err)

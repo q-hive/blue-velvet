@@ -82,7 +82,7 @@ export const getProductionInContainer = async (orgId, containerId) => {
         .then((doc) => {
             const result = doc.containers[0]?.production
             if(!result){
-                reject(new Error("No result from query - getProductionInContainer controller"))
+                resolve([])
                 return
             }
 
