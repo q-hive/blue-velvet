@@ -350,7 +350,6 @@ export const getOrdersByProd = (orgId, id) => {
                 },
             ]
         )
-        console.log(orgOrdersByProd.length)
         const mapOrdersFromAggregation = orgOrdersByProd.map((orgModel) => {
             return orgModel.orders 
         }) 

@@ -25,7 +25,6 @@ const orgModel = mongoose.model('organization', Organization)
 
 export const setupGrowing = (workData) => {
     const growingSetup = workData.map((productionObj) => {
-        console.log(productionObj)
         const lightTime = productionObj.productData.day
         const darkTime = productionObj.productData.night
         

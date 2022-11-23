@@ -9,7 +9,8 @@ import {
     productsRoutes, taskRoutes, passphraseRoutes, 
     customerRoutes, filesApi, workRoutes, 
     employeesRoutes, 
-    containerRoutes
+    containerRoutes,
+    productionRoutes
 } from './network/routes.js'
 
 import { authRoutes } from './network/routes.js'
@@ -50,19 +51,34 @@ app.get(/^\/(?!api).*/, (req, res, ) => {
 })
 
 
+//*AUTH
 authRoutes(app)
 adminRoutes(app)
+passphraseRoutes(app)
 
+//*ORGANIZATION
+organizationRoutes(app)
+
+//*WORK
 taskRoutes(app) 
+workRoutes(app)
+
+
+//*CONTAINER ADMIN
 ordersRoutes(app)
 productsRoutes(app)
-passphraseRoutes(app)
-organizationRoutes(app)
 customerRoutes(app)
 filesApi(app)
-workRoutes(app)
+
+//*EMPLOYEE
 employeesRoutes(app)
+
+//*CONTAINER
 containerRoutes(app)
+
+//*PRODUCTION
+productionRoutes(app)
+
 
 const server = http.createServer(app)
 

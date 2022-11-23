@@ -1,7 +1,7 @@
 import Product from '../../models/product.js'
 import { getOrdersByProd } from '../orders/store.js'
 import { getTaskByProdId } from '../tasks/store.js'
-import { getAllProducts } from './store.js'
+import { getAllProducts, updateProduct } from './store.js'
 
 const hasEveryKey = (valid, current) => {
      //*Verificar que el objeto tenga todas las llaves del modelo
@@ -82,7 +82,11 @@ export const relateOrdersAndTasks = (orgId) => {
 
                     mutableProd.orders = orders.map((order) => order._id)
 
-                    mutableProd.performance = calculatePerformance(mutableProd)
+                    if(mutableProd.performance === undefined) {
+                        mutableProd.performance = calculatePerformance(mutableProd)
+                        await updateProduct(orgId, prod._id, "performance", mutableProd.performance)
+                    }
+                    
                     return {...mutableProd}
                 })
                 const mappedData = await Promise.all(mappedProd)
