@@ -28,7 +28,8 @@ export const newProduct = (orgId, contId, product) => {
                 provider:   provId,
                 price:      product.price,
                 parameters: product.parameters,
-                mix:        product.mix
+                mix:        product.mix,
+                performance: (product.parameters.harvestRate/product.parameters.harvestRate)*(product.price[0].amount/product.price[0].packageSize)
             }
 
             
@@ -62,6 +63,7 @@ export const newProduct = (orgId, contId, product) => {
 
             }  
             try{
+                
                 organization.containers[contId].products.push(prodMapped)
     
                 organization.save((err, doc) => {
@@ -177,6 +179,21 @@ export const updateProduct = (orgId, id, field, value) => {
     })
 }
 
+export const updateManyProducts = (config) => {
+    return new Promise((resolve, reject) => {
+        orgModel.findOneAndUpdate(
+            config.filter,
+            config.updateOperation,
+        )
+        .then((result) => {
+            resolve(result)
+        })
+        .catch(err => {
+            reject(err)
+        })
+    })
+}
+
 export const deleteProduct = (orgId, id) => {
     return new Promise(async (resolve, reject) => {
         let org 
@@ -237,11 +254,11 @@ export const getProductById = (orgId, containerId,prodId) => {
                     {
                         "$match": {
                             "_id": mongoose.Types.ObjectId(orgId),
-                            "containers": {
-                                "$elemMatch": {
-                                    "_id": mongoose.Types.ObjectId(containerId)
-                                }
-                            }
+                            // "containers": {
+                            //     "$elemMatch": {
+                            //         "_id": mongoose.Types.ObjectId(containerId)
+                            //     }
+                            // }
                         }
                     },
                     {
@@ -265,7 +282,6 @@ export const getProductById = (orgId, containerId,prodId) => {
                     }
                 ]
             )
-
             console.log(found)
             resolve(found[0].containers.products)
         } catch (err){

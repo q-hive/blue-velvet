@@ -12,8 +12,7 @@ router.post('/', (req, res) => {
         success(req, res, 201, 'New order created succesfully', order)
     })
     .catch((err) => {
-        
-        error(req, res, 500, "Error creating new order - GENERIC ERROR", err)
+        error(req, res, 500, "Error creating new order - GENERIC ERROR", err, err)
         
     })
 })
@@ -53,7 +52,7 @@ router.get('/:status', (req, res) => {
 */
 router.delete('/custom/', (req, res) => {
     getFilteredOrders(res.locals.organization, req)
-    .then((orders) => {
+    .then(({orders}) => {
         deleteOrders(res.locals.organization, orders)
         .then((status) => {
             success(req, res, 200, "Orders deleted")

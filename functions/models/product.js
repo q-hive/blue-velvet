@@ -38,7 +38,8 @@ const Product = new Schema({
             harvestRate:    { type: Number, required: true }  // * Per tray
         },
         required:   false
-    }
+    },
+    performance:Number
 },
 {
     timestamps: {

@@ -3,6 +3,7 @@ import auth from '../../firebaseAdmin.js'
 import Passphrase from '../../models/passphrase.js'
 
 import { error } from '../../network/response.js'
+import { getContainers } from '../container/store.js'
 
 export const getPassphraseByUid = (uid) => {
     return new Promise(async (resolve, reject) => {
@@ -18,8 +19,6 @@ export const getPassphraseByUid = (uid) => {
     })
 }
 export const isAuthenticated = (req, res, next) => {
-
-
     // return next()
     // * Verify request contains an ID Token.
     if (!(req.headers.authorization && req.headers.user)) {
@@ -41,21 +40,25 @@ export const isAuthenticated = (req, res, next) => {
 
     // * Una vez obtenido el ID Token, procedemos a verificar que sea correcto mediante firebase auth
     auth.verifyIdToken(idToken)
-    .then( decodedIdToken => { // * Obtenemos el decodedIDToken como resultado de una operación exitosa
+    .then(async decodedIdToken  => { // * Obtenemos el decodedIDToken como resultado de una operación exitosa
         console.log('ID Token verified!');
         if (decodedIdToken.role === undefined) 
             return error(req, res, "You have no role assigned")
+
+        const containers = await getContainers({organization:decodedIdToken.organization})
 
         res.locals = { 
             ...res.locals, 
             uid: decodedIdToken.uid, 
             role: decodedIdToken.role, 
-            organization: decodedIdToken.organization 
+            organization: decodedIdToken.organization,
+            containers: containers 
         }
 
         next()
     })
     .catch( err => {
+        console.log(err)
         let expired = err.errorInfo.code === "auth/id-token-expired"
         
         return error(

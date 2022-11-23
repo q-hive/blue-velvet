@@ -25,7 +25,6 @@ const orgModel = mongoose.model('organization', Organization)
 
 export const setupGrowing = (workData) => {
     const growingSetup = workData.map((productionObj) => {
-        console.log(productionObj)
         const lightTime = productionObj.productData.day
         const darkTime = productionObj.productData.night
         
@@ -249,15 +248,16 @@ export const getProductionTotal = (req, res) => {
                 const accumProduction = []
                 for(const id of filtered) {
                     const filteredProduction = productionData.filter((prddata) => prddata.id.equals(id))
-
+                    console.log(filteredProduction)
                     let productionById = filteredProduction.reduce((prev, curr) => {
                         return {
                             "seeds": prev.seeds + curr.seeds,
                             "harvest": prev.harvest + curr.harvest,
                             "trays": prev.trays + curr.trays,
                             "prodId":id,
+                            "status":prev.status
                         }
-                    }, {seeds:0, harvest:0, trays:0, id:undefined})
+                    }, {seeds:0, harvest:0, trays:0, id:undefined, status:undefined})
 
                     if(matchOrders){
                         productionById = insertOrdersInProduction(productionById, orders)
@@ -357,7 +357,7 @@ export const updateOrgTasksHistory = (orgId, taskModel) => {
             }
 
             // const mongooseTaskModel = mongoose.model('task', mappedTaskModel)
-            const operation = await orgModel.findOneAndUpdate(
+            const query = await orgModel.findOneAndUpdate(
                 {
                     "_id": mongoose.Types.ObjectId(orgId)
                 },
@@ -371,7 +371,9 @@ export const updateOrgTasksHistory = (orgId, taskModel) => {
                 }
             ).exec()
 
-            resolve(operation)
+            const updateEmployeePerformance = await updatePerformance(orgId, taskModel.executedBy, [{query:"set", allocationRatio:""}])
+            
+            resolve(query)
         } catch (err) {
             reject(err)
         }

@@ -9,7 +9,16 @@ const { ObjectId } = mongoose.Types
 import GlobalWorkDay from './GlobalWorkDay.js';
 
 const Production = new Schema({
-   history: {type: [GlobalWorkDay], required:false},
+    ProductName:            String,
+    ProductID:              ObjectId,
+    ProductionStatus:       String,
+    RelatedOrder:           ObjectId,
+    EstimatedStartDate:     Date,
+    EstimatedHarvestDate:   Date,
+    seeds:                  Number,
+    harvest:                Number,
+    trays:                  Number,
+    ContainerId:            ObjectId
 },
 {
     timestamps: {

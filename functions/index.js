@@ -9,7 +9,8 @@ import {
     productsRoutes, taskRoutes, passphraseRoutes, 
     customerRoutes, filesApi, workRoutes, 
     employeesRoutes, 
-    containerRoutes
+    containerRoutes,
+    productionRoutes
 } from './network/routes.js'
 
 import { authRoutes } from './network/routes.js'
@@ -38,7 +39,7 @@ useMorgan(app);
 const originsList = ["http://localhost:3000", "https://bluevelvetdeploy.herokuapp.com"]
 
 app.use(cors({
-    origin: originsList[0],
+    origin: originsList[Number(process.env.ENVIRONMENT_CORS_ORIGIN)],
     credentials: true
 }));
 
@@ -50,19 +51,34 @@ app.get(/^\/(?!api).*/, (req, res, ) => {
 })
 
 
+//*AUTH
 authRoutes(app)
 adminRoutes(app)
+passphraseRoutes(app)
 
-taskRoutes(app)
+//*ORGANIZATION
+organizationRoutes(app)
+
+//*WORK
+taskRoutes(app) 
+workRoutes(app)
+
+
+//*CONTAINER ADMIN
 ordersRoutes(app)
 productsRoutes(app)
-passphraseRoutes(app)
-organizationRoutes(app)
 customerRoutes(app)
 filesApi(app)
-workRoutes(app)
+
+//*EMPLOYEE
 employeesRoutes(app)
+
+//*CONTAINER
 containerRoutes(app)
+
+//*PRODUCTION
+productionRoutes(app)
+
 
 const server = http.createServer(app)
 

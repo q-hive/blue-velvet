@@ -1,3 +1,9 @@
+
+//     //*InputFormat param is for determining if time is in milliseconds, seconds, minutes hours,days,months, or a date    
+// export const estimateDateBasedOnTime = (inputFormat, value) => {
+//     return new Date(value)
+// }
+
 export const addTimeToDate = (date, delta) => {
     let totalMs = Object.keys(delta)
         .map(key => convertToMs(delta[key], key))

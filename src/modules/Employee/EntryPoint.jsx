@@ -203,7 +203,7 @@ export const EntryPoint = () => {
             Object.keys(WorkContext.cicle).forEach((value,index) => {
                 
                 if(!statusesInProds.includes(value)){
-                    delete WorkContext.cicle[value]
+                    // delete WorkContext.cicle[value]
                     setWorkContext({...WorkContext})
                 }else{
                     WorkContext.cicle[value].production = workDataModel.production
@@ -326,6 +326,7 @@ export const EntryPoint = () => {
             })
             .catch(err => {
                 console.log(err)
+                setLoading({...loading, startWorkBtn:true})
                 setSnackState({open:true, label:"There was an error. Try again.", severity:"error"})
             })
 

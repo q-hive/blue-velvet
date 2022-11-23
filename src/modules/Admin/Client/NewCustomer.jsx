@@ -29,7 +29,7 @@ export const NewCustomer = (props) => {
     }
 
     const isEdition = props.edit.isEdition
-    const prevValues = props.edit.values.customer
+    const prevValues = props.edit?.values?.customer
 
     console.log("prevValues",prevValues)
     

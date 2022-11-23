@@ -15,7 +15,7 @@ const Employee = new Schema({
     address:        { type: Address,    required: true              },
     performance:    { type: 
         {
-            level:              { type: Number,     required: true  },
+            level:              Number,
             allocationRatio:    Number,
             workdays:           Number,
             packages:           Number,

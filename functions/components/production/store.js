@@ -1,9 +1,8 @@
-import Production from '../../models/production.js'
+import Organization from '../../models/organization.js'
 import { mongoose } from '../../mongo.js'
 import { dateToArray, nextDay } from '../../utils/time.js'
 
-
-const prodModel = mongoose.model('production', Production)
+const orgModel = mongoose.model('organizations', Organization)
 
 export const getProductionForOrder = async (products, organization, filter) => {
     return new Promise(async (resolve, reject) => {
@@ -69,19 +68,32 @@ export const getProductionForOrder = async (products, organization, filter) => {
     })
 }
 
-export const getProductions = async (filters) => {
-    let criteria = prodModel
-    if (filters.start !== undefined && filters.start !== null) {
-        let dt = new Date(dateToArray(filters.start))
-        criteria = criteria.where({ start: { 
-            $gte:   dt, 
-            $lt:    nextDay(dt)
-        }})
-    }
-    if (filters.organization !== undefined && filters.organization !== null) 
-        criteria = criteria.where({ organization: filters.organization })
-    if (filters.trays !== undefined && filters.trays !== null) 
-        criteria = criteria.where({ available: { $gte: filters.trays } })
+export const getProductionInContainer = async (orgId, containerId) => {
+    return new Promise((resolve, reject) => {
+        orgModel.findOne(
+            {
+                "_id":mongoose.Types.ObjectId(orgId), 
+                "containers._id":mongoose.Types.ObjectId(containerId)
+            },
+            {
+                "containers.production.$":true
+            }
+        )
+        .then((doc) => {
+            const result = doc.containers[0]?.production
+            if(!result){
+                resolve([])
+                return
+            }
 
-    return await criteria.find({})
+            resolve(result)
+
+        })
+        .catch((err) => reject(err))
+    })
+}
+
+export const getPosibleStatusesForProduction = () => {
+    const statuses = ["pre-soaking", "seeding", "growing", "harvestReady", "packing"]
+    return statuses
 }

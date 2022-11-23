@@ -1,7 +1,7 @@
 import Product from '../../models/product.js'
 import { getOrdersByProd } from '../orders/store.js'
 import { getTaskByProdId } from '../tasks/store.js'
-import { getAllProducts } from './store.js'
+import { getAllProducts, updateProduct } from './store.js'
 
 const hasEveryKey = (valid, current) => {
      //*Verificar que el objeto tenga todas las llaves del modelo
@@ -12,6 +12,7 @@ const hasEveryKey = (valid, current) => {
     console.log(Object.keys(valid))
     if(Object.keys(valid).every(key => Object.keys(current).includes(key))){
         console.log("Has all keys")
+        console.log()
         for (const key of Object.keys(valid)) {
             if(typeof valid[key] === "object"){
                 console.log("Validating nested object")
@@ -25,7 +26,6 @@ const hasEveryKey = (valid, current) => {
 }
 
 export const isValidProductObject = (json) => {
-        console.log(json)
         let productModel 
     
         if(json.mix && json.mix.isMix === false){
@@ -57,7 +57,13 @@ export const isValidProductObject = (json) => {
         return hasEveryKey(productModel, json)
 }
 
-
+export const calculatePerformance = (product) => {
+    if(product.mix.isMix){
+        return 0
+    }
+    
+    return (product.parameters.harvestRate / product.parameters.seedingRate) * (product.price[0].packageSize / product.price[0].amount)
+}
 
 export const relateOrdersAndTasks = (orgId) => {
     return new Promise((resolve, reject) => {
@@ -70,15 +76,17 @@ export const relateOrdersAndTasks = (orgId) => {
                 //* ITERATE ARRAY
                 const mappedProd = products.map(async (prod) => {
                     const mutableProd = prod.toObject()
-                    //* AND SEARCH IN TASKS BY PRODUCTS
-                    // const tasks = await getTaskByProdId(orgId ,prod._id)
                     //*This function returns the orders, that have a different status of delivered and that includes the products we are asking for
                     //*SEARCH IN ORDERS BY PRODUCT ID
                     const orders = await getOrdersByProd(orgId, prod._id)
 
-                    // mutableProd.tasks = tasks
-                    console.log(mutableProd)
-                    mutableProd.orders = orders
+                    mutableProd.orders = orders.map((order) => order._id)
+
+                    if(mutableProd.performance === undefined) {
+                        mutableProd.performance = calculatePerformance(mutableProd)
+                        await updateProduct(orgId, prod._id, "performance", mutableProd.performance)
+                    }
+                    
                     return {...mutableProd}
                 })
                 const mappedData = await Promise.all(mappedProd)
@@ -90,7 +98,6 @@ export const relateOrdersAndTasks = (orgId) => {
 
         getAndRelateData()
         .then((data) => {
-            // console.log(data)
             resolve(data)
         })
         .catch(err => {
