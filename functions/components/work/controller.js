@@ -1,13 +1,14 @@
 import {mongoose} from '../../mongo.js'
-import { getEmployeeById } from "../employees/store.js"
 import Organization from '../../models/organization.js'
+
 import { getMongoQueryByObject } from '../../utils/getMongoQuery.js'
-import { getOrganizationById } from '../organization/store.js'
-import { getFilteredOrders, updateOrder } from '../orders/store.js'
+
+import { updateOrder } from '../orders/store.js'
 import { getProductById, updateProduct } from '../products/store.js'
-import axios from 'axios'
+import { getProductionInContainer } from '../production/store.js'
+
 import nodeCron from 'node-cron'
-import Task from '../../models/task.js'
+import { grouPProductionForWorkDay } from '../production/controller.js'
 
 const orgModel = mongoose.model('organization', Organization)
 
@@ -170,27 +171,43 @@ export const updatePerformance = (orgId, id, array) => {
         })
     })
 }
+
+export const statusRequiredParameters = () => {
+    return {
+        "pre-soaking":  "trays",
+        "seeding":      "trays",
+        "growing":      "trays",
+        "harvestReady": "trays",
+        "packing":      "trays"
+    }
+}
 export const calculateTimeEstimation = (totalProduction) => {
     //*TIMES PER TRAY in minutes
-    const harvest = 2;
-    const packing25 = 0.48;
-    const packing80 = 0.5;
-    const seeding = 2.2;
+    const estimatedTimes = {
+        "pre-soaking":  0,
+        "seeding":      2.2,
+        "growing":      0,
+        "harvestReady": 2,
+        "packing":      0.48,
+    }
+    const productionGroupedByStatus = grouPProductionForWorkDay(totalProduction)
 
-    return totalProduction.map((production) => {
-        production.times = {
-            harvest: {
-                totalAmount: production.harvest,
-                time: harvest * production.trays
-            }
-        }
+    const parametersByStatus = statusRequiredParameters()
+    
+    
+    const totals = productionGroupedByStatus.map((productionModel) => {
+        const total = productionModel[Object.keys(productionModel)[0]].reduce((previous, current) => {
+            const previousRequiredParameterTotal = previous[parametersByStatus[Object.keys(productionModel)[0]]]
+            const currentRequiredParameterTotal = current[parametersByStatus[Object.keys(productionModel)[0]]]
 
-        production.times.seeding = {
-            totalAmount: production.seeds,
-            time: seeding * production.trays
-        }
-        return {...production}
+            return {[parametersByStatus[Object.keys(productionModel)[0]]]: previousRequiredParameterTotal + currentRequiredParameterTotal}
+        },{
+            [parametersByStatus[Object.keys(productionModel)[0]]]:0,
+        })
+        return {[`${Object.keys(productionModel)[0]}`]:{"minutes":total[parametersByStatus[Object.keys(productionModel)[0]]]*estimatedTimes[Object.keys(productionModel)[0]]}} 
     })
+    
+    return totals
 }
 
 
@@ -207,81 +224,10 @@ const insertOrdersInProduction = (production, orders) => {
 
     return production
 }
-export const getProductionTotal = (req, res) => {
-    return new Promise((resolve, reject) => {
-        req.query.production = "true"
-        
-        const origin = req.path
-
-        let matchOrders = false;    
-        
-        if(origin.split('/').includes("production")){
-            matchOrders = true;
-        }
-        getFilteredOrders(res.locals.organization, req, true, {key:"status", value:"uncompleted"})
-        .then((orders) => {
-            try {
-                let productionData = orders.flatMap((order) => {
-                    return order.productionData
-                })
-
-                const ids = productionData.map((productData) => {
-                    return productData.id
-                })
-
-            
-                const filtered = [];
-
-                for(const id of ids){
-                    let isNew = true;
-                    for(const elem of filtered){
-                        if(id.equals(elem)){
-                            isNew = false
-                        }
-                    }
-
-                    if(isNew){
-                        filtered.push(id)
-                    }
-                }
-
-                const accumProduction = []
-                for(const id of filtered) {
-                    const filteredProduction = productionData.filter((prddata) => prddata.id.equals(id))
-                    console.log(filteredProduction)
-                    let productionById = filteredProduction.reduce((prev, curr) => {
-                        return {
-                            "seeds": prev.seeds + curr.seeds,
-                            "harvest": prev.harvest + curr.harvest,
-                            "trays": prev.trays + curr.trays,
-                            "prodId":id,
-                            "status":prev.status
-                        }
-                    }, {seeds:0, harvest:0, trays:0, id:undefined, status:undefined})
-
-                    if(matchOrders){
-                        productionById = insertOrdersInProduction(productionById, orders)
-                    }
-
-                    accumProduction.push(productionById)
-                }
-
-
-                resolve(accumProduction)
-            } catch(err) {
-                reject(err)
-            }
-        })
-        .catch(err => {
-            reject(err)
-        })
-    })
-}
-
 
 export const getWorkTimeByEmployee = (req, res) => {
     return new Promise((resolve, reject) => {
-        getProductionTotal(req, res)
+        getProductionInContainer(res.locals.organization,req.query.containerId)
         .then((production) => {
             const totalEstimations = calculateTimeEstimation(production)
 
