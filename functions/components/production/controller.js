@@ -175,118 +175,69 @@ export const updateProductionByStatus = (status, organization, production) => {
     
 }
 
-export const grouPProductionForWorkDay = (production) => {
-        //*Get all products names in production models
-        const productsInProduction = production.map((productionModel) => {
-            return productionModel.ProductName
+/**
+ * @param {*} array used to define the criteria for grouping using MQL as helper
+ * @returns the argument object passed 
+*/
+export const groupBy = (array, production) => {
+   const productionStatuses = getPosibleStatusesForProduction()
+
+   let accumulatedProduction = []
+   
+   //get production totals (acummulated seeds, harvest and trays based on ProductionModels) by product, grouped by the same ProductionStatus and HarvestDate
+    productionStatuses.forEach((status) => {
+        //*for each product name filter in production by the name
+        const filteredProduction = production.filter((productionModel) => {
+            return productionModel.ProductionStatus === status
         })
 
-        //*create a new set of products names (delete repeated)
-        const setOfProductsNames = Array.from(new Set(productsInProduction))
+        const hash = {}, result = []
 
-        
-        let accumulatedProduction = []
-        
-        //get production totals (acummulated seeds, harvest and trays based on ProductionModels) by product, grouped by the same ProductionStatus
-        setOfProductsNames.forEach((name) => {
-            //*for each product name filter in production by the name
-            const filteredProduction = production.filter((productionModel) => {
-                return productionModel.ProductName === name
-            })
+        //*iterate over filtered production models and group and acumulate them by EstimatedHarvestDate using a hashtable
+        for(const {EstimatedHarvestDate,ProductName,ProductID, ProductionStatus,_id,start, updated, RelatedOrder, seeds, trays, harvest} of filteredProduction){
+            if(!seeds || !harvest || !trays){
+                continue
+            }
+                
+            if(!hash[EstimatedHarvestDate]){
+                hash[EstimatedHarvestDate] = {
+                    ProductName,
+                    ProductID,
+                    ProductionStatus,
+                    EstimatedHarvestDate,
+                    seeds:0, 
+                    trays:0, 
+                    harvest:0,
+                    _id,
+                    start, 
+                    updated, 
+                    RelatedOrder
+                }      
 
-            const hash = {}, result = []
-
-            //*iterate over filtered production models and group and acumulate them by EstimatedHarvestDate using a hashtable
-            for(const {EstimatedHarvestDate,ProductName,ProductID, ProductionStatus,_id,start, updated, RelatedOrder, seeds, trays, harvest} of filteredProduction){
-                if(!seeds || !harvest || !trays){
-                    continue
-                }
-                    
-                if(!hash[EstimatedHarvestDate]){
-                    hash[EstimatedHarvestDate] = {
-                        ProductName,
-                        ProductID,
-                        ProductionStatus,
-                        EstimatedHarvestDate,
-                        seeds:0, 
-                        trays:0, 
-                        harvest:0,
-                        _id,
-                        start, 
-                        updated, 
-                        RelatedOrder
-                    }      
-
-                    result.push(hash[EstimatedHarvestDate])
-                }
-
-                hash[EstimatedHarvestDate].seeds +=+ seeds
-                hash[EstimatedHarvestDate].harvest +=+ harvest
-                hash[EstimatedHarvestDate].trays +=+ trays
+                result.push(hash[EstimatedHarvestDate])
             }
 
-            // //*insert the result in array
-            // result.forEach(obj => {
-            //     accumulatedProduction.push(obj)
-            // })
-            
-
-            const productionStatuses = getPosibleStatusesForProduction()
-            productionStatuses.forEach((status) => {
-                //*the filter by status for each product
-                const filteredProductionByStatus = result.filter((filteredProductionByName) => {
-                    return filteredProductionByName.ProductionStatus === status
-                })
+            hash[EstimatedHarvestDate].seeds +=+ seeds
+            hash[EstimatedHarvestDate].harvest +=+ harvest
+            hash[EstimatedHarvestDate].trays +=+ trays
+        }
 
 
-                if(filteredProductionByStatus.length === 0){
-                    return
-                }
+        accumulatedProduction.push({[status]:result})
+    })
 
-                const hash2 = {}, result2 = []
+   return accumulatedProduction
+}
 
-                //*iterate over filtered production models and group and acumulate them by EstimatedHarvestDate using a hashtable
-                for(const {EstimatedHarvestDate,ProductName,ProductID, ProductionStatus,_id,start, updated, RelatedOrder, seeds, trays, harvest} of filteredProductionByStatus){
-                    if(!seeds || !harvest || !trays){
-                        continue
-                    }
-                        
-                    if(!hash2[ProductionStatus]){
-                        hash2[ProductionStatus] = {
-                            ProductName,
-                            ProductID,
-                            ProductionStatus,
-                            EstimatedHarvestDate,
-                            seeds:0, 
-                            trays:0, 
-                            harvest:0,
-                            _id,
-                            start, 
-                            updated, 
-                            RelatedOrder
-                        }      
-    
-                        result2.push(hash2[ProductionStatus])
-                    }
-    
-                    hash2[status].seeds +=+ seeds
-                    hash2[status].harvest +=+ harvest
-                    hash2[status].trays +=+ trays
-                }
-
-                //*insert the result in array
-                accumulatedProduction.push(result2)
-                // result2.forEach(obj => {
-                //     accumulatedProduction.push(obj)
-                // })
-                
-            })
-
-            return
-        })
-
-        
-        return accumulatedProduction
+export const grouPProductionForWorkDay = (production) => {
+    try {
+        //*THE PARAMETERS ARE NOT ACTUALLY BEING USED YET
+        const grouppedProduction = groupBy(["status-eq","harvestDate-eq","productName-eq",""], production)
+        return grouppedProduction
+    } catch (err) {
+        console.log(err)
+        throw new Error("Error in object analyser - groupBy")        
+    }
 }
 
 const insertOrdersInProduction = (production, orders) => {
