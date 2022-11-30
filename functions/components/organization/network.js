@@ -4,6 +4,7 @@ import { mongoose } from '../../mongo.js'
 import { success, error } from '../../network/response.js'
 import { getOrganizations, getOrganizationById, newOrganization, updateOrganization } from './store.js'
 import { modelsValidationError } from '../../utils/errorHandler.js'
+import { newContainer } from '../container/store.js'
 
 var router = new express.Router()
 // * CREATE
@@ -17,6 +18,16 @@ router.post('/new', (req, res) => {
             return error(req, res, 400, modelsValidationError(e)) 
         }
         return error(req, res, 500, "Error saving orders", e)
+    })
+})
+
+router.post('/containers/:orgId', (req, res) => {
+    newContainer((res.locals.organization || req.params.orgId),req.body.container)
+    .then((result) => {
+        success(req, res, 201, "Container added to organization succesfully", result)
+    })
+    .catch(err => {
+        error(req, res, 500, "Error adding container to organization",  err, err)
     })
 })
 

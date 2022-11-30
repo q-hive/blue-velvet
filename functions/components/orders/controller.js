@@ -1,4 +1,5 @@
 import { getEstimatedHarvestDate } from "../production/controller.js";
+import { updateManyOrders } from "./store.js";
 
 const sortProductsPrices = (order,products) => {
     const orderProducts = order.products.map((prod) => {
@@ -148,3 +149,12 @@ export const newOrderDateValidation = (order, allProducts = undefined) => {
         throw new Error("Invalid date, must be a delivery date after the total production times.")
     }
 } 
+
+export const updateAllOrders = async (orgId, update) => {
+    try {
+        const result = await updateManyOrders({"_id":orgId}, update)
+        return result
+    } catch (err) {
+        throw new Error(err)
+    }
+}

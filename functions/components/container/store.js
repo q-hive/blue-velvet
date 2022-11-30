@@ -9,7 +9,7 @@ import { getMongoQueryByObject } from '../../utils/getMongoQuery.js'
 const { ObjectId } = mongoose.Types
 const orgModel = mongoose.model('organizations', Organization)
 
-export const newContainer = (contData) => {
+export const newContainer = (organization,contData) => {
     return new Promise((resolve, reject) => {
 
         let containerMapped = {
@@ -31,7 +31,7 @@ export const newContainer = (contData) => {
             if (e) reject(e)
 
             Promise.all([
-                updateOrganization(contData.organization, {
+                updateOrganization(organization, {
                     $push: { containers: cont._id } 
                 }),
                 updateUser(contData.admin, {
