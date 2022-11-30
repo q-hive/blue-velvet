@@ -97,3 +97,23 @@ export const getPosibleStatusesForProduction = () => {
     const statuses = ["pre-soaking", "seeding", "growing", "harvestReady", "packing"]
     return statuses
 }
+
+export const insertWorkDayProductionModel = (orgId,container,productionModel) => {
+    return new Promise(async(resolve, reject) => {
+        console.log(productionModel)
+        try {
+            const updateOperation = await orgModel.updateOne(
+                {
+                    "_id":mongoose.Types.ObjectId(orgId),
+                    "containers._id":mongoose.Types.ObjectId(container)
+                },
+                {
+                    "$set": {"containers.$.workday":{"production":productionModel}}
+                }
+            )
+            resolve(updateOperation)
+        } catch (err) {
+            reject(err)
+        }
+    })
+}

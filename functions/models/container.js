@@ -13,7 +13,8 @@ const Container = new Schema({
     employees:      { type: [ObjectId],     required: true                 },
     production:     { type: [Production],   required: true                 },
     products:       { type: [Product],      required: true                 },
-    address:        { type: Address,        required: false                }
+    address:        { type: Address,        required: false                },
+    workday:        { type: {},             required: false                }
 },    
 {
     query: {

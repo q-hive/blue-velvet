@@ -394,6 +394,19 @@ export const updateOrder = (org, orderId, body) => {
     })
 }
 
+export const updateManyOrders = (filter, update) => {
+    return new Promise(async(resolve, reject) => {
+        try {
+            console.log(filter)
+            console.log(update)
+            const updateResult = await orgModel.updateOne(filter, update)
+            resolve(updateResult)
+        } catch (err) {
+            reject(err)
+        }
+    })
+}
+
 
 //* production status
 //* seeding

@@ -1,6 +1,6 @@
 import { isSameDay } from "date-fns"
 import { getProductById } from "../products/store.js"
-import { getPosibleStatusesForProduction, getProductionInContainer } from "./store.js"
+import { getPosibleStatusesForProduction, getProductionInContainer, insertWorkDayProductionModel } from "./store.js"
 
 //*Estimate date to harvest the product if it is seeded today.
 export const getEstimatedHarvestDate = (estimatedtStartDate,product) => {
@@ -21,15 +21,17 @@ export const getEstimatedHarvestDate = (estimatedtStartDate,product) => {
 }
 
 export const getEstimatedStartProductionDate = (orderDate,product) => {
+    console.log(product)
     try {
 
         const lightTime = product.parameters.day
         const darkTime = product.parameters.night
-        const estimatedProductionStartDate = new Date(orderDate).getTime() - (((((lightTime*24)*60)*60)*1000) + ((((darkTime*24)*60)*60)*1000))
+        const estimatedProductionStartDate = new Date(new Date(orderDate).getTime() - (((((lightTime*24)*60)*60)*1000) + ((((darkTime*24)*60)*60)*1000)))
         estimatedProductionStartDate.setHours(4,0,0)  
 
         return estimatedProductionStartDate
     } catch (err) {
+        console.log(err)
         throw Error("Error getting estimation to start production date")
     }
 }
@@ -192,13 +194,15 @@ export const groupBy = (array, production) => {
         })
 
         const hash = {}, result = []
+        // const RelatedOrders = []
 
         //*iterate over filtered production models and group and acumulate them by EstimatedHarvestDate using a hashtable
         for(const {EstimatedHarvestDate,ProductName,ProductID, ProductionStatus,_id,start, updated, RelatedOrder, seeds, trays, harvest} of filteredProduction){
             if(!seeds || !harvest || !trays){
                 continue
             }
-                
+
+            // RelatedOrders.push(RelatedOrder)
             if(!hash[EstimatedHarvestDate]){
                 hash[EstimatedHarvestDate] = {
                     ProductName,
@@ -208,10 +212,10 @@ export const groupBy = (array, production) => {
                     seeds:0, 
                     trays:0, 
                     harvest:0,
-                    _id,
+                    modelsId:[],
                     start, 
                     updated, 
-                    RelatedOrder
+                    relatedOrders:[]
                 }      
 
                 result.push(hash[EstimatedHarvestDate])
@@ -220,6 +224,8 @@ export const groupBy = (array, production) => {
             hash[EstimatedHarvestDate].seeds +=+ seeds
             hash[EstimatedHarvestDate].harvest +=+ harvest
             hash[EstimatedHarvestDate].trays +=+ trays
+            hash[EstimatedHarvestDate].modelsId.push(_id)
+            hash[EstimatedHarvestDate].relatedOrders.push(RelatedOrder)
         }
 
 
@@ -232,7 +238,7 @@ export const groupBy = (array, production) => {
 export const grouPProductionForWorkDay = (production) => {
     try {
         //*THE PARAMETERS ARE NOT ACTUALLY BEING USED YET
-        const grouppedProduction = groupBy(["status-eq","harvestDate-eq","productName-eq",""], production)
+        const grouppedProduction = groupBy(["status-eq","harvestDate-eq","productName-eq","startDate"], production)
         return grouppedProduction
     } catch (err) {
         console.log(err)
@@ -279,4 +285,14 @@ export const getProductionWorkByContainerId = (req,res) => {
             reject(err)
         })
     })
+}
+
+export const saveProductionForWorkDay = async (orgId, containerId, production) => {
+    try {
+        const insertOp = await insertWorkDayProductionModel(orgId,containerId,production)
+        console.log(insertOp)
+        return production
+    } catch (err) {
+        throw new Error(err)
+    }
 }
