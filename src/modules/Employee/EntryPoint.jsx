@@ -14,6 +14,7 @@ import { BV_THEME } from '../../theme/BV-theme'
 import { useNavigate } from 'react-router-dom'
 import api from '../../axios.js'
 import { formatTime } from '../../CoreComponents/Timer'
+import { getWorkdayProdData } from '../../CoreComponents/requests'
 
 //*UNUSED
 // import { Add } from '@mui/icons-material'
@@ -44,6 +45,7 @@ export const EntryPoint = () => {
     //*DATA STATES
     const [orders, setOrders] = useState([])
     const [estimatedTime, setEstimatedTime] = useState(0)
+    const [activeStatusesArray,setActiveStatusesArray] = useState([])
 
 
     //*Render states
@@ -114,7 +116,7 @@ export const EntryPoint = () => {
     }
 
     const getOrders = async ()=> {
-        const ordersData = await api.api.get(`${api.apiVersion}/orders/uncompleted?production=true`,{
+        const ordersData = await api.api.get(`${api.apiVersion}/orders/uncompleted`,{
             headers:{
                 "authorization":    credential._tokenResponse.idToken,
                 "user":             user
@@ -124,39 +126,20 @@ export const EntryPoint = () => {
         return ordersData.data
     }
     const getTimeEstimate = async () => {
-        const request = await api.api.get(`${api.apiVersion}/work/time/${user._id}`, {
+        const request = await api.api.get(`${api.apiVersion}/work/time/${user._id}?containerId=633b2e0cd069d81c46a18033`, {
             headers: {
                 authorization:  credential._tokenResponse.idToken,
                 user:           user
             }
         })
-        
 
-        const reduced = request.data.data.reduce((prev, curr) => {
-            const prevseedTime = prev.times.seeding.time
-            const prevharvestTime = prev.times.harvest.time
 
-            const currseedTime = curr.times.seeding.time
-            const currharvestTime = curr.times.harvest.time
 
-            const prevTotal = prevseedTime + prevharvestTime
-            
-            const currTotal = currseedTime + currharvestTime
-
-            return {
-                times: {
-                    harvest: {
-                        time:prevharvestTime + currharvestTime
-                    }, 
-                    seeding: {
-                        time:prevseedTime + currseedTime
-                    }
-                }, 
-                total:prevTotal + currTotal
-            }
-        }, 
-        {
+        let result={
             times: {
+                preSoaking: {
+                    time:0
+                }, 
                 harvest: {
                     time:0
                 }, 
@@ -165,21 +148,110 @@ export const EntryPoint = () => {
                 }
             },
             total:0
-        }) 
+        }
+
         
-        return reduced
+        
+        const sumTimes = () => {
+            let arr = []
+            request.data.data.map((item,id)=>{
+                let status = Object.keys(item)[0]
+
+                arr.push(item[status].minutes)
+
+            })
+
+            return arr.reduce((a, b) => a + b, 0)
+
+        } 
+
+        let totalTime = sumTimes()
+
+        if (request.data.data){
+            result = {
+                times: {
+                    preSoaking: {
+                        time:request.data.data[0]["pre-soaking"].minutes
+                    }, 
+                    harvest: {
+                        time:request.data.data[3].harvestReady.minutes
+                    }, 
+                    seeding: {
+                        time:request.data.data[1].seeding.minutes
+                    }
+                }, 
+                total:totalTime
+            }
+        }
+
+            
+        
+
+        /*
+            const reduced = request.data.data.reduce((prev, curr) => {
+                const prevseedTime = prev.times.seeding.time
+                const prevharvestTime = prev.times.harvest.time
+
+                const currseedTime = curr.times.seeding.time
+                const currharvestTime = curr.times.harvest.time
+
+                const prevTotal = prevseedTime + prevharvestTime
+                
+                const currTotal = currseedTime + currharvestTime
+
+                return {
+                    times: {
+                        preSoaking: {
+                            time:prevharvestTime + currharvestTime
+                        }, 
+                        harvest: {
+                            time:prevharvestTime + currharvestTime
+                        }, 
+                        seeding: {
+                            time:prevseedTime + currseedTime
+                        }
+                    }, 
+                    total:prevTotal + currTotal
+                }
+            }, 
+            {
+                times: {
+                    preSoaking: {
+                        time:0
+                    }, 
+                    harvest: {
+                        time:0
+                    }, 
+                    seeding: {
+                        time:0
+                    }
+                },
+                total:0
+            })
+        */ 
+        
+        return result
+
+
+
+
+
     }
     const getWorkData = async ()=> {
         if(window.localStorage.getItem("workData")){
             return JSON.parse(window.localStorage.getItem("workData"))
         }
         
-        const apiResponse = await api.api.get(`${api.apiVersion}/work/production/${user._id}?container=633b2e0cd069d81c46a18033`,{
+        const apiResponse = await api.api.get(`${api.apiVersion}/production/workday?containerId=633b2e0cd069d81c46a18033`,{
             headers:{
                 "authorization":    credential._tokenResponse.idToken,
                 "user":             user
             }
         })
+
+        setActiveStatusesArray(getActiveProductsStatuses(apiResponse.data.data))
+
+
         return apiResponse.data.data
     }
 
@@ -198,11 +270,9 @@ export const EntryPoint = () => {
             window.localStorage.setItem("workData", JSON.stringify(workDataModel))
             
 
-            let statusesInProds = getActiveProductsStatuses()
-
             Object.keys(WorkContext.cicle).forEach((value,index) => {
                 
-                if(!statusesInProds.includes(value)){
+                if(!activeStatusesArray.includes(value)){
                     // delete WorkContext.cicle[value]
                     setWorkContext({...WorkContext})
                 }else{
@@ -222,6 +292,20 @@ export const EntryPoint = () => {
     }
 
     function getActiveProductsStatuses (workDataModel) {
+        let statusesInProds = []
+        console.log("wdm",workDataModel)
+            
+            workDataModel.map((prod,id)=>{
+                console.log("prod status", prod.ProductionStatus)
+                if(!statusesInProds.includes(prod.ProductionStatus))
+                    statusesInProds.push(prod.ProductionStatus)
+            })
+
+            console.log("statuses in prods arr", statusesInProds)
+            return statusesInProds
+    }
+
+    function B4getActiveProductsStatuses (workDataModel) {
         let statusesInProds = []
             
             workDataModel.production.products.map((prod,id)=>{
@@ -378,8 +462,7 @@ export const EntryPoint = () => {
     }
 
     function displayTaskCards (){
-        
-        Object.keys(WorkContext.cicle).map((status,index)=>{ 
+        return Object.keys(WorkContext.cicle).map((status,index)=>{ 
         return(
             <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
                 <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
@@ -428,10 +511,10 @@ export const EntryPoint = () => {
             }
         }
         
-        // getTimeEstimate()
+        getTimeEstimate()
         checkTime()
         getData()
-        .then(({orders, time}) => {
+        .then(({orders , time}) => {
             let indexes =[]
             orders.data.forEach((order, idx) => {
                 order.status === "delivered"

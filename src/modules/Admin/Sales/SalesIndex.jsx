@@ -46,7 +46,13 @@ export const SalesIndex = () => {
     
     
     useEffect(() => {
-        getCustomerData({setOrders:setOrders,setTotalIncome:setTotalIncome,user:user,credential:credential,setLoading:setLoading})
+        getCustomerData({
+            setOrders:setOrders,
+            setTotalIncome:setTotalIncome,
+            user:user,
+            credential:credential,
+            setLoading:setLoading
+        })
         console.log("data STATES",orders,totalIncome)
 
         
@@ -59,7 +65,6 @@ export const SalesIndex = () => {
         <Container sx={{padding:"2%"}}>
             <Box sx={{
                         width:"100%", 
-                        height:"auto",
                         "& .header-sales-table":{
                             backgroundColor:BV_THEME.palette.primary.main,
                             color:"white"
@@ -74,7 +79,7 @@ export const SalesIndex = () => {
                 <Box sx={{width:"100%", height:"100%"}}>
                 
                 
-                    <Box sx={{display:"flex", justifyContent:"space-between",marginBottom:"3vh"}} >
+                    <Box sx={{display:"flex", justifyContent:"space-between"}} >
                         <Button variant='contained' color='primary' startIcon={<Add/>} onClick={handleNewOrder} sx={{minWidth:"20%"}}>
                             New order
                         </Button>
@@ -104,12 +109,12 @@ export const SalesIndex = () => {
 
         
         {/* GRID CONTAINER */}
-        <Container maxWidth="xl" sx={{paddingTop:4,paddingBottom:4,marginX:{xs:4,md:"auto"},marginTop:{xs:4,md:3},
+        <Container maxWidth="xl" sx={{paddingTop:1,paddingBottom:4,marginX:{xs:4,md:"auto"},marginTop:{xs:4,md:1},
                                         "& .header-sales-table":{
                                             backgroundColor:BV_THEME.palette.primary.main,
                                             color:"white"
                                         }}}>
-        <Grid container maxWidth={"xl"} spacing={3} marginTop={3}>
+        <Grid container maxWidth={"xl"} spacing={3}>
             
             
             {/* Recent */}

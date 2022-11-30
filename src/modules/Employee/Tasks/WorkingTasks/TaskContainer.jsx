@@ -50,7 +50,7 @@ export const TaskContainer = (props) => {
     //* STEPPER
     const [activeStep, setActiveStep] = useState(0)
 
-    var type, order, products
+    let type, order, products
 
     if(props != null){
         type=props.type

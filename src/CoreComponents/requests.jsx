@@ -149,3 +149,24 @@ export  const getCustomerData = async  (props) => {
 
     return
 }
+
+
+
+export const getWorkdayProdData = (props) => {
+
+    let user = props.user
+    let credential = props.credential
+    let setRows = props.setProdData
+
+
+    api.api.get(`${api.apiVersion}/production/workday?containerId=633b2e0cd069d81c46a18033`, {
+        headers: {
+            authorization:  credential._tokenResponse.idToken,
+            user:           user
+        }
+    })
+    .then((response) => {
+        setRows(response.data.data)
+    })
+
+}

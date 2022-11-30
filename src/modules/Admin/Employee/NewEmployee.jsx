@@ -218,7 +218,7 @@ export const NewEmployee = (props) => {
             <Divider variant="middle" sx={{width:{xs:"98%",sm:"50%",md:"50%"}, marginY:"1vh"}}/>
 
             <Box sx={{width:{xs:"98%",sm:"49%"}}} >
-                <TextField id="name" value={input.name} onChange={(e) => handleInput(e,e.target.value,"input")} label="First Name" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} InputLabelProps={{ shrink: edition ? true:false }} />
+                <TextField id="name" value={input.name} onChange={(e) => handleInput(e,e.target.value,"input")} label="First Name" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} /*InputLabelProps={{ shrink: edition ? true:false }}*/ />
                 <TextField id="lname" value={input.lname} onChange={(e) => handleInput(e,e.target.value,"input")} label="Last Name" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
             </Box>
             <TextField id="salary" type="number" value={input.salary}  onChange={(e) => handleInput(e,e.target.value,"input")} label="Salary" InputProps={{endAdornment: <Typography>/HR</Typography>}} sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.thirdSize})} />

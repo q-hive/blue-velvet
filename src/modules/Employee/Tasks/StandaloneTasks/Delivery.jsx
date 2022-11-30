@@ -3,11 +3,12 @@ import React, { useState, useEffect } from 'react'
 
 //*MUI Components
     // import { DataGrid } from '@mui/x-data-grid'
-import { Box, Button, Container, Fade, Grid, LinearProgress, Typography, Paper,Grow } from '@mui/material'
+import { Box, Button, Container, Fade, Grid, LinearProgress, Typography, Paper,Grow, AccordionDetails,Divider, Accordion, AccordionSummary } from '@mui/material'
 
 //*UTILS
 import { getData } from '../../../Admin/Sales/SalesIndex'
 import { getCustomerData } from '../../../../CoreComponents/requests'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 import useAuth from '../../../../contextHooks/useAuthContext'
 
@@ -69,12 +70,77 @@ export const DeliveryComponent = (props) => {
         res.map((client,id)=>{
             return(
             
-                <Grid item xs={6}>
-                    <Box>
-                        <Typography>Address {client.address.street} {client.address.stNumber}</Typography>
-                        <Typography>Customer: {client.name}</Typography>
-                        <Typography>Orders: {client.orders.map((order,id)=>{return(<>{order._id} <br/></>)})}</Typography>
+                <Grid item xs={12} lg={6}>
+                    <Paper elevation={4}  sx={{padding:{xs:"3vh",md:"5vh"}}}>
+
+                    <Box sx={{display:"flex",justifyContent: "space-between",marginBottom:"3vh"}}>
+                        <Typography variant={"h5"}>Address:</Typography>
+                        <Typography sx={{maxWidth:"50%"}}>{client.address.street} {client.address.stNumber}</Typography>
                     </Box>
+                    <Box sx={{display:"flex",justifyContent: "space-between",marginBottom:"3vh"}}>
+                        <Typography variant={"h5"}>Customer: </Typography>
+                        <Typography sx={{maxWidth:"50%"}}>{client.name}</Typography>
+                    </Box>
+                    
+                    <Typography variant={"h6"}>Orders:</Typography>
+                        
+                    
+                    <Box sx={{display:"flex", maxHeight:"200px", overflow:"auto", flexDirection:"column"}}>
+                            {client.orders.map((order,id)=>{
+                                return(
+                                /*<Box sx={{ display:"flex",justifyContent: "space-between",marginTop:"1vh"}}>
+                                <Typography>{order._id} </Typography>
+                                <Button sx={{display:"flex"}} variant="contained" size="small">
+                                    View
+                                </Button>
+                                </Box>*/
+
+                                <Box display="flex" sx={{flexDirection:"row"}} p={1}>
+                                    <Accordion sx={{width:{xs:"100%",md:"50%",lg:"100%",xl:"100%"}}}>
+                                        <AccordionSummary
+                                            expandIcon={<ExpandMoreIcon />}
+                                            aria-controls="panel1a-content"
+                                            id="panel1a-header"
+                                        >
+                                            <Typography>Id: {order._id}</Typography>
+                                        </AccordionSummary>
+
+                                        <AccordionDetails>
+                                                        <>
+                                                        <Typography align="left">Packages :  </Typography>
+
+
+                                                        <Box sx={{display:"flex" ,justifyContent:"space-evenly"}}>
+                                                            <Typography sx={{minWidth:"30%"}}>Sunflower</Typography>
+                                                            <Typography>25g:</Typography>
+                                                            <Typography>5</Typography>
+                                                            <Typography>80g:</Typography>
+                                                            <Typography>11</Typography>
+                                                        </Box>
+                                                        
+                                                        <Divider /> 
+
+                                                        <Box sx={{display:"flex", justifyContent:"space-evenly"}}>
+                                                            <Typography sx={{minWidth:"30%",maxWidth:"30%"}}>Peas</Typography>
+                                                            <Typography>25g:</Typography>
+                                                            <Typography>14</Typography>
+                                                            <Typography>80g:</Typography>
+                                                            <Typography>3</Typography>
+                                                        </Box>
+
+
+
+                                                        <Divider /> 
+                                                        </>
+                                        </AccordionDetails>
+                                    </Accordion>
+                                </Box>
+                                
+                                )
+                            })}
+                    </Box>
+
+                    </Paper>
                 </Grid>
                 )
         })
@@ -175,16 +241,16 @@ export const DeliveryComponent = (props) => {
                             {/* Order Mockup */}
                             
                                 
-                                {datesArray.map((date,id)=>{
+                                {datesArray.sort().map((date,id)=>{
                                     return(
                                         <Grow in={true} timeout={2000} unmountOnExit>
                                     <Grid item xs={12} md={12} lg={12}>
-                                    <Paper elevation={4} sx={{
+                                    <Paper elevation={0} sx={{
                                         padding: BV_THEME.spacing(2),
                                         display: "flex",
                                         overflow: "auto",
                                         flexDirection: "column",
-                                        height: 350
+                                        height: 540
                                     }}>
                                         <Typography variant="h6" color="secondary">
                                             Date: {date.date}
