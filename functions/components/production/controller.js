@@ -184,7 +184,7 @@ export const updateProductionByStatus = (status, organization, production) => {
 export const groupBy = (array, production) => {
    const productionStatuses = getPosibleStatusesForProduction()
 
-   let accumulatedProduction = []
+   let accumulatedProduction = {}
    
    //get production totals (acummulated seeds, harvest and trays based on ProductionModels) by product, grouped by the same ProductionStatus and HarvestDate
     productionStatuses.forEach((status) => {
@@ -229,7 +229,7 @@ export const groupBy = (array, production) => {
         }
 
 
-        accumulatedProduction.push({[status]:result})
+        accumulatedProduction = {...accumulatedProduction, [status]:result}
     })
 
    return accumulatedProduction

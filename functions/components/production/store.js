@@ -100,7 +100,6 @@ export const getPosibleStatusesForProduction = () => {
 
 export const insertWorkDayProductionModel = (orgId,container,productionModel) => {
     return new Promise(async(resolve, reject) => {
-        console.log(productionModel)
         try {
             const updateOperation = await orgModel.updateOne(
                 {
