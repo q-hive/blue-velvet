@@ -184,13 +184,13 @@ export const statusRequiredParameters = () => {
 export const calculateTimeEstimation = (totalProduction) => {
     //*TIMES PER TRAY in minutes
     const estimatedTimes = {
-        "pre-soaking":  0,
+        "pre-soaking":  5,
         "seeding":      2.2,
         "growing":      0,
         "harvestReady": 2,
         "packing":      0.48,
     }
-    const productionGroupedByStatus = grouPProductionForWorkDay(totalProduction)
+    const productionGroupedByStatus = grouPProductionForWorkDay(totalProduction, "array")
 
     const parametersByStatus = statusRequiredParameters()
     
@@ -199,11 +199,13 @@ export const calculateTimeEstimation = (totalProduction) => {
         const total = productionModel[Object.keys(productionModel)[0]].reduce((previous, current) => {
             const previousRequiredParameterTotal = previous[parametersByStatus[Object.keys(productionModel)[0]]]
             const currentRequiredParameterTotal = current[parametersByStatus[Object.keys(productionModel)[0]]]
-
+            
             return {[parametersByStatus[Object.keys(productionModel)[0]]]: previousRequiredParameterTotal + currentRequiredParameterTotal}
         },{
             [parametersByStatus[Object.keys(productionModel)[0]]]:0,
         })
+
+        console.log(total)
         return {[`${Object.keys(productionModel)[0]}`]:{"minutes":total[parametersByStatus[Object.keys(productionModel)[0]]]*estimatedTimes[Object.keys(productionModel)[0]]}} 
     })
     
