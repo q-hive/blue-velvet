@@ -174,7 +174,7 @@ export const updatePerformance = (orgId, id, array) => {
 
 export const statusRequiredParameters = () => {
     return {
-        "pre-soaking":  "trays",
+        "preSoaking":   "trays",
         "seeding":      "trays",
         "growing":      "trays",
         "harvestReady": "trays",
@@ -184,7 +184,7 @@ export const statusRequiredParameters = () => {
 export const calculateTimeEstimation = (totalProduction, isGroupped = false) => {
     //*TIMES PER TRAY in minutes
     const estimatedTimes = {
-        "pre-soaking":  5,
+        "preSoaking":  5,
         "seeding":      2.2,
         "growing":      0,
         "harvestReady": 2,

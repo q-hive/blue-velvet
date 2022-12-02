@@ -40,7 +40,7 @@ export const getEstimatedStartProductionDate = (orderDate,product) => {
 export const getInitialStatus = (product) => {
     let status = "seeding"
     if(product.parameters.day + product.parameters.night > 7){
-        status = "pre-soaking"
+        status = "preSoaking"
     }
     
     return status

@@ -94,7 +94,7 @@ export const getProductionInContainer = async (orgId, containerId) => {
 }
 
 export const getPosibleStatusesForProduction = () => {
-    const statuses = ["pre-soaking", "seeding", "growing", "harvestReady", "packing"]
+    const statuses = ["preSoaking", "seeding", "growing", "harvestReady", "packing"]
     return statuses
 }
 
