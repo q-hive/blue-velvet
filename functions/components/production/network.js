@@ -18,9 +18,9 @@ router.get('/workday', (req, res) => {
 })
 
 router.post('/workday/:containerId', (req, res) => {
-    saveProductionForWorkDay(res.locals.organization,req.params.containerId,req.body)
+    saveProductionForWorkDay(res.locals.organization, req.params.containerId, req.body)
     .then((production) => {
-        success(req, res, 201, "Production for workday saved succesfully", production)
+        success(req, res, 201, "Production for workday saved succesfully")
     })
     .catch((err) => {
         error(req, res, 500, "Error saving production for Workday", err, err)
@@ -28,7 +28,7 @@ router.post('/workday/:containerId', (req, res) => {
 })
 
 
-router.patch('/production/', (req, res) => {
+router.patch('/:containerId/', (req, res) => {
     //*Update production models based on previous status to next status of production cycle or packing delivery cycle
     //*Update orders if applies
     //*return the updated models groupped by the same criteria of workday

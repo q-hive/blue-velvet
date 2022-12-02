@@ -303,15 +303,14 @@ export const createNewOrder = (orgId, order) => {
                     production.forEach((productionModel) => {
                         organization.containers[0].production.push(productionModel)
                     })
-
                     
-                    // updateContainerById(orgId, 0, "containers.capacity", value)
                     organization.save((err, org) => {
                         if(err) {
                             console.log(err)
                             reject(new Error(JSON.stringify(errorSaving)))
                         }
-            
+                        
+                        
                         resolve(orderMapped)
                     })
                 })
@@ -397,8 +396,6 @@ export const updateOrder = (org, orderId, body) => {
 export const updateManyOrders = (filter, update) => {
     return new Promise(async(resolve, reject) => {
         try {
-            console.log(filter)
-            console.log(update)
             const updateResult = await orgModel.updateOne(filter, update)
             resolve(updateResult)
         } catch (err) {

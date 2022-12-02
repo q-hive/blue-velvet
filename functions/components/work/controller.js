@@ -181,7 +181,7 @@ export const statusRequiredParameters = () => {
         "packing":      "trays"
     }
 }
-export const calculateTimeEstimation = (totalProduction) => {
+export const calculateTimeEstimation = (totalProduction, isGroupped = false) => {
     //*TIMES PER TRAY in minutes
     const estimatedTimes = {
         "pre-soaking":  5,
@@ -190,8 +190,14 @@ export const calculateTimeEstimation = (totalProduction) => {
         "harvestReady": 2,
         "packing":      0.48,
     }
-    const productionGroupedByStatus = grouPProductionForWorkDay(totalProduction, "array")
 
+    let productionGroupedByStatus
+    if(isGroupped) {
+        productionGroupedByStatus = totalProduction    
+    } else {
+        productionGroupedByStatus = grouPProductionForWorkDay(totalProduction, "array")
+    }
+    
     const parametersByStatus = statusRequiredParameters()
     
     
@@ -205,10 +211,9 @@ export const calculateTimeEstimation = (totalProduction) => {
             [parametersByStatus[Object.keys(productionModel)[0]]]:0,
         })
 
-        console.log(total)
         return {[`${Object.keys(productionModel)[0]}`]:{"minutes":total[parametersByStatus[Object.keys(productionModel)[0]]]*estimatedTimes[Object.keys(productionModel)[0]]}} 
     })
-    
+
     return totals
 }
 
@@ -232,7 +237,7 @@ export const getWorkTimeByEmployee = (req, res) => {
         getProductionInContainer(res.locals.organization,req.query.containerId)
         .then((production) => {
             const totalEstimations = calculateTimeEstimation(production)
-
+            
             resolve(totalEstimations)
         })
         .catch((err) => {

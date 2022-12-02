@@ -153,6 +153,7 @@ export const newOrderDateValidation = (order, allProducts = undefined) => {
 export const updateAllOrders = async (orgId, update) => {
     try {
         const result = await updateManyOrders({"_id":orgId}, update)
+        // await updateProductionWithOrderUpdate()
         return result
     } catch (err) {
         throw new Error(err)
