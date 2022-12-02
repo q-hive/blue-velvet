@@ -4,69 +4,69 @@ import { dateToArray, nextDay } from '../../utils/time.js'
 
 const orgModel = mongoose.model('organizations', Organization)
 
-export const getProductionForOrder = async (products, organization, filter) => {
-    return new Promise(async (resolve, reject) => {
-        // * Will return the production line with available parameters if it's one
-        // * IF no production line is fit to host the order, a new production line must be returned
+// export const getProductionForOrder = async (products, organization, filter) => {
+//     return new Promise(async (resolve, reject) => {
+//         // * Will return the production line with available parameters if it's one
+//         // * IF no production line is fit to host the order, a new production line must be returned
 
-        let totalTrays = products.map(prod => prod.trays).reduce((accTrays, trays) => accTrays + trays, 0)
+//         let totalTrays = products.map(prod => prod.trays).reduce((accTrays, trays) => accTrays + trays, 0)
 
-        // * Obtain organization
-        getOrganizationById(res.locals.organization)
-        .then(async organization => {
-            let availableContainers = await organization.containers.find({ available: { $gte: totalTrays } }).exec()
+//         // * Obtain organization
+//         getOrganizationById(res.locals.organization)
+//         .then(async organization => {
+//             let availableContainers = await organization.containers.find({ available: { $gte: totalTrays } }).exec()
 
-            if (prodLines.length == 0) {
+//             if (prodLines.length == 0) {
             
-            }
+//             }
 
-            return availableContainers
-        })
+//             return availableContainers
+//         })
 
-        // * Check for production lines at same day and validate if adding is possible
-        let prodLines = await getProductions({
-            start:          filter.start,
-            organization:   organization,
-            trays:          totalTrays
-        })
+//         // * Check for production lines at same day and validate if adding is possible
+//         let prodLines = await getProductions({
+//             start:          filter.start,
+//             organization:   organization,
+//             trays:          totalTrays
+//         })
 
 
-        // * If no production line available, create one new
-        if (prodLines.length === 0) {
-            // * Create new production line
-            let contId = getContainerForProduction({
-                trays: totalTrays   
-            })
+//         // * If no production line available, create one new
+//         if (prodLines.length === 0) {
+//             // * Create new production line
+//             let contId = getContainerForProduction({
+//                 trays: totalTrays   
+//             })
 
-            let prodMapped = {
-                orders:         [filter.order],
-                container:      [],
-                tasks:          [],
-                activeTasks:    [],
-                products: filter.products.map(prod => {
-                    return {
-                        _id: prod._id,
-                        trays: prod.trays,
-                        seedId: prod.seedId,
-                        batch: prod.batch
-                    }
-                }),
-                end: addTimeToDate(filter.started, { w: 2 })
-            }
+//             let prodMapped = {
+//                 orders:         [filter.order],
+//                 container:      [],
+//                 tasks:          [],
+//                 activeTasks:    [],
+//                 products: filter.products.map(prod => {
+//                     return {
+//                         _id: prod._id,
+//                         trays: prod.trays,
+//                         seedId: prod.seedId,
+//                         batch: prod.batch
+//                     }
+//                 }),
+//                 end: addTimeToDate(filter.started, { w: 2 })
+//             }
 
-            let prodDoc = new prodModel(prodMapped)
+//             let prodDoc = new prodModel(prodMapped)
 
-            prodDoc.save((err, prod) => {
-                if (err) reject(err)
+//             prodDoc.save((err, prod) => {
+//                 if (err) reject(err)
 
-                // * Check for updating
+//                 // * Check for updating
 
-                resolve([prod._id])
-            })
-        }
-        resolve(prodLines) 
-    })
-}
+//                 resolve([prod._id])
+//             })
+//         }
+//         resolve(prodLines) 
+//     })
+// }
 
 export const getProductionInContainer = async (orgId, containerId) => {
     return new Promise((resolve, reject) => {

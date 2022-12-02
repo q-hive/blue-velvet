@@ -1,5 +1,6 @@
 import { isSameDay } from "date-fns"
 import { getProductById } from "../products/store.js"
+import { calculateTimeEstimation } from "../work/controller.js"
 import { getPosibleStatusesForProduction, getProductionInContainer, insertWorkDayProductionModel } from "./store.js"
 
 //*Estimate date to harvest the product if it is seeded today.
@@ -34,6 +35,15 @@ export const getEstimatedStartProductionDate = (orderDate,product) => {
         console.log(err)
         throw Error("Error getting estimation to start production date")
     }
+}
+
+export const getInitialStatus = (product) => {
+    let status = "seeding"
+    if(product.parameters.day + product.parameters.night > 7){
+        status = "pre-soaking"
+    }
+    
+    return status
 }
 
 //*Build model for production control based on order packages and products parameters
@@ -85,7 +95,7 @@ export const buildProductionDataFromOrder = (order, dbproducts) => {
                     delete mprod.strain
                     mixFound.productionData = {
                         ProductName:            mixFound.name,
-                        ProductionStatus:       "pre-soaking",
+                        ProductionStatus:       getInitialStatus(mixFound),
                         RelatedOrder:           order._id,
                         EstimatedHarvestDate:   mixProductHarvestDate,
                         ProductID:              mixFound._id,
@@ -110,7 +120,7 @@ export const buildProductionDataFromOrder = (order, dbproducts) => {
                 const estimatedStartDate = getEstimatedStartProductionDate(order.date, prodFound)
                 prod["productionData"] = [{
                         ProductName:            prodFound.name,
-                        ProductionStatus:       "pre-soaking",
+                        ProductionStatus:       getInitialStatus(prodFound),
                         RelatedOrder:           order._id,
                         ProductID:              prodFound._id,
                         EstimatedStartDate:     estimatedStartDate,
@@ -194,22 +204,26 @@ export const groupBy = (array, production, format) => {
             return productionModel.ProductionStatus === status
         })
 
-        const hash = {}, result = []
+        const hashDates = {}, result = []
         // const RelatedOrders = []
 
         //*iterate over filtered production models and group and acumulate them by EstimatedHarvestDate using a hashtable
-        for(const {EstimatedHarvestDate,ProductName,ProductID, ProductionStatus,_id,start, updated, RelatedOrder, seeds, trays, harvest} of filteredProduction){
+        for(const {EstimatedHarvestDate,EstimatedStartDate,ProductName,ProductID, ProductionStatus,_id,start, updated, RelatedOrder, seeds, trays, harvest} of filteredProduction){
             if(!seeds || !harvest || !trays){
                 continue
             }
 
-            // RelatedOrders.push(RelatedOrder)
-            if(!hash[EstimatedHarvestDate]){
-                hash[EstimatedHarvestDate] = {
+            if(!hashDates[ProductName]){
+                hashDates[ProductName] = {}     
+            }
+
+            if(!hashDates[ProductName][EstimatedStartDate]){
+                hashDates[ProductName][EstimatedStartDate] = {
                     ProductName,
                     ProductID,
                     ProductionStatus,
-                    EstimatedHarvestDate,
+                    EstimatedStartDate,
+                    EstimatedStartDate,
                     seeds:0, 
                     trays:0, 
                     harvest:0,
@@ -217,16 +231,16 @@ export const groupBy = (array, production, format) => {
                     start, 
                     updated, 
                     relatedOrders:[]
-                }      
+                }
 
-                result.push(hash[EstimatedHarvestDate])
-            }
-
-            hash[EstimatedHarvestDate].seeds +=+ seeds
-            hash[EstimatedHarvestDate].harvest +=+ harvest
-            hash[EstimatedHarvestDate].trays +=+ trays
-            hash[EstimatedHarvestDate].modelsId.push(_id)
-            hash[EstimatedHarvestDate].relatedOrders.push(RelatedOrder)
+                result.push(hashDates[ProductName][EstimatedStartDate])
+            }   
+            
+            hashDates[ProductName][EstimatedStartDate].seeds +=+ seeds
+            hashDates[ProductName][EstimatedStartDate].harvest +=+ harvest
+            hashDates[ProductName][EstimatedStartDate].trays +=+ trays
+            hashDates[ProductName][EstimatedStartDate].modelsId.push(_id)
+            hashDates[ProductName][EstimatedStartDate].relatedOrders.push(RelatedOrder)
         }
 
         if(format === "array"){
@@ -282,7 +296,7 @@ export const getProductionTotal = (req, res) => {
 export const getProductionWorkByContainerId = (req,res) => {
     return new Promise((resolve, reject) => {
         let requiredProductionFormat = "array"
-        if(req.path === "workday"){
+        if(req.path === "/workday"){
             requiredProductionFormat = "hash"
         }
         getProductionInContainer(res.locals.organization, req.query.containerId)
@@ -291,6 +305,16 @@ export const getProductionWorkByContainerId = (req,res) => {
             //*If no production is returned then return empty array
             if(production.length >0){
                 const productionGrouped = grouPProductionForWorkDay(production, requiredProductionFormat)
+                const times  = calculateTimeEstimation(grouPProductionForWorkDay(production, "array"), true)
+
+                times.forEach((timeTask) => {
+                    if(productionGrouped[Object.keys(timeTask)[0]].length=== 0) {
+                        return
+                    }
+                    
+                    productionGrouped[Object.keys(timeTask)[0]].push({minutes:timeTask[Object.keys(timeTask)[0]].minutes})
+                })
+                
                 resolve(productionGrouped)
                 return
             }
@@ -306,8 +330,7 @@ export const getProductionWorkByContainerId = (req,res) => {
 export const saveProductionForWorkDay = async (orgId, containerId, production) => {
     try {
         const insertOp = await insertWorkDayProductionModel(orgId,containerId,production)
-        console.log(insertOp)
-        return production
+        return
     } catch (err) {
         throw new Error(err)
     }
