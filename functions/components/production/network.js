@@ -28,18 +28,11 @@ router.post('/workday/:containerId', (req, res) => {
 })
 
 
-router.post('/production/:status', (req, res) => {
-    console.log('REQUEST IN PRODUCTION')
-    //*Update products and orders received in body based on status received in query param  
-    console.log(req.params)
-    
-    updateProductionByStatus(req.params.status, res.locals.organization,req.body.workData.products)
-    .then((result) => {
-        success(req, res, 200, "Production updated succesfully", result)
-    })
-    .catch((err) => {
-        error(req, res, 500, "Error updating products by production data", err, err)
-    })
+router.patch('/production/', (req, res) => {
+    //*Update production models based on previous status to next status of production cycle or packing delivery cycle
+    //*Update orders if applies
+    //*return the updated models groupped by the same criteria of workday
+
 })
 
 // router.patch('/production/taskHistory', (req, res) => {

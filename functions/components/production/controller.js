@@ -181,10 +181,11 @@ export const updateProductionByStatus = (status, organization, production) => {
  * @param {*} array used to define the criteria for grouping using MQL as helper
  * @returns the argument object passed 
 */
-export const groupBy = (array, production) => {
+export const groupBy = (array, production, format) => {
    const productionStatuses = getPosibleStatusesForProduction()
 
    let accumulatedProduction = {}
+   let acumInArray = []
    
    //get production totals (acummulated seeds, harvest and trays based on ProductionModels) by product, grouped by the same ProductionStatus and HarvestDate
     productionStatuses.forEach((status) => {
@@ -228,17 +229,28 @@ export const groupBy = (array, production) => {
             hash[EstimatedHarvestDate].relatedOrders.push(RelatedOrder)
         }
 
+        if(format === "array"){
+            acumInArray.push({[status]:result})
+        }
 
-        accumulatedProduction = {...accumulatedProduction, [status]:result}
+        if(format === "hash") {
+            accumulatedProduction = {...accumulatedProduction, [status]:result}
+        }
+        
     })
 
-   return accumulatedProduction
+    let requiredReturn = {
+        "array":acumInArray,
+        "hash":accumulatedProduction
+    }
+    
+   return requiredReturn[format]
 }
 
-export const grouPProductionForWorkDay = (production) => {
+export const grouPProductionForWorkDay = (production, format) => {
     try {
         //*THE PARAMETERS ARE NOT ACTUALLY BEING USED YET
-        const grouppedProduction = groupBy(["status-eq","harvestDate-eq","productName-eq","startDate"], production)
+        const grouppedProduction = groupBy(["status-eq","harvestDate-eq","productName-eq","startDate"], production, format)
         return grouppedProduction
     } catch (err) {
         console.log(err)
@@ -269,12 +281,16 @@ export const getProductionTotal = (req, res) => {
 
 export const getProductionWorkByContainerId = (req,res) => {
     return new Promise((resolve, reject) => {
+        let requiredProductionFormat = "array"
+        if(req.path === "workday"){
+            requiredProductionFormat = "hash"
+        }
         getProductionInContainer(res.locals.organization, req.query.containerId)
         .then((production) => {
             
             //*If no production is returned then return empty array
             if(production.length >0){
-                const productionGrouped = grouPProductionForWorkDay(production)
+                const productionGrouped = grouPProductionForWorkDay(production, requiredProductionFormat)
                 resolve(productionGrouped)
                 return
             }
