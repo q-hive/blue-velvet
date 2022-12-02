@@ -28,6 +28,8 @@ router.post('/workday/:containerId', (req, res) => {
 })
 
 
+router.patch('/:containerId/finishTask/:task')
+
 router.patch('/:containerId/', (req, res) => {
     //*Update production models based on previous status to next status of production cycle or packing delivery cycle
     //*Update orders if applies
