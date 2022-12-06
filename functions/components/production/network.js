@@ -1,6 +1,6 @@
 import express from "express"
 import { error, success } from "../../network/response.js"
-import { getProductionWorkByContainerId, saveProductionForWorkDay, updateProductionByStatus } from "./controller.js"
+import { getProductionWorkByContainerId, saveProductionForWorkDay } from "./controller.js"
 
 const router = express.Router()
 

@@ -19,12 +19,6 @@ const Production = new Schema({
     harvest:                Number,
     trays:                  Number,
     ContainerId:            ObjectId
-},
-{
-    timestamps: {
-        createdAt: "start",
-        updatedAt: "updated"
-    },
 })
 
 export default Production
