@@ -174,10 +174,10 @@ export const EntryPoint = () => {
                         time:request.data.data[0].preSoaking.minutes
                     }, 
                     harvest: {
-                        time:request.data.data[3].harvestReady.minutes
+                        time:request.data.data[5].harvestReady.minutes
                     }, 
                     seeding: {
-                        time:request.data.data[1].seeding.minutes
+                        time:request.data.data[3].seeding.minutes
                     }
                 }, 
                 total:totalTime
@@ -480,7 +480,7 @@ export const EntryPoint = () => {
                             estimatedTime.times ? 
                                 estimatedTime.times[getKey(status)].time.toFixed(2) 
                             : "getting" 
-                        :"TBD"} </i>
+                        :getKey(status)==="pre Soaking" ? "12 hours ":"TBD"} </i>
                     </Typography>
                 </Box>
             </Paper>
