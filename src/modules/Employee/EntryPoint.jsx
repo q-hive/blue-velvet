@@ -304,17 +304,20 @@ export const EntryPoint = () => {
             return statusesInProds
     }
 
-    function B4getActiveProductsStatuses (workDataModel) {
-        let statusesInProds = []
-            
-            workDataModel.production.products.map((prod,id)=>{
-                console.log("prod status", prod.productData)
-                if(!statusesInProds.includes(prod.productData.status))
-                    statusesInProds.push(prod.productData.status)
-            })
+    function getActiveProductsStatuses2 (workData) {
+        let psTrue = workData.preSoaking?.length>0
+        let sTrue = workData.seeding?.length>0
+        let hrTrue = workData.harvestReady?.length>0
 
-            console.log("statuses in prods arr", statusesInProds)
-            return statusesInProds
+
+
+        let testingKeys =[] 
+
+        psTrue?testingKeys.push("preSoaking"):null
+        sTrue?testingKeys.push("seeding"):null
+        hrTrue?testingKeys.push("harvestReady"):null
+
+        return testingKeys;
     }
 
     const getFinishedTasks = () => {
