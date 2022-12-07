@@ -1,6 +1,7 @@
 import express from "express"
 import { error, success } from "../../network/response.js"
-import { getProductionWorkByContainerId, saveProductionForWorkDay, updateProductionByStatus } from "./controller.js"
+import { getProductionWorkByContainerId, saveProductionForWorkDay } from "./controller.js"
+import { getProductionByStatus } from "./store.js"
 
 const router = express.Router()
 
@@ -14,6 +15,16 @@ router.get('/workday', (req, res) => {
     })
     .catch((err) => {
         error(req, res, 500, "Error getting production work - GNERIC ERROR", err, err)
+    })
+})
+
+router.get('/status/:status', (req, res) => {
+    getProductionByStatus(res.locals.organization, req.query.containerId, req.params.status)
+    .then(result => {
+        success(req, res, 200, "Production obtained successfully", result)
+    })
+    .catch(err => {
+        error(req, res, 500, "Error getting production", err, err)
     })
 })
 

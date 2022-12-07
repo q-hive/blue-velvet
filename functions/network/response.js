@@ -33,7 +33,7 @@ export const error = (req,res,code, message, error, processError = undefined) =>
     } catch(err) {
         try {
             if(error){
-                console.log(error.message)
+                console.log(error)
                 switch(err.name){
                     case "MongooseError":
                         return res.status(code).send({

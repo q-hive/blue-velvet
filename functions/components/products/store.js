@@ -282,7 +282,6 @@ export const getProductById = (orgId, containerId,prodId) => {
                     }
                 ]
             )
-            console.log(found)
             resolve(found[0].containers.products)
         } catch (err){
             reject(err)

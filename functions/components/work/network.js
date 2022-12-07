@@ -1,6 +1,8 @@
 import express from 'express'
 import { error, success } from '../../network/response.js'
-import {getProductionWorkById, getWorkTimeByEmployee, parseProduction, setPerformance, updateOrgTasksHistory, updatePerformance, updateProductionByStatus} from './controller.js'
+import { updateProductionToNextStatus } from '../production/controller.js'
+import { validateBodyNotEmpty } from '../security/secureHelpers.js'
+import {getProductionWorkById, getWorkTimeByEmployee, parseProduction, setPerformance, updateOrgTasksHistory, updatePerformance} from './controller.js'
 
 
 const router = express.Router()
@@ -25,6 +27,19 @@ router.patch('/performance/:id', (req, res) => {
     .catch(err => {
         error(req, res, 500, "Error updating performance", err, err)
     })
+})
+
+router.patch('/production/:container', (req, res) => {
+    const validBody = validateBodyNotEmpty(req, res)
+    if(!validBody){
+        updateProductionToNextStatus(res.locals.organization,req.params.container,req.body.productionModelsIds)
+        .then((result) => {
+            success(req, res, 200, "Production updated succesfully", result)
+        })
+        .catch(err => {
+            error(req, res, 500, "Error updating the production", err, err)
+        })
+    }
 })
 
 //*Response with an object containing estimated times for all tasks, calculated from the total production that needs to be executed
