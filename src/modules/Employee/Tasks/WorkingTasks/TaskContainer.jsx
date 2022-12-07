@@ -50,7 +50,7 @@ export const TaskContainer = (props) => {
     //* STEPPER
     const [activeStep, setActiveStep] = useState(0)
 
-    var type, order, products
+    let type, order, products
 
     if(props != null){
         type=props.type
@@ -87,7 +87,7 @@ export const TaskContainer = (props) => {
         case "preSoaking":
             contentTitle = "Pre Soaking"
             expectedtTime = 60*12//Math.ceil(state.time.times.seeding.time) 
-            content = <PreSoakingContent products={products} productsObj={productsByNameObj} workData={state.workData} index={activeStep}/>
+            content = <PreSoakingContent products={products} productsObj={productsByNameObj} workData={state.workData["preSoaking"]} index={activeStep}/>
             steps=[
                 {step:"Pre Soak"},
             ]
@@ -96,7 +96,7 @@ export const TaskContainer = (props) => {
         case "seeding":
             contentTitle = "Seeding"
             expectedtTime = Math.ceil(state.time.times.seeding.time) 
-            content = <SeedingContent products={products} productsObj={productsByNameObj} workData={state.workData} index={activeStep}/>
+            content = <SeedingContent products={products} productsObj={productsByNameObj} workData={state.workData["seeding"]} index={activeStep}/>
             steps=[
                 {step:"Setup"},
                 {step:"Spray Seeds"},

@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react'
 
 //*MUI Components
-import { Box, Button, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Fade, LinearProgress, Typography, useTheme } from '@mui/material'
+import { Box, Button, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Fade, Grid, LinearProgress, Paper, Typography, useTheme } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 //*THEME
 import {BV_THEME} from '../../../theme/BV-theme'
@@ -18,6 +18,7 @@ import { productsColumns, productsColumnsMobile } from '../../../utils/TableStat
 import api from '../../../axios'
 import { useNavigate } from 'react-router-dom'
 import useAuth from '../../../contextHooks/useAuthContext'
+import { Stack } from '@mui/system'
 
 export const ProductionMain = () => {
     
@@ -135,12 +136,11 @@ export const ProductionMain = () => {
         {/*PRODUCTION MAIN BEGINS*/}
         <Fade in={true} timeout={1000} unmountOnExit>
             <Box width="100%">
-                <Container sx={{padding:"2%"}}>
+                <Container maxWidth={"xl"} sx={{padding:"2%"}}>
                     <Box sx={
                         
                         {
                             width:"100%", 
-                            height:"80vh",
                             "& .header-products-table":{
                                 backgroundColor:BV_THEME.palette.primary.main,
                                 color:"white"
@@ -159,15 +159,140 @@ export const ProductionMain = () => {
                         
 
                         <Typography variant="h4" color="secondary" textAlign={"center"} margin={theme.margin.mainHeader}>
-                            Production management (products)
+                            Production Management
                         </Typography>
                         <Box sx={{display:"flex", justifyContent:"space-between",marginBottom:"3vh"}} >
                         <Button variant='contained' color='primary' startIcon={<Add/>} onClick={handleNewProduct} sx={{minWidth:"20%"}}>
                             Add New Product
                         </Button>
                     </Box>
-                        
-                        {
+
+                    <Grid container maxWidth={"xl"} spacing={2} marginTop={2}>
+                        <Grid item xs={12} md={6} lg={4} >
+                            <Paper elevation={5} sx={{
+                                                        padding: BV_THEME.spacing(2),
+                                                        display: "flex",
+                                                        overflow: "auto",
+                                                        flexDirection: "column",
+                                                        minHeight: 480,
+                                                        
+                                                    }}>
+                                <Typography variant="h6" color="secondary">
+                                    Growing Products
+                                </Typography>
+
+                                {
+                                    loading
+                                    ?   
+                                    <LinearProgress color="primary" sx={{marginY:"2vh"}}/>
+                                    :  
+                                    <Stack sx={{}}>
+                                    
+                                        <Paper elevation={0} sx={{marginTop:"3%"}}>
+                                            <Box sx={{display:"flex" , flexDirection:"row", justifyContent:"space-between" }}>
+                                                
+                                                
+                                                <Grid container>
+                                                    <Grid item xs={6}>
+                                                        <Typography variant={"h6"} color={"secondary.dark"} >
+                                                        Sunflower: 
+                                                        </Typography>
+                                                    </Grid>
+                                                    
+                                                    <Grid item xs={4}>
+                                                        <Typography variant={"overline"} color={"secondary.light"}>
+                                                            2 days remaining
+                                                        </Typography>
+                                                    </Grid>
+
+                                                    <Grid item xs={2}>
+                                                        <Typography color={86>50?"primary.dark":86<33?"secondary.dark":"orange"} variant={"h6"}>
+                                                            {86}%
+                                                        </Typography>
+                                                    </Grid>
+                                                </Grid>
+
+                                            </Box>
+                                            <LinearProgress sx={{height:"3vh"}} variant="determinate" value={86} />
+                                        </Paper>
+
+                                        <Paper elevation={0} sx={{marginTop:"3%"}}>
+                                            <Box sx={{display:"flex" , flexDirection:"row", justifyContent:"space-between" }}>
+                                                
+                                                
+                                                <Grid container>
+                                                    <Grid item xs={6}>
+                                                        <Typography variant={"h6"} color={"secondary.dark"} >
+                                                        Peas: 
+                                                        </Typography>
+                                                    </Grid>
+                                                    
+                                                    <Grid item xs={4}>
+                                                        <Typography variant={"overline"} color={"secondary.light"}>
+                                                            4 days remaining
+                                                        </Typography>
+                                                    </Grid>
+
+                                                    <Grid item xs={2}>
+                                                        <Typography color={50>50?"primary.dark":50<33?"secondary.dark":"orange"} variant={"h6"}>
+                                                            {50}%
+                                                        </Typography>
+                                                    </Grid>
+                                                </Grid>
+
+                                            </Box>
+                                            <LinearProgress sx={{height:"3vh"}} variant="determinate" value={50} />
+                                        </Paper>
+
+                                        <Paper elevation={0} sx={{marginTop:"3%"}}>
+                                            <Box sx={{display:"flex" , flexDirection:"row", justifyContent:"space-between" }}>
+                                                
+                                                
+                                                <Grid container>
+                                                    <Grid item xs={6}>
+                                                        <Typography variant={"h6"} color={"secondary.dark"} >
+                                                        Power Mix: 
+                                                        </Typography>
+                                                    </Grid>
+                                                    
+                                                    <Grid item xs={4}>
+                                                        <Typography variant={"overline"} color={"secondary.light"}>
+                                                            8 days remaining
+                                                        </Typography>
+                                                    </Grid>
+
+                                                    <Grid item xs={2}>
+                                                        <Typography color={10>50?"primary.dark":10<33?"secondary.dark":"orange.dark"} variant={"h6"}>
+                                                            {10}%
+                                                        </Typography>
+                                                    </Grid>
+                                                </Grid>
+
+                                            </Box>
+                                            <LinearProgress sx={{height:"3vh"}} variant="determinate" value={10} />
+                                        </Paper>
+
+                                        
+                                    </Stack>
+                                    
+                                }      
+                            </Paper>
+                        </Grid>
+
+
+                        <Grid item xs={12} md={6} lg={8} >
+                            <Paper elevation={4} sx={{
+                                                    padding: BV_THEME.spacing(2),
+                                                    display: "flex",
+                                                    overflow: "auto",
+                                                    flexDirection: "column",
+                                                    minHeight: 480
+                                                }}>
+                                <Typography variant="h6" color="secondary">
+                                    All products
+                                </Typography>
+
+                                {
                             loading
                             ?   
                             <LinearProgress color="primary" sx={{marginY:"2vh"}}/>
@@ -181,7 +306,7 @@ export const ProductionMain = () => {
                                         return row._id
                                     }}
                                     getRowHeight={() => 'auto'}
-                                    sx={{marginY:"2vh", display:() => theme.mobile.hidden}}
+                                    sx={{marginY:"2vh", display:() => theme.mobile.hidden,height:"100%"}}
                                 />
                                 <DataGrid
                                     columns={productsColumnsMobile}
@@ -198,7 +323,13 @@ export const ProductionMain = () => {
                                     sx={{marginY:"2vh", display:() => theme.mobile.only}}
                                 />
                             </>
-                        }
+                        }     
+                            </Paper>
+                        </Grid>
+
+                    {/*Grid Container End */}    
+                    </Grid>
+                        
                         
                     </Box>
                 </Container>

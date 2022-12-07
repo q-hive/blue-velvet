@@ -19,6 +19,8 @@ import useWorkingContext from '../../../contextHooks/useEmployeeContext'
 import { tasksCicleObj } from '../../../utils/models';
 import { UserDialog } from '../../../CoreComponents/UserFeedback/Dialog';
 import { BV_THEME } from '../../../theme/BV-theme';
+import { getWorkdayProdData } from '../../../CoreComponents/requests';
+import cy from 'date-fns/esm/locale/cy/index.js';
 
 //*UNUSED
 // import api from '../../../axios.js'
@@ -33,7 +35,7 @@ export const FullChamber = () => {
     const {state}= useLocation();
 
     //*DATA STATES
-    const {orders} = state
+    const {orders,workData,cycleKeys} = state
 
     //*CONTEXTS
     const {user, credential} = useAuth()
@@ -53,11 +55,14 @@ export const FullChamber = () => {
         message:    "",
         actions:    []
     })
+    const [workdayProdData, setWorkdayProdData] = useState({})
+    
+    //const [cycleKeys,setCycleKeys] = useState(["preSoaking"])
 
-    const cycleKeys = Object.keys(WorkContext.cicle)
+   
+    
 
 
-    console.log("cicle arr",cycleKeys)
 
 
     const handleClose = (event, reason) => {
@@ -70,6 +75,42 @@ export const FullChamber = () => {
             open:false
         });
     };
+
+    const getCycleKeys = () => {
+        let arrcycl = []
+        
+        Object.keys(workdayProdData).map((activeKey,id)=>{
+            workdayProdData[activeKey].length > 0 ?
+            Object.keys(WorkContext.cicle).map((structureKey,id)=>{
+                if(structureKey==activeKey && !arrcycl.includes(structureKey))
+                    arrcycl.push(structureKey)
+
+            })
+            :
+            null
+
+        })
+        console.log("arrcycl innit",arrcycl)
+        return arrcycl
+    }
+
+    
+
+/*    let psTrue = workdayProdData.preSoaking?.length>0
+    let sTrue = workdayProdData.seeding?.length>0
+    let hrTrue = workdayProdData.harvestReady?.length>0
+    */
+
+
+    /*psTrue?cycleKeys.push("preSoaking"):null
+    sTrue?cycleKeys.push("seeding"):null
+    hrTrue?cycleKeys.push("harvestReady"):null
+    */
+
+
+
+
+
 
     
     const ordersList = orders
@@ -88,7 +129,7 @@ export const FullChamber = () => {
         return productList;
     }
 
-    const allProducts = getAllProducts()
+    const allProducts = workData
 
 
     {/* Products to send as props to TaskTest */}
@@ -203,6 +244,25 @@ export const FullChamber = () => {
         })
     }
 
+    /*useEffect(()=>{
+        let psTrue = workData.preSoaking?.length>0
+        let sTrue = workData.seeding?.length>0
+        let hrTrue = workData.harvestReady?.length>0
+
+        console.log("aber hdsptm",psTrue,sTrue,hrTrue)
+    
+
+    let testingKeys =[] 
+
+    psTrue?testingKeys.push("preSoaking"):null
+    sTrue?testingKeys.push("seeding"):null
+    hrTrue?testingKeys.push("harvestReady"):null
+
+    setCycleKeys(testingKeys)
+    
+
+
+    },[workdayProdData])*/
 
     useEffect(() => {
             setWorkContext(() => {
@@ -218,6 +278,22 @@ export const FullChamber = () => {
                 }
             })
     }, [WorkContext.current])
+
+    useEffect(()=>{
+        getWorkdayProdData({
+            user:user,
+            credential:credential,
+            setProdData:setWorkdayProdData,
+
+            
+        })
+        
+    },[])
+
+    
+    
+
+    console.log("lalala2",workdayProdData)
 
   return (
     <>
@@ -235,7 +311,7 @@ export const FullChamber = () => {
         onChange={carouselChange}
         transitionTime={1000}
     >
-        {cycleKeys.map((status,index)=>{
+        {cycleKeys?.map((status,index)=>{
             return( 
                 <Fade in={true} timeout={2000} unmountOnExit>
                     <Box key={index} height="80vh" component={"div"} sx={{overflow:"auto"}}>
@@ -249,7 +325,7 @@ export const FullChamber = () => {
                                 stepInList:index,
                                 updatePerformance: updateEmployeePerformance,
                                 setWorkContext: setWorkContext,
-                                products: getProductsByType(status)
+                                products: workdayProdData[status]
                             })}
                     </Box>
                 </Fade> 

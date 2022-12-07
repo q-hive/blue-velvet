@@ -129,6 +129,29 @@ export const Dashboard = () => {
                         <Paper elevation={4} sx={fixedHeightPaper}>
                             <Typography variant="h6" color="secondary.dark">Tasks</Typography>
                             <Box sx={{display:"flex",flexDirection:"column", }}>
+                                {/*Delivery Task Only acrive when there are orders on ready to deliver status*/
+                                true?
+                                    <Paper variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"1.5vh",paddingX:"1.5vh",marginTop:"1vh",display:"flex", flexDirection:"row"}}>
+                                        <Typography><b>Packing</b></Typography>
+                                        <Button variant="contained" sx={{width:"34%"}} onClick={()=>navigate(`/${user.uid}/employee/tasks/delivery`)} color="primary" >
+                                            View
+                                        </Button>
+                                    </Paper>  
+                                :
+                                    null
+                                }
+
+                                {/*Delivery Task Only acrive when there are orders on ready to deliver status*/
+                                true?
+                                    <Paper variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"1.5vh",paddingX:"1.5vh",marginTop:"1vh",display:"flex", flexDirection:"row"}}>
+                                        <Typography><b>Delivery</b></Typography>
+                                        <Button variant="contained" sx={{width:"34%"}} onClick={()=>navigate(`/${user.uid}/employee/tasks/delivery`)} color="primary" >
+                                            View
+                                        </Button>
+                                    </Paper>  
+                                :
+                                    null
+                                }
 
                                 
                             </Box> 
@@ -176,18 +199,16 @@ export const Dashboard = () => {
                                 color:"white"
                             }}}>
                             <Typography variant="h6" color="secondary.dark">Employee level</Typography>
-                            <DataGrid
-                            columns={adminDashboardEmployees}
-                            rows={employeesPerformanceRows}
-                            getRowId={(row) => {
-                                return row._id
-                            }}
-                            sx={{marginY:"2vh",}}>
-                            </DataGrid>
+                            
                             
                         </Paper>
                     </Grid>
                 </Grow>
+
+            
+                
+
+            {/*Grid Container End */}    
             </Grid>
         </Container>
     </Box>

@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react'
 
 //*MUI COMPONENTS
-import { Autocomplete, Box, Button, Divider, Fab, TextField, Typography, Fade } from '@mui/material'
+import { Autocomplete, Box, Button, Divider, Fab, TextField, Typography, Fade, CircularProgress } from '@mui/material'
 import CameraIcon from '@mui/icons-material/AddPhotoAlternate'
 
 //*CONTEXTS
@@ -19,6 +19,8 @@ export const NewEmployee = (props) => {
     const {user, credential} = useAuth()
     const navigate = useNavigate()
     const [edition,setEdition] = useState(false)
+    
+    const [loading,setLoading] = useState(false)
 
     const [dialog, setDialog] = useState({
         open:false,
@@ -125,6 +127,8 @@ export const NewEmployee = (props) => {
                 "references": input.references
             }
         }
+
+        setLoading(true)
         
         api.api.post(`/auth/create/employee`, mappedEmployeeData, {
             headers:{
@@ -134,7 +138,10 @@ export const NewEmployee = (props) => {
         })
         .then((res) => {
             
+            setLoading(false)
+            
             if(res.status === 201){
+                
                 setDialog({
                     ...dialog,
                     open:true,
@@ -218,7 +225,7 @@ export const NewEmployee = (props) => {
             <Divider variant="middle" sx={{width:{xs:"98%",sm:"50%",md:"50%"}, marginY:"1vh"}}/>
 
             <Box sx={{width:{xs:"98%",sm:"49%"}}} >
-                <TextField id="name" value={input.name} onChange={(e) => handleInput(e,e.target.value,"input")} label="First Name" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} InputLabelProps={{ shrink: edition ? true:false }} />
+                <TextField id="name" value={input.name} onChange={(e) => handleInput(e,e.target.value,"input")} label="First Name" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} /*InputLabelProps={{ shrink: edition ? true:false }}*/ />
                 <TextField id="lname" value={input.lname} onChange={(e) => handleInput(e,e.target.value,"input")} label="Last Name" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
             </Box>
             <TextField id="salary" type="number" value={input.salary}  onChange={(e) => handleInput(e,e.target.value,"input")} label="Salary" InputProps={{endAdornment: <Typography>/HR</Typography>}} sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.thirdSize})} />
@@ -250,7 +257,7 @@ export const NewEmployee = (props) => {
             <TextField id="password" onChange={(e) => handleInput(e, e.target.value,"input")} type="password" label="Set a password" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
 
             <Button variant="contained" onClick={handleCreateEmployee} sx={{marginTop:"2vh"}}>
-                Save employee
+                {loading?<CircularProgress />:"Save employee"}
             </Button>
 
     

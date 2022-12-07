@@ -15,7 +15,7 @@ import { useNavigate } from 'react-router-dom'
 import api from '../../../axios.js'
 import useAuth from '../../../contextHooks/useAuthContext'
 
-
+import { getCustomerData } from '../../../CoreComponents/requests'
 
 
 
@@ -44,88 +44,17 @@ export const SalesIndex = () => {
         height: 480
     }
     
+    
     useEffect(() => {
-        const getData = () => {
-            api.api.get(`${api.apiVersion}/orders/`, {
-                headers: {
-                    authorization:  credential._tokenResponse.idToken,
-                    user:           user
-                }
-            
-            },setLoading(true))
-            .then(response => {
-                const getCustomer = response.data.data.map(async (order, idx) => {
-                    const customer = await api.api.get(`${api.apiVersion}/customers/${order.customer}`, {
-                        headers: {
-                            authorization:  credential._tokenResponse.idToken,
-                            user:           user
-                        }
-                    })
-                    
-                    return {...order, fullCustomer:customer.data.data}
-                })
-                
-                Promise.all(getCustomer)
-                .then((newResponse) => {
-                    newResponse.forEach((order, idx) => {
-                        const dayOfOrder = new Date(order.date).getDay()
-                        switch(dayOfOrder){
-                            case 2:
-                                newResponse[idx].date1 = order.date 
-                                newResponse[idx].date2 = null 
-                                
-                            break;
-                            case 5:
-                                newResponse[idx].date2 = order.date
-                                newResponse[idx].date1 = null
-                            break;
-                            default:
-                                break;
-                        }
-                    })
-                    
-                    setTotalIncome(sumPrices())
-                    
-                    function sumPrices() { 
-                        let arr =[]
-                        newResponse.map((order) => {
-                            arr.push(order.price)
-                        })
-                        let sum =arr.reduce((a, b) => a + b, 0)
-                        return(sum)
-                    
-                    }
-                    const mappedRow = newResponse.map((order) => {
-                        console.log(order)
-                        
-                        return {
-                            "customer": order.fullCustomer.name,
-                            "date1":    order.date1,
-                            "date2":    order.date2,
-                            "type":     "No type",
-                            "income":   order.price,
-                            "status":   "unpaid",
-                            "id":       order._id
-                        }
-                    })
-                    setOrders((o) => {
-                        return (
-                            mappedRow    
-                        )
-                    })
-                    setLoading(false)
-                })
-                .catch((err) => {
-                    console.log("Error executing request for customers name")
-                    console.log(err)
-                })
-            })
-            .catch(err => {
-                console.log("Error getting orders")
-            })
-        }
+        getCustomerData({
+            setOrders:setOrders,
+            setTotalIncome:setTotalIncome,
+            user:user,
+            credential:credential,
+            setLoading:setLoading
+        })
+        console.log("data STATES",orders,totalIncome)
 
-        getData()
         
     }, [])
   return (
@@ -136,7 +65,6 @@ export const SalesIndex = () => {
         <Container sx={{padding:"2%"}}>
             <Box sx={{
                         width:"100%", 
-                        height:"auto",
                         "& .header-sales-table":{
                             backgroundColor:BV_THEME.palette.primary.main,
                             color:"white"
@@ -151,7 +79,7 @@ export const SalesIndex = () => {
                 <Box sx={{width:"100%", height:"100%"}}>
                 
                 
-                    <Box sx={{display:"flex", justifyContent:"space-between",marginBottom:"3vh"}} >
+                    <Box sx={{display:"flex", justifyContent:"space-between"}} >
                         <Button variant='contained' color='primary' startIcon={<Add/>} onClick={handleNewOrder} sx={{minWidth:"20%"}}>
                             New order
                         </Button>
@@ -181,12 +109,12 @@ export const SalesIndex = () => {
 
         
         {/* GRID CONTAINER */}
-        <Container maxWidth="xl" sx={{paddingTop:4,paddingBottom:4,marginX:{xs:4,md:"auto"},marginTop:{xs:4,md:3},
+        <Container maxWidth="xl" sx={{paddingTop:1,paddingBottom:4,marginX:{xs:4,md:"auto"},marginTop:{xs:4,md:1},
                                         "& .header-sales-table":{
                                             backgroundColor:BV_THEME.palette.primary.main,
                                             color:"white"
                                         }}}>
-        <Grid container maxWidth={"xl"} spacing={3} marginTop={3}>
+        <Grid container maxWidth={"xl"} spacing={3}>
             
             
             {/* Recent */}
@@ -288,3 +216,5 @@ export const SalesIndex = () => {
     </>
   )
 }
+
+

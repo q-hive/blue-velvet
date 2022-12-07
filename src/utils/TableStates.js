@@ -44,35 +44,33 @@ export const productsColumns = [
         field:"price",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
+        //align:"center",
         headerName:"Prod. Price",
         minWidth:180,
         flex:1,
         renderCell:(params) => {
             return (
-                <>
-                    <Box display="flex" p={1}>
-                        <Accordion>
+                
+                        <Accordion sx={{width:"100%",marginY:"1vh"}}>
                             <AccordionSummary
                                 expandIcon={<ExpandMoreIcon />}
                                 aria-controls="panel1a-content"
-                                id="panel1a-header"
+                                id="panel1a-header" 
                             >
                                 <Typography>Price</Typography>
                             </AccordionSummary>
 
-                            <AccordionDetails>
+                            <AccordionDetails >
                                     {params.formattedValue.map((obj) => {
                                         return (
                                             <>
-                                            <Typography align="center">Size {obj.packageSize}:  ${obj.amount} </Typography>
-                                            <Divider /> 
+                                            <Typography align="justify">Size {obj.packageSize}:  ${obj.amount} </Typography>
+                                            <Divider sx={{maxWidth:"100%"}} /> 
                                             </>
                                             )})}
                             </AccordionDetails>
                         </Accordion>
-                    </Box>
-                </>
+                
             )
         }
     },
