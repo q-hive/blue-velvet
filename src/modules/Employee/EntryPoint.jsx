@@ -387,20 +387,6 @@ export const EntryPoint = () => {
             getWorkData()
             .then((workData) => {
                 console.log("wd", workData)
-                let statusesArr = 
-                (function() {
-                    let psTrue = workData.preSoaking?.length>0
-                    let sTrue = workData.seeding?.length>0
-                    let hrTrue = workData.harvestReady?.length>0
-
-                    let testingKeys =[] 
-
-                    psTrue?testingKeys.push("preSoaking"):null
-                    sTrue?testingKeys.push("seeding"):null
-                    hrTrue?testingKeys.push("harvestReady"):null
-
-                    return testingKeys;
-                })();  //getActiveProductsStatuses(workData)
                 let statusesArr = getActiveProductsStatuses2(workData);  //getActiveProductsStatuses(workData)
                     if(statusesArr.length!==0){
                         if(statusesArr.length == 1 && statusesArr[0]=="growing"){
