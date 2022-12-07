@@ -277,7 +277,7 @@ export const createNewOrder = (orgId, order) => {
             }
 
             let end = addTimeToDate(new Date(), { w: 2 })
-            let production = buildProductionDataFromOrder({...order, _id:id}, allProducts)
+            let production = await buildProductionDataFromOrder({...order, _id:id}, allProducts)
 
         
             if(allProducts && allProducts.length >0){

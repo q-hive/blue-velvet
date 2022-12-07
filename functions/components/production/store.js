@@ -179,3 +179,33 @@ export const updateManyProductionModels = (orgId,container,productionIds) => {
         .catch(err => reject(err))
     })
 }
+
+export const getProductionByStatus = (orgId, container, status) => {
+    return new Promise((resolve, reject) => {
+        orgModel.findOne(
+            {
+                "_id":mongoose.Types.ObjectId(orgId),
+                "containers": {
+                    "$elemMatch": {
+                        "_id":mongoose.Types.ObjectId(container),
+                        "production": {
+                            "$elemMatch":{
+                                "ProductionStatus":status
+                            }
+                        }
+                    },
+                }
+            },
+            {
+                "containers.production.$":1
+            }
+        )
+        .then((result) => {
+            resolve(result)
+        })
+        .catch((err) => {
+            reject(err)
+        })
+
+    })
+}
