@@ -359,8 +359,6 @@ export const getEstimatedStartProductionDate = (orderDate,product) => {
     }
 }
 
-
-
 //*Store
 export const saveProductionForWorkDay = async (orgId, containerId, production) => {
     try {

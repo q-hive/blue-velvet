@@ -182,23 +182,38 @@ export const updateManyProductionModels = (orgId,container,productionIds) => {
 
 export const getProductionByStatus = (orgId, container, status) => {
     return new Promise((resolve, reject) => {
-        orgModel.findOne(
-            {
-                "_id":mongoose.Types.ObjectId(orgId),
-                "containers": {
-                    "$elemMatch": {
-                        "_id":mongoose.Types.ObjectId(container),
-                        "production": {
-                            "$elemMatch":{
-                                "ProductionStatus":status
-                            }
+        orgModel.aggregate(
+            [
+                {
+                    "$match": {
+                        "_id":mongoose.Types.ObjectId(orgId),
+                    }   
+                },
+                {
+                    "$unwind":"$containers"
+                },
+                {
+                    "$match":{
+                        "containers._id":mongoose.Types.ObjectId(container)
+                    }
+                },
+                {
+                    "$unwind":"$containers.production"
+                },
+                {
+                    "$match":{
+                        "containers.production.ProductionStatus":status
+                    }  
+                },
+                {
+                    "$project":{
+                        "containers":{
+                            "_id":1,
+                            "production":1
                         }
-                    },
+                    }
                 }
-            },
-            {
-                "containers.production.$":1
-            }
+            ]
         )
         .then((result) => {
             resolve(result)
