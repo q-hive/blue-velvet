@@ -152,14 +152,14 @@ export  const getCustomerData = async  (props) => {
 
 
 
-export const getWorkdayProdData = (props) => {
+export const getWorkdayProdData = async (props) => {
 
     let user = props.user
     let credential = props.credential
     let setRows = props.setProdData
 
 
-    api.api.get(`${api.apiVersion}/production/workday?containerId=633b2e0cd069d81c46a18033`, {
+    await api.api.get(`${api.apiVersion}/production/workday?containerId=6386c9ebffa0b079a26de951`, {
         headers: {
             authorization:  credential._tokenResponse.idToken,
             user:           user

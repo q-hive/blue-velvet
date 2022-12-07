@@ -27,16 +27,16 @@ const taskCard_sx = {
 export const PreSoakingContent = (props) => {
 
     const {user, credential} = useAuth()
-    const [workProducts, setWorkProducts] = useState(props.workData.production.products)
+    const [workProducts, setWorkProducts] = useState(props.workData /*.production.products*/)
     const {TrackWorkModel} = useWorkingContext()
 
     function sumAllTrays() {
         let i;
         let trays = 0;
 
-        for (i = 0; i < workProducts.length; i++) {
-          if(workProducts[i].productData.trays != undefined)
-            trays += Math.ceil(workProducts[i].productData.trays)
+        for (i = 0; i < Object.keys(workProducts).length; i++) {
+          if(workProducts[i].trays != undefined)
+            trays += Math.ceil(workProducts[i].trays)
         }
         
         return trays;
@@ -53,7 +53,7 @@ export const PreSoakingContent = (props) => {
 
     
     
-    const totalTrays = sumAllTrays()
+    //const totalTrays = sumAllTrays()
 
 
     if(props.index===0)
@@ -66,14 +66,17 @@ export const PreSoakingContent = (props) => {
                     <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
                         One bucket per product<br></br>Water
                     </Typography>
-                    {workProducts.map((product,index)=>{return(
-                        product.name=="sunflower" || product.name=="peas" ?
+                    {workProducts.map((product,index)=>{
+                        console.log("producto obj presoaking",product)
+                        return(
+                            !product.minutes ?
                         
                         <Typography key={index} variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                            <b>{parseFloat(product.productData.seeds).toFixed(2)}</b> grs of <b>{product.productData.name}</b> Seeds <br/>
+                            <b>{parseFloat(product.seeds).toFixed(2)}</b> grs of <b>{product.ProductName}</b> Seeds <br/>
                         </Typography>
                         :
                         null
+                        
                     )})}
 
                     <Box sx={taskCard_sx}>

@@ -126,7 +126,7 @@ export const EntryPoint = () => {
         return ordersData.data
     }
     const getTimeEstimate = async () => {
-        const request = await api.api.get(`${api.apiVersion}/work/time/${user._id}?containerId=633b2e0cd069d81c46a18033`, {
+        const request = await api.api.get(`${api.apiVersion}/work/time/${user._id}?containerId=6386c9ebffa0b079a26de951`, {
             headers: {
                 authorization:  credential._tokenResponse.idToken,
                 user:           user
@@ -171,7 +171,7 @@ export const EntryPoint = () => {
             result = {
                 times: {
                     preSoaking: {
-                        time:request.data.data[0]["pre-soaking"].minutes
+                        time:request.data.data[0].preSoaking.minutes
                     }, 
                     harvest: {
                         time:request.data.data[3].harvestReady.minutes
@@ -242,7 +242,7 @@ export const EntryPoint = () => {
             return JSON.parse(window.localStorage.getItem("workData"))
         }
         
-        const apiResponse = await api.api.get(`${api.apiVersion}/production/workday?containerId=633b2e0cd069d81c46a18033`,{
+        const apiResponse = await api.api.get(`${api.apiVersion}/production/workday?containerId=6386c9ebffa0b079a26de951`,{
             headers:{
                 "authorization":    credential._tokenResponse.idToken,
                 "user":             user
@@ -295,8 +295,7 @@ export const EntryPoint = () => {
         let statusesInProds = []
         console.log("wdm",workDataModel)
             
-            workDataModel.map((prod,id)=>{
-                console.log("prod status", prod.ProductionStatus)
+            Object.keys(workDataModel).map((prod,id)=>{
                 if(!statusesInProds.includes(prod.ProductionStatus))
                     statusesInProds.push(prod.ProductionStatus)
             })
@@ -383,7 +382,20 @@ export const EntryPoint = () => {
             getWorkData()
             .then((workData) => {
                 console.log("wd", workData)
-                let statusesArr = getActiveProductsStatuses(workData)
+                let statusesArr = 
+                (function() {
+                    let psTrue = workData.preSoaking?.length>0
+                    let sTrue = workData.seeding?.length>0
+                    let hrTrue = workData.harvestReady?.length>0
+
+                    let testingKeys =[] 
+
+                    psTrue?testingKeys.push("preSoaking"):null
+                    sTrue?testingKeys.push("seeding"):null
+                    hrTrue?testingKeys.push("harvestReady"):null
+
+                    return testingKeys;
+                })();  //getActiveProductsStatuses(workData)
                     if(statusesArr.length!==0){
                         if(statusesArr.length == 1 && statusesArr[0]=="growing"){
                             setSnackState({open:true,label:"There's nothing for you to do right now",severity:"success"})
@@ -458,7 +470,8 @@ export const EntryPoint = () => {
     const allStatusesObj = filterByKey(allProducts,"status")
 
     function capitalize(word) {
-        return word[0].toUpperCase() + word.slice(1).toLowerCase();
+        return(
+        !word ? null : word[0].toUpperCase() + word.slice(1).toLowerCase())
     }
 
     function displayTaskCards (){
