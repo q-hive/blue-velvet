@@ -362,11 +362,13 @@ export const EntryPoint = () => {
             .then((workData) => {
                 setTimeout(() => {
                     setLoading({...loading, startWorkBtn:false})
+                    let statusesArr = getActiveProductsStatuses2(workData);
                     setSnackState({open:false})
                     navigate('./../tasks/work',
                         {state: {
                             orders: orders,
                             workData: workData,
+                            cycleKeys:statusesArr,
                             time: estimatedTime
                         }},
                     )
@@ -399,6 +401,7 @@ export const EntryPoint = () => {
 
                     return testingKeys;
                 })();  //getActiveProductsStatuses(workData)
+                let statusesArr = getActiveProductsStatuses2(workData);  //getActiveProductsStatuses(workData)
                     if(statusesArr.length!==0){
                         if(statusesArr.length == 1 && statusesArr[0]=="growing"){
                             setSnackState({open:true,label:"There's nothing for you to do right now",severity:"success"})
@@ -412,6 +415,7 @@ export const EntryPoint = () => {
                                 {state: {
                                 orders: orders,
                                 workData: workData,
+                                cycleKeys:statusesArr,
                                 time: estimatedTime
                                 }}
                             )
