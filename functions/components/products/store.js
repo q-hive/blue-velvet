@@ -254,11 +254,6 @@ export const getProductById = (orgId, containerId,prodId) => {
                     {
                         "$match": {
                             "_id": mongoose.Types.ObjectId(orgId),
-                            // "containers": {
-                            //     "$elemMatch": {
-                            //         "_id": mongoose.Types.ObjectId(containerId)
-                            //     }
-                            // }
                         }
                     },
                     {

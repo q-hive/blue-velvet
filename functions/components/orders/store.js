@@ -52,7 +52,7 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined, produ
     
                         orgOrders.orders = orgOrders
                     } else {
-                        if(Boolean(req.query.all)){
+                        if(req && Boolean(req.query?.all)){
                             orgOrders = await orgModel.find(
                                 {
                                     "_id":  orgId,
@@ -76,7 +76,11 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined, produ
                     
                 }
                 
-                if(!Object.keys(req.query).includes("production") && !Boolean(req.query?.production)){
+                if(req === undefined) {
+                    return resolve(orgOrders)
+                }
+                
+                if(!Object.keys(req?.query).includes("production") && !Boolean(req.query?.production)){
                     return resolve(orgOrders)
                 }
 
@@ -140,23 +144,29 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined, produ
     })
     
 }
-export const getFilteredOrders = (orgId, req, production, filter = undefined) => {
+export const getFilteredOrders = (orgId, req = undefined, production, filter = undefined) => {
     return new Promise((resolve, reject) => {
         let key
         let value
         let mappedFilter
-        if(Object.keys(req.query).includes('key') && Object.keys(req.query).includes('value')){
-            key = req.query.key
-            value = req.query.value
-            mappedFilter = {key, value}
-        } else if (req.params && filter === undefined) {
-            key = Object.entries(req.params)[0][0]
-            value = Object.entries(req.params)[0][1]
-            mappedFilter = {key, value}
-        } else if (filter != undefined) {
-            mappedFilter = filter
-            
+
+        if(req === undefined) {
+            if(filter !== undefined){
+                mappedFilter = filter
+            }
+        } else {
+            if(Object.keys(req.query).includes('key') && Object.keys(req.query).includes('value')){
+                key = req.query.key
+                value = req.query.value
+                mappedFilter = {key, value}
+            } else if (req.params && filter === undefined) {
+                key = Object.entries(req.params)[0][0]
+                value = Object.entries(req.params)[0][1]
+                mappedFilter = {key, value}
+            }
         }
+
+        
 
         getAllOrders(orgId, req, true, mappedFilter, production)
         .then((orders) => {
@@ -405,6 +415,16 @@ export const updateManyOrders = (filter, update) => {
 }
 
 
+export const getOrderById = async (orgId, orderId) => {
+    const filter = {
+        "key":"_id",
+        "value":orderId
+    }
+    
+    const orders = await getFilteredOrders(orgId, undefined, false, filter)
+
+    return orders
+}
 //* production status
 //* seeding
 //* growing -- 2 days p/w 7am

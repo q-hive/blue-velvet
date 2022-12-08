@@ -10,7 +10,8 @@ import {
     customerRoutes, filesApi, workRoutes, 
     employeesRoutes, 
     containerRoutes,
-    productionRoutes
+    productionRoutes,
+    deliveryRoutes
 } from './network/routes.js'
 
 import { authRoutes } from './network/routes.js'
@@ -78,6 +79,9 @@ containerRoutes(app)
 
 //*PRODUCTION
 productionRoutes(app)
+
+//*PACKING DELIVERY
+deliveryRoutes(app)
 
 
 const server = http.createServer(app)

@@ -1,6 +1,7 @@
 import Organization from '../../models/organization.js'
 import { mongoose } from '../../mongo.js'
 import { dateToArray, nextDay } from '../../utils/time.js'
+import { updateOrder } from '../orders/store.js'
 import { scheduleTask } from './controller.js'
 
 const orgModel = mongoose.model('organizations', Organization)
@@ -103,6 +104,36 @@ export const nextStatusForProduction = (productionModels) => {
 
 }
 
+export const updateOrdersInModels = async (models, orgId) => {
+    const allOrdersInProduction = models.map((productionModel) => {
+        if(productionModel.ProductionStatus === "packing"){
+            return productionModel.RelatedOrder
+        }
+        return
+    }).filter((elem) => elem != undefined)
+
+    
+    if(allOrdersInProduction.length > 0){
+        const uniqueOrdersInProduction = Array.from(new Set(allOrdersInProduction))
+
+        const updateOp = uniqueOrdersInProduction.map(async (orderId) => {
+            const body = {
+                "paths": [
+                    {
+                        "path":"status",
+                        "value":"packing"
+                    }
+                ]
+            }
+            await updateOrder(orgId, orderId, body)
+            
+            await orgModel.updateOne({"_id":mongoose.Types.ObjectId(orgId), "$push":{"packaging":orderId}})
+        })
+
+        await Promise.all(updateOp)
+    }
+}
+
 export const updateManyProductionModels = (orgId,container,productionIds) => {
     return new Promise((resolve, reject) => {
         console.log("Updating production models")
@@ -135,6 +166,7 @@ export const updateManyProductionModels = (orgId,container,productionIds) => {
             })
 
             const modifiedModels = nextStatusForProduction(filteredProductionModels)
+            await updateOrdersInModels(modifiedModels, orgId)
             
 
             const updateOperation = modifiedModels.map(async (newmodel) => {
@@ -164,7 +196,7 @@ export const updateManyProductionModels = (orgId,container,productionIds) => {
 
                 const productionStatus = newmodel.ProductionStatus
 
-                if(productionCycleObject[productionStatus].hasBackGroundTask){
+                if(productionCycleObject[productionStatus]?.hasBackGroundTask){
                     await scheduleTask({organization:orgId, container, production:newmodel, name:"updateForProduction"})
                 }
 

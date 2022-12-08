@@ -1,4 +1,4 @@
-import { getEstimatedHarvestDate } from "../production/controller.js";
+import { areSameDay } from "../../utils/time.js";
 import { updateManyOrders } from "./store.js";
 
 const sortProductsPrices = (order,products) => {
@@ -158,4 +158,38 @@ export const updateAllOrders = async (orgId, update) => {
     } catch (err) {
         throw new Error(err)
     }
+}
+
+export const groupOrdersByDate = (orders, date=undefined) => {
+    const hash = {}, result = []
+    if(date !== undefined) {
+        orders = orders.filter((order) => areSameDay(order.date, date))
+    }
+    orders.forEach((order) => {
+        if(!hash[date]){
+            hash[date] = {
+              ...order.toObject()  
+            }        
+            console.log(date.getMonth())
+            result.push({[`${date.getDate()}-${date.getUTCMonth()+1}-${date.getFullYear()}`]:hash[date]})
+        }
+    })
+
+    return result
+}
+
+export const groupOrders = (criteria, orders, groupValue) => {
+    let grouppedOrders
+    if(criteria === "date"){
+        if(groupValue !== undefined) {
+            grouppedOrders = groupOrdersByDate(orders, groupValue)
+        }
+        
+        if(groupValue === undefined) {
+            grouppedOrders = groupOrdersByDate(orders)
+        }
+        
+    }
+
+    return grouppedOrders
 }
