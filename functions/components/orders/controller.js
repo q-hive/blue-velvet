@@ -160,21 +160,66 @@ export const updateAllOrders = async (orgId, update) => {
     }
 }
 
-export const groupOrdersByDate = (orders, date=undefined) => {
-    const hash = {}, result = []
+export const groupOrdersByDate = (orders, date=undefined, outputFormat = undefined) => {
+    const hash = {}, result = [] 
+    let useOrderDate = true
     if(date !== undefined) {
         orders = orders.filter((order) => areSameDay(order.date, date))
+        useOrderDate = false
     }
+
+    if(date === undefined) {
+        useOrderDate = true
+    }        
+    
     orders.forEach((order) => {
-        if(!hash[date]){
-            hash[date] = {
-              ...order.toObject()  
-            }        
-            console.log(date.getMonth())
-            result.push({[`${date.getDate()}-${date.getUTCMonth()+1}-${date.getFullYear()}`]:hash[date]})
+        if(useOrderDate) {
+            if(!hash[`${order.date.getDate()}-${order.date.getMonth()+1}-${order.date.getFullYear()}`]){
+                hash[`${order.date.getDate()}-${order.date.getMonth()+1}-${order.date.getFullYear()}`] = {
+                  ...order.toObject()  
+                }        
+                result.push({[`${order.date.getDate()}-${order.date.getMonth()+1}-${order.date.getFullYear()}`]:hash[`${order.date.getDate()}-${order.date.getMonth()+1}-${order.date.getFullYear()}`]})
+            }
+        } else {
+            if(!hash[date]){
+                hash[date] = {
+                  ...order.toObject()  
+                }        
+                result.push({[`${date.getDate()}-${date.getMonth()+1}-${date.getFullYear()}`]:hash[date]})
+            }
         }
+        
     })
 
+    if(outputFormat === "hash"){
+        return hash
+    }
+    
+    return result
+}
+
+export const groupOrdersForPackaging = (orders, date=undefined) => {
+    const hash = {}, result = []
+    orders.forEach((order) => {
+        order.products.forEach((product) => {
+            if(!hash[product.name]){
+                hash[product.name] = {
+                    "packages": {
+                        "small":0,
+                        "medium":0,
+                        "large":0
+                    }
+                } 
+                result.push({[product.name]:hash[product.name]})
+            }
+            
+            product.packages.forEach((pkg) => {
+                hash[product.name].packages[pkg.size] +=+ pkg.number
+            })
+            
+        })
+        
+    })
     return result
 }
 

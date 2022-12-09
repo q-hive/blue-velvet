@@ -98,7 +98,7 @@ export const getInitialStatus = (product) => {
  * @param {*} array used to define the criteria for grouping using MQL as helper
  * @returns the argument object passed 
 */
-export const groupBy = (array, production, format) => {
+export const groupBy = (criteria, production, format) => {
    const productionStatuses = getPosibleStatusesForProduction()
 
    let accumulatedProduction = {}
@@ -106,6 +106,8 @@ export const groupBy = (array, production, format) => {
    
    //get production totals (acummulated seeds, harvest and trays based on ProductionModels) by product, grouped by the same ProductionStatus and HarvestDate
     productionStatuses.forEach((status) => {
+        let includePackages = status === "packaging"
+        
         //*for each product name filter in production by the name
         const filteredProduction = production.filter((productionModel) => {
             return productionModel.ProductionStatus === status
@@ -124,30 +126,63 @@ export const groupBy = (array, production, format) => {
                 hashDates[ProductName] = {}     
             }
 
-            if(!hashDates[ProductName][EstimatedStartDate]){
-                hashDates[ProductName][EstimatedStartDate] = {
-                    ProductName,
-                    ProductID,
-                    ProductionStatus,
-                    EstimatedStartDate,
-                    EstimatedStartDate,
-                    seeds:0, 
-                    trays:0, 
-                    harvest:0,
-                    modelsId:[],
-                    start, 
-                    updated, 
-                    relatedOrders:[]
+            if(criteria === "status"){
+                if(!hashDates[ProductName][ProductionStatus]){
+                    hashDates[ProductName][ProductionStatus] = {
+                        ProductName,
+                        ProductID,
+                        ProductionStatus,
+                        EstimatedStartDate,
+                        EstimatedStartDate,
+                        seeds:0, 
+                        trays:0, 
+                        harvest:0,
+                        modelsId:[],
+                        start, 
+                        updated, 
+                        relatedOrders:[]
+                    }
+    
+                    result.push(hashDates[ProductName][ProductionStatus])
+                }   
+                if(hashDates[ProductName][ProductionStatus]){
+                    hashDates[ProductName][ProductionStatus].seeds +=+ seeds
+                    hashDates[ProductName][ProductionStatus].harvest +=+ harvest
+                    hashDates[ProductName][ProductionStatus].trays +=+ trays
+                    hashDates[ProductName][ProductionStatus].modelsId.push(_id)
+                    hashDates[ProductName][ProductionStatus].relatedOrders.push(RelatedOrder)
                 }
-
-                result.push(hashDates[ProductName][EstimatedStartDate])
-            }   
+            } else {
             
-            hashDates[ProductName][EstimatedStartDate].seeds +=+ seeds
-            hashDates[ProductName][EstimatedStartDate].harvest +=+ harvest
-            hashDates[ProductName][EstimatedStartDate].trays +=+ trays
-            hashDates[ProductName][EstimatedStartDate].modelsId.push(_id)
-            hashDates[ProductName][EstimatedStartDate].relatedOrders.push(RelatedOrder)
+                if(!hashDates[ProductName][EstimatedStartDate]){
+                    hashDates[ProductName][EstimatedStartDate] = {
+                        ProductName,
+                        ProductID,
+                        ProductionStatus,
+                        EstimatedStartDate,
+                        EstimatedStartDate,
+                        seeds:0, 
+                        trays:0, 
+                        harvest:0,
+                        modelsId:[],
+                        start, 
+                        updated, 
+                        relatedOrders:[]
+                    }
+    
+                    result.push(hashDates[ProductName][EstimatedStartDate])
+                }   
+                if(hashDates[ProductName][EstimatedStartDate]){
+                    hashDates[ProductName][EstimatedStartDate].seeds +=+ seeds
+                    hashDates[ProductName][EstimatedStartDate].harvest +=+ harvest
+                    hashDates[ProductName][EstimatedStartDate].trays +=+ trays
+                    hashDates[ProductName][EstimatedStartDate].modelsId.push(_id)
+                    hashDates[ProductName][EstimatedStartDate].relatedOrders.push(RelatedOrder)
+                }   
+            }  
+            
+            
+
         }
 
         if(format === "array"){
@@ -168,10 +203,10 @@ export const groupBy = (array, production, format) => {
    return requiredReturn[format]
 }
 
-export const grouPProductionForWorkDay = (production, format) => {
+export const grouPProductionForWorkDay = (criteria,production, format) => {
     try {
         //*THE PARAMETERS ARE NOT ACTUALLY BEING USED YET
-        const grouppedProduction = groupBy(["status-eq","harvestDate-eq","productName-eq","startDate"], production, format)
+        const grouppedProduction = groupBy(criteria, production, format)
         return grouppedProduction
     } catch (err) {
         console.log(err)

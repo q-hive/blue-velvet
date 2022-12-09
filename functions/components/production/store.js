@@ -2,7 +2,7 @@ import Organization from '../../models/organization.js'
 import { mongoose } from '../../mongo.js'
 import { dateToArray, nextDay } from '../../utils/time.js'
 import { updateOrder } from '../orders/store.js'
-import { scheduleTask } from './controller.js'
+import { grouPProductionForWorkDay, scheduleTask } from './controller.js'
 
 const orgModel = mongoose.model('organizations', Organization)
 
@@ -30,6 +30,10 @@ export const productionCycleObject = {
     "harvestReady":{
         "next":"packing",
         "hasBackGroundTask":false
+    },
+    "packing": {
+        "next":"onDelivery",
+        "hasBackgroundTask":false
     }
 }
 
@@ -230,9 +234,6 @@ export const getProductionByStatus = (orgId, container, status) => {
                     }
                 },
                 {
-                    "$unwind":"$containers.production"
-                },
-                {
                     "$match":{
                         "containers.production.ProductionStatus":status
                     }  
@@ -248,7 +249,8 @@ export const getProductionByStatus = (orgId, container, status) => {
             ]
         )
         .then((result) => {
-            resolve(result)
+            const grouppedProd = grouPProductionForWorkDay("status",result[0].containers.production, "hash")
+            resolve(grouppedProd)
         })
         .catch((err) => {
             reject(err)

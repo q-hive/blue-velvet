@@ -21,7 +21,7 @@ router.get('/workday', (req, res) => {
 router.get('/status/:status', (req, res) => {
     getProductionByStatus(res.locals.organization, req.query.containerId, req.params.status)
     .then(result => {
-        success(req, res, 200, "Production obtained successfully", result)
+        success(req, res, 200, "Production obtained successfully", result[req.params.status])
     })
     .catch(err => {
         error(req, res, 500, "Error getting production", err, err)

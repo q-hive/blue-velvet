@@ -67,3 +67,8 @@ export const nextDay = (date) => {
 
     return new Date(arr)
 }
+
+export const yesterDay = (date) => {
+    date.setDate(date.getDate() - 1);
+    return date 
+}
