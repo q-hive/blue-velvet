@@ -19,6 +19,7 @@ import api from '../../../axios'
 import { useNavigate } from 'react-router-dom'
 import useAuth from '../../../contextHooks/useAuthContext'
 import { Stack } from '@mui/system'
+import { getGrowingProducts } from '../../../CoreComponents/requests'
 
 export const ProductionMain = () => {
     
@@ -30,6 +31,7 @@ export const ProductionMain = () => {
     const [columnsState, setColumnsState] = useState(productsColumns)
     const [rows, setRows] = useState(JSON.parse(window.localStorage.getItem('products')) || [])
     const [loading, setLoading] = useState(false)
+    const [growingProducts, setGrowingProducts] = useState(null)
     const [dialog, setDialog] = useState({
         open:false,
         title:"",
@@ -129,6 +131,62 @@ export const ProductionMain = () => {
         })
     }, [])
 
+
+    useEffect(()=>{
+        getGrowingProducts({
+            user:user,
+            credential:credential,
+            setProdData:setGrowingProducts,
+        })
+    },[])
+
+    console.log("growin products pm",growingProducts)
+
+    
+    const displayGrowingProducts = () =>{
+    let testArr =[{name:"Sunflower",remainingDays:5,gownPercentage:49},{name:"Peas",remainingDays:6,gownPercentage:32},{name:"Daikon Radish",remainingDays:1,gownPercentage:75}]
+    return(
+        growingProducts 
+                != null ? 
+        growingProducts
+    .map((product,id)=>{
+        return(
+            
+            <Paper key={id} elevation={0} sx={{marginTop:"3%"}}>
+                <Box sx={{display:"flex" , flexDirection:"row", justifyContent:"space-between" }}>
+                                                
+                                                
+                    <Grid container>
+                        <Grid item xs={6}>
+                            <Typography variant={"h6"} color={"secondary.dark"} >
+                            {product.name}: 
+                            </Typography>
+                        </Grid>
+                                                    
+                        <Grid item xs={4}>
+                            <Typography variant={"overline"} color={"secondary.light"}>
+                                {product.remainingDays} days remaining
+                            </Typography>
+                        </Grid>
+
+                        <Grid item xs={2}>
+                            <Typography color={product.gownPercentage>=66?"primary.dark":product.gownPercentage<33?"orange":"secondary.dark"} variant={"h6"}>
+                                {product.gownPercentage}%
+                            </Typography>
+                        </Grid>
+                    </Grid>
+
+                </Box>
+                <LinearProgress sx={{height:"3vh"}} variant="determinate" value={product.gownPercentage} />
+            </Paper>
+
+        )
+    })
+    :
+    <Typography>there are no growing products at the moment</Typography>
+    )
+    }
+
     
 
   return (
@@ -188,89 +246,7 @@ export const ProductionMain = () => {
                                     :  
                                     <Stack sx={{}}>
                                     
-                                        <Paper elevation={0} sx={{marginTop:"3%"}}>
-                                            <Box sx={{display:"flex" , flexDirection:"row", justifyContent:"space-between" }}>
-                                                
-                                                
-                                                <Grid container>
-                                                    <Grid item xs={6}>
-                                                        <Typography variant={"h6"} color={"secondary.dark"} >
-                                                        Sunflower: 
-                                                        </Typography>
-                                                    </Grid>
-                                                    
-                                                    <Grid item xs={4}>
-                                                        <Typography variant={"overline"} color={"secondary.light"}>
-                                                            2 days remaining
-                                                        </Typography>
-                                                    </Grid>
-
-                                                    <Grid item xs={2}>
-                                                        <Typography color={86>50?"primary.dark":86<33?"secondary.dark":"orange"} variant={"h6"}>
-                                                            {86}%
-                                                        </Typography>
-                                                    </Grid>
-                                                </Grid>
-
-                                            </Box>
-                                            <LinearProgress sx={{height:"3vh"}} variant="determinate" value={86} />
-                                        </Paper>
-
-                                        <Paper elevation={0} sx={{marginTop:"3%"}}>
-                                            <Box sx={{display:"flex" , flexDirection:"row", justifyContent:"space-between" }}>
-                                                
-                                                
-                                                <Grid container>
-                                                    <Grid item xs={6}>
-                                                        <Typography variant={"h6"} color={"secondary.dark"} >
-                                                        Peas: 
-                                                        </Typography>
-                                                    </Grid>
-                                                    
-                                                    <Grid item xs={4}>
-                                                        <Typography variant={"overline"} color={"secondary.light"}>
-                                                            4 days remaining
-                                                        </Typography>
-                                                    </Grid>
-
-                                                    <Grid item xs={2}>
-                                                        <Typography color={50>50?"primary.dark":50<33?"secondary.dark":"orange"} variant={"h6"}>
-                                                            {50}%
-                                                        </Typography>
-                                                    </Grid>
-                                                </Grid>
-
-                                            </Box>
-                                            <LinearProgress sx={{height:"3vh"}} variant="determinate" value={50} />
-                                        </Paper>
-
-                                        <Paper elevation={0} sx={{marginTop:"3%"}}>
-                                            <Box sx={{display:"flex" , flexDirection:"row", justifyContent:"space-between" }}>
-                                                
-                                                
-                                                <Grid container>
-                                                    <Grid item xs={6}>
-                                                        <Typography variant={"h6"} color={"secondary.dark"} >
-                                                        Power Mix: 
-                                                        </Typography>
-                                                    </Grid>
-                                                    
-                                                    <Grid item xs={4}>
-                                                        <Typography variant={"overline"} color={"secondary.light"}>
-                                                            8 days remaining
-                                                        </Typography>
-                                                    </Grid>
-
-                                                    <Grid item xs={2}>
-                                                        <Typography color={10>50?"primary.dark":10<33?"secondary.dark":"orange.dark"} variant={"h6"}>
-                                                            {10}%
-                                                        </Typography>
-                                                    </Grid>
-                                                </Grid>
-
-                                            </Box>
-                                            <LinearProgress sx={{height:"3vh"}} variant="determinate" value={10} />
-                                        </Paper>
+                                        {displayGrowingProducts()}
 
                                         
                                     </Stack>

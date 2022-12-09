@@ -7,7 +7,7 @@ import { Box, Button, Container, Fade, Grid, LinearProgress, Typography, Paper,G
 
 //*UTILS
 import { getData } from '../../../Admin/Sales/SalesIndex'
-import { getCustomerData } from '../../../../CoreComponents/requests'
+import { getCustomerData, getDeliveries } from '../../../../CoreComponents/requests'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 import useAuth from '../../../../contextHooks/useAuthContext'
@@ -26,20 +26,29 @@ const taskCard_sx = {
 }
 
 
+
+let clientList=[{
+    customerName:"fulanito1",
+
+}]
+
 export const DeliveryComponent = (props) => {
     const [loading,setLoading] = useState(true)
     const [customers, setCustomers] = useState([])
+    const [customers2, setCustomers2] = useState([])
     const [totalIncome, setTotalIncome] = useState(0)
     const {user, credential} = useAuth()
     const [dialog,setDialog] = useState()
 
+
+    
 
     const DeliveryCard = ( props ) =>{
         /*
         This component must be calles inside a Grid Container, as it returns a Grid Item
         TODO, pass down all the possible props ? extend Grid ?
         */
-        let clientInfo = props.client
+        /*let clientInfo = props.client
 
         let clientus = props.orders.reduce((clientes,order)=>{
             const cust_id = order.customer
@@ -58,16 +67,84 @@ export const DeliveryComponent = (props) => {
           });
 
 
+        console.log("clients id m8", clientsArrays)
 
         const res = customers.filter(function(o) {
             return clientsArrays.some(function(o2) {
                 return o._id === o2.client;
             })
         });
+        */
+
+        const showProdPackages = (products) =>{
+            return (
+                products.map((prodDescription,id)=>{
+
+                return (
+                    <>
+                        <Box sx={{display:"flex" ,justifyContent:"space-evenly"}}>
+                            <Typography sx={{minWidth:"30%"}}>{prodDescription.ProductName}</Typography>
+                            <Typography>25g:</Typography>
+                            <Typography>{prodDescription.packages.small ? prodDescription.packages.small : 0}</Typography>
+                            <Typography>80g:</Typography>
+                            <Typography>{prodDescription.packages.medium ? prodDescription.packages.medium : 0}</Typography>
+                        </Box>
+                        
+                        <Divider /> 
+                    </>
+
+                )
+                
+            })
+            )
+        }
+
+        const showOrders = (orders) =>{
+            return(
+
+                orders.map((order,id)=>{
+                    return(
+                    /*<Box sx={{ display:"flex",justifyContent: "space-between",marginTop:"1vh"}}>
+                    <Typography>{order._id} </Typography>
+                    <Button sx={{display:"flex"}} variant="contained" size="small">
+                        View
+                    </Button>
+                    </Box>*/
+        
+                    <Box display="flex" sx={{flexDirection:"row"}} p={1}>
+                        <Accordion sx={{width:{xs:"100%",md:"50%",lg:"100%",xl:"100%"}}}>
+                            <AccordionSummary
+                                expandIcon={<ExpandMoreIcon />}
+                                aria-controls="panel1a-content"
+                                id="panel1a-header"
+                            >
+                                <Typography>Id: {order._id}</Typography>
+                            </AccordionSummary>
+        
+                            <AccordionDetails>
+                                            <>
+                                            <Typography align="left">Packages :  </Typography>
+        
+                                            {showProdPackages(order.products)}
+        
+        
+                                            </>
+                            </AccordionDetails>
+                        </Accordion>
+                    </Box>
+                    
+                    )
+                })
+
+            )
+        }
+
 
         
+
+        console.log("customers 2 ",customers2)
         return(
-        res.map((client,id)=>{
+        customers2.map((client,id)=>{
             return(
             
                 <Grid item xs={12} lg={6}>
@@ -75,69 +152,20 @@ export const DeliveryComponent = (props) => {
 
                     <Box sx={{display:"flex",justifyContent: "space-between",marginBottom:"3vh"}}>
                         <Typography variant={"h5"}>Address:</Typography>
-                        <Typography sx={{maxWidth:"50%"}}>{client.address.street} {client.address.stNumber}</Typography>
+                        <Typography sx={{maxWidth:"50%"}}>{client.customerAdreess}</Typography>
                     </Box>
                     <Box sx={{display:"flex",justifyContent: "space-between",marginBottom:"3vh"}}>
                         <Typography variant={"h5"}>Customer: </Typography>
-                        <Typography sx={{maxWidth:"50%"}}>{client.name}</Typography>
+                        <Typography sx={{maxWidth:"50%"}}>{client.customerName}</Typography>
                     </Box>
                     
                     <Typography variant={"h6"}>Orders:</Typography>
                         
                     
                     <Box sx={{display:"flex", maxHeight:"200px", overflow:"auto", flexDirection:"column"}}>
-                            {client.orders.map((order,id)=>{
-                                return(
-                                /*<Box sx={{ display:"flex",justifyContent: "space-between",marginTop:"1vh"}}>
-                                <Typography>{order._id} </Typography>
-                                <Button sx={{display:"flex"}} variant="contained" size="small">
-                                    View
-                                </Button>
-                                </Box>*/
 
-                                <Box display="flex" sx={{flexDirection:"row"}} p={1}>
-                                    <Accordion sx={{width:{xs:"100%",md:"50%",lg:"100%",xl:"100%"}}}>
-                                        <AccordionSummary
-                                            expandIcon={<ExpandMoreIcon />}
-                                            aria-controls="panel1a-content"
-                                            id="panel1a-header"
-                                        >
-                                            <Typography>Id: {order._id}</Typography>
-                                        </AccordionSummary>
-
-                                        <AccordionDetails>
-                                                        <>
-                                                        <Typography align="left">Packages :  </Typography>
-
-
-                                                        <Box sx={{display:"flex" ,justifyContent:"space-evenly"}}>
-                                                            <Typography sx={{minWidth:"30%"}}>Sunflower</Typography>
-                                                            <Typography>25g:</Typography>
-                                                            <Typography>5</Typography>
-                                                            <Typography>80g:</Typography>
-                                                            <Typography>11</Typography>
-                                                        </Box>
-                                                        
-                                                        <Divider /> 
-
-                                                        <Box sx={{display:"flex", justifyContent:"space-evenly"}}>
-                                                            <Typography sx={{minWidth:"30%",maxWidth:"30%"}}>Peas</Typography>
-                                                            <Typography>25g:</Typography>
-                                                            <Typography>14</Typography>
-                                                            <Typography>80g:</Typography>
-                                                            <Typography>3</Typography>
-                                                        </Box>
-
-
-
-                                                        <Divider /> 
-                                                        </>
-                                        </AccordionDetails>
-                                    </Accordion>
-                                </Box>
-                                
-                                )
-                            })}
+                        {showOrders(client.orders)}
+                            
                     </Box>
 
                     </Paper>
@@ -157,7 +185,7 @@ export const DeliveryComponent = (props) => {
         let day = date.getDate()
         
         /*
-        Using the "options" argument of date Prototype to get the month's name
+        Using the "options" argument of date Prototype to get the month's customerName
         */
         let month= new Intl.DateTimeFormat('en-US', {month:"long"}).format(date)
 
@@ -179,6 +207,7 @@ export const DeliveryComponent = (props) => {
         I may add an endpoint filter, as i think I should
         */
         customers.map((customer,_id)=>{
+            console.log("cusm",customer)
             customer.orders.map((order,id)=>{
                 allOrders.push(order)
             })
@@ -189,6 +218,7 @@ export const DeliveryComponent = (props) => {
     OrderFailure()
 
     const datesAsKeys_obj = allOrders.reduce((dates, order) => {
+        console.log("khomo",dates,order)
         const date = order.end.split('T')[0];
         if (!dates[date]) {
           dates[date] = [];
@@ -205,6 +235,7 @@ export const DeliveryComponent = (props) => {
         };
       });
       
+      console.log("group arrays2",datesArray);
 
 
 
@@ -218,11 +249,23 @@ export const DeliveryComponent = (props) => {
             credential:credential,
             
         }).then(
+        console.log("data STATES",customers,totalIncome)
         )
 
+        console.log("data STATES",customers,totalIncome)
         
     }, [])
 
+
+    useEffect(()=>{
+        getDeliveries({
+            user:user,
+            credential:credential,
+            setProdData:setCustomers2,
+        })
+    },[])
+
+    console.log("usable customers? ", customers)
 
         return (<>
             <Fade in={true} timeout={1000} unmountOnExit>
@@ -241,7 +284,11 @@ export const DeliveryComponent = (props) => {
                             {/* Order Mockup */}
                             
                                 
-                                {datesArray.sort().map((date,id)=>{
+                                {false ?
+                                
+                                datesArray.sort().map((date,id)=>{
+                                
+                                    console.log("date perro",date)
                                     return(
                                         <Grow in={true} timeout={2000} unmountOnExit>
                                     <Grid item xs={12} md={12} lg={12}>
@@ -271,7 +318,39 @@ export const DeliveryComponent = (props) => {
                                     
                                 </Grid>
                                 </Grow>)
-                                    })}
+                                    })
+                                    :
+
+                                    <Grow in={true} timeout={2000} unmountOnExit>
+                                    <Grid item xs={12} md={12} lg={12}>
+                                    <Paper elevation={0} sx={{
+                                        padding: BV_THEME.spacing(2),
+                                        display: "flex",
+                                        overflow: "auto",
+                                        flexDirection: "column",
+                                        height: 540
+                                    }}>
+                                        <Typography variant="h6" color="secondary">
+                                            Date: Today {//new Date().toString().split('T')[0]
+                                            }
+                                        </Typography>
+                                        
+                                        <Grid container maxWidth={"xl"} spacing={4} marginTop={1}>
+                                        {
+                                            loading
+                                            ?   
+                                            <LinearProgress color="primary" sx={{marginY:"2vh"}}/>
+                                            :
+                                            <DeliveryCard />
+                                            
+                                            
+                                        }    
+                                        </Grid>
+                                    </Paper>
+                                    
+                                </Grid>
+                                </Grow>
+                                    }
 
                             
                             

@@ -249,7 +249,7 @@ export const EntryPoint = () => {
             }
         })
 
-        setActiveStatusesArray(getActiveProductsStatuses(apiResponse.data.data))
+        //setActiveStatusesArray(getActiveProductsStatuses(apiResponse.data.data))
 
 
         return apiResponse.data.data

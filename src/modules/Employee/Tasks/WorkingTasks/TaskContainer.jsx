@@ -58,8 +58,10 @@ export const TaskContainer = (props) => {
         products=props.products
     }
     
-    if(state.type != undefined){
-        ({type} = state);
+    if(state != null){
+        if(state.type != undefined  ){
+            ({type} = state);
+        }
     }
 
     switch (type){
@@ -125,7 +127,7 @@ export const TaskContainer = (props) => {
             ]
         break;
 
-        case "harvested":
+        case "packing":
             contentTitle = "Packing"
             // expectedtTime = Number(Math.ceil(trays) * 2).toFixed(2)
             {/*const totalPacks = order.products.map((product) => {
@@ -139,7 +141,7 @@ export const TaskContainer = (props) => {
             expectedtTime = Number((0.5*totalPacks[0])).toFixed(2)
             */}
             expectedtTime = 3
-            content = <PackingContent index={activeStep}/>
+            content = <PackingContent index={activeStep} products={products}/>
             steps=[
                 {step:"Tools"},
                 {step:"Calibration"},
@@ -496,7 +498,7 @@ export const TaskContainer = (props) => {
         })
         
         setIsFinished(() => {
-            return (WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved !== undefined) || WorkContext.cicle[Object.keys(WorkContext.cicle)[props.counter]].achieved !== undefined
+            return (WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved !== undefined) || WorkContext.cicle[Object.keys(WorkContext.cicle)[props.counter]]?.achieved !== undefined
         })
     },[])
   return (
