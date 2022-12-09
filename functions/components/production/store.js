@@ -10,31 +10,43 @@ export const productionCycleObject = {
     "preSoaking": {
         "next":"soaking1",
         "hasBackGroundTask":false,
+        "requireNewDoc":true
     },
     "soaking1":{
         "next":"soaking2",
         "hasBackGroundTask":true,
+        "requireNewDoc":true
     },
     "soaking2":{
         "next":"seeding",
         "hasBackGroundTask":true,
+        "requireNewDoc":true
     },
     "seeding":{
         "next":"growing",
-        "hasBackGroundTask":false
+        "hasBackGroundTask":false,
+        "requireNewDoc":true
     },
     "growing":{
         "next":"harvestReady",
         "hasBackGroundTask":true,
+        "requireNewDoc":true
     },
     "harvestReady":{
         "next":"packing",
-        "hasBackGroundTask":false
+        "hasBackGroundTask":false,
+        "requireNewDoc":true
     },
     "packing": {
+        "next":"ready",
+        "hasBackgroundTask":false,
+        "requireNewDoc":true
+    },
+    "ready": {
         "next":"onDelivery",
-        "hasBackgroundTask":false
-    }
+        "hasBackgroundTask":false,
+        "requireNewDoc":true
+    },
 }
 
 
@@ -109,8 +121,15 @@ export const nextStatusForProduction = (productionModels) => {
 }
 
 export const updateOrdersInModels = async (models, orgId) => {
+    let status = ""
     const allOrdersInProduction = models.map((productionModel) => {
         if(productionModel.ProductionStatus === "packing"){
+            status = "packing"
+            return productionModel.RelatedOrder
+        }
+
+        if(productionModel.ProductionStatus === "ready") {
+            status = "ready"
             return productionModel.RelatedOrder
         }
         return
@@ -120,21 +139,43 @@ export const updateOrdersInModels = async (models, orgId) => {
     if(allOrdersInProduction.length > 0){
         const uniqueOrdersInProduction = Array.from(new Set(allOrdersInProduction))
 
-        const updateOp = uniqueOrdersInProduction.map(async (orderId) => {
-            const body = {
-                "paths": [
-                    {
-                        "path":"status",
-                        "value":"packing"
-                    }
-                ]
-            }
-            await updateOrder(orgId, orderId, body)
-            
-            await orgModel.updateOne({"_id":mongoose.Types.ObjectId(orgId), "$push":{"packaging":orderId}})
-        })
+        if(status === "packing") {
+            const updateToPacking = uniqueOrdersInProduction.map(async (orderId) => {
+                const body = {
+                    "paths": [
+                        {
+                            "path":"status",
+                            "value":"packing"
+                        }
+                    ]
+                }
+                await updateOrder(orgId, orderId, body)
+                
+                await orgModel.updateOne({"_id":mongoose.Types.ObjectId(orgId), "$push":{"packaging":orderId}})
+            })
+    
+            await Promise.all(updateToPacking)
+        }
 
-        await Promise.all(updateOp)
+        if(status === "ready") {
+            const updateToPacking = uniqueOrdersInProduction.map(async (orderId) => {
+                const body = {
+                    "paths": [
+                        {
+                            "path":"status",
+                            "value":"ready"
+                        }
+                    ]
+                }
+                await updateOrder(orgId, orderId, body)
+                
+                await orgModel.updateOne({"_id":mongoose.Types.ObjectId(orgId), "$pull":{"packaging":orderId}})
+                await orgModel.updateOne({"_id":mongoose.Types.ObjectId(orgId), "$push":{"deliveryReady":orderId}})
+            })
+    
+            await Promise.all(updateToPacking)
+        }
+        
     }
 }
 

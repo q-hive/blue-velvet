@@ -1,4 +1,5 @@
 import { areSameDay } from "../../utils/time.js";
+import { getCustomerById } from "../customer/store.js";
 import { updateManyOrders } from "./store.js";
 
 const sortProductsPrices = (order,products) => {
@@ -200,7 +201,7 @@ export const groupOrdersByDate = (orders, date=undefined, outputFormat = undefin
 
 export const groupOrdersForPackaging = (orders, date=undefined) => {
     const hash = {}, result = []
-    orders.forEach((order) => {
+        orders.forEach((order) => {
         order.products.forEach((product) => {
             if(!hash[product.name]){
                 hash[product.name] = {
@@ -221,6 +222,53 @@ export const groupOrdersForPackaging = (orders, date=undefined) => {
         
     })
     return result
+}
+export const groupOrdersForDelivery = async (orders, date=undefined) => {
+    const mappedProducts = (products) => {
+        const map = products.map(product => {
+            const packagesHash = {}
+            for(const {size, number, grams, _id} of product.packages){
+                if(!packagesHash[size]){
+                    packagesHash[size] = 0
+                }
+
+                packagesHash[size] +=+ number
+            }
+            
+            return {"ProductName":product.name, "packages":packagesHash}
+        })
+
+        return map
+    }
+    
+    const hash = {}, result = []
+    await Promise.all(
+        orders.map(async(order) => {
+            const customer = await getCustomerById(order.organization, order.customer) 
+            
+            if(!hash[order.customer.toString()]){
+                hash[order.customer.toString()] = {
+                    "customerName": customer.name,
+                    "customerAdreess":customer.address.street,
+                    "orders":[],
+                }
+
+                result.push(hash[order.customer.toString()])
+            }
+            
+            hash[order.customer.toString()].orders.push(
+                {
+                    "_id":order._id, 
+                    "products":mappedProducts(order.products),
+                    "price":order.price
+                }
+            )
+        })
+    )
+
+    return result
+    
+
 }
 
 export const groupOrders = (criteria, orders, groupValue) => {

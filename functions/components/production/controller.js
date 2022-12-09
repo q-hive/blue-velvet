@@ -3,6 +3,8 @@ import { getPosibleStatusesForProduction, getProductionInContainer, insertWorkDa
 import nodeschedule from 'node-schedule'
 import { getProductById } from "../products/store.js"
 import mongoose from "mongoose"
+import { getOrderById } from "../orders/store.js"
+import { buildPackagesFromOrders } from "../delivery/controller.js"
 
 
 export const getTaskByStatus = async (production, orgId=undefined, container=undefined) => {
@@ -48,42 +50,42 @@ export const scheduleTask = async (config) => {
     console.log("A scheduled task must be executed at:" + config.scheduleInDate)
 }
 
-export const setupGrowing = (workData) => {
-    const growingSetup = workData.map((productionObj) => {
-        const lightTime = productionObj.productData.day
-        const darkTime = productionObj.productData.night
+// export const setupGrowing = (workData) => {
+//     const growingSetup = workData.map((productionObj) => {
+//         const lightTime = productionObj.productData.day
+//         const darkTime = productionObj.productData.night
         
-        const triggerHarvestTime = Date.now() + (((((lightTime*24)*60)*60)*1000) + ((((darkTime*24)*60)*60)*1000))
+//         const triggerHarvestTime = Date.now() + (((((lightTime*24)*60)*60)*1000) + ((((darkTime*24)*60)*60)*1000))
 
-        console.log(`The product -> ${productionObj.productData.name} needs a total time of ${darkTime + lightTime} days to grow. scheduling monitoring task...`)
-        const triggerParsedDate = new Date(triggerHarvestTime)
-        triggerParsedDate.setHours(4,0,0)
+//         console.log(`The product -> ${productionObj.productData.name} needs a total time of ${darkTime + lightTime} days to grow. scheduling monitoring task...`)
+//         const triggerParsedDate = new Date(triggerHarvestTime)
+//         triggerParsedDate.setHours(4,0,0)
 
-        return {_id:productionObj.productData.prodId, name:productionObj.productData.name, harvest:productionObj.productData.harvest, orders:productionObj.productData.orders, date:triggerParsedDate, workData:{...productionObj}}
-    })
+//         return {_id:productionObj.productData.prodId, name:productionObj.productData.name, harvest:productionObj.productData.harvest, orders:productionObj.productData.orders, date:triggerParsedDate, workData:{...productionObj}}
+//     })
     
-    return growingSetup
-}
+//     return growingSetup
+// }
 
-export const startGrowing = (config) => {
-    return new Promise((resolve, reject) => {
-        try{
-                config.growingSetup.map((products) => {
-                    const scheduledTask = scheduleTask(
-                        {
-                            ...products,
-                            scheduleInMs:products.date.getTime() - Date.now(),
-                            scheduleInDate: products.date,
-                            task:() => updateProductionByStatus(config.status, config.organization, config.production).then(() => console.log("Completed")).catch(() => console.log("Failed"))
-                        }
-                    )
-                    return scheduledTask
-                })
-        } catch (err) {
-            reject(err)
-        }
-    })
-}
+// export const startGrowing = (config) => {
+//     return new Promise((resolve, reject) => {
+//         try{
+//                 config.growingSetup.map((products) => {
+//                     const scheduledTask = scheduleTask(
+//                         {
+//                             ...products,
+//                             scheduleInMs:products.date.getTime() - Date.now(),
+//                             scheduleInDate: products.date,
+//                             task:() => updateProductionByStatus(config.status, config.organization, config.production).then(() => console.log("Completed")).catch(() => console.log("Failed"))
+//                         }
+//                     )
+//                     return scheduledTask
+//                 })
+//         } catch (err) {
+//             reject(err)
+//         }
+//     })
+// }
 
 export const getInitialStatus = (product) => {
     let status = "seeding"
@@ -98,16 +100,16 @@ export const getInitialStatus = (product) => {
  * @param {*} array used to define the criteria for grouping using MQL as helper
  * @returns the argument object passed 
 */
-export const groupBy = (criteria, production, format) => {
+export const groupBy = (criteria, production, format, includeOrders = false) => {
    const productionStatuses = getPosibleStatusesForProduction()
 
    let accumulatedProduction = {}
    let acumInArray = []
    
+   let orders = []
+   
    //get production totals (acummulated seeds, harvest and trays based on ProductionModels) by product, grouped by the same ProductionStatus and HarvestDate
     productionStatuses.forEach((status) => {
-        let includePackages = status === "packaging"
-        
         //*for each product name filter in production by the name
         const filteredProduction = production.filter((productionModel) => {
             return productionModel.ProductionStatus === status
@@ -151,6 +153,7 @@ export const groupBy = (criteria, production, format) => {
                     hashDates[ProductName][ProductionStatus].trays +=+ trays
                     hashDates[ProductName][ProductionStatus].modelsId.push(_id)
                     hashDates[ProductName][ProductionStatus].relatedOrders.push(RelatedOrder)
+                    orders.push(RelatedOrder)
                 }
             } else {
             
@@ -178,11 +181,12 @@ export const groupBy = (criteria, production, format) => {
                     hashDates[ProductName][EstimatedStartDate].trays +=+ trays
                     hashDates[ProductName][EstimatedStartDate].modelsId.push(_id)
                     hashDates[ProductName][EstimatedStartDate].relatedOrders.push(RelatedOrder)
+                    orders.push(RelatedOrder)
                 }   
-            }  
+            }
             
             
-
+            
         }
 
         if(format === "array"){
@@ -197,16 +201,41 @@ export const groupBy = (criteria, production, format) => {
 
     let requiredReturn = {
         "array":acumInArray,
-        "hash":accumulatedProduction
+        "hash":accumulatedProduction,
+        "orders":orders
+    }
+
+    if(includeOrders){
+        if(Array.isArray(requiredReturn[format])){
+            requiredReturn[format].push({"orders":requiredReturn["orders"]})
+        }
+        
+        if(typeof requiredReturn[format] === "object" && !Array.isArray(requiredReturn["orders"])){
+            requiredReturn[format].orders = requiredReturn["orders"]
+        }
     }
     
    return requiredReturn[format]
 }
 
-export const grouPProductionForWorkDay = (criteria,production, format) => {
+export const grouPProductionForWorkDay = (criteria,production, format, includePackages) => {
     try {
         //*THE PARAMETERS ARE NOT ACTUALLY BEING USED YET
-        const grouppedProduction = groupBy(criteria, production, format)
+        const grouppedProduction = groupBy(criteria, production, format, includePackages)
+        
+        if(includePackages){
+            // if(format === "array"){
+            //     const orders = grouppedProduction.map(obj => obj.orders)
+            //     const packages = buildPackagesFromOrders(orders) 
+            //     grouppedProduction[0].packages = packages
+            // }
+    
+            if(format === "hash"){
+                grouppedProduction.packages = packages
+            }
+        }
+        
+        
         return grouppedProduction
     } catch (err) {
         console.log(err)
@@ -232,8 +261,8 @@ export const getProductionWorkByContainerId = (req,res) => {
             
             //*If no production is returned then return empty array
             if(production.length >0){
-                const productionGrouped = grouPProductionForWorkDay(production, requiredProductionFormat)
-                const times  = calculateTimeEstimation(grouPProductionForWorkDay(production, "array"), true)
+                const productionGrouped = grouPProductionForWorkDay("status",production, requiredProductionFormat, false)
+                const times  = calculateTimeEstimation(grouPProductionForWorkDay("status",production, "array", false), true)
 
                 times.forEach((timeTask) => {
                     if(productionGrouped[Object.keys(timeTask)[0]].length=== 0) {
