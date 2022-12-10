@@ -120,63 +120,51 @@ export const nextStatusForProduction = (productionModels) => {
 
 }
 
-export const updateOrdersInModels = async (models, orgId) => {
-    let status = ""
-    const allOrdersInProduction = models.map((productionModel) => {
-        if(productionModel.ProductionStatus === "packing"){
-            status = "packing"
-            return productionModel.RelatedOrder
+export const updateOrdersInModels = async (updatedModels, orgId, container) => {
+    let bodyQuery = {
+        "orders":{
+            "_id":{
+                "paths":[{"path":"","value":""}]
+            },
         }
-
-        if(productionModel.ProductionStatus === "ready") {
-            status = "ready"
-            return productionModel.RelatedOrder
-        }
-        return
-    }).filter((elem) => elem != undefined)
-
-    
-    if(allOrdersInProduction.length > 0){
-        const uniqueOrdersInProduction = Array.from(new Set(allOrdersInProduction))
-
-        if(status === "packing") {
-            const updateToPacking = uniqueOrdersInProduction.map(async (orderId) => {
-                const body = {
-                    "paths": [
-                        {
-                            "path":"status",
-                            "value":"packing"
-                        }
-                    ]
-                }
-                await updateOrder(orgId, orderId, body)
-                
-                await orgModel.updateOne({"_id":mongoose.Types.ObjectId(orgId), "$push":{"packaging":orderId}})
-            })
-    
-            await Promise.all(updateToPacking)
-        }
-
-        if(status === "ready") {
-            const updateToPacking = uniqueOrdersInProduction.map(async (orderId) => {
-                const body = {
-                    "paths": [
-                        {
-                            "path":"status",
-                            "value":"ready"
-                        }
-                    ]
-                }
-                await updateOrder(orgId, orderId, body)
-                
-                await orgModel.updateOne({"_id":mongoose.Types.ObjectId(orgId), "$pull":{"packaging":orderId}})
-                await orgModel.updateOne({"_id":mongoose.Types.ObjectId(orgId), "$push":{"deliveryReady":orderId}})
-            })
-    
-            await Promise.all(updateToPacking)
-        }
-        
     }
+    
+    await Promise.all(
+        updatedModels.map(async(productionModel) => {
+            const productionDB = await getProductionByOrderId(orgId, container, productionModel.RelatedOrder)
+            
+            const indexOfModelInDB = productionDB.findIndex((model) => model._id.equals(productionModel._id))
+            
+            productionDB[indexOfModelInDB].ProductionStatus = productionModel.ProductionStatus 
+            
+            const statusInProductionDB = productionDB.map((productionmodel) => productionmodel.ProductionStatus).filter((element) => element != undefined)
+            console.log("Production status of the order" + productionModel.RelatedOrder + " in DB woud be:  " + statusInProductionDB)
+            console.log("with the applied update")
+            
+            
+            const nonRepeatedStatus = Array.from(new Set(statusInProductionDB))
+    
+            if(nonRepeatedStatus.length >1){
+                console.log("Production models of " + productionModel.RelatedOrder + " order must all have the same status before updating order status")
+    
+                return
+            }
+    
+            bodyQuery.orders[productionModel.RelatedOrder.toString()] = {
+                "paths":[{"path":"status","value":productionModel.ProductionStatus}]
+            }
+    
+            
+            //*Status in DB must be equal (packing)i n all production models related to the order before updating status
+            await updateOrder(orgId, productionModel.RelatedOrder, bodyQuery.orders[productionModel.RelatedOrder.toString()])
+            //*Add order to DB of packaging
+            await orgModel.updateOne({"_id":mongoose.Types.ObjectId(orgId), "$push":{"packaging": productionModel.RelatedOrder}})
+            
+        }).filter((elem) => elem != undefined)
+    )
+    
+    
+
 }
 
 export const updateManyProductionModels = (orgId,container,productionIds) => {
@@ -211,9 +199,6 @@ export const updateManyProductionModels = (orgId,container,productionIds) => {
             })
 
             const modifiedModels = nextStatusForProduction(filteredProductionModels)
-            await updateOrdersInModels(modifiedModels, orgId)
-            
-
             const updateOperation = modifiedModels.map(async (newmodel) => {
                 const op = await orgModel.updateOne(
                     {
@@ -249,6 +234,8 @@ export const updateManyProductionModels = (orgId,container,productionIds) => {
             })
 
             const update = await Promise.all(updateOperation)
+            await updateOrdersInModels(modifiedModels, orgId, container)
+
             return update
         })
         Promise.all(queryUpdateById)
@@ -291,6 +278,58 @@ export const getProductionByStatus = (orgId, container, status) => {
         )
         .then((result) => {
             const grouppedProd = grouPProductionForWorkDay("status",result[0].containers.production, "hash")
+            resolve(grouppedProd)
+        })
+        .catch((err) => {
+            reject(err)
+        })
+
+    })
+}
+
+export const getProductionByOrderId = (orgId, container, orderId) => {
+    return new Promise((resolve, reject) => {
+        orgModel.aggregate(
+            [
+                {
+                    "$match": {
+                        "_id":mongoose.Types.ObjectId(orgId),
+                    }   
+                },
+                {
+                    "$unwind":"$containers"
+                },
+                {
+                    "$match":{
+                        "containers._id":mongoose.Types.ObjectId(container)
+                    }
+                },
+                {
+                    "$unwind":"$containers.production"
+                },
+                {
+                    "$match":{
+                        "containers.production.RelatedOrder":mongoose.Types.ObjectId(orderId)
+                    }  
+                },
+                {
+                    "$project":{
+                        "containers":{
+                            "_id":1,
+                            "production":1
+                        }
+                    }
+                }
+            ]
+        )
+        .then((result) => {
+            // const grouppedProd = grouPProductionForWorkDay("status",result[0].containers.production, "hash")
+
+            const grouppedProd = result.map((docPerProduction) => {
+                return docPerProduction.containers.production
+            })
+            
+            
             resolve(grouppedProd)
         })
         .catch((err) => {
