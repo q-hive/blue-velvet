@@ -56,7 +56,6 @@ router.get('/', (req, res) => {
 //*separated from all route because of network performance improvement
 //*returns a specific product and if requested all its related tasks and orders
 router.get('/:id', (req, res) => {
-    console.log(req.params)
     getProductById(res.locals.organization, req.query.container, req.params.id)
     .then((result) => {
         success(req, res, 200, "Products obtained succesfully", result)

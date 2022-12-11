@@ -14,6 +14,7 @@ import { BV_THEME } from '../../theme/BV-theme'
 import { useNavigate } from 'react-router-dom'
 import api from '../../axios.js'
 import { formatTime } from '../../CoreComponents/Timer'
+import { getWorkdayProdData } from '../../CoreComponents/requests'
 
 //*UNUSED
 // import { Add } from '@mui/icons-material'
@@ -44,6 +45,7 @@ export const EntryPoint = () => {
     //*DATA STATES
     const [orders, setOrders] = useState([])
     const [estimatedTime, setEstimatedTime] = useState(0)
+    const [activeStatusesArray,setActiveStatusesArray] = useState([])
 
 
     //*Render states
@@ -114,7 +116,7 @@ export const EntryPoint = () => {
     }
 
     const getOrders = async ()=> {
-        const ordersData = await api.api.get(`${api.apiVersion}/orders/uncompleted?production=true`,{
+        const ordersData = await api.api.get(`${api.apiVersion}/orders/uncompleted`,{
             headers:{
                 "authorization":    credential._tokenResponse.idToken,
                 "user":             user
@@ -124,39 +126,21 @@ export const EntryPoint = () => {
         return ordersData.data
     }
     const getTimeEstimate = async () => {
-        const request = await api.api.get(`${api.apiVersion}/work/time/${user._id}`, {
+        console.log(user)
+        const request = await api.api.get(`${api.apiVersion}/work/time/${user._id}?containerId=${user.assignedContainer}`, {
             headers: {
                 authorization:  credential._tokenResponse.idToken,
                 user:           user
             }
         })
-        
 
-        const reduced = request.data.data.reduce((prev, curr) => {
-            const prevseedTime = prev.times.seeding.time
-            const prevharvestTime = prev.times.harvest.time
 
-            const currseedTime = curr.times.seeding.time
-            const currharvestTime = curr.times.harvest.time
 
-            const prevTotal = prevseedTime + prevharvestTime
-            
-            const currTotal = currseedTime + currharvestTime
-
-            return {
-                times: {
-                    harvest: {
-                        time:prevharvestTime + currharvestTime
-                    }, 
-                    seeding: {
-                        time:prevseedTime + currseedTime
-                    }
-                }, 
-                total:prevTotal + currTotal
-            }
-        }, 
-        {
+        let result={
             times: {
+                preSoaking: {
+                    time:0
+                }, 
                 harvest: {
                     time:0
                 }, 
@@ -165,21 +149,110 @@ export const EntryPoint = () => {
                 }
             },
             total:0
-        }) 
+        }
+
         
-        return reduced
+        
+        const sumTimes = () => {
+            let arr = []
+            request.data.data.map((item,id)=>{
+                let status = Object.keys(item)[0]
+
+                arr.push(item[status].minutes)
+
+            })
+
+            return arr.reduce((a, b) => a + b, 0)
+
+        } 
+
+        let totalTime = sumTimes()
+
+        if (request.data.data){
+            result = {
+                times: {
+                    preSoaking: {
+                        time:request.data.data[0].preSoaking.minutes
+                    }, 
+                    harvest: {
+                        time:request.data.data[5].harvestReady.minutes
+                    }, 
+                    seeding: {
+                        time:request.data.data[3].seeding.minutes
+                    }
+                }, 
+                total:totalTime
+            }
+        }
+
+            
+        
+
+        /*
+            const reduced = request.data.data.reduce((prev, curr) => {
+                const prevseedTime = prev.times.seeding.time
+                const prevharvestTime = prev.times.harvest.time
+
+                const currseedTime = curr.times.seeding.time
+                const currharvestTime = curr.times.harvest.time
+
+                const prevTotal = prevseedTime + prevharvestTime
+                
+                const currTotal = currseedTime + currharvestTime
+
+                return {
+                    times: {
+                        preSoaking: {
+                            time:prevharvestTime + currharvestTime
+                        }, 
+                        harvest: {
+                            time:prevharvestTime + currharvestTime
+                        }, 
+                        seeding: {
+                            time:prevseedTime + currseedTime
+                        }
+                    }, 
+                    total:prevTotal + currTotal
+                }
+            }, 
+            {
+                times: {
+                    preSoaking: {
+                        time:0
+                    }, 
+                    harvest: {
+                        time:0
+                    }, 
+                    seeding: {
+                        time:0
+                    }
+                },
+                total:0
+            })
+        */ 
+        
+        return result
+
+
+
+
+
     }
     const getWorkData = async ()=> {
         if(window.localStorage.getItem("workData")){
             return JSON.parse(window.localStorage.getItem("workData"))
         }
         
-        const apiResponse = await api.api.get(`${api.apiVersion}/work/production/${user._id}?container=633b2e0cd069d81c46a18033`,{
+        const apiResponse = await api.api.get(`${api.apiVersion}/production/workday?containerId=${user.assignedContainer}`,{
             headers:{
                 "authorization":    credential._tokenResponse.idToken,
                 "user":             user
             }
         })
+
+        //setActiveStatusesArray(getActiveProductsStatuses(apiResponse.data.data))
+
+
         return apiResponse.data.data
     }
 
@@ -197,19 +270,10 @@ export const EntryPoint = () => {
             //*Production data
             window.localStorage.setItem("workData", JSON.stringify(workDataModel))
             
-            let statusesInProds = []
-            workDataModel.production.products.map((prod,id)=>{
-                if(!statusesInProds.includes(prod.productData.status))
-                    statusesInProds.push(prod.productData.status)
-            })
-
-            console.log("statuses in prods arr", statusesInProds)
-
-            
 
             Object.keys(WorkContext.cicle).forEach((value,index) => {
                 
-                if(!statusesInProds.includes(value)){
+                if(!activeStatusesArray.includes(value)){
                     // delete WorkContext.cicle[value]
                     setWorkContext({...WorkContext})
                 }else{
@@ -226,6 +290,35 @@ export const EntryPoint = () => {
             setWorkContext({...WorkContext,current:getFinishedTasks().length})
         }
         
+    }
+
+    function getActiveProductsStatuses (workDataModel) {
+        let statusesInProds = []
+        console.log("wdm",workDataModel)
+            
+            Object.keys(workDataModel).map((prod,id)=>{
+                if(!statusesInProds.includes(prod.ProductionStatus))
+                    statusesInProds.push(prod.ProductionStatus)
+            })
+
+            console.log("statuses in prods arr", statusesInProds)
+            return statusesInProds
+    }
+
+    function getActiveProductsStatuses2 (workData) {
+        let psTrue = workData.preSoaking?.length>0
+        let sTrue = workData.seeding?.length>0
+        let hrTrue = workData.harvestReady?.length>0
+
+        
+        
+        let testingKeys = [] 
+        
+        psTrue?testingKeys.push("preSoaking"):setWorkContext((wrk) => delete wrk.cicle['preSoaking'])
+        sTrue?testingKeys.push("seeding"):null
+        hrTrue?testingKeys.push("harvestReady"):null
+
+        return testingKeys;
     }
 
     const getFinishedTasks = () => {
@@ -270,11 +363,13 @@ export const EntryPoint = () => {
             .then((workData) => {
                 setTimeout(() => {
                     setLoading({...loading, startWorkBtn:false})
+                    let statusesArr = getActiveProductsStatuses2(workData);
                     setSnackState({open:false})
                     navigate('./../tasks/work',
                         {state: {
                             orders: orders,
                             workData: workData,
+                            cycleKeys:statusesArr,
                             time: estimatedTime
                         }},
                     )
@@ -288,28 +383,58 @@ export const EntryPoint = () => {
             return
         }
         
-        if(isOnTime && orders.length != 0 && !employeeIsWorking){
-            updateWorkDays()
+        if(isOnTime && !employeeIsWorking){
+            
             getWorkData()
             .then((workData) => {
-                setSnackState({open:false})
-                //*Working context
-                setWorkingContext(workData)
+                console.log("wd", workData)
+                let allOrders = []
+                Object.keys(workData).forEach((key) => {
+                    workData[key].forEach((modelInTask) => {
+                        modelInTask.relatedOrders.forEach((orderId) => allOrders.push(orderId))
+                    })
+                })
+
+                allOrders = Array.from(new Set(allOrders))
+
+                setOrders(allOrders)
                 
-                navigate('./../tasks/work',
-                    {state: {
-                    orders: orders,
-                    workData: workData,
-                    time: estimatedTime
-                    }}
-                )
+                
+                let statusesArr = getActiveProductsStatuses2(workData);  //getActiveProductsStatuses(workData)
+                    if(statusesArr.length!==0){
+                        if(statusesArr.length == 1 && statusesArr[0]=="growing"){
+                            setSnackState({open:true,label:"There's nothing for you to do right now",severity:"success"})
+                        }
+                        else{
+                            setSnackState({open:false})
+                            //*Working context
+                            setWorkingContext(workData)
+                            
+                            navigate('./../tasks/work',
+                                {state: {
+                                orders: allOrders,
+                                workData: workData,
+                                cycleKeys:statusesArr,
+                                time: estimatedTime
+                                }}
+                            )
+
+                        }
+                    }
+                    else{
+                        setSnackState({open:true,label:"There's nothing for you to do right now",severity:"success"})
+   
+                    }
             })
             .catch(err => {
                 console.log(err)
                 setLoading({...loading, startWorkBtn:true})
                 setSnackState({open:true, label:"There was an error. Try again.", severity:"error"})
             })
+
         }
+                    
+        
 
         if(!isOnTime) {
             setSnackState({open:true,label:"You can't start working right now",severity:"error"})
@@ -324,6 +449,7 @@ export const EntryPoint = () => {
         const dflt = "seeding"
         
         const statusObj = {
+            "preSoaking":"pre Soaking",
             "seeding":"seeding",
             "harvestReady": "harvest",
             "mats":"cut Mats",
@@ -350,8 +476,29 @@ export const EntryPoint = () => {
     const allStatusesObj = filterByKey(allProducts,"status")
 
     function capitalize(word) {
-        return word[0].toUpperCase() + word.slice(1).toLowerCase();
+        return(
+        !word ? null : word[0].toUpperCase() + word.slice(1).toLowerCase())
     }
+
+    function displayTaskCards (){
+        return Object.keys(WorkContext.cicle).map((status,index)=>{ 
+        return(
+            <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
+                <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
+                    <Typography >
+                        <b>Task: {capitalize(getKey(status))}</b>
+                    </Typography>
+                    <Typography >
+                        <i>Expected Time: {(getKey(status)==="seeding" || getKey(status)==="harvest") ? 
+                            estimatedTime.times ? 
+                                estimatedTime.times[getKey(status)].time.toFixed(2) 
+                            : "getting" 
+                        :getKey(status)==="pre Soaking" ? "12 hours ":"TBD"} </i>
+                    </Typography>
+                </Box>
+            </Paper>
+        )
+    })}
 
     function getCompletedTasksRows(){
         
@@ -374,32 +521,32 @@ export const EntryPoint = () => {
     useEffect(() => {
         const getData = async () => {
             try {
-                const orders = await getOrders()
+                // const orders = await getOrders()
                 const time = await getTimeEstimate()
-                return {orders, time}
+                return {time}
             } catch(err) {
                 setSnackState({open: true, label:"There was an error fetching the data, please reload the page.", severity:"error"})
                 console.log(err)
             }
         }
         
-        // getTimeEstimate()
+        getTimeEstimate()
         checkTime()
         getData()
-        .then(({orders, time}) => {
+        .then(({time}) => {
             let indexes =[]
-            orders.data.forEach((order, idx) => {
-                order.status === "delivered"
-                ?
-                indexes.push(idx) 
-                :
-                null
-            })
+            // orders.data.forEach((order, idx) => {
+            //     order.status === "delivered"
+            //     ?
+            //     indexes.push(idx) 
+            //     :
+            //     null
+            // })
     
-            for (var i = indexes.length -1; i >= 0; i--){
-                orders.data.splice(indexes[i],1);
-            }
-            setOrders(orders.data)
+            // for (var i = indexes.length -1; i >= 0; i--){
+            //     orders.data.splice(indexes[i],1);
+            // }
+            // setOrders(orders.data)
             setEstimatedTime(time)
         })
         .catch((err) => {
@@ -408,6 +555,11 @@ export const EntryPoint = () => {
         
         
     }, [])
+
+    useEffect(()=>{
+        displayTaskCards()
+
+    }, [WorkContext.cicle])
 
   return (<>
     <Fade in={true} timeout={1000} unmountOnExit>
@@ -424,7 +576,7 @@ export const EntryPoint = () => {
                     variant="contained" 
                     size="large" 
                     onClick={() => handleWorkButton(false)} 
-                    loading={loading.startWorkBtn} 
+                    loading={loading.startWorkBtn}
                     >
                         {employeeIsWorking ? "Continue work...":"Start Workday"}
                     </LoadingButton>
@@ -475,24 +627,7 @@ export const EntryPoint = () => {
                 <Grid item xs={12} md={4} lg={4}>
                     <Paper elevation={4} sx={fixedHeightPaper}>
                         <Typography variant="h6" color="secondary">Tasks</Typography>
-                            {Object.keys(WorkContext.cicle).map((status,index)=>{ 
-                                return(
-                                    <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
-                                        <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
-                                            <Typography >
-                                                <b>Task: {capitalize(getKey(status))}</b>
-                                            </Typography>
-                                            <Typography >
-                                                <i>Expected Time: {(getKey(status)==="seeding" || getKey(status)==="harvest") ? 
-                                                    estimatedTime.times ? 
-                                                        estimatedTime.times[getKey(status)].time.toFixed(2) 
-                                                    : "getting" 
-                                                :"TBD"} </i>
-                                            </Typography>
-                                        </Box>
-                                    </Paper>
-                                )
-                            })}
+                            {displayTaskCards()}
                     </Paper>
                 </Grid>
                 </Grow>

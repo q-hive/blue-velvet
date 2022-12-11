@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react'
+import React, {useEffect, useState} from 'react'
 import { Avatar, Box, Button, CircularProgress, Container, Fade, Paper, Stack, Typography, useTheme, Grid, Grow } from '@mui/material'
 import useAuth from '../../contextHooks/useAuthContext';
 import { BV_THEME } from '../../theme/BV-theme';
@@ -7,11 +7,12 @@ import api from '../../axios.js'
 
 export const Profile = () => {
      
-    const level = 2
     const employeePic = "https://cdn-icons-png.flaticon.com/512/544/544514.png"
     const chart = "https://landing.moqups.com/img/content/charts-graphs/column-charts/grouped-column-chart-for-channel-acquisition/grouped-column-chart-for-channel-acquisition-800.png"
     const {user, credential} = useAuth()
-    const levelPercentage = (level/7) * 100
+    const [profileData, setProfileData] = useState({level:0})
+
+    
 
 
     const theme = useTheme(BV_THEME);
@@ -24,9 +25,9 @@ export const Profile = () => {
             }
         })
         .then((response) => {
-            let responseMapped
+            let responseMapped = {performance:{level:0}} 
             try {
-                responseMapped =  response.data.data[0]
+                responseMapped =  response.data.data
             } catch (err) {
                 responseMapped = {
                     performance: {
@@ -36,7 +37,7 @@ export const Profile = () => {
             }
             setProfileData((pfd) => {
                 return (
-                    {...pfd, level:responseMapped.performance.level}
+                    {...pfd, level:Math.ceil(responseMapped.performance.allocationRatio), ...responseMapped}
                 )
             })
             
@@ -80,7 +81,7 @@ export const Profile = () => {
                                         Level : 
                                 </Typography>
                                 <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-                                    <CircularProgress variant="determinate" color="primary" size="3em" value={levelPercentage} />
+                                    <CircularProgress variant="determinate" color="primary" size="3em" value={(profileData.level)} />
                                     <Box
                                             sx={{
                                             top: 0,
@@ -94,7 +95,7 @@ export const Profile = () => {
                                             }}
                                     >
                                             <Typography variant="h6" component="div" color="secondary.light">
-                                            {level}
+                                            {profileData.level}
                                             </Typography>
                                         </Box>
                                     </Box>

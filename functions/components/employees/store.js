@@ -7,16 +7,32 @@ const orgModel = mongoose.model('organization', Organization)
 export const getEmployeeById = (orgId, employeeId) => {
     return new Promise(async (resolve, reject) =>{
         try {
-            const result  =  await orgModel.findOne(
-                {
-                    "_id": mongoose.Types.ObjectId(orgId),
-                    "employees._id": mongoose.Types.ObjectId(employeeId)
-                },
-                {
-                    "employees.$":true
-                }
+            const result  =  await orgModel.aggregate(
+                [
+                    {
+                        "$match": {
+                            "_id": mongoose.Types.ObjectId(orgId),
+                        
+                        }
+                    },
+                    {
+                        "$unwind":"$employees"
+                    },
+                    {
+                        "$match": {
+                            "employees._id": mongoose.Types.ObjectId(employeeId)
+                        }
+                    },
+                    {
+                        "$project":{
+                            "employees":true
+                        }
+                    }
+                
+                ]
             )
-            resolve(result.employees)
+            console.log(result[0].employees)
+            resolve(result[0].employees)
 
         } catch (err) {
             reject(err)
@@ -58,5 +74,17 @@ export const deleteEmployeeFromDB = (req, res) => {
             reject(err)
         })
         
+    })
+}
+
+export const getEmployeesWithAggregation = (orgId, aggregationObject) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const aggregationStages = aggregationObject
+            const queryResult = await orgModel.findOne({"_id":orgId}, aggregationStages)
+            resolve(queryResult)
+        } catch (err) {
+            reject(err)
+        }
     })
 }

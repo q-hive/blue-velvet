@@ -18,8 +18,8 @@ import { FullChamber } from "./modules/Employee/Tasks/FullChamber";
 //*TASKS
 import { TasksCardsComponent } from "./modules/Employee/Tasks/Tasks";
 import { HarvestingTask } from "./modules/Employee/Tasks/StandaloneTasks/Harvesting";
-import { PackingTask } from "./modules/Employee/Tasks/StandaloneTasks/Packing";
-import { DeliveryTask } from "./modules/Employee/Tasks/StandaloneTasks/Delivery";
+import { PackingComponent, PackingTask } from "./modules/Employee/Tasks/StandaloneTasks/Packing";
+import { DeliveryComponent } from "./modules/Employee/Tasks/StandaloneTasks/Delivery";
 import { MaintenanceTask } from "./modules/Employee/Tasks/StandaloneTasks/Maintenance";
 import { GrowingTask } from "./modules/Employee/Tasks/StandaloneTasks/Growing";
 import { TaskContainer} from "./modules/Employee/Tasks/WorkingTasks/TaskContainer";
@@ -73,6 +73,10 @@ export const AppRoutes  = [
         path:"/:uid/admin/employees/new",   
         component:<NewEmployee edit={{isEdition:false}}/>
     },
+    {
+        path:"/:uid/admin/employees/editEmployee",   
+        component:<NewEmployee edit={{isEdition:true}}/>
+    },
 
     //EMPLOYEE ROUTES
     {
@@ -101,12 +105,12 @@ export const AppRoutes  = [
         component:<HarvestingTask/>
     },
     {
-        path:"/:uid/employee/tasks/packing",
-        component:<PackingTask/>
+        path:"/:uid/employee/tasks/delivery",
+        component:<DeliveryComponent/>
     },
     {
-        path:"/:uid/employee/tasks/delivery",
-        component:<DeliveryTask/>
+        path:"/:uid/employee/tasks/packing",
+        component:<PackingComponent/>
     },
     {
         path:"/:uid/employee/tasks/growing",

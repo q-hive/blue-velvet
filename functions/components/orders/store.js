@@ -1,3 +1,4 @@
+//*db
 import { mongoose } from '../../mongo.js'
 let { ObjectId } = mongoose.Types
 
@@ -5,12 +6,19 @@ let { ObjectId } = mongoose.Types
 import Organization from '../../models/organization.js'
 import Order from '../../models/order.js'
 
-import { getProductionForOrder } from '../production/store.js'
+//*UTILS
 import { addTimeToDate } from '../../utils/time.js'
+
+//*Org controllers
 import { getOrganizationById } from '../organization/store.js'
-import { getOrdersPrice, getOrderProdData } from './controller.js'
+
+//*PRODUCTS CONTROLLERS
 import { getAllProducts } from '../products/store.js'
-import { updateContainerById } from '../container/store.js'
+
+
+import { buildProductionDataFromOrder } from '../production/controller.js'
+import { getOrdersPrice, newOrderDateValidation } from './controller.js'
+import { getProductionInContainer } from '../production/store.js'
 
 const orgModel = mongoose.model('organization', Organization)
 
@@ -39,13 +47,12 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined, produ
                 if(filtered && filter){
                 
                     const {key, value} = filter
-                    console.log(filter)
                     if(value == "uncompleted" && key == "status") {
                         orgOrders = orgOrders.filter((order) => order.status != "delivered")
     
                         orgOrders.orders = orgOrders
                     } else {
-                        if(Boolean(req.query.all)){
+                        if(req && Boolean(req.query?.all)){
                             orgOrders = await orgModel.find(
                                 {
                                     "_id":  orgId,
@@ -61,58 +68,38 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined, produ
                                     "_id":        orgId,
                                     [`orders.${key}`]: value
                                 },
-                                "orders.$ -_id"
+                                "orders -_id"
                             )
+
+                            if(key === "_id" && orgOrders !== null){
+                                orgOrders = orgOrders.orders.filter((order) => order[key].equals(value))
+                            }
+
+                            if(key !== "_id" && orgOrders !== null){
+                                orgOrders = orgOrders.orders.filter((order) => order[key] === value)
+                            }
+                            
                         }
                         
                     }
                     
                 }
                 
-                if(!Object.keys(req.query).includes("production") && !Boolean(req.query?.production)){
-                    return resolve(orgOrders)
-                }
-
-                if(!orgOrders) {
+                if(req === undefined) {
                     return resolve(orgOrders)
                 }
                 
-                const mappedOrders = orgOrders.orders.map((order, orderIndex) => {
-                    const production = getOrderProdData(order, org.containers[0].products, true)
+                // if(!Object.keys(req?.query).includes("production") && !Boolean(req.query?.production)){
+                //     return resolve(orgOrders)
+                // }
+
+                if(!orgOrders) {
+                    return resolve([])
+                }
+                
+                const mappedOrders = orgOrders.map((order, orderIndex) => {
+                    // const production = getOrderProdData(order, org.containers[0].products, true)
                     const mutableOrder = order.toObject()
-                    const mappedProds = mutableOrder.products.map((product, index, thisArr) => {
-                        if(product.mix){
-                            const correspondingMixProducts = production.filter((prodData) => {
-                                const sameOrder = prodData.orderId?.equals(order._id)
-                                const sameMix =  prodData.mixId?.equals(product._id)
-                                return sameOrder && sameMix && prodData.mix
-                            })
-    
-                            product.products = correspondingMixProducts
-                            return {...product}
-                        }
-    
-                        let found = production.find((prod) => {
-                            return prod.id.equals(product._id)
-                        })
-                        return {productionData:found, ...product}
-                    })
-    
-                    // mappedProds.forEach(prod => {
-                    //     if(prod.mix){
-                    //         prod.products.forEach((mixProd) => {
-                    //             delete mixProd.mixId
-                    //             delete mixProd.orderId
-                    //             delete mixProd.mix
-                    //         })
-                    //     } else {
-                    //         delete prod.productionData.id
-                    //     }
-                        
-                    // })
-                    
-                    mutableOrder.products = mappedProds
-                    mutableOrder.productionData = production
                     return mutableOrder
                 })
                 
@@ -133,23 +120,29 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined, produ
     })
     
 }
-export const getFilteredOrders = (orgId, req, production, filter = undefined) => {
+export const getFilteredOrders = (orgId, req = undefined, production, filter = undefined) => {
     return new Promise((resolve, reject) => {
         let key
         let value
         let mappedFilter
-        if(Object.keys(req.query).includes('key') && Object.keys(req.query).includes('value')){
-            key = req.query.key
-            value = req.query.value
-            mappedFilter = {key, value}
-        } else if (req.params && filter === undefined) {
-            key = Object.entries(req.params)[0][0]
-            value = Object.entries(req.params)[0][1]
-            mappedFilter = {key, value}
-        } else if (filter != undefined) {
-            mappedFilter = filter
-            
+
+        if(req === undefined) {
+            if(filter !== undefined){
+                mappedFilter = filter
+            }
+        } else {
+            if(Object.keys(req.query).includes('key') && Object.keys(req.query).includes('value')){
+                key = req.query.key
+                value = req.query.value
+                mappedFilter = {key, value}
+            } else if (req.params && filter === undefined) {
+                key = Object.entries(req.params)[0][0]
+                value = Object.entries(req.params)[0][1]
+                mappedFilter = {key, value}
+            }
         }
+
+        
 
         getAllOrders(orgId, req, true, mappedFilter, production)
         .then((orders) => {
@@ -226,74 +219,97 @@ export const createNewOrder = (orgId, order) => {
             "message": "There was an error calculating the price",
             "status":   500
         }
-        const allProducts = await getAllProducts(orgId)
+        let allProducts
+        let mappedProducts
+        let mappedAndUpdatedProducts
 
-        const mappedProducts = order.products.map(async (prod) => {
-            const product = allProducts.find((product) => {
-                return product._id.equals(prod._id)
+        
+        try {
+        
+            
+            //*Get all products of container to make validations (products on order have no the complete data)
+            allProducts = await getAllProducts(orgId)
+            
+            newOrderDateValidation(order, allProducts)
+            
+            mappedProducts = order.products.map(async (prod) => {
+                const dbProduct = allProducts.find((product) => {
+                    return product._id.equals(prod._id)
+                })
+
+
+                
+                // await orgModel.updateOne({_id:orgId,"containers.0.products":{"$elemMatch":{_id:product._id}}},{"$set":{
+                //     "containers.0.products.$.status":"seeding"
+                // }})
+            
+                return {
+                    _id:            prod._id,
+                    name:           prod.name,
+                    status:         prod.status,
+                    seedId:         prod?.seedId,
+                    packages:       prod.packages,
+                    mix:            dbProduct.mix.isMix,
+                    price:          dbProduct.price
+                }
             })
 
-            await orgModel.updateOne({_id:orgId,"containers.0.products":{"$elemMatch":{_id:product._id}}},{"$set":{
-                "containers.0.products.$.status":"seeding"
-            }})
-        
-            return {
-                _id:            prod._id,
-                name:           prod.name,
-                status:         prod.status,
-                seedId:         prod?.seedId,
-                packages:       prod.packages,
-                mix:            product.mix.isMix,
-                price:          product.price
-            }
-        })
+            mappedAndUpdatedProducts = await Promise.all(mappedProducts)
 
-        const mappedAndUpdatedProducts = await Promise.all(mappedProducts)
-
-        let prc = getOrdersPrice(order, allProducts)
-        if(prc === undefined || prc === null){
-            return reject(new Error(JSON.stringify(priceFailure)))
-        }
-        let end = addTimeToDate(new Date(), { w: 2 })
-        let prodData = getOrderProdData(order, allProducts)
-        
-        
-        if(allProducts && allProducts.length >0){
-            let orderMapped = {
-                _id:            id,
-                organization:   orgId,
-                customer:       order.customer._id,
-                price:          prc,
-                date:           order.date,
-                end:            end,
-                productionData: prodData,
-                products:       mappedAndUpdatedProducts,
-                status:         order.status
-            }
+            let prc = getOrdersPrice(order, allProducts)
             
-            getOrganizationById(orgId)
-            .then(organization => {
-                if(!organization){
-                    return reject(new Error(JSON.stringify(emptyOrgs)))
+            if(prc === undefined || prc === null){
+                return reject(new Error(JSON.stringify(priceFailure)))
+            }
+
+            let end = addTimeToDate(new Date(), { w: 2 })
+            let production = await buildProductionDataFromOrder({...order, _id:id}, allProducts)
+
+        
+            if(allProducts && allProducts.length >0){
+                let orderMapped = {
+                    _id:            id,
+                    organization:   orgId,
+                    customer:       order.customer._id,
+                    price:          prc,
+                    date:           order.date,
+                    end:            end,
+                    products:       mappedAndUpdatedProducts,
+                    status:         "production"
                 }
                 
-                organization.orders.push(orderMapped)
-                
-                // updateContainerById(orgId, 0, "containers.capacity", value)
-                organization.save((err, org) => {
-                    if(err) {
-                        reject(new Error(JSON.stringify(errorSaving)))
+                getOrganizationById(orgId)
+                .then(organization => {
+                    if(!organization){
+                        return reject(new Error(JSON.stringify(emptyOrgs)))
                     }
-        
-                    resolve(orderMapped)
+                    
+                    organization.orders.push(orderMapped)
+
+                    production.forEach((productionModel) => {
+                        organization.containers[0].production.push(productionModel)
+                    })
+                    
+                    organization.save((err, org) => {
+                        if(err) {
+                            console.log(err)
+                            reject(new Error(JSON.stringify(errorSaving)))
+                        }
+                        
+                        
+                        resolve(orderMapped)
+                    })
                 })
-            })
-            .catch(err => {
-                console.log(err)
-                reject(new Error(JSON.stringify(errorFromOrg)))
-            })    
-        } else {
-            reject(new Error(JSON.stringify(noProducts)))
+                .catch(err => {
+                    console.log(err)
+                    reject(new Error(JSON.stringify(errorFromOrg)))
+                })    
+            } else {
+                reject(new Error(JSON.stringify(noProducts)))
+            }
+            
+        } catch (err) {
+            reject(err)
         }
     })
 }
@@ -319,7 +335,6 @@ export const getOrdersByProd = (orgId, id) => {
                 },
             ]
         )
-        console.log(orgOrdersByProd.length)
         const mapOrdersFromAggregation = orgOrdersByProd.map((orgModel) => {
             return orgModel.orders 
         }) 
@@ -364,7 +379,28 @@ export const updateOrder = (org, orderId, body) => {
     })
 }
 
+export const updateManyOrders = (filter, update) => {
+    return new Promise(async(resolve, reject) => {
+        try {
+            const updateResult = await orgModel.updateOne(filter, update)
+            resolve(updateResult)
+        } catch (err) {
+            reject(err)
+        }
+    })
+}
 
+
+export const getOrderById = async (orgId, orderId) => {
+    const filter = {
+        "key":"_id",
+        "value":orderId
+    }
+    
+    const orders = await getFilteredOrders(orgId, undefined, false, filter)
+
+    return orders
+}
 //* production status
 //* seeding
 //* growing -- 2 days p/w 7am

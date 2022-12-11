@@ -4,8 +4,10 @@ import React from 'react'
 import { useEffect, useState } from 'react'
 import { BV_THEME } from '../../../../theme/BV-theme'
 
-export const ProductsPrice = ({productData, handleChangeProductData,editing,error, mix}) => {
-  return (
+export const ProductsPrice = ({productData, handleChangeProductData,editing,editValues,error, mix}) => {
+
+     
+    return (
     <Box sx={{display:"flex", width:"100%"}}>
         <TextField 
             id="25"   
@@ -15,7 +17,11 @@ export const ProductsPrice = ({productData, handleChangeProductData,editing,erro
                     startAdornment: <InputAdornment position="start"><Euro/></InputAdornment>
                 }
             } 
-            value={productData.smallPrice} 
+            value={productData.smallPrice}
+            defaultValue={editing ? 
+                mix ?  editValues[0].amount 
+                : productData.smallPrice 
+        : ""} 
             helperText={error.smallPrice.message} 
             error={error.smallPrice.failed} 
             onChange={mix ? (e) => handleChangeProductData(e,e.target.value,"input") : handleChangeProductData} 
@@ -30,11 +36,14 @@ export const ProductsPrice = ({productData, handleChangeProductData,editing,erro
                     startAdornment: <InputAdornment position="start"><Euro/></InputAdornment>
                 }
             } 
-            // value={productData.mediumPrice} 
-            defaultValue={editing ? productData.mediumPrice : ""} 
+            value={productData.mediumPrice} 
+            defaultValue={  editing ? 
+                                    mix ?  editValues[1].amount 
+                                    : productData.mediumPrice 
+                            : ""} 
             helperText={error.mediumPrice.message} 
             error={error.mediumPrice.failed} 
-            onChange={mix ? (e) => handleChangeProductData(e,e.target.id, "input") : handleChangeProductData} 
+            onChange={mix ? (e) => handleChangeProductData(e,e.target.value, "input") : handleChangeProductData} 
             label="Price - 80grs"   
             sx={BV_THEME.input.mobile.halfSize.desktop.halfSize}
         />

@@ -39,7 +39,10 @@ authRouter.post('/login', (req, res) => {
                 console.log(claims)
                 getOrganizationById(claims.organization)
                 .then(async organization => {
+                    organization = organization.toObject()
+                    
                     const employee = organization.employees.find(employee => employee.uid === credential.user.uid) 
+
                     let token
                     if(employee) {
                         try {
@@ -48,6 +51,9 @@ authRouter.post('/login', (req, res) => {
                             return error(req, res, 500, "Error creating credential", err)
                         }    
 
+
+                        
+                        employee.assignedContainer = organization.containers[0]._id
                         return success(req, res, 200, "Employee login successful", {
                             isAdmin: false,
                             token: token,
@@ -80,6 +86,10 @@ authRouter.post('/login/admin', (req, res) => {
                     let token
                     try {
                         token = await adminAuth.createCustomToken(user.user.uid)
+                        console.log(claims)
+                        let org = await getOrganizationById(claims.organization)
+                        org = org.toObject()
+                        
                         if (data.passphrase == hashPassphrase(req.body.passphrase)) {
                             // const userOrganization = await getOrganizationByOwner(data._id)
                             return success(req, res, 200, "Successfully logged as admin", {                                                                                                  
@@ -89,7 +99,8 @@ authRouter.post('/login/admin', (req, res) => {
                                                 uid:    user.user.uid,
                                                 email:  user.user.email,
                                                 photo:  user.user.photoURL,
-                                                organization: claims.organization
+                                                organization: claims.organization,
+                                                assignedContainer: org.containers[0]._id
                                             },
                                             token: user._tokenResponse.idToken,
                                             cToken: token
@@ -129,10 +140,16 @@ authRouter.post('/refresh', (req, res) => {
    .then((claims) => {
     getOrganizationById(claims.organization)
     .then(async org => {
+            org = org.toObject()
+        
             let token
             if(claims.role === "admin") {
-                const admin = await adminAuth.getUser(claims.uid)
+                const admin = await (await adminAuth.getUser(claims.uid)).toJSON()
+
+                admin.assignedContainer = org.containers[0]._id
+                admin.organization = org._id
                 token = await adminAuth.createCustomToken(claims.uid)
+                console.log(admin)
                 return success(res, res, 200, "User verified succesfully, re-auth done", {
                     isAdmin:    true,
                     token:      token,
@@ -140,6 +157,7 @@ authRouter.post('/refresh', (req, res) => {
                 })
             }
 
+            
 
             const employee = org.employees.find((empl) => empl.uid === claims.uid)
             try {
@@ -151,7 +169,8 @@ authRouter.post('/refresh', (req, res) => {
             }
 
             employee.organization = claims.organization
-
+            employee.assignedContainer = org.containers[0]._id
+            console.log(employee)
             return success(req, res, 200, "User verified succesfully, re-auth done", {
                 isAdmin:false,
                 token:token,

@@ -24,17 +24,17 @@ const taskCard_sx = {
 }
 
 
-export const SeedingContent = (props) => {
+export const PreSoakingContent = (props) => {
 
     const {user, credential} = useAuth()
-    const [workProducts, setWorkProducts] = useState(props.workData/*.production.products*/)
+    const [workProducts, setWorkProducts] = useState(props.workData /*.production.products*/)
     const {TrackWorkModel} = useWorkingContext()
 
     function sumAllTrays() {
         let i;
         let trays = 0;
 
-        for (i = 0; i < workProducts.length; i++) {
+        for (i = 0; i < Object.keys(workProducts).length; i++) {
           if(workProducts[i].trays != undefined)
             trays += Math.ceil(workProducts[i].trays)
         }
@@ -53,7 +53,7 @@ export const SeedingContent = (props) => {
 
     
     
-    const totalTrays = sumAllTrays()
+    //const totalTrays = sumAllTrays()
 
 
     if(props.index===0)
@@ -64,26 +64,30 @@ export const SeedingContent = (props) => {
                         Gather what you need: <br /><br/>
                     </Typography>
                     <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                        <b>{totalTrays}</b> {totalTrays>1 ? "Trays": "Tray"} <br/> 
+                        One bucket per product<br></br>Water
                     </Typography>
-                    {workProducts.map((product,index)=>{return(
-                        !product.minutes ?
+                    {workProducts.map((product,index)=>{
+                        console.log("producto obj presoaking",product)
+                        return(
+                            !product.minutes ?
+                        
                         <Typography key={index} variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
                             <b>{parseFloat(product.seeds).toFixed(2)}</b> grs of <b>{product.ProductName}</b> Seeds <br/>
                         </Typography>
                         :
                         null
+                        
                     )})}
 
                     <Box sx={taskCard_sx}>
                         <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                        Place the <b>{totalTrays}</b> {totalTrays > 1 ? "Trays" : "Tray"} on the Seeding-Table, and fill each of them with a pre-cut Hemp-Mat
+                        Put the indicated amount of seeds in each bucket and wash it twice.
                         </Typography>
                     </Box>
 
                     <Box sx={taskCard_sx}>
                         <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                        Staple them under the Table.
+                        Change the water after 12hrs, wash before seeding.
                         </Typography>
                     </Box>
 
@@ -95,7 +99,7 @@ export const SeedingContent = (props) => {
             </>
         );
 
-    if(props.index===1){
+    {/*if(props.index===1){
         const getSeeds = (product) => {
             if(product.productionData === undefined){
                 return parseFloat(product.seeds/product.trays).toFixed(2)
@@ -115,15 +119,10 @@ export const SeedingContent = (props) => {
                 {
                     
                     workProducts.map((product,index)=>{
-                        return(
-                            !product.minutes ?
-                        
-                        <Typography key={product+index+"2"} variant="h5" align='justify' color={BV_THEME.textColor.lightGray} >
-                            <b>{product.name}</b> <br/>{Math.ceil(product.trays)} {product.trays > 1 ? "trays.":"tray."} Max seeds per tray:  <b>{getSeeds(product)}</b> g <br/><br/>
-                        </Typography>
-                        :
-                        null
-                            
+                        return( 
+                            <Typography key={product+index+"2"} variant="h5" align='justify' color={BV_THEME.textColor.lightGray} >
+                                <b>{product.productData.name}</b> <br/>{Math.ceil(product.productData.trays)} trays. Max seeds per tray:  <b>{getSeeds(product.productData)}</b> g <br/><br/>
+                            </Typography>
                         )
                     })
                 }
@@ -146,6 +145,6 @@ export const SeedingContent = (props) => {
             </Box>
 
         </>
-    )
+    )*/}
 
 }

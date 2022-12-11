@@ -12,6 +12,7 @@ import filesRouter from '../components/files/network.js'
 import workRouter from '../components/work/network.js'
 import employeesRouter from '../components/employees/network.js'
 import containerRouter from '../components/container/network.js'
+import deliveryRouter from '../components/delivery/network.js'
 
 
 //*Middlewares
@@ -60,6 +61,11 @@ export const workRoutes = (app) => {
 export const productionRoutes = (app) => {
     const authorized = ["admin", "employee"]
     app.use(`${apiV1}/production`,  isAuthenticated, isAuthorized(authorized), productionRouter)
+}
+
+export const deliveryRoutes = (app) => {
+    const authorized = ["admin", "employee"]
+    app.use(`${apiV1}/delivery`,  isAuthenticated, isAuthorized(authorized), deliveryRouter)
 }
 
 export const adminRoutes = (app) => {

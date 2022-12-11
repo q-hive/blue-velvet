@@ -17,6 +17,7 @@ import api from '../../../../axios.js'
 
 
 ///tasks steps test
+import { PreSoakingContent } from './PreSoakingContent'
 import { SeedingContent } from './SeedingContent.jsx';
 import { HarvestingContent } from './HarvestingContent.jsx';
 import { PackingContent } from './PackingContent.jsx';
@@ -42,14 +43,14 @@ export const TaskContainer = (props) => {
     const theme = useTheme(BV_THEME);
     
     const {user, credential} = useAuth()
-    const {WorkContext,TrackWorkModel,employeeIsWorking, workData} = useWorkingContext()
+    const {WorkContext,TrackWorkModel,employeeIsWorking} = useWorkingContext()
     const {state} = useLocation();
 
     const [isFinished,setIsFinished] = useState(false)
     //* STEPPER
     const [activeStep, setActiveStep] = useState(0)
 
-    var type, order, products
+    let type, order, products
 
     if(props != null){
         type=props.type
@@ -57,8 +58,10 @@ export const TaskContainer = (props) => {
         products=props.products
     }
     
-    if(state.type != undefined){
-        ({type} = state);
+    if(state != null){
+        if(state.type != undefined  ){
+            ({type} = state);
+        }
     }
 
     switch (type){
@@ -83,16 +86,27 @@ export const TaskContainer = (props) => {
         //     steps=[{step:"Unpaid"}]
         //  break;
 
+        case "preSoaking":
+            contentTitle = "Pre Soaking"
+            expectedtTime = 60*12//Math.ceil(state.time.times.seeding.time) 
+            content = <PreSoakingContent products={products} productsObj={productsByNameObj} workData={state.workData["preSoaking"]} index={activeStep}/>
+            steps=[
+                {step:"Pre Soak"},
+            ]
+        break;
+
         case "seeding":
             contentTitle = "Seeding"
             expectedtTime = Math.ceil(state.time.times.seeding.time) 
-            content = <SeedingContent products={products} productsObj={productsByNameObj} workData={state.workData} index={activeStep}/>
+            content = <SeedingContent products={products} productsObj={productsByNameObj} workData={state.workData["seeding"]} index={activeStep}/>
             steps=[
                 {step:"Setup"},
                 {step:"Spray Seeds"},
                 {step:"Shelf"},
             ]
         break;
+
+        
         
 
         case "growing":
@@ -113,7 +127,7 @@ export const TaskContainer = (props) => {
             ]
         break;
 
-        case "harvested":
+        case "packing":
             contentTitle = "Packing"
             // expectedtTime = Number(Math.ceil(trays) * 2).toFixed(2)
             {/*const totalPacks = order.products.map((product) => {
@@ -127,7 +141,7 @@ export const TaskContainer = (props) => {
             expectedtTime = Number((0.5*totalPacks[0])).toFixed(2)
             */}
             expectedtTime = 3
-            content = <PackingContent index={activeStep}/>
+            content = <PackingContent index={activeStep} products={products}/>
             steps=[
                 {step:"Tools"},
                 {step:"Calibration"},
@@ -275,38 +289,6 @@ export const TaskContainer = (props) => {
 
         const updateProduction = async () => {
             let wd = JSON.parse(window.localStorage.getItem("workData"))
-            //*Update orders to growing status and request worker service for growing monitoring.
-            let totalSeeds
-            let totalHarvest
-            let totalTrays
-
-            try{
-                const reducedProduction = wd.production.products.reduce((prev, curr) => {
-                    return {
-                        productData: {
-                            seeds:prev.productData.seeds + curr.productData.seeds,
-                            harvest:prev.productData.harvest + curr.productData.harvest,
-                            trays:prev.productData.trays + curr.productData.trays,
-                        }
-                    }
-                },{
-                    "productData":{
-                        "seeds": 0,
-                        "harvest":0,
-                        "trays":0
-                    }
-                })
-                totalSeeds = reducedProduction.productData.seeds
-                totalHarvest = reducedProduction.productData.harvest
-            } catch(err){
-                console.log(`Error reducing production data`, err)
-                totalSeeds = 0;
-                totalHarvest = 0;
-                Promise.reject(err)
-                return
-            }
-            
-            
 
             //*When this model is sent also updates the performance of the employee on the allocationRatio key.
             const taskHistoryModel = {
@@ -317,8 +299,15 @@ export const TaskContainer = (props) => {
                 taskType:       Object.keys(WorkContext.cicle)[WorkContext.current],
                 workDay:        TrackWorkModel.workDay   
             }  
-            
-            await api.api.patch(`${api.apiVersion}/work/production/taskHistory`, 
+
+            let ids = []
+            wd[Object.keys(WorkContext.cicle)[WorkContext.current]].forEach((model) => {
+                if(model.modelsId){
+                    model.modelsId.forEach((id) => ids.push(id))
+                }
+            })
+
+            await api.api.patch(`${api.apiVersion}/work/taskHistory`, 
             {
                 ...taskHistoryModel
             },
@@ -328,52 +317,20 @@ export const TaskContainer = (props) => {
                     user: user
                 }
             })
+
+
             
-            switch (WorkContext.current) {
-                case 0: 
-                        const updateToGrowing = await api.api.post(`${api.apiVersion}/work/production/growing`,
-                        {
-                            workData: wd.production 
-                        }, 
-                        {
-                            headers: {
-                                authorization: credential._tokenResponse.idToken,
-                                user: user
-                            }
-                        })
-
-                        const updateEmployeePerformance = await api.api.patch(`${api.apiVersion}/work/performance/${user._id}`, {
-                            performance: [
-                                {
-                                    query:"add", 
-                                    seeds:totalSeeds
-                                }
-                            ]
-                        }, {
-                            headers: {
-                                authorization: credential._tokenResponse.idToken,
-                                user: user
-                            }
-                        })
-
-                        return {updateToGrowing, updateEmployeePerformance}
-                case 2: 
-                        const updateToReady = await api.api.post(`${api.apiVersion}/work/production/ready`,
-                        {
-                            workData: wd.production 
-                        }, 
-                        {
-                            headers: {
-                                authorization: credential._tokenResponse.idToken,
-                                user: user
-                            }
-                        })
-
-                        return {updateToReady}
-                default:
-                    break;
+            await api.api.patch(`${api.apiVersion}/work/production/${user.assignedContainer}`,
+            {
+                productionModelsIds:ids,
+            },
+            {
+                headers: {
+                    authorization: credential._tokenResponse.idToken,
+                    user: user
                 }
-                return
+            }
+            )
         }
             
         updateProduction()
@@ -484,7 +441,7 @@ export const TaskContainer = (props) => {
         })
         
         setIsFinished(() => {
-            return (WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved !== undefined) || WorkContext.cicle[Object.keys(WorkContext.cicle)[props.counter]].achieved !== undefined
+            return (WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved !== undefined) || WorkContext.cicle[Object.keys(WorkContext.cicle)[props.counter]]?.achieved !== undefined
         })
     },[])
   return (

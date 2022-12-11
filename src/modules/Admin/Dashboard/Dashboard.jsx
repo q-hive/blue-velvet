@@ -15,12 +15,14 @@ import api from "../../../axios"
 //Theme
 import { BV_THEME } from '../../../theme/BV-theme';
 import { DataGrid , GridRowsProp} from '@mui/x-data-grid';
+import { adminDashboardEmployees } from '../../../utils/TableStates';
 
 
 export const Dashboard = () => {
     const {user,credential} = useAuth()
 
     const [containers, setContainers] = useState([])
+    const [employeesPerformanceRows,  setEmployeesPerformanceRows] = useState([])
 
     const theme = useTheme(BV_THEME)
 
@@ -32,9 +34,9 @@ export const Dashboard = () => {
         height: 240
     }
     const rows = [
-        { id: 1, col1: 'Eluis', col2: Math.random()},
-        { id: 2, col1: 'Eluis2', col2: Math.random()},
-        { id: 3, col1: 'Eluis3', col2: Math.random() },
+        { id: 1, name: 'Eluis', level: Math.random()},
+        { id: 2, name: 'Eluis2', level: Math.random()},
+        { id: 3, name: 'Eluis3', level: Math.random() },
       ];
 
     const navigate = useNavigate()
@@ -58,20 +60,49 @@ export const Dashboard = () => {
         return containersData.data.data[0].containers
     }
 
+    const getEmployees = async () => {
+        const employeesPerformance = await api.api.get(`${api.apiVersion}/employees/analytics/performance`, {
+            headers:{
+                "authorization":    credential._tokenResponse.idToken,
+                "user":             user
+            }
+        })
+
+        console.log(employeesPerformance)
+        return employeesPerformance.data.data.employees
+    }
+
+    const mapEmployeesData = (employees) => {
+        let array = []
+        if(Array.isArray(employees)){
+            array = employees.map((data) => {
+                return {name:data.name, level:data.performance.level, _id:data._id}
+            })
+
+            return array
+        }
+
+        throw "Function for mapping employees data is not receiving an array"
+    }
+    
     useEffect(() => {
         const getData = async () => {
             try {
                 const containers2 = await getContainers()
-                console.log("containers 2",containers2)
-                return containers2
+                const employeesData = await getEmployees()
+
+                const mappedEmployees = mapEmployeesData(employeesData)
+                return {containers2, mappedEmployees}
             } catch(err) {
                 console.log(err)
+                throw "There was an error trying to get data for dashboard"
             }
         }
 
         getData()
         .then((response)=>{
-            setContainers(response)
+            setContainers(response.containers2)
+            setEmployeesPerformanceRows(response.mappedEmployees)
         })
         .catch((err) =>{
             console.log(err)
@@ -98,6 +129,29 @@ export const Dashboard = () => {
                         <Paper elevation={4} sx={fixedHeightPaper}>
                             <Typography variant="h6" color="secondary.dark">Tasks</Typography>
                             <Box sx={{display:"flex",flexDirection:"column", }}>
+                                {/*Delivery Task Only acrive when there are orders on ready to deliver status*/
+                                true?
+                                    <Paper variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"1.5vh",paddingX:"1.5vh",marginTop:"1vh",display:"flex", flexDirection:"row"}}>
+                                        <Typography><b>Packing</b></Typography>
+                                        <Button variant="contained" sx={{width:"34%"}} onClick={()=>navigate(`/${user.uid}/employee/tasks/delivery`)} color="primary" >
+                                            View
+                                        </Button>
+                                    </Paper>  
+                                :
+                                    null
+                                }
+
+                                {/*Delivery Task Only acrive when there are orders on ready to deliver status*/
+                                true?
+                                    <Paper variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"1.5vh",paddingX:"1.5vh",marginTop:"1vh",display:"flex", flexDirection:"row"}}>
+                                        <Typography><b>Delivery</b></Typography>
+                                        <Button variant="contained" sx={{width:"34%"}} onClick={()=>navigate(`/${user.uid}/employee/tasks/delivery`)} color="primary" >
+                                            View
+                                        </Button>
+                                    </Paper>  
+                                :
+                                    null
+                                }
 
                                 
                             </Box> 
@@ -119,7 +173,7 @@ export const Dashboard = () => {
                                                 {container.name}:<br/>
                                                 </Typography>
                                             <Typography sx={{width:"98%"}}>
-                                                <b>Max: </b>{container.capacity}<b> Used: </b>{container.available}{" "}<LinearProgress sx={{height:"3vh"}} variant="determinate" value={(container.used * 100) / container.capacity} />
+                                                <b>Max: </b>{container.capacity}<b> Available: </b>{container.available}{" "}<LinearProgress sx={{height:"3vh"}} variant="determinate" value={(container.used * 100) / container.capacity} />
                                             </Typography>
                                             {/*<Button variant="contained" sx={{width:"34%"}} onClick={()=>handleViewTask(task.type)} color="primary" >
                                                 View
@@ -144,32 +198,17 @@ export const Dashboard = () => {
                                 backgroundColor:BV_THEME.palette.primary.main,
                                 color:"white"
                             }}}>
-                            <Typography variant="h6" color="secondary.dark">Employee Performance</Typography>
-                            <DataGrid
-                            columns={[{
-                                field:"col1",
-                                headerName:"Employee",
-                                headerAlign:"center",
-                                align:"center",
-                                headerClassName:"header-sales-table",
-                                minWidth:{xs:"25%",md:130},
-                                flex:1
-                            },{
-                                field:"col2",
-                                headerName:"Performance rate",
-                                headerAlign:"center",
-                                align:"center",
-                                headerClassName:"header-sales-table",
-                                minWidth:{xs:"25%",md:130},
-                                flex:1
-                            },]}
-                            rows={rows}
-                            sx={{marginY:"2vh",}}>
-                            </DataGrid>
+                            <Typography variant="h6" color="secondary.dark">Employee level</Typography>
+                            
                             
                         </Paper>
                     </Grid>
                 </Grow>
+
+            
+                
+
+            {/*Grid Container End */}    
             </Grid>
         </Container>
     </Box>

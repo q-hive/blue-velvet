@@ -3,6 +3,7 @@ import { success, error } from '../../network/response.js'
 import { createNewOrder, deleteOrders, getAllOrders, getFilteredOrders, updateOrder } from './store.js'
 import {modelsValidationError} from '../../utils/errorHandler.js'
 import { updateContainerById } from '../container/store.js'
+import { updateAllOrders } from './controller.js'
 
 const router = express.Router()
 
@@ -12,8 +13,7 @@ router.post('/', (req, res) => {
         success(req, res, 201, 'New order created succesfully', order)
     })
     .catch((err) => {
-        
-        error(req, res, 500, "Error creating new order - GENERIC ERROR", err)
+        error(req, res, 500, "Error creating new order - GENERIC ERROR", err, err)
         
     })
 })
@@ -82,7 +82,7 @@ router.delete('/:status', (req, res) => {
 })
 
 
-router.patch('/:id', (req, res) => {
+router.patch('/one/:id', (req, res) => {
     if(!req.params){
         return error(req, res, 400, "No order provided")
     }
@@ -104,4 +104,15 @@ router.patch('/:id', (req, res) => {
         error(req, res, 500, "Error updating order - GENERIC ERROR", err)
     })
 })
+
+router.patch('/all', (req, res) => {
+    updateAllOrders(res.locals.organization, {[`orders.$[].${req.query.field}`]:req.query.value})
+    .then((result)  => {
+        success(req, res, 200, "Orders in organization updated succesfully", result)
+    })
+    .catch(err => {
+        error(req, res, 500, "Error updating all orders of organization", err)
+    })
+})
+
 export default router

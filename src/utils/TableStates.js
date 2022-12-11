@@ -44,35 +44,33 @@ export const productsColumns = [
         field:"price",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
+        //align:"center",
         headerName:"Prod. Price",
         minWidth:180,
         flex:1,
         renderCell:(params) => {
             return (
-                <>
-                    <Box display="flex" p={1}>
-                        <Accordion>
+                
+                        <Accordion sx={{width:"100%",marginY:"1vh"}}>
                             <AccordionSummary
                                 expandIcon={<ExpandMoreIcon />}
                                 aria-controls="panel1a-content"
-                                id="panel1a-header"
+                                id="panel1a-header" 
                             >
                                 <Typography>Price</Typography>
                             </AccordionSummary>
 
-                            <AccordionDetails>
+                            <AccordionDetails >
                                     {params.formattedValue.map((obj) => {
                                         return (
                                             <>
-                                            <Typography align="center">Size {obj.packageSize}:  ${obj.amount} </Typography>
-                                            <Divider /> 
+                                            <Typography align="justify">Size {obj.packageSize}:  ${obj.amount} </Typography>
+                                            <Divider sx={{maxWidth:"100%"}} /> 
                                             </>
                                             )})}
                             </AccordionDetails>
                         </Accordion>
-                    </Box>
-                </>
+                
             )
         }
     },
@@ -667,6 +665,7 @@ export const salesColumns = [
                             type:"privileged",
                             execute:() => {
                                 editOrder()
+                                navigate
                             }
                         },
                         {
@@ -804,6 +803,75 @@ export const salesColumns = [
             )
         } 
     }
+]
+
+export const recentSalesColumns = [
+    {
+        field:"customer",
+        headerName:"Customer",
+        headerAlign:"center",
+        align:"center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1
+    },
+    {
+        field:"income",
+        headerName:"Income",
+        headerClassName:"header-sales-table",
+        headerAlign:"center",
+        align:"center",
+        minWidth:{xs:"25%",md:130},
+        flex:1
+    },
+    {
+        field:"date2",
+        headerName:"Delivery Date",
+        headerClassName:"header-sales-table",
+        headerAlign:"center",
+        align:"center",
+        minWidth:{xs:"25%",md:100},
+        flex:1
+    },
+]
+
+export const deliveredSalesColumns = [
+    {
+        field:"id",
+        headerName:"ID",
+        headerAlign:"center",
+        align:"center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1
+    },
+    {
+        field:"customer",
+        headerName:"Customer",
+        headerAlign:"center",
+        align:"center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1
+    },
+    {
+        field:"income",
+        headerName:"Income",
+        headerClassName:"header-sales-table",
+        headerAlign:"center",
+        align:"center",
+        minWidth:{xs:"25%",md:130},
+        flex:1
+    },
+    {
+        field:"date2",
+        headerName:"Delivery Date",
+        headerClassName:"header-sales-table",
+        headerAlign:"center",
+        align:"center",
+        minWidth:{xs:"25%",md:100},
+        flex:1
+    },
 ]
 
 export const CustomerColumns = [
@@ -1107,7 +1175,7 @@ export const EmployeeColumns = [
                             type:"privileged",
                             execute:() => {
                                 editCustomer()
-                                // navigate(`/${user.uid}/${user.role}/production/editProduct/?id=${params.id}`)
+                                navigate(`/${user.uid}/${user.role}/employees/editEmployee/?id=${params.id}`)
                             }
                         },
                         {
@@ -1199,4 +1267,25 @@ export const EmployeeColumns = [
             )
         }
     }
+]
+
+export const adminDashboardEmployees = [
+{
+    field:"name",
+    headerName:"Employee",
+    headerAlign:"center",
+    align:"center",
+    headerClassName:"header-sales-table",
+    minWidth:{xs:"25%",md:130},
+    flex:1
+},
+{
+    field:"level",
+    headerName:"Level",
+    headerAlign:"center",
+    align:"center",
+    headerClassName:"header-sales-table",
+    minWidth:{xs:"25%",md:130},
+    flex:1
+}
 ]

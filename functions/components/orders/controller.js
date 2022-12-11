@@ -1,3 +1,7 @@
+import { areSameDay } from "../../utils/time.js";
+import { getCustomerById } from "../customer/store.js";
+import { updateManyOrders } from "./store.js";
+
 const sortProductsPrices = (order,products) => {
     const orderProducts = order.products.map((prod) => {
         return {prodId: prod._id, packages: prod.packages}
@@ -115,105 +119,170 @@ export const getOrdersPrice = (order, products) => {
     return orderTotal
 }
 
-export const getOrderProdData = (order, dbproducts, perProduct = false) => {
-    //*SORT PRICES IN DBPRODUCTS
-    const sortedProductPrices = sortProductsPrices(order, dbproducts)
-    //*Add grams per size to order product packages
-    order.products.forEach((prod, pidx) => {
-        //*Find the product in database
-        const prodFound = sortedProductPrices.find((fprod) => fprod._id.equals(prod._id))
-        prod.packages.forEach((pkg, idx) => {
-            switch(pkg.size){
-                case "small":
-                    prod.packages[idx] = {
-                        ...prod.packages[idx],
-                        number:pkg.number, 
-                        grams: prodFound.price[0].packageSize * pkg.number,
-                    }
-                    break;
-                case "medium":
-                    prod.packages[idx] = {
-                        ...prod.packages[idx], 
-                        number:pkg.number,
-                        grams: prodFound.price[1].packageSize * pkg.number
-                    }
-                    break;
-                default:
-                    break;
+
+export const newOrderDateValidation = (order, allProducts = undefined) => {
+    const deliveryDateLeftDays = parseInt(((((new Date(order.date) - new Date())/1000)/60)/60)/24)
+    
+    if(deliveryDateLeftDays < 7) {
+        throw new Error("Invalid date, must be a delivery date after the total production times.")
+    }
+
+    const completeObjectProducts = order.products.map((orderProduct) => allProducts.find((dbProduct) => dbProduct._id.equals(orderProduct._id)))
+
+    const times = completeObjectProducts.flatMap((product) => {
+        if(product.mix.isMix){
+            const mixProductsCompleteObjects = product.mix.products.map((mixProd) => allProducts.find((dbProd) => dbProd._id.equals(mixProd.strain)))
+
+            const mixTimes = mixProductsCompleteObjects.map((mixProd) => mixProd.parameters.day + mixProd.parameters.night)
+
+            return mixTimes
+        }
+        return product.parameters.day + product.parameters.night
+    })
+
+    console.log(deliveryDateLeftDays)
+    console.log(times)
+
+    const maxTime = Math.max(...times)
+
+    
+    if(deliveryDateLeftDays < maxTime){
+        throw new Error("Invalid date, must be a delivery date after the total production times.")
+    }
+} 
+
+export const updateAllOrders = async (orgId, update) => {
+    try {
+        const result = await updateManyOrders({"_id":orgId}, update)
+        // await updateProductionWithOrderUpdate()
+        return result
+    } catch (err) {
+        throw new Error(err)
+    }
+}
+
+export const groupOrdersByDate = (orders, date=undefined, outputFormat = undefined) => {
+    const hash = {}, result = [] 
+    let useOrderDate = true
+    if(date !== undefined) {
+        orders = orders.filter((order) => areSameDay(order.date, date))
+        useOrderDate = false
+    }
+
+    if(date === undefined) {
+        useOrderDate = true
+    }        
+    
+    orders.forEach((order) => {
+        if(useOrderDate) {
+            if(!hash[`${order.date.getDate()}-${order.date.getMonth()+1}-${order.date.getFullYear()}`]){
+                hash[`${order.date.getDate()}-${order.date.getMonth()+1}-${order.date.getFullYear()}`] = {
+                  ...order.toObject()  
+                }        
+                result.push({[`${order.date.getDate()}-${order.date.getMonth()+1}-${order.date.getFullYear()}`]:hash[`${order.date.getDate()}-${order.date.getMonth()+1}-${order.date.getFullYear()}`]})
             }
-        })
-        
-        //*Total grams will define number of trays based on seedingRate
-        const harvest = prod.packages.reduce((prev, curr) => {
-            return prev + curr.grams
-        },0)
-
-        if(prodFound){
-            if(prodFound.mix.isMix){
-                
-                prod.mix = {isMix: true}
-                const mixProds = prodFound.toObject().mix.products
-                
-                const mappedMixComposition = mixProds.map((mprod) => {
-                    const mixFound = sortedProductPrices.find((fprod) => fprod._id.equals(mprod.strain)).toObject()
-                    
-                    delete mixFound.mix
-                    delete mixFound.price
-                    delete mprod.strain
-                    mixFound.productionData = {
-                        name:   mixFound.name,
-                        harvest: harvest * (mprod.amount/100),
-                        seeds: harvest * (mixFound.parameters.seedingRate/mixFound.parameters.harvestRate),
-                        trays:  (harvest * (mixFound.parameters.seedingRate/mixFound.parameters.harvestRate)) / mixFound.parameters.seedingRate
-                    }
-
-                    return {...mprod, ...mixFound, mix:true}
-                })
-
-                prod.products = mappedMixComposition
-                
-            } else {
-                prod.mix = {isMix: false}
-                //* Get seedingRate (in grams) per tray
-                prod["seedingRate"] = prodFound.parameters.seedingRate
-                //* Get harvestRate (in grams) per tray
-                prod["harvestRate"] = prodFound.parameters.harvestRate
+        } else {
+            if(!hash[date]){
+                hash[date] = {
+                  ...order.toObject()  
+                }        
+                result.push({[`${date.getDate()}-${date.getMonth()+1}-${date.getFullYear()}`]:hash[date]})
             }
         }
         
-        const seeds = harvest / (prod.harvestRate / prod.seedingRate)
-        const trays = seeds / prod.seedingRate
-        
-        prod["productionData"] = {harvest, seeds, trays}
     })
 
-    if(perProduct){
-        let productionData
-
-        productionData = order.products.flatMap((prod) => {
-            if(prod.mix){
-                return prod.products.map((mxprod) => {
-                    return {id:mxprod._id,mixId:prod._id,orderId:order._id, ...mxprod.productionData, mix:true}
-                })
-            }
-            
-            return {...prod.productionData, id:prod._id}
-        })
-        
-        return productionData
+    if(outputFormat === "hash"){
+        return hash
     }
     
-    const productionData = order.products.map((prod) => {
-        if(prod.mix.isMix){
-            const mappedProducionData = prod.products.map((mxprod) => {
-                return {product:mxprod.name, ...mxprod.productionData}
-            })
+    return result
+}
 
-            return mappedProducionData
+export const groupOrdersForPackaging = (orders, date=undefined) => {
+    const hash = {}, result = []
+        orders.forEach((order) => {
+        order.products.forEach((product) => {
+            if(!hash[product.name]){
+                hash[product.name] = {
+                    "packages": {
+                        "small":0,
+                        "medium":0,
+                        "large":0
+                    }
+                } 
+                result.push({[product.name]:hash[product.name]})
+            }
+            
+            product.packages.forEach((pkg) => {
+                hash[product.name].packages[pkg.size] +=+ pkg.number
+            })
+            
+        })
+        
+    })
+    return result
+}
+export const groupOrdersForDelivery = async (orders, date=undefined) => {
+    const mappedProducts = (products) => {
+        const map = products.map(product => {
+            const packagesHash = {}
+            for(const {size, number, grams, _id} of product.packages){
+                if(!packagesHash[size]){
+                    packagesHash[size] = 0
+                }
+
+                packagesHash[size] +=+ number
+            }
+            
+            return {"ProductName":product.name, "packages":packagesHash}
+        })
+
+        return map
+    }
+    
+    const hash = {}, result = []
+    await Promise.all(
+        orders.map(async(order) => {
+            const customer = await getCustomerById(order.organization, order.customer) 
+            
+            if(!hash[order.customer.toString()]){
+                hash[order.customer.toString()] = {
+                    "customerName": customer.name,
+                    "customerAdreess":customer.address.street,
+                    "orders":[],
+                }
+
+                result.push(hash[order.customer.toString()])
+            }
+            
+            hash[order.customer.toString()].orders.push(
+                {
+                    "_id":order._id, 
+                    "products":mappedProducts(order.products),
+                    "price":order.price
+                }
+            )
+        })
+    )
+
+    return result
+    
+
+}
+
+export const groupOrders = (criteria, orders, groupValue) => {
+    let grouppedOrders
+    if(criteria === "date"){
+        if(groupValue !== undefined) {
+            grouppedOrders = groupOrdersByDate(orders, groupValue)
         }
         
-        return {product:prod.name,id:prod._id,...prod.productionData}
-    })
+        if(groupValue === undefined) {
+            grouppedOrders = groupOrdersByDate(orders)
+        }
+        
+    }
 
-    return productionData
+    return grouppedOrders
 }

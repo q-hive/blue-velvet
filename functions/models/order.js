@@ -27,22 +27,18 @@ const Order = new Schema({
         }],
         required: true
     },
-    productionData: {type: [
-        {
-            product:    String,
-            seeds:      Number,
-            harvest:    Number,
-            trays:      Number
-        }
-    ], required: true
-    },
+    // productionData: {type: [
+    //     {
+    //         product:    String,
+    //         seeds:      Number,
+    //         harvest:    Number,
+    //         trays:      Number
+    //     }
+    // ], required: true
+    // },
     status:         { type:String,      required:true   }
 },
 {
-    timestamps: {
-        createdAt: "start",
-        updatedAt: "updated"
-    },
     query: {
         byType(type) {
             return this.where({ type: type })

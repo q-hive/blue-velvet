@@ -9,7 +9,7 @@ import { getMongoQueryByObject } from '../../utils/getMongoQuery.js'
 const { ObjectId } = mongoose.Types
 const orgModel = mongoose.model('organizations', Organization)
 
-export const newContainer = (contData) => {
+export const newContainer = (organization,contData) => {
     return new Promise((resolve, reject) => {
 
         let containerMapped = {
@@ -31,7 +31,7 @@ export const newContainer = (contData) => {
             if (e) reject(e)
 
             Promise.all([
-                updateOrganization(contData.organization, {
+                updateOrganization(organization, {
                     $push: { containers: cont._id } 
                 }),
                 updateUser(contData.admin, {
@@ -51,18 +51,20 @@ export const getContainers = (filters) => {
      ?   sort
      */
 
-    let contModelFiltered = contModel 
+    // let contModelFiltered = contModel 
+    let containers = orgModel.findOne({"_id":filters.organization},{"containers":true})
 
-    // * Apply filters if requested
-    if (filters.organization !== undefined && filters.organization !== null) {
-        contModelFiltered = contModelFiltered.where({ organization: filters.organization })
-    }
+    
+    // // * Apply filters if requested
+    // if (filters.organization !== undefined && filters.organization !== null) {
+    //     contModelFiltered = contModelFiltered.where({ organization: filters.organization })
+    // }
 
-    if (filters.admin !== undefined && filters.admin !== null) {
-        contModelFiltered = contModelFiltered.where({ admin: filters.admin })
-    }
+    // if (filters.admin !== undefined && filters.admin !== null) {
+    //     contModelFiltered = contModelFiltered.where({ admin: filters.admin })
+    // }
 
-    return contModelFiltered.find({})
+    return containers
 
 }
 
@@ -93,7 +95,7 @@ export const updateContainerById = (orgId,id, edit) => {
             const parsedEddit = {
                 query: {
                     [getMongoQueryByObject(edit)]: {
-                        [edit.key]:edit.value
+                        [`containers.$.${edit.key}`]:edit.value
                     },
                 }
                 
@@ -101,11 +103,17 @@ export const updateContainerById = (orgId,id, edit) => {
             
             const queryOp = await orgModel.updateOne(
                 {
-                    "_id":orgId, 
-                    "containers._id":id
+                    "_id":mongoose.Types.ObjectId(orgId),
+                    "containers":{
+                        "$elemMatch": {
+                            "_id":mongoose.Types.ObjectId(id),
+                        }
+                    }
                 },
                 parsedEddit.query
             )
+
+            console.log(queryOp)
 
             resolve(queryOp)
         } catch(err) {
@@ -119,4 +127,15 @@ export const updateContainers = async (ids, edit) => {
     let cont = await contModel.updateMany({ _id: { $in: ids }}, edit, { multi: true, new: true })
 
     return cont
+}
+
+export const removeContainer = (orgId, containerId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const op = await orgModel.findOneAndUpdate({"_id":mongoose.Types.ObjectId(orgId)}, {"$pull":{"containers._id":mongoose.Types.ObjectId(containerId)}})
+            resolve(op)
+        } catch (err) {
+            reject(err)
+        }
+    })
 }

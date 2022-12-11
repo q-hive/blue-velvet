@@ -8,7 +8,7 @@ const WorkingContextWrapper = ({children}) => {
     const [employeeIsWorking, setEmployeeIsWorking] = useState(JSON.parse(window.localStorage.getItem("isWorking")) || false)
 
     useEffect(() => {
-        console.log("Cange in WorkContext")
+        console.log("Change in WorkContext")
         window.localStorage.setItem("WorkContext", JSON.stringify(WorkContext))
     }, [WorkContext])
 

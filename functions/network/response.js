@@ -21,37 +21,19 @@ export const processing = (req, res, code, message, status, data) => {
 
 //*ERROR PARAMETER IS THE CUSTOM ERROR OBJECT, PROCESS ERROR COMES FROM SYSTEM ERRORS OR UNHANDLED REJECTIONS
 export const error = (req,res,code, message, error, processError = undefined) => {
-    console.group("Error")
-    console.log(error)
-    console.groupEnd()
-
-    console.group("System error")
-    console.log(processError)
-    console.groupEnd()
-    
     try {
         //*If a JSON is provided in the error helper then it will be parsed
         if(error){
-            
             return res.status(JSON.parse(error.message).status).send({
                 "success": false,
                 "error": OPERATION_FAILED,
                 message: JSON.parse(error).message
             })
         }
-
-        // return res.status(code).send({
-        //     "success":  false,
-        //     "error":    OPERATION_FAILED,
-        //     "message":  (JSON.parse(error.message).message || message),
-        // })
-    
     } catch(err) {
-        console.group("Failure in parsing custom error, processing system error...")
-        console.log(err)
         try {
             if(error){
-                console.log("Controller has error argument")
+                console.log(error)
                 switch(err.name){
                     case "MongooseError":
                         return res.status(code).send({
@@ -65,8 +47,13 @@ export const error = (req,res,code, message, error, processError = undefined) =>
                             "error":    OPERATION_FAILED,
                             "message":  `${err._message} in the following keys: ${Object.keys(err.errors)}`
                         })
+                    case "Error":
+                        return res.status(code).send({
+                            "success":  false,
+                            "error":    OPERATION_FAILED,
+                            "message":  err.message
+                        })
                     default:
-                        console.log("Gettting here")
                         return res.status(code).send({
                             "success":  false,
                             "error":    OPERATION_FAILED,
@@ -74,10 +61,7 @@ export const error = (req,res,code, message, error, processError = undefined) =>
                         })
                 }
             }
-            console.groupEnd()
         } catch (ndErr) {
-
-            console.group("Failure processing error argument in error controller, using simple error")
             return res.status(code).send({
                 "success":  false,
                 "error":    OPERATION_FAILED,

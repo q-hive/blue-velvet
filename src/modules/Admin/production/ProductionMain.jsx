@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react'
 
 //*MUI Components
-import { Box, Button, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Fade, LinearProgress, Typography, useTheme } from '@mui/material'
+import { Box, Button, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Fade, Grid, LinearProgress, Paper, Typography, useTheme } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 //*THEME
 import {BV_THEME} from '../../../theme/BV-theme'
@@ -18,6 +18,8 @@ import { productsColumns, productsColumnsMobile } from '../../../utils/TableStat
 import api from '../../../axios'
 import { useNavigate } from 'react-router-dom'
 import useAuth from '../../../contextHooks/useAuthContext'
+import { Stack } from '@mui/system'
+import { getGrowingProducts } from '../../../CoreComponents/requests'
 
 export const ProductionMain = () => {
     
@@ -27,8 +29,9 @@ export const ProductionMain = () => {
     
     //*Render states
     const [columnsState, setColumnsState] = useState(productsColumns)
-    const [rows, setRows] = useState([])
+    const [rows, setRows] = useState(JSON.parse(window.localStorage.getItem('products')) || [])
     const [loading, setLoading] = useState(false)
+    const [growingProducts, setGrowingProducts] = useState(null)
     const [dialog, setDialog] = useState({
         open:false,
         title:"",
@@ -128,6 +131,69 @@ export const ProductionMain = () => {
         })
     }, [])
 
+
+    useEffect(()=>{
+        getGrowingProducts({
+            user:user,
+            credential:credential,
+            setProdData:setGrowingProducts,
+        })
+    },[])
+
+    console.log("growin products pm",growingProducts)
+
+    
+    const displayGrowingProducts = () =>{
+    let testArr =[{name:"Sunflower",remainingDays:5,gownPercentage:49},{name:"Peas",remainingDays:6,gownPercentage:32},{name:"Daikon Radish",remainingDays:1,gownPercentage:75}]
+    return(
+        growingProducts 
+                != null ? 
+        growingProducts
+    .map((product,id)=>{
+        let differenceInMs = (new Date(product.EstimatedHarvestDate).getTime() - new Date().getTime())
+        let msInDay = 1000 * 60 * 60 * 24
+        product.remainingDays = Math.ceil(differenceInMs / msInDay)
+        
+        return(
+            
+            <Paper key={id} elevation={0} sx={{marginTop:"3%"}}>
+                <Box sx={{display:"flex" , flexDirection:"row", justifyContent:"space-between" }}>
+                                                
+                                                
+                    <Grid container>
+                        <Grid item xs={6}>
+                            <Typography variant={"h6"} color={"secondary.dark"} >
+                            {product.ProductName}: 
+                            </Typography>
+                        </Grid>
+                                                    
+                        <Grid item xs={4}>
+                            <Typography variant={"overline"} color={"secondary.light"}>
+                                {product.remainingDays} days remaining
+                            </Typography>
+                        </Grid>
+
+                        {/* <Grid item xs={2}>
+                            <Typography color={product.gownPercentage>=66?"primary.dark":product.gownPercentage<33?"orange":"secondary.dark"} variant={"h6"}>
+                                {product.gownPercentage} %
+                            </Typography>
+                        </Grid> */}
+                    </Grid>
+
+                </Box>
+                <Typography variant={"overline"} color={"secondary.light"}>
+                    BETA - (False %)
+                </Typography>
+                <LinearProgress sx={{height:"3vh"}} variant="determinate" value={30} />
+            </Paper>
+
+        )
+    })
+    :
+    <Typography>there are no growing products at the moment</Typography>
+    )
+    }
+
     
 
   return (
@@ -135,12 +201,11 @@ export const ProductionMain = () => {
         {/*PRODUCTION MAIN BEGINS*/}
         <Fade in={true} timeout={1000} unmountOnExit>
             <Box width="100%">
-                <Container sx={{padding:"2%"}}>
+                <Container maxWidth={"xl"} sx={{padding:"2%"}}>
                     <Box sx={
                         
                         {
                             width:"100%", 
-                            height:"80vh",
                             "& .header-products-table":{
                                 backgroundColor:BV_THEME.palette.primary.main,
                                 color:"white"
@@ -158,19 +223,59 @@ export const ProductionMain = () => {
                         />
                         
 
-                        <Typography variant="h4" textAlign={"center"} margin={theme.margin.mainHeader}>
-                            Production management (products)
+                        <Typography variant="h4" color="secondary" textAlign={"center"} margin={theme.margin.mainHeader}>
+                            Production Management
                         </Typography>
-                        <Box sx={{
-                                display:"flex", 
-                                justifyContent:{xs:"center",sm:"flex-end"}
-                                }}>
-                            <Button variant="contained" startIcon={<Add/>} onClick={handleNewProduct} color="primary" disabled={user.role === "employee"} >
-                                Add new product
-                            </Button>
-                        </Box>
-                        
-                        {
+                        <Box sx={{display:"flex", justifyContent:"space-between",marginBottom:"3vh"}} >
+                        <Button variant='contained' color='primary' startIcon={<Add/>} onClick={handleNewProduct} sx={{minWidth:"20%"}}>
+                            Add New Product
+                        </Button>
+                    </Box>
+
+                    <Grid container maxWidth={"xl"} spacing={2} marginTop={2}>
+                        <Grid item xs={12} md={6} lg={4} >
+                            <Paper elevation={5} sx={{
+                                                        padding: BV_THEME.spacing(2),
+                                                        display: "flex",
+                                                        overflow: "auto",
+                                                        flexDirection: "column",
+                                                        minHeight: 480,
+                                                        
+                                                    }}>
+                                <Typography variant="h6" color="secondary">
+                                    Growing Products
+                                </Typography>
+
+                                {
+                                    loading
+                                    ?   
+                                    <LinearProgress color="primary" sx={{marginY:"2vh"}}/>
+                                    :  
+                                    <Stack sx={{}}>
+                                    
+                                        {displayGrowingProducts()}
+
+                                        
+                                    </Stack>
+                                    
+                                }      
+                            </Paper>
+                        </Grid>
+
+
+                        <Grid item xs={12} md={6} lg={8} >
+                            <Paper elevation={4} sx={{
+                                                    padding: BV_THEME.spacing(2),
+                                                    display: "flex",
+                                                    overflow: "auto",
+                                                    flexDirection: "column",
+                                                    minHeight: 480
+                                                }}>
+                                <Typography variant="h6" color="secondary">
+                                    All products
+                                </Typography>
+
+                                {
                             loading
                             ?   
                             <LinearProgress color="primary" sx={{marginY:"2vh"}}/>
@@ -184,7 +289,7 @@ export const ProductionMain = () => {
                                         return row._id
                                     }}
                                     getRowHeight={() => 'auto'}
-                                    sx={{marginY:"2vh", display:() => theme.mobile.hidden}}
+                                    sx={{marginY:"2vh", display:() => theme.mobile.hidden,height:"100%"}}
                                 />
                                 <DataGrid
                                     columns={productsColumnsMobile}
@@ -201,7 +306,13 @@ export const ProductionMain = () => {
                                     sx={{marginY:"2vh", display:() => theme.mobile.only}}
                                 />
                             </>
-                        }
+                        }     
+                            </Paper>
+                        </Grid>
+
+                    {/*Grid Container End */}    
+                    </Grid>
+                        
                         
                     </Box>
                 </Container>

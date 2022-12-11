@@ -30,8 +30,8 @@ export const MixProductsForm = ({editing, product}) => {
     //*DATA STATES
     const [strains, setStrains] = useState([])
     const [mix, setMix] = useState({
-        products:[],
-        label:null,
+        products: editing ? product.mix.products : [],
+        label: null,
         cost:0
     })
 
@@ -40,9 +40,9 @@ export const MixProductsForm = ({editing, product}) => {
         strain:         "",
         amount:         "",
         label:          "",
-        smallPrice:     "",
-        mediumPrice:    "",
-        name:           ""
+        smallPrice:     editing ? product.price[0].amount : "",
+        mediumPrice:    editing ? product.price[1].amount : "",
+        name:           editing ? product.name : ""
     })
     const [showFinal, setShowFinal] = useState(false)
     const [canAdd, setCanAdd] = useState(true)
@@ -87,9 +87,13 @@ export const MixProductsForm = ({editing, product}) => {
     const handleDeleteProduct = (product)=>{
         console.log("antes",mix.products)
 
-          var arr = mix.products.filter(prod =>{
-            return prod.product.name != product.product.name
+          let arr = mix.products.filter(prod =>{
+            if(editing)
+                return prod.strain != product.strain 
+            else
+                return prod.product.name != product.product.name
           })
+
           setMix({
             ...mix,
             products:arr
@@ -103,9 +107,19 @@ export const MixProductsForm = ({editing, product}) => {
 
     const {user, credential} = useAuth()
     const navigate = useNavigate()
+
+    const getProductName=(strain)=>{
+        console.log("id a buscar",strain)
+        let testName = JSON.parse(localStorage.getItem('products')).find((prod) => prod._id === strain)
+        console.log("testName",testName)
+        if(testName !== undefined )
+        return testName.name
+    }
     
     const handleInputChange = (e,v,r) => {
+        
         let id
+        
         if(e.target.id.includes('-')){
             id = e.target.id.split('-')[0]
         } else {
@@ -119,13 +133,17 @@ export const MixProductsForm = ({editing, product}) => {
                 break;
             case "80":
                 id = "mediumPrice"
+                console.log("80",v)
                 break;
             case "name":
 
             default:
                 break;
         }
-        
+
+        {editing ? null:null}
+
+
         if(error[id].failed){
             setError({
                 ...error,
@@ -383,7 +401,7 @@ export const MixProductsForm = ({editing, product}) => {
     },[])
 
     useEffect(() => {
-        if(mix.products.length >1){
+        if(mix.products.length >0){
             console.log(mix.products)
             //*The limit sum of amounts should be 100%
             const total = mix.products.reduce((prev, curr) => {
@@ -399,7 +417,9 @@ export const MixProductsForm = ({editing, product}) => {
             if(total >= 100){
                 //*Disable button
                 setCanAdd(false)
-            }
+            }else(
+                setCanAdd(true)
+            )
         }
     }, [mix])
 
@@ -433,6 +453,9 @@ export const MixProductsForm = ({editing, product}) => {
         return index == steps.length - 1
 
     };
+
+
+    console.log("strains",strains)
 
     
 
@@ -658,7 +681,7 @@ export const MixProductsForm = ({editing, product}) => {
                                     return (
                                         <Box key={id} sx={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:3}}>
                                             <Typography sx={{flex:1}}>
-                                                {product.amount}% {product.product.name.toString()} 
+                                                {product.amount}% {product.product?.name.toString()} {getProductName(product.strain)}
                                             </Typography>
                                             <Button variant="contained" onClick={()=>handleDeleteProduct(product)}>
                                                 Delete
@@ -695,14 +718,15 @@ export const MixProductsForm = ({editing, product}) => {
                                             alignItems:"center"
                                         }
                                     }>
-                                        <TextField label="Mix Name" id="name" onChange={(e) => handleInputChange(e, e.target.value, "input")} variant="outlined" sx={theme.input.mobile.fullSize.desktop.halfSize}>
+                                        <TextField label="Mix Name" id="name" value={inputValue.name} onChange={(e) => handleInputChange(e, e.target.value, "input")} variant="outlined" sx={theme.input.mobile.fullSize.desktop.halfSize}>
                                             
                                         </TextField>
 
                                         <ProductsPrice
                                         productData={inputValue}
                                         handleChangeProductData={handleInputChange}
-                                        editing={editing} 
+                                        editing={editing}
+                                        editValues={editing ? product.price:[]} 
                                         error={error}
                                         mix={true}
                                         />    
