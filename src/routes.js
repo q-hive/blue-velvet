@@ -18,7 +18,7 @@ import { FullChamber } from "./modules/Employee/Tasks/FullChamber";
 //*TASKS
 import { TasksCardsComponent } from "./modules/Employee/Tasks/Tasks";
 import { HarvestingTask } from "./modules/Employee/Tasks/StandaloneTasks/Harvesting";
-import { PackingTask } from "./modules/Employee/Tasks/StandaloneTasks/Packing";
+import { PackingComponent, PackingTask } from "./modules/Employee/Tasks/StandaloneTasks/Packing";
 import { DeliveryComponent } from "./modules/Employee/Tasks/StandaloneTasks/Delivery";
 import { MaintenanceTask } from "./modules/Employee/Tasks/StandaloneTasks/Maintenance";
 import { GrowingTask } from "./modules/Employee/Tasks/StandaloneTasks/Growing";
@@ -105,12 +105,12 @@ export const AppRoutes  = [
         component:<HarvestingTask/>
     },
     {
-        path:"/:uid/employee/tasks/packing",
-        component:<PackingTask/>
-    },
-    {
         path:"/:uid/employee/tasks/delivery",
         component:<DeliveryComponent/>
+    },
+    {
+        path:"/:uid/employee/tasks/packing",
+        component:<PackingComponent/>
     },
     {
         path:"/:uid/employee/tasks/growing",
