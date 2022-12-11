@@ -58,7 +58,7 @@ export const EntryPoint = () => {
     const [snackState, setSnackState] = useState({open:false,label:"",severity:defaultSeverity});
 
     //*Time
-    const [isOnTime, setIsOnTime] = useState(true)
+    const [isOnTime, setIsOnTime] = useState(false)
 
     const checkTime = () => {
         const today = new Date()
