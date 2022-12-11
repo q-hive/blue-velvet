@@ -221,7 +221,7 @@ export const updateOrgTasksHistory = (orgId, taskModel) => {
                 }
             ).exec()
 
-            const updateEmployeePerformance = await updatePerformance(orgId, taskModel.executedBy, [{query:"set", allocationRatio:""}])
+            await updatePerformance(orgId, taskModel.executedBy, [{query:"set", allocationRatio:1}])
             
             resolve(query)
         } catch (err) {

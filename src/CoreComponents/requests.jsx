@@ -11,25 +11,29 @@ export const getOrdersData = (props) => {
     let user = props.user
     let credential = props.credential
     let setLoading = props.setLoading
+    let setOrders = props.setOrders
     
-    //*DATA STATES
-    /*const [orders, setOrders] = useState([])
-    const [loading, setLoading] = useState(false)
-    const [totalIncome, setTotalIncome] = useState(0)
-    */
-
-    
-
-
-
     api.api.get(`${api.apiVersion}/orders/`, {
         headers: {
             authorization:  credential._tokenResponse.idToken,
             user:           user
         }
     
-    },setLoading(true))
-    .then(response => {
+    }, setLoading(true))
+    .then(async response => {
+        const cancelled = await api.api.get(`${api.apiVersion}/orders/cancelled`, {
+            headers: {
+                authorization:  credential._tokenResponse.idToken,
+                user:           user
+            }
+        })
+        const delivered = await api.api.get(`${api.apiVersion}/orders/delivered`, {
+            headers: {
+                authorization:  credential._tokenResponse.idToken,
+                user:           user
+            }
+        })
+
         const getCustomer = response.data.data.map(async (order, idx) => {
             const customer = await api.api.get(`${api.apiVersion}/customers/${order.customer}`, {
                 headers: {
@@ -71,9 +75,25 @@ export const getOrdersData = (props) => {
                 return(sum)
             
             }
-            const mappedRow = newResponse.map((order) => {
-                console.log(order)
-                
+
+            const cancelledRows = cancelled.data.data.map((order) => {
+                return {
+                    "id":       order._id,
+                    "customer": order.customer,
+                    "income":   order.price,
+                    "date2":    order.date,
+                }
+            })
+
+            const deliveredRows = delivered.data.data.map((order) => {
+                return {
+                    "id":       order._id,
+                    "customer": order.customer,
+                    "income":   order.price,
+                    "date2":    order.date,
+                }
+            })
+            const mappedRows = newResponse.map((order) => {
                 return {
                     "customer": order.fullCustomer.name,
                     "date1":    order.date1,
@@ -84,9 +104,15 @@ export const getOrdersData = (props) => {
                     "id":       order._id
                 }
             })
-            props.setOrders((o) => {
+            setOrders((o) => {
                 return (
-                    mappedRow    
+                    {
+                        ...o,
+                        all:        mappedRows,
+                        cancelled:  cancelledRows,
+                        delivered:  deliveredRows,
+                        recent:     mappedRows    
+                    }
                 )
             })
             setLoading(false)
@@ -159,7 +185,7 @@ export const getWorkdayProdData = async (props) => {
     let setRows = props.setProdData
 
 
-    await api.api.get(`${api.apiVersion}/production/workday?containerId=6386c9ebffa0b079a26de951`, {
+    await api.api.get(`${api.apiVersion}/production/workday?containerId=${user.assignedContainer}`, {
         headers: {
             authorization:  credential._tokenResponse.idToken,
             user:           user
@@ -169,4 +195,63 @@ export const getWorkdayProdData = async (props) => {
         setRows(response.data.data)
     })
 
+}
+
+
+export const getGrowingProducts = async (props) => {
+    let user = props.user
+    let credential = props.credential
+    let setRows = props.setProdData
+
+    await api.api.get(`${api.apiVersion}/production/status/growing?containerId=${user.assignedContainer}`, {
+        headers: {
+            authorization:  credential._tokenResponse.idToken,
+            user:           user
+        }
+    })
+    .then(result => {
+        setRows(result.data.data)
+    })
+    .catch(err => {
+    
+    })
+
+}
+
+export const getDeliveries = async (props) => {
+    let user = props.user
+    let credential = props.credential
+    let setRows = props.setProdData
+
+    await api.api.get(`${api.apiVersion}/delivery/routes/orders`, {
+        headers: {
+            authorization:  credential._tokenResponse.idToken,
+            user:           user
+        }
+    })
+    .then(result => {
+        setRows(result.data.data)
+    })
+    .catch(err => {
+    
+    })
+}
+
+export const getPackingProducts = async (props) => {
+    let user = props.user
+    let credential = props.credential
+    let setRows = props.setProdData
+
+    await api.api.get(`${api.apiVersion}/delivery/packs/orders`, {
+        headers: {
+            authorization:  credential._tokenResponse.idToken,
+            user:           user
+        }
+    })
+    .then(result => {
+        setRows(result.data)
+    })
+    .catch(err => {
+    
+    })
 }

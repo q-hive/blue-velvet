@@ -331,7 +331,7 @@ export const DeliveryComponent = (props) => {
                                         height: 540
                                     }}>
                                         <Typography variant="h6" color="secondary">
-                                            Date: Today {//new Date().toString().split('T')[0]
+                                            Date: All time orders (even cancelled and delivered)  - TEST ONLY {//new Date().toString().split('T')[0]
                                             }
                                         </Typography>
                                         
@@ -349,7 +349,7 @@ export const DeliveryComponent = (props) => {
                                     </Paper>
                                     
                                 </Grid>
-                                </Grow>
+                                    </Grow>
                                     }
 
                             

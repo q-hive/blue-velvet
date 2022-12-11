@@ -74,14 +74,15 @@ export const getDeliveryByDate = (date, orgId, container = undefined) => {
         }
         
         const ordersReadyForDelivery = await orgModel.findOne({"_id":mongoose.Types.ObjectId(orgId)},{"deliveryReady":true})
-        
-        const getOrdersObjectsById = ordersInPackaging.packaging.map(async (orderId) => {
+
+        const getOrdersObjectsById = ordersReadyForDelivery.deliveryReady.map(async (orderId) => {
             const orderObject = await getOrderById(orgId, orderId)
-            return orderObject.orders[0]
+            return orderObject[0]
         })
 
         Promise.all(getOrdersObjectsById)
         .then(async (orders) => {
+            console.log(orders)
             let ordersHashMapByDate = groupOrders("date", orders, date)
             let ordersGrouppedArray = []
             

@@ -150,6 +150,10 @@ export const ProductionMain = () => {
                 != null ? 
         growingProducts
     .map((product,id)=>{
+        let differenceInMs = (new Date(product.EstimatedHarvestDate).getTime() - new Date().getTime())
+        let msInDay = 1000 * 60 * 60 * 24
+        product.remainingDays = Math.ceil(differenceInMs / msInDay)
+        
         return(
             
             <Paper key={id} elevation={0} sx={{marginTop:"3%"}}>
@@ -159,7 +163,7 @@ export const ProductionMain = () => {
                     <Grid container>
                         <Grid item xs={6}>
                             <Typography variant={"h6"} color={"secondary.dark"} >
-                            {product.name}: 
+                            {product.ProductName}: 
                             </Typography>
                         </Grid>
                                                     
@@ -169,15 +173,18 @@ export const ProductionMain = () => {
                             </Typography>
                         </Grid>
 
-                        <Grid item xs={2}>
+                        {/* <Grid item xs={2}>
                             <Typography color={product.gownPercentage>=66?"primary.dark":product.gownPercentage<33?"orange":"secondary.dark"} variant={"h6"}>
-                                {product.gownPercentage}%
+                                {product.gownPercentage} %
                             </Typography>
-                        </Grid>
+                        </Grid> */}
                     </Grid>
 
                 </Box>
-                <LinearProgress sx={{height:"3vh"}} variant="determinate" value={product.gownPercentage} />
+                <Typography variant={"overline"} color={"secondary.light"}>
+                    BETA - (False %)
+                </Typography>
+                <LinearProgress sx={{height:"3vh"}} variant="determinate" value={30} />
             </Paper>
 
         )

@@ -28,7 +28,7 @@ router.get('/:id', (req, res) => {
         success(req, res, 200, "Employee obtained succesfully", result)
     })
     .catch(err => {
-    
+        error(req, res, 500, "Error getting employee data", err, err)
     })
 })
 

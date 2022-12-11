@@ -43,7 +43,7 @@ export const TaskContainer = (props) => {
     const theme = useTheme(BV_THEME);
     
     const {user, credential} = useAuth()
-    const {WorkContext,TrackWorkModel,employeeIsWorking, workData} = useWorkingContext()
+    const {WorkContext,TrackWorkModel,employeeIsWorking} = useWorkingContext()
     const {state} = useLocation();
 
     const [isFinished,setIsFinished] = useState(false)
@@ -289,38 +289,6 @@ export const TaskContainer = (props) => {
 
         const updateProduction = async () => {
             let wd = JSON.parse(window.localStorage.getItem("workData"))
-            //*Update orders to growing status and request worker service for growing monitoring.
-            let totalSeeds
-            let totalHarvest
-            let totalTrays
-
-            try{
-                const reducedProduction = wd.production.products.reduce((prev, curr) => {
-                    return {
-                        productData: {
-                            seeds:prev.productData.seeds + curr.productData.seeds,
-                            harvest:prev.productData.harvest + curr.productData.harvest,
-                            trays:prev.productData.trays + curr.productData.trays,
-                        }
-                    }
-                },{
-                    "productData":{
-                        "seeds": 0,
-                        "harvest":0,
-                        "trays":0
-                    }
-                })
-                totalSeeds = reducedProduction.productData.seeds
-                totalHarvest = reducedProduction.productData.harvest
-            } catch(err){
-                console.log(`Error reducing production data`, err)
-                totalSeeds = 0;
-                totalHarvest = 0;
-                Promise.reject(err)
-                return
-            }
-            
-            
 
             //*When this model is sent also updates the performance of the employee on the allocationRatio key.
             const taskHistoryModel = {
@@ -331,8 +299,15 @@ export const TaskContainer = (props) => {
                 taskType:       Object.keys(WorkContext.cicle)[WorkContext.current],
                 workDay:        TrackWorkModel.workDay   
             }  
-            
-            await api.api.patch(`${api.apiVersion}/work/production/taskHistory`, 
+
+            let ids = []
+            wd[Object.keys(WorkContext.cicle)[WorkContext.current]].forEach((model) => {
+                if(model.modelsId){
+                    model.modelsId.forEach((id) => ids.push(id))
+                }
+            })
+
+            await api.api.patch(`${api.apiVersion}/work/taskHistory`, 
             {
                 ...taskHistoryModel
             },
@@ -342,52 +317,20 @@ export const TaskContainer = (props) => {
                     user: user
                 }
             })
+
+
             
-            switch (WorkContext.current) {
-                case 0: 
-                        const updateToGrowing = await api.api.post(`${api.apiVersion}/work/production/growing`,
-                        {
-                            workData: wd.production 
-                        }, 
-                        {
-                            headers: {
-                                authorization: credential._tokenResponse.idToken,
-                                user: user
-                            }
-                        })
-
-                        const updateEmployeePerformance = await api.api.patch(`${api.apiVersion}/work/performance/${user._id}`, {
-                            performance: [
-                                {
-                                    query:"add", 
-                                    seeds:totalSeeds
-                                }
-                            ]
-                        }, {
-                            headers: {
-                                authorization: credential._tokenResponse.idToken,
-                                user: user
-                            }
-                        })
-
-                        return {updateToGrowing, updateEmployeePerformance}
-                case 2: 
-                        const updateToReady = await api.api.post(`${api.apiVersion}/work/production/ready`,
-                        {
-                            workData: wd.production 
-                        }, 
-                        {
-                            headers: {
-                                authorization: credential._tokenResponse.idToken,
-                                user: user
-                            }
-                        })
-
-                        return {updateToReady}
-                default:
-                    break;
+            await api.api.patch(`${api.apiVersion}/work/production/${user.assignedContainer}`,
+            {
+                productionModelsIds:ids,
+            },
+            {
+                headers: {
+                    authorization: credential._tokenResponse.idToken,
+                    user: user
                 }
-                return
+            }
+            )
         }
             
         updateProduction()

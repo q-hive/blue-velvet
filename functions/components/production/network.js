@@ -38,27 +38,4 @@ router.post('/workday/:containerId', (req, res) => {
     })
 })
 
-
-router.patch('/:containerId/finishTask/:task')
-
-router.patch('/:containerId/', (req, res) => {
-    //*Update production models based on previous status to next status of production cycle or packing delivery cycle
-    //*Update orders if applies
-    //*return the updated models groupped by the same criteria of workday
-
-})
-
-// router.patch('/production/taskHistory', (req, res) => {
-//     console.log('REQUEST IN PRODUCTION')
-//     //*Update products and orders received in body based on status received in query param  
-//     updateOrgTasksHistory(res.locals.organization, req.body)
-//     .then((result) => {
-//         success(req, res, 200, "Task history updated succesfully", result)
-//     })
-//     .catch((err) => {
-//         error(req, res, 500, "Error updating products by production data", err, err)
-//     })
-// })
-
-
 export default router

@@ -1,6 +1,7 @@
 import Organization from '../../models/organization.js'
 import { mongoose } from '../../mongo.js'
 import { dateToArray, nextDay } from '../../utils/time.js'
+import { updateContainerById } from '../container/store.js'
 import { updateOrder } from '../orders/store.js'
 import { grouPProductionForWorkDay, scheduleTask } from './controller.js'
 
@@ -10,42 +11,74 @@ export const productionCycleObject = {
     "preSoaking": {
         "next":"soaking1",
         "hasBackGroundTask":false,
-        "requireNewDoc":true
+        "requireNewDoc":true,
+        "affectsCapacity":{
+            "affect":false,
+            "how":null
+        }
     },
     "soaking1":{
         "next":"soaking2",
         "hasBackGroundTask":true,
-        "requireNewDoc":true
+        "requireNewDoc":true,
+        "affectsCapacity":{
+            "affect":false,
+            "how":null
+        }
     },
     "soaking2":{
         "next":"seeding",
         "hasBackGroundTask":true,
-        "requireNewDoc":true
+        "requireNewDoc":true,
+        "affectsCapacity":{
+            "affect":false,
+            "how":null
+        }
     },
     "seeding":{
         "next":"growing",
         "hasBackGroundTask":false,
-        "requireNewDoc":true
+        "requireNewDoc":true,
+        "affectsCapacity":{
+            "affect":false,
+            "how":null
+        }
     },
     "growing":{
         "next":"harvestReady",
         "hasBackGroundTask":true,
-        "requireNewDoc":true
+        "requireNewDoc":true,
+        "affectsCapacity":{
+            "affect":true,
+            "how":"dec"
+        }
     },
     "harvestReady":{
         "next":"packing",
         "hasBackGroundTask":false,
-        "requireNewDoc":true
+        "requireNewDoc":true,
+        "affectsCapacity":{
+            "affect":false,
+            "how":null
+        }
     },
     "packing": {
         "next":"ready",
         "hasBackgroundTask":false,
-        "requireNewDoc":true
+        "requireNewDoc":true,
+        "affectsCapacity":{
+            "affect":true,
+            "how":"dec"
+        }
     },
     "ready": {
         "next":"onDelivery",
         "hasBackgroundTask":false,
-        "requireNewDoc":true
+        "requireNewDoc":true,
+        "affectsCapacity":{
+            "affect":false,
+            "how":null
+        }
     },
 }
 
@@ -62,6 +95,12 @@ export const getProductionInContainer = async (orgId, containerId) => {
             }
         )
         .then((doc) => {
+            if(!doc){
+                resolve([])
+                return
+            }
+            
+            
             const result = doc.containers[0]?.production
             if(!result){
                 resolve([])
@@ -131,6 +170,10 @@ export const updateOrdersInModels = async (updatedModels, orgId, container) => {
     
     await Promise.all(
         updatedModels.map(async(productionModel) => {
+            if(productionModel.ProductionStatus !== "packing" || productionModel.ProductionStatus !== "ready"){
+                return
+            }
+            
             const productionDB = await getProductionByOrderId(orgId, container, productionModel.RelatedOrder)
             
             const indexOfModelInDB = productionDB.findIndex((model) => model._id.equals(productionModel._id))
@@ -228,6 +271,12 @@ export const updateManyProductionModels = (orgId,container,productionIds) => {
 
                 if(productionCycleObject[productionStatus]?.hasBackGroundTask){
                     await scheduleTask({organization:orgId, container, production:newmodel, name:"updateForProduction"})
+                }
+
+                if(productionCycleObject[productionStatus]?.affectsCapacity.affect){
+
+                    console.log("El container must be updated")
+                    await updateContainerById(orgId, container, {query:"add",key:"available", value:-(Math.ceil(newmodel.trays))})
                 }
 
                 return op

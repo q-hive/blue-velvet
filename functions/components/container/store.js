@@ -95,7 +95,7 @@ export const updateContainerById = (orgId,id, edit) => {
             const parsedEddit = {
                 query: {
                     [getMongoQueryByObject(edit)]: {
-                        [edit.key]:edit.value
+                        [`containers.$.${edit.key}`]:edit.value
                     },
                 }
                 
@@ -103,11 +103,17 @@ export const updateContainerById = (orgId,id, edit) => {
             
             const queryOp = await orgModel.updateOne(
                 {
-                    "_id":orgId, 
-                    "containers._id":id
+                    "_id":mongoose.Types.ObjectId(orgId),
+                    "containers":{
+                        "$elemMatch": {
+                            "_id":mongoose.Types.ObjectId(id),
+                        }
+                    }
                 },
                 parsedEddit.query
             )
+
+            console.log(queryOp)
 
             resolve(queryOp)
         } catch(err) {

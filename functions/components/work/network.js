@@ -42,6 +42,16 @@ router.patch('/production/:container', (req, res) => {
     }
 })
 
+router.patch('/taskHistory', (req, res) => {
+    updateOrgTasksHistory(res.locals.organization, req.body)
+    .then((result) => {
+        success(req, res, 200, "Task history updated succesfully", result)
+    })
+    .catch((err) => {
+        error(req, res, 500, "Error updating products by production data", err, err)
+    })
+})
+
 //*Response with an object containing estimated times for all tasks, calculated from the total production that needs to be executed
 router.get('/time/:id', (req, res) => {
     getWorkTimeByEmployee(req, res)

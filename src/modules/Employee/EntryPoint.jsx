@@ -126,7 +126,8 @@ export const EntryPoint = () => {
         return ordersData.data
     }
     const getTimeEstimate = async () => {
-        const request = await api.api.get(`${api.apiVersion}/work/time/${user._id}?containerId=6386c9ebffa0b079a26de951`, {
+        console.log(user)
+        const request = await api.api.get(`${api.apiVersion}/work/time/${user._id}?containerId=${user.assignedContainer}`, {
             headers: {
                 authorization:  credential._tokenResponse.idToken,
                 user:           user
@@ -242,7 +243,7 @@ export const EntryPoint = () => {
             return JSON.parse(window.localStorage.getItem("workData"))
         }
         
-        const apiResponse = await api.api.get(`${api.apiVersion}/production/workday?containerId=6386c9ebffa0b079a26de951`,{
+        const apiResponse = await api.api.get(`${api.apiVersion}/production/workday?containerId=${user.assignedContainer}`,{
             headers:{
                 "authorization":    credential._tokenResponse.idToken,
                 "user":             user
@@ -309,11 +310,11 @@ export const EntryPoint = () => {
         let sTrue = workData.seeding?.length>0
         let hrTrue = workData.harvestReady?.length>0
 
-
-
-        let testingKeys =[] 
-
-        psTrue?testingKeys.push("preSoaking"):null
+        
+        
+        let testingKeys = [] 
+        
+        psTrue?testingKeys.push("preSoaking"):setWorkContext((wrk) => delete wrk.cicle['preSoaking'])
         sTrue?testingKeys.push("seeding"):null
         hrTrue?testingKeys.push("harvestReady"):null
 
@@ -387,6 +388,18 @@ export const EntryPoint = () => {
             getWorkData()
             .then((workData) => {
                 console.log("wd", workData)
+                let allOrders = []
+                Object.keys(workData).forEach((key) => {
+                    workData[key].forEach((modelInTask) => {
+                        modelInTask.relatedOrders.forEach((orderId) => allOrders.push(orderId))
+                    })
+                })
+
+                allOrders = Array.from(new Set(allOrders))
+
+                setOrders(allOrders)
+                
+                
                 let statusesArr = getActiveProductsStatuses2(workData);  //getActiveProductsStatuses(workData)
                     if(statusesArr.length!==0){
                         if(statusesArr.length == 1 && statusesArr[0]=="growing"){
@@ -399,7 +412,7 @@ export const EntryPoint = () => {
                             
                             navigate('./../tasks/work',
                                 {state: {
-                                orders: orders,
+                                orders: allOrders,
                                 workData: workData,
                                 cycleKeys:statusesArr,
                                 time: estimatedTime
@@ -508,9 +521,9 @@ export const EntryPoint = () => {
     useEffect(() => {
         const getData = async () => {
             try {
-                const orders = await getOrders()
+                // const orders = await getOrders()
                 const time = await getTimeEstimate()
-                return {orders, time}
+                return {time}
             } catch(err) {
                 setSnackState({open: true, label:"There was an error fetching the data, please reload the page.", severity:"error"})
                 console.log(err)
@@ -520,20 +533,20 @@ export const EntryPoint = () => {
         getTimeEstimate()
         checkTime()
         getData()
-        .then(({orders , time}) => {
+        .then(({time}) => {
             let indexes =[]
-            orders.data.forEach((order, idx) => {
-                order.status === "delivered"
-                ?
-                indexes.push(idx) 
-                :
-                null
-            })
+            // orders.data.forEach((order, idx) => {
+            //     order.status === "delivered"
+            //     ?
+            //     indexes.push(idx) 
+            //     :
+            //     null
+            // })
     
-            for (var i = indexes.length -1; i >= 0; i--){
-                orders.data.splice(indexes[i],1);
-            }
-            setOrders(orders.data)
+            // for (var i = indexes.length -1; i >= 0; i--){
+            //     orders.data.splice(indexes[i],1);
+            // }
+            // setOrders(orders.data)
             setEstimatedTime(time)
         })
         .catch((err) => {

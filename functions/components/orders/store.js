@@ -47,7 +47,6 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined, produ
                 if(filtered && filter){
                 
                     const {key, value} = filter
-                    console.log(filter)
                     if(value == "uncompleted" && key == "status") {
                         orgOrders = orgOrders.filter((order) => order.status != "delivered")
     
@@ -72,7 +71,14 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined, produ
                                 "orders -_id"
                             )
 
-                            orgOrders = orgOrders.orders.filter((order) => order[key] === value)
+                            if(key === "_id" && orgOrders !== null){
+                                orgOrders = orgOrders.orders.filter((order) => order[key].equals(value))
+                            }
+
+                            if(key !== "_id" && orgOrders !== null){
+                                orgOrders = orgOrders.orders.filter((order) => order[key] === value)
+                            }
+                            
                         }
                         
                     }
@@ -83,12 +89,12 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined, produ
                     return resolve(orgOrders)
                 }
                 
-                if(!Object.keys(req?.query).includes("production") && !Boolean(req.query?.production)){
-                    return resolve(orgOrders)
-                }
+                // if(!Object.keys(req?.query).includes("production") && !Boolean(req.query?.production)){
+                //     return resolve(orgOrders)
+                // }
 
                 if(!orgOrders) {
-                    return resolve(orgOrders)
+                    return resolve([])
                 }
                 
                 const mappedOrders = orgOrders.map((order, orderIndex) => {

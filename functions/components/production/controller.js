@@ -135,7 +135,7 @@ export const groupBy = (criteria, production, format, includeOrders = false) => 
                         ProductID,
                         ProductionStatus,
                         EstimatedStartDate,
-                        EstimatedStartDate,
+                        EstimatedHarvestDate,
                         seeds:0, 
                         trays:0, 
                         harvest:0,
@@ -264,13 +264,13 @@ export const getProductionWorkByContainerId = (req,res) => {
                 const productionGrouped = grouPProductionForWorkDay("status",production, requiredProductionFormat, false)
                 const times  = calculateTimeEstimation(grouPProductionForWorkDay("status",production, "array", false), true)
 
-                times.forEach((timeTask) => {
-                    if(productionGrouped[Object.keys(timeTask)[0]].length=== 0) {
-                        return
-                    }
+                // times.forEach((timeTask) => {
+                //     if(productionGrouped[Object.keys(timeTask)[0]].length=== 0) {
+                //         return
+                //     }
                     
-                    productionGrouped[Object.keys(timeTask)[0]].push({minutes:timeTask[Object.keys(timeTask)[0]].minutes})
-                })
+                //     productionGrouped[Object.keys(timeTask)[0]].push({minutes:timeTask[Object.keys(timeTask)[0]].minutes})
+                // })
                 
                 resolve(productionGrouped)
                 return

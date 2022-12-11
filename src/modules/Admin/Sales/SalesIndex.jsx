@@ -15,7 +15,7 @@ import { useNavigate } from 'react-router-dom'
 import api from '../../../axios.js'
 import useAuth from '../../../contextHooks/useAuthContext'
 
-import { getCustomerData } from '../../../CoreComponents/requests'
+import { getCustomerData, getOrdersData } from '../../../CoreComponents/requests'
 
 
 
@@ -24,15 +24,14 @@ export const SalesIndex = () => {
     const {user, credential} = useAuth()
     
     //*DATA STATES
-    const [orders, setOrders] = useState([])
-    const [loading, setLoading] = useState(false)
+    const [orders, setOrders] = useState({all:[], delivered:[], cancelled:[], recent:[]})
+    const [loading, setLoading] = useState(true)
     const [totalIncome, setTotalIncome] = useState(0)
 
     //*Netword and router
     const navigate = useNavigate()
     
     const handleNewOrder = () => {
-        console.log("Redirect user")
         navigate('new')
     }
     
@@ -53,8 +52,13 @@ export const SalesIndex = () => {
             credential:credential,
             setLoading:setLoading
         })
-        console.log("data STATES",orders,totalIncome)
-
+        getOrdersData({
+            setOrders:setOrders,
+            setTotalIncome:setTotalIncome,
+            user:user,
+            credential:credential,
+            setLoading:setLoading
+        })
         
     }, [])
   return (
@@ -132,7 +136,7 @@ export const SalesIndex = () => {
                         :   
                         <DataGrid
                             columns={recentSalesColumns}
-                            rows={orders}
+                            rows={orders.recent}
                             sx={{marginY:"2vh",}}
                         />
                     }      
@@ -153,7 +157,7 @@ export const SalesIndex = () => {
                         :   
                         <DataGrid
                             columns={deliveredSalesColumns}
-                            rows={orders}
+                            rows={orders.delivered}
                             sx={{marginY:"2vh",}}
                         />
                     }        
@@ -173,7 +177,7 @@ export const SalesIndex = () => {
                         :   
                         <DataGrid
                             columns={deliveredSalesColumns}
-                            rows={orders}
+                            rows={orders.cancelled}
                             sx={{marginY:"2vh",}}
                         />
                     }      
@@ -192,7 +196,7 @@ export const SalesIndex = () => {
                         :   
                         <DataGrid
                             columns={salesColumns}
-                            rows={orders}
+                            rows={orders.all}
                             sx={{marginY:"2vh",}}
                         />
                     }       
