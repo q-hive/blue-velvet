@@ -133,8 +133,8 @@ export const TaskContainer = (props) => {
         
 
         case "growing":
-            contentTitle = "Growing"
-            content = <Typography>The order is in growing status, please wait until the products are ready to harvest</Typography>
+            contentTitle = "Cycle finished"
+            content = <Typography>Go to dashboard and finish your work</Typography>
             steps=[{step:"Growing"}]
         break;
 
