@@ -76,8 +76,12 @@ export const Login = () => {
                     user.role = "employee"
                     setPersistence(getAuth(), browserSessionPersistence)
                     .then(() => {
+                        window.localStorage.clear()
+                        
                         setUser({...user, token})
+                        
                         window.localStorage.setItem('usermeta', JSON.stringify(user))
+                        
                         return signInWithCustomToken(getAuth(), token)
                     })
                     .then((Ucredential) => {
@@ -136,6 +140,7 @@ export const Login = () => {
                 const { cToken, user } = response.data.data
                 setPersistence(getAuth(), browserSessionPersistence)
                 .then(() => {
+                    window.localStorage.clear()
                     return signInWithCustomToken(getAuth(), cToken)
                 })
                 .then((Ucredential) => {

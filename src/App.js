@@ -17,7 +17,6 @@ import { WorkingContextWrapper } from './contexts/EmployeeContext.js'
 import { ErrorPage } from './CoreComponents/ErrorPage.jsx'
 
 export const App = () => {
-
   return (
     <Router history={history}>
         <ErrorBoundary FallbackComponent={ErrorPage}>
