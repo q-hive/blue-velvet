@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 
 //*MUI Components
     // import { DataGrid } from '@mui/x-data-grid'
-import { Box, Button, Fade, Stack, Typography } from '@mui/material'
+import { Box, Button, Fade, Stack, TextField, Typography } from '@mui/material'
 
 //*UTILS
 
@@ -60,6 +60,43 @@ export const SeedingContent = (props) => {
         return (
             <>
                 <Box sx={taskCard_sx}>
+                    <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+                        Check the unharvested fully grown trays and write down the amounts of trays that were
+                        produced too much. 
+                    </Typography>
+
+                    <br></br>
+                    
+                    <TextField label="Number of trays" type="number" />
+                        
+                </Box>
+
+            </>
+        );
+
+    if(props.index===1)
+        return (
+            <>
+                <Box sx={taskCard_sx}>
+                    <Typography variant="h4" align='center' color="secondary">
+                        Putting to the light
+                    </Typography>
+                    <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+                        Place the germinated Trays from the dark to the light-shelves. Highest germination level
+                        goes at top light level and vice-versa.
+                    </Typography>
+                </Box>
+
+            </>
+        );
+
+    if(props.index===2)
+        return (
+            <>
+                <Box sx={taskCard_sx}>
+                    <Typography variant="h4" align='center' color="primary">
+                        Seeding <br /><br/>
+                    </Typography>
                     <Typography variant="h4" align='center' color="secondary">
                         Gather what you need: <br /><br/>
                     </Typography>
@@ -95,7 +132,7 @@ export const SeedingContent = (props) => {
             </>
         );
 
-    if(props.index===1){
+    if(props.index===3){
         const getSeeds = (product) => {
             if(product.productionData === undefined){
                 return parseFloat(product.seeds/product.trays).toFixed(2)
@@ -136,7 +173,7 @@ export const SeedingContent = (props) => {
         )
     } 
 
-    if(props.index===2) 
+    if(props.index===4) 
     return (
         <>
             <Box sx={taskCard_sx}>

@@ -24,7 +24,7 @@ const taskCard_sx = {
 }
 
 
-export const PreSoakingContent = (props) => {
+export const PreSoakingContent2 = (props) => {
 
     const {user, credential} = useAuth()
     const [workProducts, setWorkProducts] = useState(props.workData /*.production.products*/)
@@ -50,7 +50,7 @@ export const PreSoakingContent = (props) => {
                         Gather what you need: <br /><br/>
                     </Typography>
                     <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                        {workProducts.length} buckets <br></br>Water
+                        Take the buckets of <br></br>
                     </Typography>
 
                     {
@@ -58,7 +58,7 @@ export const PreSoakingContent = (props) => {
                             workProducts.map((product,index)=>{
                                 return(
                                     <Typography key={index} variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                                        <b>{parseFloat(product?.seeds || 0).toFixed(2)}</b> grs of <b>{product?.ProductName || ''}</b> Seeds <br/>
+                                        {product?.ProductName}
                                     </Typography>
                             )})
                         ) 
@@ -66,7 +66,7 @@ export const PreSoakingContent = (props) => {
 
                     <Box sx={taskCard_sx}>
                         <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                            <strong>{workProducts.length === 0 ? ' At the moment there are no products that need to be soak. ' : 'Put the indicated amount of seeds in each bucket and wash it twice.'}</strong>
+                            <strong>{workProducts.length === 0 ? ' At the moment there are no products that need water change. ' : 'Change the water of seeds in each bucket and wash it.'}</strong>
                         </Typography>
                     </Box>
 

@@ -35,7 +35,7 @@ export const FullChamber = () => {
     const {state}= useLocation();
 
     //*DATA STATES
-    const {orders,workData,cycleKeys} = state
+    const {orders,workData, packs, deliverys ,cycleKeys} = state
 
     //*CONTEXTS
     const {user, credential} = useAuth()
@@ -55,7 +55,7 @@ export const FullChamber = () => {
         message:    "",
         actions:    []
     })
-    const [workdayProdData, setWorkdayProdData] = useState({})
+    const [workdayProdData, setWorkdayProdData] = useState(workData)
     
     //const [cycleKeys,setCycleKeys] = useState(["preSoaking"])
 
@@ -279,16 +279,17 @@ export const FullChamber = () => {
             })
     }, [WorkContext.current])
 
-    useEffect(()=>{
-        getWorkdayProdData({
-            user:user,
-            credential:credential,
-            setProdData:setWorkdayProdData,
-
-            
-        })
+    // useEffect(()=>{
+    //     getWorkdayProdData({
+    //         user:user,
+    //         credential:credential,
+    //         setProdData:setWorkdayProdData,
+    //     })
+    //     .then(() => {
+    //         console.log("Data obtained succesfully")
+    //     })
         
-    },[])
+    // },[])
 
     
     
@@ -325,7 +326,9 @@ export const FullChamber = () => {
                                 stepInList:index,
                                 updatePerformance: updateEmployeePerformance,
                                 setWorkContext: setWorkContext,
-                                products: workdayProdData[status]
+                                products: workdayProdData[status],
+                                packs: packs,
+                                deliverys: deliverys
                             })}
                     </Box>
                 </Fade> 

@@ -20,7 +20,13 @@ const taskPerformanceModel = {
 export const tasksCicleObj = {
     "cicle": {
         "preSoaking": {...taskPerformanceModel, name:"PreSoaking"},
-        "seeding": {...taskPerformanceModel, name:"Seeding"},
+        "soaking1": {...taskPerformanceModel, name:"PreSoaking"},
+        "soaking2": {...taskPerformanceModel, name:"PreSoaking"},
+        "harvestReady": {...taskPerformanceModel, name:"Harvest"},
+        "packing": {...taskPerformanceModel, name:"Packing"},
+        "ready": {...taskPerformanceModel, name:"Delivery"},
+        "seeding": {...taskPerformanceModel, name:"Waste and control"},
+        "growing": {...taskPerformanceModel, name:"Waste and control"},
         // "pre-soaking": {
         //     "name": "TaskName",
         //     "elapsed":null,
@@ -31,7 +37,6 @@ export const tasksCicleObj = {
         //     "breaks": "",
         // },
         //"growing":{...taskPerformanceModel, name:"Growing microgreens"},
-        "harvestReady": {...taskPerformanceModel, name:"Harvest"},
         // "harvested": {
         //    "name": "TaskName", 
         //    "expected": "", 

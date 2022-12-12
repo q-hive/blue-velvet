@@ -39,7 +39,7 @@ export const EntryPoint = () => {
     
     //*contexts
     const {user, credential} = useAuth()
-    const {TrackWorkModel, setTrackWorkModel,WorkContext ,setWorkContext, employeeIsWorking, setEmployeeIsWorking} = useWorkingContext() 
+    const {TrackWorkModel, setTrackWorkModel,WorkContext ,setWorkContext, employeeIsWorking, setEmployeeIsWorking, isOnTime, setIsOnTime} = useWorkingContext() 
     const navigate = useNavigate()
     
     //*DATA STATES
@@ -56,9 +56,6 @@ export const EntryPoint = () => {
     //*Snackbar
     const defaultSeverity = "warning" //default value to avoid warning.
     const [snackState, setSnackState] = useState({open:false,label:"",severity:defaultSeverity});
-
-    //*Time
-    const [isOnTime, setIsOnTime] = useState(false)
 
     const checkTime = () => {
         const today = new Date()
@@ -126,27 +123,39 @@ export const EntryPoint = () => {
         return ordersData.data
     }
     const getTimeEstimate = async () => {
-        console.log(user)
+
         const request = await api.api.get(`${api.apiVersion}/work/time/${user._id}?containerId=${user.assignedContainer}`, {
             headers: {
                 authorization:  credential._tokenResponse.idToken,
                 user:           user
             }
         })
-
-
-
-        let result={
+        let result = {
             times: {
                 preSoaking: {
+                    time:0
+                }, 
+                soaking1: {
+                    time:0
+                }, 
+                soaking2: {
                     time:0
                 }, 
                 harvest: {
                     time:0
                 }, 
+                packing: {
+                    time:0
+                },
+                ready: {
+                    time:0
+                },
                 seeding: {
                     time:0
-                }
+                },
+                growing: {
+                    time:0
+                },
             },
             total:0
         }
@@ -155,15 +164,11 @@ export const EntryPoint = () => {
         
         const sumTimes = () => {
             let arr = []
-            request.data.data.map((item,id)=>{
+            request.data.data.forEach((item,id)=>{
                 let status = Object.keys(item)[0]
-
                 arr.push(item[status].minutes)
-
             })
-
             return arr.reduce((a, b) => a + b, 0)
-
         } 
 
         let totalTime = sumTimes()
@@ -174,12 +179,27 @@ export const EntryPoint = () => {
                     preSoaking: {
                         time:request.data.data[0].preSoaking.minutes
                     }, 
-                    harvest: {
-                        time:request.data.data[5].harvestReady.minutes
+                    soaking1: {
+                        time:request.data.data[1].soaking1.minutes
                     }, 
+                    soaking1: {
+                        time:request.data.data[2].soaking2.minutes
+                    }, 
+                    harvest: {
+                        time:request.data.data[3].harvestReady.minutes
+                    }, 
+                    packing: {
+                        time:request.data.data[4].packing.minutes
+                    },
+                    ready: {
+                        time:request.data.data[5].ready.minutes
+                    },
                     seeding: {
-                        time:request.data.data[3].seeding.minutes
-                    }
+                        time:request.data.data[6].seeding.minutes
+                    }, 
+                    growing: {
+                        time:request.data.data[7].growing.minutes
+                    },
                 }, 
                 total:totalTime
             }
@@ -240,23 +260,38 @@ export const EntryPoint = () => {
     }
     const getWorkData = async ()=> {
         if(window.localStorage.getItem("workData")){
-            return JSON.parse(window.localStorage.getItem("workData"))
+            return {
+                workData: JSON.parse(window.localStorage.getItem("workData")),
+                packs: JSON.parse(window.localStorage.getItem("packs")),
+                deliverys: JSON.parse(window.localStorage.getItem("deliverys")),
+            }
         }
         
-        const apiResponse = await api.api.get(`${api.apiVersion}/production/workday?containerId=${user.assignedContainer}`,{
+        const production = await api.api.get(`${api.apiVersion}/production/workday?containerId=${user.assignedContainer}`,{
+            headers:{
+                "authorization":    credential._tokenResponse.idToken,
+                "user":             user
+            }
+        })
+        const packs = await api.api.get(`${api.apiVersion}/delivery/packs/orders`,{
             headers:{
                 "authorization":    credential._tokenResponse.idToken,
                 "user":             user
             }
         })
 
-        //setActiveStatusesArray(getActiveProductsStatuses(apiResponse.data.data))
 
+        const deliverys = await api.api.get(`${api.apiVersion}/delivery/routes/orders`,{
+            headers:{
+                "authorization":    credential._tokenResponse.idToken,
+                "user":             user
+            }
+        })
 
-        return apiResponse.data.data
+        return {workData:production.data.data, packs:packs.data.data, deliverys: deliverys.data.data}
     }
 
-    const setWorkingContext = (workDataModel) => {
+    const setWorkingContext = (workDataModel, packs, deliverys) => {
         //*Employee started working identification
         if(!employeeIsWorking){
             setEmployeeIsWorking(true)
@@ -269,6 +304,8 @@ export const EntryPoint = () => {
             
             //*Production data
             window.localStorage.setItem("workData", JSON.stringify(workDataModel))
+            window.localStorage.setItem("packs", JSON.stringify(workDataModel))
+            window.localStorage.setItem("deliverys", JSON.stringify(workDataModel))
             
 
             Object.keys(WorkContext.cicle).forEach((value,index) => {
@@ -311,12 +348,11 @@ export const EntryPoint = () => {
         let hrTrue = workData.harvestReady?.length>0
 
         
+        let testingKeys = Object.keys(workData) 
         
-        let testingKeys = [] 
-        
-        psTrue?testingKeys.push("preSoaking"):setWorkContext((wrk) => delete wrk.cicle['preSoaking'])
-        sTrue?testingKeys.push("seeding"):null
-        hrTrue?testingKeys.push("harvestReady"):null
+        // psTrue?testingKeys.push("preSoaking"):setWorkContext((wrk) => delete wrk.cicle['preSoaking'])
+        // sTrue?testingKeys.push("seeding"):null
+        // hrTrue?testingKeys.push("harvestReady"):null
 
         return testingKeys;
     }
@@ -360,15 +396,29 @@ export const EntryPoint = () => {
             setSnackState({open:true, label:"You already started working today, continue where you left", severity:"success"})
             setLoading({...loading, startWorkBtn:true})
             getWorkData()
-            .then((workData) => {
+            .then(({workData, packs, deliverys}) => {
+                let allOrders = []
+                Object.keys(workData).forEach((key) => {
+                    workData[key].forEach((modelInTask) => {
+                        modelInTask.relatedOrders.forEach((orderId) => allOrders.push(orderId))
+                    })
+                })
+
+                allOrders = Array.from(new Set(allOrders))
+
+                setOrders(allOrders)
+                
                 setTimeout(() => {
                     setLoading({...loading, startWorkBtn:false})
                     let statusesArr = getActiveProductsStatuses2(workData);
+                    console.log(statusesArr)
                     setSnackState({open:false})
                     navigate('./../tasks/work',
                         {state: {
-                            orders: orders,
+                            orders: allOrders,
                             workData: workData,
+                            packs: packs,
+                            deliverys: deliverys,
                             cycleKeys:statusesArr,
                             time: estimatedTime
                         }},
@@ -383,10 +433,10 @@ export const EntryPoint = () => {
             return
         }
         
-        if(isOnTime && !employeeIsWorking){
+        if(!employeeIsWorking){
             
             getWorkData()
-            .then((workData) => {
+            .then(({workData, packs, deliverys}) => {
                 console.log("wd", workData)
                 let allOrders = []
                 Object.keys(workData).forEach((key) => {
@@ -401,25 +451,21 @@ export const EntryPoint = () => {
                 
                 
                 let statusesArr = getActiveProductsStatuses2(workData);  //getActiveProductsStatuses(workData)
+                console.log(statusesArr)
                     if(statusesArr.length!==0){
-                        if(statusesArr.length == 1 && statusesArr[0]=="growing"){
-                            setSnackState({open:true,label:"There's nothing for you to do right now",severity:"success"})
-                        }
-                        else{
-                            setSnackState({open:false})
-                            //*Working context
-                            setWorkingContext(workData)
-                            
-                            navigate('./../tasks/work',
-                                {state: {
-                                orders: allOrders,
-                                workData: workData,
-                                cycleKeys:statusesArr,
-                                time: estimatedTime
-                                }}
-                            )
-
-                        }
+                        setSnackState({open:false})
+                        //*Working context
+                        setWorkingContext(workData)
+                        
+                        navigate('./../tasks/work',
+                            {state: {
+                            orders: allOrders,
+                            workData: workData,
+                            packs: packs,
+                            cycleKeys:statusesArr,
+                            time: estimatedTime
+                            }}
+                        )
                     }
                     else{
                         setSnackState({open:true,label:"There's nothing for you to do right now",severity:"success"})
@@ -436,13 +482,13 @@ export const EntryPoint = () => {
                     
         
 
-        if(!isOnTime) {
-            setSnackState({open:true,label:"You can't start working right now",severity:"error"})
-        }
+        // if(!isOnTime) {
+        //     setSnackState({open:true,label:"You can't start working right now",severity:"error"})
+        // }
 
-        if(!orders.length != 0){
-            setSnackState({open:true,label:"There is no work to do!",severity:"success"})
-        }
+        // if(!orders.length != 0){
+        //     setSnackState({open:true,label:"There is no work to do!",severity:"success"})
+        // }
     }
     
     const getKey = (status) => {
@@ -472,8 +518,8 @@ export const EntryPoint = () => {
         return productList;
     }
 
-    const allProducts = getAllProducts()
-    const allStatusesObj = filterByKey(allProducts,"status")
+    // const allProducts = getAllProducts()
+    // const allStatusesObj = filterByKey(allProducts,"status")
 
     function capitalize(word) {
         return(

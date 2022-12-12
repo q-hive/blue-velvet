@@ -35,24 +35,6 @@ export const productionCycleObject = {
             "how":null
         }
     },
-    "seeding":{
-        "next":"growing",
-        "hasBackGroundTask":false,
-        "requireNewDoc":true,
-        "affectsCapacity":{
-            "affect":false,
-            "how":null
-        }
-    },
-    "growing":{
-        "next":"harvestReady",
-        "hasBackGroundTask":true,
-        "requireNewDoc":true,
-        "affectsCapacity":{
-            "affect":true,
-            "how":"dec"
-        }
-    },
     "harvestReady":{
         "next":"packing",
         "hasBackGroundTask":false,
@@ -78,6 +60,24 @@ export const productionCycleObject = {
         "affectsCapacity":{
             "affect":false,
             "how":null
+        }
+    },
+    "seeding":{
+        "next":"growing",
+        "hasBackGroundTask":false,
+        "requireNewDoc":true,
+        "affectsCapacity":{
+            "affect":false,
+            "how":null
+        }
+    },
+    "growing":{
+        "next":"harvestReady",
+        "hasBackGroundTask":true,
+        "requireNewDoc":true,
+        "affectsCapacity":{
+            "affect":true,
+            "how":"dec"
         }
     },
 }

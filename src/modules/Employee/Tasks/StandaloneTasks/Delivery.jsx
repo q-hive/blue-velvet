@@ -331,7 +331,7 @@ export const DeliveryComponent = (props) => {
                                         height: 540
                                     }}>
                                         <Typography variant="h6" color="secondary">
-                                            Date: All time orders (even cancelled and delivered)  - TEST ONLY {//new Date().toString().split('T')[0]
+                                            All orders that are ready for delivery sorted by customer. {//new Date().toString().split('T')[0]
                                             }
                                         </Typography>
                                         

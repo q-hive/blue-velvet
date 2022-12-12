@@ -48,7 +48,9 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined, produ
                 
                     const {key, value} = filter
                     if(value == "uncompleted" && key == "status") {
-                        orgOrders = orgOrders.filter((order) => order.status != "delivered")
+                        orgOrders = orgOrders.filter((order) => {
+                            return (order.status != "delivered") && (order.status !== "cancelled")
+                        })
     
                         orgOrders.orders = orgOrders
                     } else {

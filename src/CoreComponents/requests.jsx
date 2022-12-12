@@ -192,8 +192,10 @@ export const getWorkdayProdData = async (props) => {
         }
     })
     .then((response) => {
+        console.log(response)
         setRows(response.data.data)
     })
+    .catch(err => console.log(err))
 
 }
 
@@ -249,7 +251,7 @@ export const getPackingProducts = async (props) => {
         }
     })
     .then(result => {
-        setRows(result.data)
+        setRows(result.data.data)
     })
     .catch(err => {
     

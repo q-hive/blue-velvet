@@ -1,7 +1,7 @@
 import Organization from '../../models/organization.js'
 import {mongoose} from '../../mongo.js'
 import { groupOrders, groupOrdersForDelivery, groupOrdersForPackaging } from '../orders/controller.js'
-import { getAllOrders, getOrderById } from '../orders/store.js'
+import { getAllOrders, getFilteredOrders, getOrderById } from '../orders/store.js'
 import { grouPProductionForWorkDay } from '../production/controller.js'
 import { getProductionByStatus } from '../production/store.js'
 
@@ -118,7 +118,7 @@ export const getDeliveryByDate = (date, orgId, container = undefined) => {
 
 export const getPackagingByOrders = async (orgId) => {
     console.log("Getting packages for all orders in DB")
-    const orders2 = await getAllOrders(orgId,undefined, false, false)
+    const orders2 = await getFilteredOrders(orgId,undefined, false, {"key":"status", "value":"uncompleted"})
     if(orders2.length >0) {
         const packages = buildPackagesFromOrders(orders2)
         console.log(packages)
@@ -129,7 +129,7 @@ export const getPackagingByOrders = async (orgId) => {
 }
 export const getDeliveryByOrders = async (orgId) => {
     console.log("Getting delivery data for all orders in DB")
-    const orders2 = await getAllOrders(orgId,undefined, false, false)
+    const orders2 = await getFilteredOrders(orgId,undefined, false, {"key":"status", "value":"uncompleted"})
     if(orders2.length >0) {
         const delivery = await buildDeliveryFromOrders(orders2)
         return delivery
