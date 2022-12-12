@@ -27,6 +27,8 @@ import { ArrowCircleRightOutlined } from '@mui/icons-material'
 import { CleaningContent } from '../ContainerTasks/CleaningContent'
 import { MatCutContent } from '../ContainerTasks/MatCutContent'
 import useWorkingContext from '../../../../contextHooks/useEmployeeContext'
+import { PreSoakingContent1 } from './PreSoakingContent1'
+import { PreSoakingContent2 } from './PreSoakingContent2'
 
 export const TaskContainer = (props) => {
     //*Variables declarations
@@ -43,19 +45,20 @@ export const TaskContainer = (props) => {
     const theme = useTheme(BV_THEME);
     
     const {user, credential} = useAuth()
-    const {WorkContext,TrackWorkModel,employeeIsWorking} = useWorkingContext()
+    const {WorkContext,TrackWorkModel,employeeIsWorking, isOnTime} = useWorkingContext()
     const {state} = useLocation();
 
     const [isFinished,setIsFinished] = useState(false)
     //* STEPPER
     const [activeStep, setActiveStep] = useState(0)
 
-    let type, order, products
+    let type, order, products, packs
 
     if(props != null){
         type=props.type
         order=props.order
         products=props.products
+        packs = props.packs
     }
     
     if(state != null){
@@ -87,22 +90,42 @@ export const TaskContainer = (props) => {
         //  break;
 
         case "preSoaking":
-            contentTitle = "Pre Soaking"
-            expectedtTime = 60*12//Math.ceil(state.time.times.seeding.time) 
+            contentTitle = "Soaking seeds"
+            expectedtTime = Math.ceil(state.time.times.preSoaking.time) 
             content = <PreSoakingContent products={products} productsObj={productsByNameObj} workData={state.workData["preSoaking"]} index={activeStep}/>
             steps=[
                 {step:"Pre Soak"},
             ]
         break;
 
+        case "soaking1":
+            contentTitle = "Soaking stage - 1"
+            expectedtTime = Math.ceil(state.time.times.preSoaking.time) 
+            content = <PreSoakingContent1 products={products} productsObj={productsByNameObj} workData={state.workData["preSoaking"]} index={activeStep}/>
+            steps=[
+                {step:"Water change 1"},
+            ]
+        break;
+
+        case "soaking2":
+            contentTitle = "Soaking stage - 2"
+            expectedtTime = Math.ceil(state.time.times.preSoaking.time) 
+            content = <PreSoakingContent2 products={products} productsObj={productsByNameObj} workData={state.workData["preSoaking"]} index={activeStep}/>
+            steps=[
+                {step:"Water change 2"},
+            ]
+        break;
+
         case "seeding":
-            contentTitle = "Seeding"
+            contentTitle = "Waste and control"
             expectedtTime = Math.ceil(state.time.times.seeding.time) 
             content = <SeedingContent products={products} productsObj={productsByNameObj} workData={state.workData["seeding"]} index={activeStep}/>
             steps=[
+                {step:"Waste and control"},
+                {step:"Putting to the light"},
                 {step:"Setup"},
+                {step:"Seeding"},
                 {step:"Spray Seeds"},
-                {step:"Shelf"},
             ]
         break;
 
@@ -141,7 +164,7 @@ export const TaskContainer = (props) => {
             expectedtTime = Number((0.5*totalPacks[0])).toFixed(2)
             */}
             expectedtTime = 3
-            content = <PackingContent index={activeStep} products={products}/>
+            content = <PackingContent index={activeStep} products={products} packs={packs}/>
             steps=[
                 {step:"Tools"},
                 {step:"Calibration"},
@@ -383,7 +406,7 @@ export const TaskContainer = (props) => {
                         variant="contained"
                         onClick={isLastStep(index) ? handleCompleteTask : handleNext}
                         sx={()=>({...BV_THEME.button.standard,mt: 1, mr: 1,})}
-                        disabled={isLastStep(index) && isFinished }
+                        disabled={(!isOnTime && isLastStep(index)) || (isLastStep(index) && isFinished)}
                         
                     >
                         {isLastStep(index) ? 'Finish Task' :'Continue'}
@@ -420,7 +443,7 @@ export const TaskContainer = (props) => {
                         variant="contained"
                         onClick={isLastStep(index) ? handleCompleteTask : handleNext}
                         sx={()=>({...BV_THEME.button.standard})}
-                        disabled={isLastStep(index) && isFinished }
+                        disabled={!isOnTime || (isLastStep(index) && isFinished) }
                         
                     >
                         {isLastStep(index) ? 'Finish Task' : 'Continue'}
@@ -498,7 +521,7 @@ export const TaskContainer = (props) => {
                 {/*Specific task instructions*/}
                 <Box sx={{ width:{xs:"100%",sm:"65%"}, display:"flex", flexDirection:"column", padding:"5%", alignItems:"center" }}>          
                     <Typography variant="h3" color="primary">{contentTitle}</Typography>
-                    <Typography>Expected time: {expectedtTime} Minutes</Typography>
+                    <Typography>Expected time: {type === "preSoaking" ? expectedtTime + ' for soaking seeds task plus ' + 12  + ' hours of soaking waiting time' : expectedtTime + ' Minutes'}</Typography>
                     <Timer contxt="task"/>
                     {content}
                     

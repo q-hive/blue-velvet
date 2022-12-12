@@ -261,7 +261,7 @@ export const getProductionWorkByContainerId = (req,res) => {
             
             //*If no production is returned then return empty array
             if(production.length >0){
-                const productionGrouped = grouPProductionForWorkDay("status",production, requiredProductionFormat, false)
+                const productionGrouped = grouPProductionForWorkDay("sttaus",production, requiredProductionFormat, false)
                 const times  = calculateTimeEstimation(grouPProductionForWorkDay("status",production, "array", false), true)
 
                 // times.forEach((timeTask) => {

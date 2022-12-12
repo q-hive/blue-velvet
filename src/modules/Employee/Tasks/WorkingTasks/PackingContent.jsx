@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 //*MUI Components
     // import { DataGrid } from '@mui/x-data-grid'
@@ -8,6 +8,7 @@ import { Box, Button, Fade, Typography } from '@mui/material'
 
 //THEME
 import { BV_THEME } from '../../../../theme/BV-theme'
+import { getPackingProducts } from '../../../../CoreComponents/requests'
 
 const taskCard_sx = {
     display:"flex",
@@ -19,10 +20,37 @@ const taskCard_sx = {
 }
 
 
-const packages = 3
 export const PackingContent = (props) => {
-    const products = props.products
+    let products = props.products
+    let packs = props.packs
+    let totalPacks = {"products":{"packages":{"small":0, "medium":0 ,"large":0}}}
+    if(packs?.length > 0) {
+        totalPacks = props.packs.reduce((current, past) => {
+            if(current && past){
+                let currentSmall = current[Object.keys(current)[0]].packages.small
+                let pastSmall = past[Object.keys(past)[0]].packages.small
     
+                let currentMedium = current[Object.keys(current)[0]].packages.medium
+                let pastMedium = past[Object.keys(past)[0]].packages.medium
+    
+                let currentLarge = current[Object.keys(current)[0]].packages.large
+                let pastLarge = past[Object.keys(past)[0]].packages.large
+                
+                return {
+                    "products": {
+                        "packages":{
+                            "small": currentSmall + pastSmall,
+                            "medium": currentMedium + pastMedium,
+                            "large": currentLarge + pastLarge,
+                        }
+                    }
+                    
+                }
+            }
+            
+        },{"products":{"packages":{"small":0, "medium":0 ,"large":0}}})
+    }
+
     if(props.index===0)
         return (<>
             <Box sx={taskCard_sx}>
@@ -32,13 +60,24 @@ export const PackingContent = (props) => {
                 
 
                 <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                     Dry-Products: 
-                     {products.map((product,index)=>{return(
-                        <b>{product.name}</b>)})}
+                     The following dry-Products: 
+                     <br></br>
+                     {
+                        products.length > 0 &&(
+                            products.map((product,index)=>{
+                                return(
+                                    <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+                                        {product.harvest} grs of {product.ProductName}
+                                    </Typography>
+                                )
+                            })
+                        ) 
+                    }
                      <br/> 
                      Scale <br/> 
-                     <b>{packages}</b> pre-labeled Packages <br/> 
-                     Box for packed Products <br/>
+                     <b>{totalPacks.products.packages.small}</b> pre-labeled small Packages <br/> 
+                     <b>{totalPacks.products.packages.medium}</b> pre-labeled medium Packages <br/> 
+                     Boxes for packed Products <br/>
                      Date-Stamp 
                 </Typography>
             </Box>
@@ -50,6 +89,11 @@ export const PackingContent = (props) => {
             <Box sx={taskCard_sx}>
                 <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
                     Place the empty <b>Package</b> on the <b>Scale</b> and tare it to 0. <br/><br/>
+                    
+                    
+                    <i>This process should be repeated for every size of packages, when small packages packing finished, repeat the process</i>  
+
+                    <br></br>
                     <i>This process should be repeated once in a while to ensure the scale's calibration</i>  
                 </Typography>
             </Box>
@@ -62,6 +106,40 @@ export const PackingContent = (props) => {
                 <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
                     Take a handful of product softly in your hand and let it fall into the package until it's reached the correct amount and close it.
                     <br/><br/>
+                    <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+                        Amount of products in grams: <br></br>
+                        {
+                            products.length > 0 && (
+                                products.map((product) => {
+                                    return (
+                                        <>
+                                            <b>{product.ProductName}: {product.harvest} grs</b> <br></br>    
+                                        </>
+                                    )
+                                })
+                            ) 
+                        
+                        }
+                    </Typography>
+
+                    <br></br>
+                    
+                    <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+                        Amount of products in packages: <br></br>
+                        {
+                            packs && packs.length > 0 && (
+                                packs.map((pack) => {
+                                    return (
+                                        <>
+                                            <b>{Object.keys(pack)[0]}:</b> <br></br>    
+                                            Small:{pack[Object.keys(pack)[0]].packages.small} <br></br>
+                                            Medium:{pack[Object.keys(pack)[0]].packages.medium} <br></br>
+                                        </>
+                                    )
+                                })
+                            )  
+                        }
+                    </Typography>
                     <b><i>Make sure there are no greens on the side of the container when closing</i></b>
                 </Typography>
             </Box>
