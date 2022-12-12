@@ -88,7 +88,7 @@ export const SalesIndex = () => {
                             New order
                         </Button>
                         <Typography>
-                            Orders' Total Income : ${totalIncome.toFixed(2)}
+                            Orders' Total Income : €{totalIncome.toFixed(2)}
                         </Typography>
                     </Box>
                     {/*
@@ -98,7 +98,7 @@ export const SalesIndex = () => {
                         :   
                         <DataGrid
                             columns={salesColumns}
-                            rows={orders}
+                            rows={orders}s
                             sx={{marginY:"2vh",}}
                         />
                     */}

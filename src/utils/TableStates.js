@@ -64,7 +64,7 @@ export const productsColumns = [
                                     {params.formattedValue.map((obj) => {
                                         return (
                                             <>
-                                            <Typography align="justify">Size {obj.packageSize}:  ${obj.amount} </Typography>
+                                            <Typography align="justify">Size {obj.packageSize}:  €{obj.amount} </Typography>
                                             <Divider sx={{maxWidth:"100%"}} /> 
                                             </>
                                             )})}
