@@ -24,6 +24,20 @@ export const PackingContent = (props) => {
     let products = props.products
     let packs = props.packs
     let totalPacks = {"products":{"packages":{"small":0, "medium":0 ,"large":0}}}
+    const getPackagesInGrams = (packagesObject) => {
+        let small =     25 * packagesObject["small"]
+        let medium =    80 * packagesObject["medium"]
+        let large =     1000 * packagesObject["large"]
+        let total = small + medium + large
+        
+        return {
+            "small":    small,
+            "medium":   medium,
+            "large":    large,
+            "total":    total
+        }
+    }
+    
     if(packs?.length > 0) {
         totalPacks = props.packs.reduce((current, past) => {
             if(current && past){
@@ -63,11 +77,13 @@ export const PackingContent = (props) => {
                      The following dry-Products: 
                      <br></br>
                      {
-                        products.length > 0 &&(
-                            products.map((product,index)=>{
+                        packs.length > 0 &&(
+                            packs.map((obj,index)=>{
+                                let productName = Object.keys(obj)[0]
+
                                 return(
                                     <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                                        {product.harvest} grs of {product.ProductName}
+                                        {getPackagesInGrams(obj[productName].packages).total} grs of {productName}
                                     </Typography>
                                 )
                             })
@@ -106,7 +122,7 @@ export const PackingContent = (props) => {
                 <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
                     Take a handful of product softly in your hand and let it fall into the package until it's reached the correct amount and close it.
                     <br/><br/>
-                    <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+                    {/* <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
                         Amount of products in grams: <br></br>
                         {
                             products.length > 0 && (
@@ -122,7 +138,7 @@ export const PackingContent = (props) => {
                         }
                     </Typography>
 
-                    <br></br>
+                    <br></br> */}
                     
                     <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
                         Amount of products in packages: <br></br>
