@@ -9,7 +9,17 @@ const router = express.Router()
  * @description receives the container id as a req.query and returns the following model based on the productions in container
  */
 router.get('/workday', (req, res) => {
-    getProductionWorkByContainerId(req,res)
+    getProductionWorkByContainerId(req,res,"workday")
+    .then((production) => {
+        success(req, res, 200, "Production work obtained succesfully", production)
+    })
+    .catch((err) => {
+        error(req, res, 500, "Error getting production work - GNERIC ERROR", err, err)
+    })
+})
+
+router.get('/byTask', (req, res) => {
+    getProductionWorkByContainerId(req,res,"tasks")
     .then((production) => {
         success(req, res, 200, "Production work obtained succesfully", production)
     })
