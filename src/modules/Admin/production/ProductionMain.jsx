@@ -132,13 +132,13 @@ export const ProductionMain = () => {
     }, [])
 
 
-    useEffect(()=>{
-        getGrowingProducts({
-            user:user,
-            credential:credential,
-            setProdData:setGrowingProducts,
-        })
-    },[])
+    // useEffect(()=>{
+        // getGrowingProducts({
+        //     user:user,
+        //     credential:credential,
+        //     setProdData:setGrowingProducts,
+        // })
+    // },[])
 
     console.log("growin products pm",growingProducts)
 
@@ -233,7 +233,7 @@ export const ProductionMain = () => {
                     </Box>
 
                     <Grid container maxWidth={"xl"} spacing={2} marginTop={2}>
-                        <Grid item xs={12} md={6} lg={4} >
+                        {/* <Grid item xs={12} md={6} lg={4} >
                             <Paper elevation={5} sx={{
                                                         padding: BV_THEME.spacing(2),
                                                         display: "flex",
@@ -260,10 +260,10 @@ export const ProductionMain = () => {
                                     
                                 }      
                             </Paper>
-                        </Grid>
+                        </Grid> */}
 
 
-                        <Grid item xs={12} md={6} lg={8} >
+                        <Grid item xs={12} md={6} lg={12} >
                             <Paper elevation={4} sx={{
                                                     padding: BV_THEME.spacing(2),
                                                     display: "flex",
