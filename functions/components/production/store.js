@@ -300,6 +300,8 @@ export const updateManyProductionModels = (orgId,container,productionIds) => {
 
 export const getProductionByStatus = (orgId, container, status) => {
     return new Promise((resolve, reject) => {
+        console.log(orgId,container)
+        
         orgModel.aggregate(
             [
                 {
@@ -331,6 +333,8 @@ export const getProductionByStatus = (orgId, container, status) => {
             ]
         )
         .then((result) => {
+            console.log(result)
+            
             const grouppedProd = grouPProductionForWorkDay("status",result[0].containers.production, "hash")
             resolve(grouppedProd)
         })
