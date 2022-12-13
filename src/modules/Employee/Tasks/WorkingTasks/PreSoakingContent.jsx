@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 
 //*MUI Components
     // import { DataGrid } from '@mui/x-data-grid'
-import { Box, Button, Fade, Stack, Typography } from '@mui/material'
+import { Box, Button, Fade, IconButton, Stack, Typography } from '@mui/material'
 
 //*UTILS
 
@@ -13,6 +13,8 @@ import api from "../../../../axios"
 import { BV_THEME } from '../../../../theme/BV-theme'
 import useAuth from '../../../../contextHooks/useAuthContext'
 import useWorkingContext from '../../../../contextHooks/useEmployeeContext';
+import { QuestionMark } from '@mui/icons-material'
+import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog'
 
 const taskCard_sx = {
     display:"flex",
@@ -28,6 +30,14 @@ export const PreSoakingContent = (props) => {
 
     const {user, credential} = useAuth()
     const [workProducts, setWorkProducts] = useState(props.workData /*.production.products*/)
+    const [dialog, setDialog] = useState({
+        open:false,
+        title:"",
+        content:"",
+        children:null,
+        actions:[{label:"Close", execute:()=> setDialog({...dialog, open:false})}]
+    })
+    
     const {TrackWorkModel} = useWorkingContext()
 
     function sumAllTrays() {
@@ -41,24 +51,46 @@ export const PreSoakingContent = (props) => {
         
         return trays;
       }
-
-    if(props.index===0)
-        return (
-            <>
-                <Box sx={taskCard_sx}>
+    
+    const handleHelpDialog = () => {
+        setDialog({
+            ...dialog,
+            open:true,
+            title:"Additonal information about Soaking task",
+            content:"No additional info.",
+            children:() => (
+                <>
                     <Typography variant="h4" align='center' color="secondary">
                         Gather what you need: <br /><br/>
                     </Typography>
                     <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
                         {workProducts.length} buckets <br></br>Water
                     </Typography>
+                </>
+            ) 
+        })
+    }
+      
+
+    if(props.index===0)
+        return (
+            <>
+                <Box sx={taskCard_sx}>
+                    {/* //*Show items needed for task */}
+                    {/* <Typography variant="h4" align='center' color="secondary">
+                        Gather what you need: <br /><br/>
+                    </Typography>
+                    <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+                        {workProducts.length} buckets <br></br>Water
+                    </Typography> */}
 
                     {
                         workProducts.length > 0 && (
                             workProducts.map((product,index)=>{
                                 return(
                                     <Typography key={index} variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                                        <b>{parseFloat(product?.seeds || 0).toFixed(2)}</b> grs of <b>{product?.ProductName || ''}</b> Seeds <br/>
+                                        <b>{parseFloat(product?.seeds/1000 || 0).toFixed(5)}</b> KG of <b>{product?.ProductName || ''}</b> Seeds <br/>
+                                        <br></br>
                                     </Typography>
                             )})
                         ) 
@@ -82,7 +114,14 @@ export const PreSoakingContent = (props) => {
 
 
                     
-                    
+                    <IconButton onClick={handleHelpDialog} >
+
+                        <QuestionMark/>
+
+                    </IconButton>
+
+                    <UserDialog dialog={dialog} setDialog={setDialog} open={dialog.open} title={dialog.title} content={dialog.content} actions={dialog.actions} children={dialog.children}/>
+
                 </Box>
 
             </>

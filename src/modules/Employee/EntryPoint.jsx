@@ -135,13 +135,13 @@ export const EntryPoint = () => {
                 preSoaking: {
                     time:0
                 }, 
-                soaking1: {
-                    time:0
-                }, 
-                soaking2: {
-                    time:0
-                }, 
-                harvest: {
+                // soaking1: {
+                //     time:0
+                // }, 
+                // soaking2: {
+                //     time:0
+                // }, 
+                harvestReady: {
                     time:0
                 }, 
                 packing: {
@@ -179,26 +179,26 @@ export const EntryPoint = () => {
                     preSoaking: {
                         time:request.data.data[0].preSoaking.minutes
                     }, 
-                    soaking1: {
-                        time:request.data.data[1].soaking1.minutes
-                    }, 
-                    soaking1: {
-                        time:request.data.data[2].soaking2.minutes
-                    }, 
-                    harvest: {
-                        time:request.data.data[3].harvestReady.minutes
+                    // soaking1: {
+                    //     time:request.data.data[1].soaking1.minutes
+                    // }, 
+                    // soaking1: {
+                    //     time:request.data.data[2].soaking2.minutes
+                    // }, 
+                    harvestReady: {
+                        time:request.data.data[1].harvestReady.minutes
                     }, 
                     packing: {
-                        time:request.data.data[4].packing.minutes
+                        time:request.data.data[2].packing.minutes
                     },
                     ready: {
-                        time:request.data.data[5].ready.minutes
+                        time:request.data.data[3].ready.minutes
                     },
                     seeding: {
-                        time:request.data.data[6].seeding.minutes
+                        time:request.data.data[4].seeding.minutes
                     }, 
                     growing: {
-                        time:request.data.data[7].growing.minutes
+                        time:request.data.data[5].growing.minutes
                     },
                 }, 
                 total:totalTime
@@ -537,7 +537,7 @@ export const EntryPoint = () => {
                     <Typography >
                         <i>Expected Time: {(getKey(status)==="seeding" || getKey(status)==="harvest") ? 
                             estimatedTime.times ? 
-                                estimatedTime.times[getKey(status)].time.toFixed(2) 
+                                estimatedTime.times[status].time.toFixed(2) 
                             : "getting" 
                         :getKey(status)==="pre Soaking" ? "12 hours ":"TBD"} </i>
                     </Typography>

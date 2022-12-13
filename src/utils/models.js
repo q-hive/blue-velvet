@@ -20,8 +20,6 @@ const taskPerformanceModel = {
 export const tasksCicleObj = {
     "cicle": {
         "preSoaking": {...taskPerformanceModel, name:"PreSoaking"},
-        "soaking1": {...taskPerformanceModel, name:"PreSoaking"},
-        "soaking2": {...taskPerformanceModel, name:"PreSoaking"},
         "harvestReady": {...taskPerformanceModel, name:"Harvest"},
         "packing": {...taskPerformanceModel, name:"Packing"},
         "ready": {...taskPerformanceModel, name:"Delivery"},

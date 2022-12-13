@@ -9,7 +9,7 @@ const orgModel = mongoose.model('organizations', Organization)
 
 export const productionCycleObject = {
     "preSoaking": {
-        "next":"soaking1",
+        "next":"seeding",
         "hasBackGroundTask":false,
         "requireNewDoc":true,
         "affectsCapacity":{
@@ -17,24 +17,24 @@ export const productionCycleObject = {
             "how":null
         }
     },
-    "soaking1":{
-        "next":"soaking2",
-        "hasBackGroundTask":true,
-        "requireNewDoc":true,
-        "affectsCapacity":{
-            "affect":false,
-            "how":null
-        }
-    },
-    "soaking2":{
-        "next":"seeding",
-        "hasBackGroundTask":true,
-        "requireNewDoc":true,
-        "affectsCapacity":{
-            "affect":false,
-            "how":null
-        }
-    },
+    // "soaking1":{
+    //     "next":"soaking2",
+    //     "hasBackGroundTask":true,
+    //     "requireNewDoc":true,
+    //     "affectsCapacity":{
+    //         "affect":false,
+    //         "how":null
+    //     }
+    // },
+    // "soaking2":{
+    //     "next":"seeding",
+    //     "hasBackGroundTask":true,
+    //     "requireNewDoc":true,
+    //     "affectsCapacity":{
+    //         "affect":false,
+    //         "how":null
+    //     }
+    // },
     "harvestReady":{
         "next":"packing",
         "hasBackGroundTask":false,
@@ -54,7 +54,7 @@ export const productionCycleObject = {
         }
     },
     "ready": {
-        "next":"onDelivery",
+        "next":"delivered",
         "hasBackgroundTask":false,
         "requireNewDoc":true,
         "affectsCapacity":{
@@ -73,7 +73,7 @@ export const productionCycleObject = {
     },
     "growing":{
         "next":"harvestReady",
-        "hasBackGroundTask":true,
+        "hasBackGroundTask":false,
         "requireNewDoc":true,
         "affectsCapacity":{
             "affect":true,
@@ -170,10 +170,7 @@ export const updateOrdersInModels = async (updatedModels, orgId, container) => {
     
     await Promise.all(
         updatedModels.map(async(productionModel) => {
-            if(productionModel.ProductionStatus !== "packing" || productionModel.ProductionStatus !== "ready"){
-                return
-            }
-            
+
             const productionDB = await getProductionByOrderId(orgId, container, productionModel.RelatedOrder)
             
             const indexOfModelInDB = productionDB.findIndex((model) => model._id.equals(productionModel._id))
@@ -201,7 +198,15 @@ export const updateOrdersInModels = async (updatedModels, orgId, container) => {
             //*Status in DB must be equal (packing)i n all production models related to the order before updating status
             await updateOrder(orgId, productionModel.RelatedOrder, bodyQuery.orders[productionModel.RelatedOrder.toString()])
             //*Add order to DB of packaging
-            await orgModel.updateOne({"_id":mongoose.Types.ObjectId(orgId), "$push":{"packaging": productionModel.RelatedOrder}})
+
+            // if(nonRepeatedStatus[0] === "packing"){
+            //     await orgModel.updateOne({"_id":mongoose.Types.ObjectId(orgId), "$push":{"packaging": productionModel.RelatedOrder}})
+            // }
+
+            // if(nonRepeatedStatus[0] === "ready"){
+            //     await orgModel.updateOne({"_id":mongoose.Types.ObjectId(orgId), "$push":{"dliveryReady": productionModel.RelatedOrder}})
+            //     await orgModel.updateOne({"_id":mongoose.Types.ObjectId(orgId), "$pull":{"packaging": productionModel.RelatedOrder}})
+            // }
             
         }).filter((elem) => elem != undefined)
     )

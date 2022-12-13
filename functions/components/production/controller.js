@@ -266,14 +266,13 @@ export const getProductionWorkByContainerId = (req,res) => {
             
             //*If no production is returned then return empty array
             if(production.length >0){
-                const productionGrouped = grouPProductionForWorkDay("sttaus",production, requiredProductionFormat, false)
+                const productionGrouped = grouPProductionForWorkDay("status",production, requiredProductionFormat, false)
                 const times  = calculateTimeEstimation(grouPProductionForWorkDay("status",production, "array", false), true)
 
                 // times.forEach((timeTask) => {
                 //     if(productionGrouped[Object.keys(timeTask)[0]].length=== 0) {
                 //         return
                 //     }
-                    
                 //     productionGrouped[Object.keys(timeTask)[0]].push({minutes:timeTask[Object.keys(timeTask)[0]].minutes})
                 // })
                 
@@ -327,7 +326,7 @@ export const buildProductionDataFromOrder = async (order, dbproducts) => {
                     
                     prod.mix = {isMix: true}
                     const mixProds = prodFound.toObject().mix.products
-                    
+
                     const mappedMixComposition = mixProds.map(async (mprod) => {
                         
                         const mixFound = dbproducts.find((fprod) => fprod._id.equals(mprod.strain)).toObject()
@@ -342,6 +341,7 @@ export const buildProductionDataFromOrder = async (order, dbproducts) => {
                             ProductionStatus:       getInitialStatus(mixFound),
                             RelatedOrder:           order._id,
                             EstimatedHarvestDate:   mixProductHarvestDate,
+                            EstimatedStartDate:     mixProductStartProductionDate,
                             ProductID:              mixFound._id,
                             harvest:                harvest * (mprod.amount/100),
                             seeds:                  harvest * (mixFound.parameters.seedingRate/mixFound.parameters.harvestRate),
@@ -352,9 +352,15 @@ export const buildProductionDataFromOrder = async (order, dbproducts) => {
                     })
     
                     await Promise.all(mappedMixComposition)
+                    .then((mappedMIx) => {
+                        prod.products = mappedMIx
+                        prod.productionData = mappedMIx.map((productOfMix) => {
+                            return productOfMix.productionData
+                        })
+                    })
+                    .catch(err =>  Promise.reject("Error mapping mix products to add production data"))
     
-                    prod.products = mappedMixComposition
-                    prod.productionData = mappedMixComposition.map((productOfMix) => productOfMix.productionData)
+
                     
                 } else {
                     prod.mix = {isMix: false}

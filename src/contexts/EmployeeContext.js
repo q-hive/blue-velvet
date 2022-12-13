@@ -7,7 +7,7 @@ const WorkingContextWrapper = ({children}) => {
     const [WorkContext, setWorkContext] = useState(JSON.parse(window.localStorage.getItem("WorkContext")) || tasksCicleObj)
     const [employeeIsWorking, setEmployeeIsWorking] = useState(JSON.parse(window.localStorage.getItem("isWorking")) || false)
      //*Time
-    const [isOnTime, setIsOnTime] = useState(false)
+    const [isOnTime, setIsOnTime] = useState(true)
 
     useEffect(() => {
         console.log("Change in WorkContext")

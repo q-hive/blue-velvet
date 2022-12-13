@@ -51,16 +51,17 @@ export const TaskContainer = (props) => {
     const [isFinished,setIsFinished] = useState(false)
     //* STEPPER
     const [activeStep, setActiveStep] = useState(0)
-
+    
     let type, order, products, packs
-
+    
     if(props != null){
         type=props.type
         order=props.order
         products=props.products
         packs = props.packs
     }
-    
+    const [isDisabled, setIsDisabled] = useState(state.workData[type].length<1)
+
     if(state != null){
         if(state.type != undefined  ){
             ({type} = state);
@@ -140,13 +141,13 @@ export const TaskContainer = (props) => {
 
         case "harvestReady":
             contentTitle = "Harvesting"
-            expectedtTime = Math.ceil(state.time.times.harvest.time)
+            expectedtTime = Math.ceil(state.time.times.harvestReady.time)
             content = <HarvestingContent products={products} index={activeStep}/>
             steps=[
                 {step:"Setup"},
                 {step:"Recolection"},
-                {step:"Dry Rack"},
-                {step:"Dry Station"},
+                // {step:"Dry Rack"},
+                // {step:"Dry Station"},
             ]
         break;
 
@@ -406,7 +407,7 @@ export const TaskContainer = (props) => {
                         variant="contained"
                         onClick={isLastStep(index) ? handleCompleteTask : handleNext}
                         sx={()=>({...BV_THEME.button.standard,mt: 1, mr: 1,})}
-                        disabled={(!isOnTime && isLastStep(index)) || (isLastStep(index) && isFinished)}
+                        disabled={(!isOnTime && isLastStep(index))|| (isLastStep(index) && isFinished)}
                         
                     >
                         {isLastStep(index) ? 'Finish Task' :'Continue'}
@@ -443,7 +444,7 @@ export const TaskContainer = (props) => {
                         variant="contained"
                         onClick={isLastStep(index) ? handleCompleteTask : handleNext}
                         sx={()=>({...BV_THEME.button.standard})}
-                        disabled={!isOnTime || (isLastStep(index) && isFinished) }
+                        disabled={(!isOnTime && isLastStep(index)) || (isLastStep(index) && isFinished) }
                         
                     >
                         {isLastStep(index) ? 'Finish Task' : 'Continue'}
@@ -466,6 +467,7 @@ export const TaskContainer = (props) => {
         setIsFinished(() => {
             return (WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved !== undefined) || WorkContext.cicle[Object.keys(WorkContext.cicle)[props.counter]]?.achieved !== undefined
         })
+
     },[])
   return (
     <div style={{}}>
@@ -521,7 +523,7 @@ export const TaskContainer = (props) => {
                 {/*Specific task instructions*/}
                 <Box sx={{ width:{xs:"100%",sm:"65%"}, display:"flex", flexDirection:"column", padding:"5%", alignItems:"center" }}>          
                     <Typography variant="h3" color="primary">{contentTitle}</Typography>
-                    <Typography>Expected time: {type === "preSoaking" ? expectedtTime + ' for soaking seeds task plus ' + 12  + ' hours of soaking waiting time' : expectedtTime + ' Minutes'}</Typography>
+                    <Typography>Expected time: {type === "preSoaking" ? expectedtTime + ` ${expectedtTime > 1 ? 'minutes' : 'minute'}` + ' for soaking seeds task plus ' + 6 + ' hours of soaking waiting time' : expectedtTime + ' Minutes'}</Typography>
                     <Timer contxt="task"/>
                     {content}
                     

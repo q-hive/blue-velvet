@@ -67,7 +67,32 @@ export const SeedingContent = (props) => {
 
                     <br></br>
                     
-                    <TextField label="Number of trays" type="number" />
+                    {
+                        workProducts.length > 0 && (
+                            workProducts.map((Product) => {
+                               return (
+                                   <>
+                                       <Typography variant='h5' align="center" color={BV_THEME.textColor.lightGray}>
+                                           <b>
+                                               {Product.ProductName}:
+                                           </b>
+                                       </Typography>
+                                       <TextField label="Number of trays" type="number" />
+                                       <br></br>
+                                   </>
+                               )
+                           })
+                        )
+                    }
+
+                    {
+                        workProducts.length < 1 && (
+
+                            <Typography>No products available to show waste control inputs.</Typography>
+                            
+                        )
+
+                    }
                         
                 </Box>
 
