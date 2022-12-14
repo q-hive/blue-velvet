@@ -88,3 +88,37 @@ export const getEmployeesWithAggregation = (orgId, aggregationObject) => {
         }
     })
 }
+
+export const updateEmployee = (orgId,id,queryObj) => {
+    return new Promise(async (resolve, reject) => {
+        
+        let result = {}
+
+        try {
+            if(Object.keys(queryObj)[0] === "workDay"){
+                result = await orgModel.updateOne(
+                    {
+                        "_id":mongoose.Types.ObjectId(orgId),
+                        "employees": {
+                            "$elemMatch": {
+                                "_id":mongoose.Types.ObjectId(id)
+                            }
+                        }
+                    }, 
+                    {
+                        "$set": {
+                            "employees.$[emp].workDay":queryObj.workDay
+                        }
+                    },
+                    {
+                        "arrayFilters":[{"emp._id":mongoose.Types.ObjectId(id)}]
+                    }
+                )
+            }
+        } catch (err) {
+            reject(err)     
+        }
+
+        resolve(result)
+    })
+}

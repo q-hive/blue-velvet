@@ -134,6 +134,10 @@ export const groupBy = (criteria, production, format, includeOrders = false, inc
                         //*Ignore production status growing for production workday frontend
                         continue
                     }
+                    if(ProductionStatus === "onDelivery") {
+                        //*Ignore production status growing for production workday frontend
+                        continue
+                    }
                     
                     if(!hashDates[ProductName][ProductionStatus]){
                         hashDates[ProductName][ProductionStatus] = {

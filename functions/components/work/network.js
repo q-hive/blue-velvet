@@ -2,7 +2,7 @@ import express from 'express'
 import { error, success } from '../../network/response.js'
 import { updateProductionToNextStatus } from '../production/controller.js'
 import { validateBodyNotEmpty } from '../security/secureHelpers.js'
-import {getProductionWorkById, getWorkTimeByEmployee, parseProduction, setPerformance, updateOrgTasksHistory, updatePerformance} from './controller.js'
+import {getProductionWorkById, getWorkTimeByEmployee, parseProduction, setPerformance, updateOrgTasksHistory, updatePerformance, updateWorkDayForEmployee} from './controller.js'
 
 
 const router = express.Router()
@@ -40,6 +40,18 @@ router.patch('/production/:container', (req, res) => {
             error(req, res, 500, "Error updating the production", err, err)
         })
     }
+})
+router.patch('/workday/:employeeId/:containerId', (req, res) => {
+    // const validBody = validateBodyNotEmpty(req, res)
+    updateWorkDayForEmployee(req, res, false)
+    .then((result) => {
+        success(req, res, 200, `Updated workday for employee: ${req.params.employeeId}`, result)
+    })
+    .catch(err => {
+        error(req, res, 500, "Error updating the employee workday", err, err)
+    })
+    // if(!validBody){
+    // }
 })
 
 router.patch('/taskHistory', (req, res) => {

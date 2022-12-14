@@ -251,7 +251,7 @@ export const updateManyProductionModels = (orgId,container,productionIds) => {
                 const op = await orgModel.updateOne(
                     {
                         "_id":mongoose.Types.ObjectId(orgId),
-                        "containers":{
+                        "ocntainers":{
                             "$elemMatch": {
                                 "_id":mongoose.Types.ObjectId(container),
                                 "production":{

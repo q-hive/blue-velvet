@@ -16,7 +16,8 @@ import api from "../../../axios"
 import { BV_THEME } from '../../../theme/BV-theme';
 import { DataGrid , GridRowsProp} from '@mui/x-data-grid';
 import { adminDashboardEmployees } from '../../../utils/TableStates';
-
+import {tasksCicleObj} from '../../../utils/models.js'
+import { getKey } from '../../../utils/getDisplayKeyByStatus';
 
 export const Dashboard = () => {
     const {user,credential} = useAuth()
@@ -61,28 +62,58 @@ export const Dashboard = () => {
     }
 
     const getEmployees = async () => {
-        const employeesPerformance = await api.api.get(`${api.apiVersion}/employees/analytics/performance`, {
+        const employeesPerformance = await api.api.get(`${api.apiVersion}/employees/analytics/workday`, {
             headers:{
                 "authorization":    credential._tokenResponse.idToken,
                 "user":             user
             }
         })
 
-        console.log(employeesPerformance)
-        return employeesPerformance.data.data.employees
+        return employeesPerformance.data.data
     }
 
     const mapEmployeesData = (employees) => {
         let array = []
         if(Array.isArray(employees)){
             array = employees.map((data) => {
-                return {name:data.name, level:data.performance.level, _id:data._id}
             })
 
             return array
         }
 
         throw "Function for mapping employees data is not receiving an array"
+    }
+
+    function displayTaskCards (){
+        return(
+            <>
+                {
+                    employeesPerformanceRows.map((employee, index) => {
+                        return employee.workDay.map((workData, idx) => {
+                            return(
+                                <>
+                                    <Paper key={idx} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
+                                        <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
+                                            <Typography >
+                                                <b>Task: {getKey(Object.keys(workData)[0])}</b>
+                                            </Typography>
+                                            <Typography >
+                                                <i>Expected Time: {workData.time.minutes} </i>
+                                            </Typography>
+                                            <Typography >
+                                                <i>Employee: {employee.name} </i>
+                                            </Typography>
+                                        </Box>  
+                                    </Paper>
+                                </>
+                            )        
+                        })
+                        
+                    })
+                }
+            </>
+            
+        )    
     }
     
     useEffect(() => {
@@ -91,8 +122,8 @@ export const Dashboard = () => {
                 const containers2 = await getContainers()
                 const employeesData = await getEmployees()
 
-                const mappedEmployees = mapEmployeesData(employeesData)
-                return {containers2, mappedEmployees}
+                // const mappedEmployees = mapEmployeesData(employeesData)
+                return {containers2, employeesData}
             } catch(err) {
                 console.log(err)
                 throw "There was an error trying to get data for dashboard"
@@ -102,7 +133,7 @@ export const Dashboard = () => {
         getData()
         .then((response)=>{
             setContainers(response.containers2)
-            setEmployeesPerformanceRows(response.mappedEmployees)
+            setEmployeesPerformanceRows(response.employeesData)
         })
         .catch((err) =>{
             console.log(err)
@@ -198,8 +229,8 @@ export const Dashboard = () => {
                                 backgroundColor:BV_THEME.palette.primary.main,
                                 color:"white"
                             }}}>
-                            <Typography variant="h6" color="secondary.dark">Employee level</Typography>
-                            
+                            <Typography variant="h6" color="secondary.dark">Employees tasks</Typography>
+                            {displayTaskCards()}
                             
                         </Paper>
                     </Grid>

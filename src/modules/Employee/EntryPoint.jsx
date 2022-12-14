@@ -14,7 +14,8 @@ import { BV_THEME } from '../../theme/BV-theme'
 import { useNavigate } from 'react-router-dom'
 import api from '../../axios.js'
 import { formatTime } from '../../CoreComponents/Timer'
-import { getWorkdayProdData } from '../../CoreComponents/requests'
+import { finishWorkDayInDb, getWorkdayProdData, updateEmployeeWorkDay } from '../../CoreComponents/requests'
+import { getKey } from '../../utils/getDisplayKeyByStatus'
 
 //*UNUSED
 // import { Add } from '@mui/icons-material'
@@ -387,8 +388,15 @@ export const EntryPoint = () => {
             setEmployeeIsWorking(JSON.parse(localStorage.getItem("isWorking")))
             //*Delete from localStorage since journal has been ended.
             window.localStorage.removeItem("TrackWorkModel")
+
+            finishWorkDayInDb({user, credential})
+            .then(() => {
+                setSnackState({open:true,label:"Your work has been ended today",severity:"warning"})
+            })
+            .catch(err => {
+                setSnackState({open:true,label:"Something went wrong, please try again",severity:"error"})
+            })
             
-            setSnackState({open:true,label:"Your work has been ended today",severity:"warning"})
             return
         }
         
@@ -437,7 +445,11 @@ export const EntryPoint = () => {
             
             getWorkData()
             .then(({workData, packs, deliverys}) => {
-                console.log("wd", workData)
+                let statusesArr = getActiveProductsStatuses2(workData);  //getActiveProductsStatuses(workData)
+                if(statusesArr.length === 0){
+                    setSnackState({open:true,label:"There's nothing for you to do right now",severity:"success"})
+                }
+                
                 let allOrders = []
                 Object.keys(workData).forEach((key) => {
                     workData[key].forEach((modelInTask) => {
@@ -445,32 +457,32 @@ export const EntryPoint = () => {
                     })
                 })
 
-                allOrders = Array.from(new Set(allOrders))
+                updateEmployeeWorkDay({user, credential, workData})
+                .then((updated) => {
+                    allOrders = Array.from(new Set(allOrders))
+    
+                    setOrders(allOrders)
+                    
+                    setSnackState({open:false})
+                    //*Working context
+                    setWorkingContext(workData)
+                    
+                    navigate('./../tasks/work',
+                        {state: {
+                        orders: allOrders,
+                        workData: workData,
+                        packs: packs,
+                        cycleKeys:statusesArr,
+                        time: estimatedTime
+                        }}
+                    )
+                })
+                .catch(err => {
+                    setLoading({...loading, startWorkBtn:true})
+                    setSnackState({open:true, label:"There was an error. Reload the page.", severity:"error"})    
+                })
+                
 
-                setOrders(allOrders)
-                
-                
-                let statusesArr = getActiveProductsStatuses2(workData);  //getActiveProductsStatuses(workData)
-                console.log(statusesArr)
-                    if(statusesArr.length!==0){
-                        setSnackState({open:false})
-                        //*Working context
-                        setWorkingContext(workData)
-                        
-                        navigate('./../tasks/work',
-                            {state: {
-                            orders: allOrders,
-                            workData: workData,
-                            packs: packs,
-                            cycleKeys:statusesArr,
-                            time: estimatedTime
-                            }}
-                        )
-                    }
-                    else{
-                        setSnackState({open:true,label:"There's nothing for you to do right now",severity:"success"})
-   
-                    }
             })
             .catch(err => {
                 console.log(err)
@@ -491,21 +503,22 @@ export const EntryPoint = () => {
         // }
     }
     
-    const getKey = (status) => {
-        const dflt = "seeding"
+    // const getKey = (status) => {
+    //     const dflt = "seeding"
         
-        const statusObj = {
-            "preSoaking":"pre Soaking",
-            "seeding":"seeding",
-            "harvestReady": "harvest",
-            "mats":"cut Mats",
-            "growing":"growing",
-            "cleaning":"cleaning",
-            "ready":"delivery"
-        }
+    //     const statusObj = {
+    //         "preSoaking":"Soaking",
+    //         "seeding":"seeding",
+    //         "harvestReady": "harvest",
+    //         "mats":"cut Mats",
+    //         "growing":"growing",
+    //         "cleaning":"cleaning",
+    //         "packing":"packing",
+    //         "ready":"delivery"
+    //     }
 
-        return statusObj[`${status?? dflt}`]
-    }
+    //     return statusObj[`${status?? dflt}`]
+    // }
 
     function getAllProducts(){
         var productList = []

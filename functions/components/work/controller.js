@@ -7,7 +7,8 @@ import { updateOrder } from '../orders/store.js'
 import { getProductById, updateProduct } from '../products/store.js'
 import { getProductionInContainer } from '../production/store.js'
 
-import { grouPProductionForWorkDay } from '../production/controller.js'
+import { getProductionWorkByContainerId, grouPProductionForWorkDay } from '../production/controller.js'
+import { updateEmployee } from '../employees/store.js'
 
 const orgModel = mongoose.model('organization', Organization)
 
@@ -67,6 +68,31 @@ export const updatePerformance = (orgId, id, array) => {
     })
 }
 
+export const updateWorkDayForEmployee = (req, res, isTask) => {
+    return new Promise(async (resolve, reject) => {
+        if(isTask){
+            console.log("Task will be added to employee workday")
+            resolve()
+        }
+
+        req.query.containerId = req.params.containerId
+        let production = {}
+        if(req.query.delete === undefined){
+            production = await getProductionWorkByContainerId(req, res, "workday")
+        }
+
+        try {
+           const result =  await updateEmployee(res.locals.organization,req.params.employeeId,{"workDay":production})
+           console.log(result)
+           
+        } catch (err) {
+            reject(err)
+        }
+        
+        resolve("Updated")
+    })
+}
+
 export const statusRequiredParameters = () => {
     return {
         "preSoaking":   "trays",
@@ -83,6 +109,7 @@ export const calculateTimeEstimation = (totalProduction, isGroupped = false) => 
         "seeding":      2.2,
         "growing":      0,
         "harvestReady": 2,
+        "ready":        3,
         "packing":      2,
         "delivery":     3
     }
@@ -91,7 +118,7 @@ export const calculateTimeEstimation = (totalProduction, isGroupped = false) => 
     if(isGroupped) {
         productionGroupedByStatus = totalProduction    
     } else {
-        productionGroupedByStatus = grouPProductionForWorkDay("status",totalProduction, "array", false)
+        productionGroupedByStatus = grouPProductionForWorkDay("status",totalProduction, "array", false, false)
     }
 
     const parametersByStatus = statusRequiredParameters()

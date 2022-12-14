@@ -257,3 +257,40 @@ export const getPackingProducts = async (props) => {
     
     })
 }
+
+export const updateEmployeeWorkDay = async (props) => {
+    let user = props.user
+    let credential = props.credential
+
+    await api.api.patch(`${api.apiVersion}/work/workday/${user._id}/${user.assignedContainer}`, {} ,{
+        headers: {
+            authorization:  credential._tokenResponse.idToken,
+            user:           user
+        }
+    })
+    .then(result => {
+        return result.data.success
+    })
+    .catch(err => {
+        Promise.reject(err)
+    })
+
+}
+export const finishWorkDayInDb = async (props) => {
+    let user = props.user
+    let credential = props.credential
+
+    await api.api.patch(`${api.apiVersion}/work/workday/${user._id}/${user.assignedContainer}?delete=true`,{},{
+        headers: {
+            authorization:  credential._tokenResponse.idToken,
+            user:           user
+        }
+    })
+    .then(result => {
+        return result.data.success
+    })
+    .catch(err => {
+        Promise.reject(err)
+    })
+
+}

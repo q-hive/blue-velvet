@@ -5,8 +5,9 @@ import adminAuth from '../../firebaseAdmin.js'
 import {mongoose} from '../../mongo.js'
 import Organization from "../../models/organization.js";
 import { deleteFromFirebase } from "../admin/store.js";
-import { deleteEmployeeFromDB, getEmployeeById } from "./store.js";
+import { deleteEmployeeFromDB, getEmployeeById, getEmployeesWithAggregation } from "./store.js";
 import { getEmployeesPerformance } from "./controller.js";
+import { calculateTimeEstimation } from "../work/controller.js";
 
 const orgModel = mongoose.model('organizations', Organization)
 
@@ -41,7 +42,32 @@ router.get('/analytics/performance', (req, res) => {
         error(req, res, 500, "Error getting employees performance", err, err)
     })
 })
+router.get('/analytics/workday', (req, res) => {
+    getEmployeesWithAggregation(res.locals.organization, {"employees":{"_id":true,"workDay":true, "name":true}})
+    .then(data => {
+        calculateTimeEstimation
+        const mappedData = data.employees.map((employee) => {
+            if(employee.workDay === undefined || Object.keys(employee.workDay).length === 0) {
+                return {name:employee.name, _id:employee._id, workDay:[]}
+            }
+            
+            const times = calculateTimeEstimation(employee.workDay, true)
 
+            employee.workDay.forEach((task) => {
+                const foundTime = times.find((element) => Object.keys(element)[0] === Object.keys(task)[0])       
+
+                task.time = {minutes: foundTime[Object.keys(task)[0]].minutes}
+            })
+            
+            return employee
+        })
+        
+        success(req, res, 200, "Employees performance obtained succesfully", mappedData)
+    })
+    .catch(err => {
+        error(req, res, 500, "Error getting employees performance", err, err)
+    })
+})
 
 router.delete('/:id', (req, res) => {
     orgModel.find(

@@ -202,8 +202,11 @@ const BV_Layout = (props) => {
                           src={Logo}
                         />
                       </Box>
+
                       
                       <Clock color="secondary.dark"/> 
+
+                      <Typography color="secondary.dark" variant="h6" flexGrow={0}>Container: {user.assignedContainer}</Typography>  
                       
                       <IconButton
                         size="large" edge={false}
