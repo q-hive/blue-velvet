@@ -73,7 +73,7 @@ export const productionCycleObject = {
     },
     "growing":{
         "next":"harvestReady",
-        "hasBackGroundTask":false,
+        "hasBackGroundTask":true,
         "requireNewDoc":true,
         "affectsCapacity":{
             "affect":true,

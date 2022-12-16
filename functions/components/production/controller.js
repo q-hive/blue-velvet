@@ -513,7 +513,8 @@ export const getEstimatedHarvestDate = async (startDate,product, orgId, containe
         const lightTime = productRef.parameters.day
         const darkTime = productRef.parameters.night
         // const estimatedProductionStartDate = new Date(orderDate).getTime() - (((((lightTime*24)*60)*60)*1000) + ((((darkTime*24)*60)*60)*1000))
-        const estimatedTime = startDate.getTime() + (((((lightTime*24)*60)*60)*1000) + ((((darkTime*24)*60)*60)*1000))
+        // const estimatedTime = startDate.getTime() + (((((lightTime*24)*60)*60)*1000) + ((((darkTime*24)*60)*60)*1000))
+        const estimatedTime = startDate.getTime() + (24*60*60*1000)
         const estimatedDate = new Date(estimatedTime)  
 
         estimatedDate.setHours(4,0,0)  

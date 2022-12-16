@@ -57,7 +57,7 @@ router.patch('/workday/:employeeId/:containerId', (req, res) => {
 router.patch('/taskHistory', (req, res) => {
     updateOrgTasksHistory(res.locals.organization, req.body)
     .then((result) => {
-        updateWorkDayForEmployee(req, res, true)
+        updateWorkDayForEmployee(req, res, true, "achievedTime")
         .then(() => {
             success(req, res, 200, "Task history updated succesfully", result)
         })
