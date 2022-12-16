@@ -1,4 +1,4 @@
-import { calculateTimeEstimation } from "../work/controller.js"
+import { buildTaskFromProductionAccumulated, calculateTimeEstimation } from "../work/controller.js"
 import { getPosibleStatusesForProduction, getProductionInContainer, insertWorkDayProductionModel, productionCycleObject, updateManyProductionModels } from "./store.js"
 import nodeschedule from 'node-schedule'
 import { getAllProducts, getProductById } from "../products/store.js"
@@ -303,6 +303,36 @@ export const grouPProductionForWorkDay = (criteria,production, format, includePa
         throw new Error("Error in object analyser - groupBy")        
     }
 }
+export const grouPProductionForAnalytics = (criteria,production,format) => {
+    try {
+        let workDayObj = {
+        }
+        
+        
+        
+        const tasks = production.map((objTask) => {
+            const task = Object.keys(objTask)[0]
+
+            const taskBuildedFromProductionData = buildTaskFromProductionAccumulated(task , objTask[task])
+
+            return taskBuildedFromProductionData
+        })
+
+        if(format == "hash") {
+            tasks.forEach((task) => {
+                const key = Object.keys(task)[0]
+    
+                workDayObj[key] = task[key]
+            })
+
+            return workDayObj
+        }
+        return tasks
+    } catch (err) {
+        console.log(err)
+        throw new Error("Error in object analyser - groupBy")        
+    }
+}
 
 //*Production workdays
 export const getProductionTotal = (req, res) => {
@@ -324,6 +354,15 @@ export const getProductionWorkByContainerId = (req,res, criteria) => {
             const productionInContainer = await getProductionInContainer(res.locals.organization, req.query.containerId)
 
             const productionGroupped = grouPProductionForWorkDay("status", productionInContainer, requiredProductionFormat, false, true, products)
+
+            resolve(productionGroupped)
+            return
+        }
+
+        if(criteria === "employee"){
+            const productionInContainer = await getProductionInContainer(res.locals.organization, req.query.containerId)
+
+            const productionGroupped = grouPProductionForWorkDay("status", productionInContainer, requiredProductionFormat, false)
 
             resolve(productionGroupped)
             return

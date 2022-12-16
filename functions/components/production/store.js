@@ -217,7 +217,7 @@ export const updateOrdersInModels = async (updatedModels, orgId, container) => {
 
 export const updateManyProductionModels = (orgId,container,productionIds) => {
     return new Promise((resolve, reject) => {
-        console.log("Updating production models")
+        console.log("Updating production models in " + container +  " container")
         
         const queryUpdateById = productionIds.map(async (id) => {
             const productionModel = await orgModel.findOne({
@@ -251,7 +251,7 @@ export const updateManyProductionModels = (orgId,container,productionIds) => {
                 const op = await orgModel.updateOne(
                     {
                         "_id":mongoose.Types.ObjectId(orgId),
-                        "ocntainers":{
+                        "containers":{
                             "$elemMatch": {
                                 "_id":mongoose.Types.ObjectId(container),
                                 "production":{
@@ -334,6 +334,10 @@ export const getProductionByStatus = (orgId, container, status) => {
         )
         .then((result) => {
             console.log(result)
+
+            if(result.length === 0){
+                resolve(result)
+            }
             
             const grouppedProd = grouPProductionForWorkDay("status",result[0].containers.production, "hash")
             resolve(grouppedProd)

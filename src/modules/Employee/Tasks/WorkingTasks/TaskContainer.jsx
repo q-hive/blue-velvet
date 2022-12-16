@@ -45,7 +45,7 @@ export const TaskContainer = (props) => {
     const theme = useTheme(BV_THEME);
     
     const {user, credential} = useAuth()
-    const {WorkContext,TrackWorkModel,employeeIsWorking, isOnTime} = useWorkingContext()
+    const {WorkContext,setWorkContext,TrackWorkModel,setTrackWorkModel,employeeIsWorking, isOnTime} = useWorkingContext()
     const {state} = useLocation();
 
     const [isFinished,setIsFinished] = useState(false)
@@ -176,6 +176,7 @@ export const TaskContainer = (props) => {
 
         case "ready":
             contentTitle = "Delivery"
+            expectedtTime = Math.ceil(state.time.times.harvestReady.time)
             content = <DeliveryContent index={activeStep}/>
             steps=[{step:"Delivery"}]
         break;
@@ -364,10 +365,11 @@ export const TaskContainer = (props) => {
             WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].finished = finished
             WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved =  achieved
             TrackWorkModel.tasks.push(WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]])
-            // setTrackWorkModel({...TrackWorkModel, tasks:TrackWorkModel.tasks})
+            setTrackWorkModel({...TrackWorkModel, tasks:TrackWorkModel.tasks})
+
             WorkContext.current = WorkContext.current + 1
-            // setWorkContext({...WorkContext, current:WorkContext.current})
-            // localStorage.setItem("WorkContext", JSON.stringify(WorkContext)) 
+            setWorkContext({...WorkContext, current:WorkContext.current})
+            localStorage.setItem("WorkContext", JSON.stringify(WorkContext)) 
             
             props.setSnack({...props.snack, open:true, message:"Production updated succesfully", status:"success"})
             props.setFinished({value:true,counter:props.counter+1});

@@ -115,6 +115,26 @@ export const updateEmployee = (orgId,id,queryObj) => {
                     }
                 )
             }
+            if(Object.keys(queryObj)[0] === "workDayTask"){
+                result = await orgModel.updateOne(
+                    {
+                        "_id":mongoose.Types.ObjectId(orgId),
+                        "employees": {
+                            "$elemMatch": {
+                                "_id":mongoose.Types.ObjectId(id)
+                            }
+                        }
+                    }, 
+                    {
+                        "$set": {
+                            [`employees.$[emp].workDay.${queryObj.workDayTask.type}.achievedTime`]:queryObj.workDayTask.achievedTime
+                        }
+                    },
+                    {
+                        "arrayFilters":[{"emp._id":mongoose.Types.ObjectId(id)}]
+                    }
+                )
+            }
         } catch (err) {
             reject(err)     
         }

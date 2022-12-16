@@ -18,6 +18,7 @@ import { DataGrid , GridRowsProp} from '@mui/x-data-grid';
 import { adminDashboardEmployees } from '../../../utils/TableStates';
 import {tasksCicleObj} from '../../../utils/models.js'
 import { getKey } from '../../../utils/getDisplayKeyByStatus';
+import { finishWorkDayInDb } from '../../../CoreComponents/requests';
 
 export const Dashboard = () => {
     const {user,credential} = useAuth()
@@ -84,30 +85,55 @@ export const Dashboard = () => {
         throw "Function for mapping employees data is not receiving an array"
     }
 
+    const handleCleanEmployeesTasks = async () => {
+        const deleteWorkDayForAll = employeesPerformanceRows.map(async employee => {
+            await finishWorkDayInDb({user:user,employee:employee._id, credential:credential})
+        })
+
+        try {
+            await Promise.all(deleteWorkDayForAll)
+
+            setEmployeesPerformanceRows([])
+            
+            
+        } catch (err) {
+            console.log("Error deleting workday in employee")
+        }
+        
+    }
+    
     function displayTaskCards (){
         return(
             <>
                 {
                     employeesPerformanceRows.map((employee, index) => {
-                        return employee.workDay.map((workData, idx) => {
-                            return(
-                                <>
-                                    <Paper key={idx} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
-                                        <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
-                                            <Typography >
-                                                <b>Task: {getKey(Object.keys(workData)[0])}</b>
-                                            </Typography>
-                                            <Typography >
-                                                <i>Expected Time: {workData.time.minutes} </i>
-                                            </Typography>
-                                            <Typography >
-                                                <i>Employee: {employee.name} </i>
-                                            </Typography>
-                                        </Box>  
-                                    </Paper>
-                                </>
-                            )        
-                        })
+                        return Object.keys(employee.workDay).length>0 && (
+                            <>
+                                {
+                                    Object.keys(employee.workDay).map((task, idx) => {
+                                        return (
+                                            <Paper key={idx} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
+                                                <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
+                                                    <Typography >
+                                                        <b>Task: {getKey(task)}</b>
+                                                    </Typography>
+                                                    <Typography >
+                                                        <i>Expected Time: {employee.workDay[task].expectedTime} </i>
+                                                    </Typography>
+                                                    <Typography >
+                                                        <i>Achieved Time: {employee.workDay[task].achievedTime !== 0 ? employee.workDay[task].achievedTime : "Not finished"} </i>
+                                                    </Typography>
+                                                    <Typography >
+                                                        <i>Employee: {employee.name} </i>
+                                                    </Typography>
+                                                </Box>  
+                                            </Paper>
+                                        )
+                                    })
+
+                                }
+                            </>
+                        ) 
                         
                     })
                 }
@@ -230,6 +256,7 @@ export const Dashboard = () => {
                                 color:"white"
                             }}}>
                             <Typography variant="h6" color="secondary.dark">Employees tasks</Typography>
+                            <Button onClick={handleCleanEmployeesTasks}>Clean data for today</Button>
                             {displayTaskCards()}
                             
                         </Paper>

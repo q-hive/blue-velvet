@@ -389,13 +389,13 @@ export const EntryPoint = () => {
             //*Delete from localStorage since journal has been ended.
             window.localStorage.removeItem("TrackWorkModel")
 
-            finishWorkDayInDb({user, credential})
-            .then(() => {
-                setSnackState({open:true,label:"Your work has been ended today",severity:"warning"})
-            })
-            .catch(err => {
-                setSnackState({open:true,label:"Something went wrong, please try again",severity:"error"})
-            })
+            // finishWorkDayInDb({user, credential})
+            // .then(() => {
+            //     setSnackState({open:true,label:"Your work has been ended today",severity:"warning"})
+            // })
+            // .catch(err => {
+            //     setSnackState({open:true,label:"Something went wrong, please try again",severity:"error"})
+            // })
             
             return
         }
@@ -589,8 +589,8 @@ export const EntryPoint = () => {
             }
         }
         
+        // checkTime()
         getTimeEstimate()
-        checkTime()
         getData()
         .then(({time}) => {
             let indexes =[]

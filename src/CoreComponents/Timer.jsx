@@ -29,8 +29,9 @@ export const Timer = ({contxt}) => {
         currentContextTime=WorkContext.cicle[actualTask].achieved
       }
 
-      if(workingOnThisTask)
-        currentContextTime=Date.now() - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].started
+      if(workingOnThisTask){
+        currentContextTime= Date.now() - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].started
+      }
     }
 
     return currentContextTime
