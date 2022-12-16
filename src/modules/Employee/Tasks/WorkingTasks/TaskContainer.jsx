@@ -409,7 +409,7 @@ export const TaskContainer = (props) => {
                         variant="contained"
                         onClick={isLastStep(index) ? handleCompleteTask : handleNext}
                         sx={()=>({...BV_THEME.button.standard,mt: 1, mr: 1,})}
-                        disabled={(!isOnTime && isLastStep(index))|| (isLastStep(index) && isFinished)}
+                        disabled={(!isOnTime && isLastStep(index)) || (isLastStep(index) && isFinished) && type === "growing"}
                         
                     >
                         {isLastStep(index) ? 'Finish Task' :'Continue'}
@@ -524,9 +524,15 @@ export const TaskContainer = (props) => {
 
                 {/*Specific task instructions*/}
                 <Box sx={{ width:{xs:"100%",sm:"65%"}, display:"flex", flexDirection:"column", padding:"5%", alignItems:"center" }}>          
-                    <Typography variant="h3" color="primary">{contentTitle}</Typography>
-                    <Typography>Expected time: {type === "preSoaking" ? expectedtTime + ` ${expectedtTime > 1 ? 'minutes' : 'minute'}` + ' for soaking seeds task plus ' + 6 + ' hours of soaking waiting time' : expectedtTime + ' Minutes'}</Typography>
-                    <Timer contxt="task"/>
+                    {
+                        type !== 'growing' && (
+                            <>
+                                <Typography variant="h3" color="primary">{contentTitle}</Typography>
+                                <Typography>Expected time: {type === "preSoaking" ? expectedtTime + ` ${expectedtTime > 1 ? 'minutes' : 'minute'}` + ' for soaking seeds task plus ' + 6 + ' hours of soaking waiting time' : expectedtTime + ' Minutes'}</Typography>
+                                <Timer contxt="task"/>
+                            </>
+                        )
+                    }
                     {content}
                     
                 </Box>

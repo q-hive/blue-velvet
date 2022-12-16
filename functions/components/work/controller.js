@@ -68,14 +68,13 @@ export const updatePerformance = (orgId, id, array) => {
     })
 }
 
-export const updateWorkDayForEmployee = (req, res, isTask) => {
+export const updateWorkDayForEmployee = (req, res, isTask, paramOfTask = undefined) => {
     return new Promise(async (resolve, reject) => {
         if(isTask){
             console.log("Task will be updated in employee workday")
             await updatePerformance(res.locals.organization, req.body.executedBy, [{query:"set", allocationRatio:1}])
 
-            const result = await updateEmployee(res.locals.organization,req.params.employeeId,{"workDayTask":{"type":req.body.taskType,"achievedTime":req.body.achievedTime}})
-            
+            const result = await updateEmployee(res.locals.organization,req.body.executedBy,{"workDayTask":{"type":req.body.taskType,"value":{[paramOfTask]:req.body[paramOfTask]}}})
             resolve(result)
             return
         }

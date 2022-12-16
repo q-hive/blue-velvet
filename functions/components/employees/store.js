@@ -124,16 +124,18 @@ export const updateEmployee = (orgId,id,queryObj) => {
                                 "_id":mongoose.Types.ObjectId(id)
                             }
                         }
-                    }, 
+                    },
                     {
                         "$set": {
-                            [`employees.$[emp].workDay.${queryObj.workDayTask.type}.achievedTime`]:queryObj.workDayTask.achievedTime
+                            [`employees.$[emp].workDay.${queryObj.workDayTask.type}.${Object.keys(queryObj.workDayTask.value)[0]}`]:queryObj.workDayTask.value[Object.keys(queryObj.workDayTask.value)[0]]
                         }
                     },
                     {
                         "arrayFilters":[{"emp._id":mongoose.Types.ObjectId(id)}]
                     }
                 )
+
+                console.log(result)
             }
         } catch (err) {
             reject(err)     
