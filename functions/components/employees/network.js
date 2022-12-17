@@ -60,7 +60,7 @@ router.get('/analytics/workday', (req, res) => {
             return employee
         })
         
-        success(req, res, 200, "Employees performance obtained succesfully", mappedData)
+        success(req, res, 200, "Employees workDay analytics obtained succesfully", mappedData)
     })
     .catch(err => {
         error(req, res, 500, "Error getting employees performance", err, err)

@@ -133,19 +133,18 @@ export const calculateTimeEstimation = (totalProduction, isGroupped = false) => 
     
     
     const totals = productionGroupedByStatus.map((productionModel) => {
-        console.log(productionModel)
-
         const total = productionModel[Object.keys(productionModel)[0]].reduce((previous, current) => {
 
             const previousRequiredParameterTotal = previous[parametersByStatus[Object.keys(productionModel)[0]]]
             const currentRequiredParameterTotal = current[parametersByStatus[Object.keys(productionModel)[0]]]
             
-            return {[parametersByStatus[Object.keys(productionModel)[0]]]: previousRequiredParameterTotal + currentRequiredParameterTotal}
+            return {[parametersByStatus[Object.keys(productionModel)[0]]]:previousRequiredParameterTotal + currentRequiredParameterTotal}
         },{
             [parametersByStatus[Object.keys(productionModel)[0]]]:0,
         })
 
-        return {[`${Object.keys(productionModel)[0]}`]:{"minutes":total[parametersByStatus[Object.keys(productionModel)[0]]]*estimatedTimes[Object.keys(productionModel)[0]]}} 
+        console.log(total)
+        return {[`${Object.keys(productionModel)[0]}`]:{"minutes":Number((((total[parametersByStatus[Object.keys(productionModel)[0]]]*estimatedTimes[Object.keys(productionModel)[0]])*60)*1000).toFixed(2))}} 
     })
 
     

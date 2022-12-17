@@ -19,6 +19,7 @@ import { adminDashboardEmployees } from '../../../utils/TableStates';
 import {tasksCicleObj} from '../../../utils/models.js'
 import { getKey } from '../../../utils/getDisplayKeyByStatus';
 import { finishWorkDayInDb } from '../../../CoreComponents/requests';
+import { transformTo } from '../../../utils/times';
 
 export const Dashboard = () => {
     const {user,credential} = useAuth()
@@ -105,6 +106,11 @@ export const Dashboard = () => {
     function displayTaskCards (){
         return(
             <>
+                <Typography variant="body2">
+                    <i>
+                        <b>Times are displayed in minutes</b>
+                    </i>
+                </Typography>
                 {
                     employeesPerformanceRows.map((employee, index) => {
                         return Object.keys(employee.workDay).length>0 && (
@@ -118,10 +124,10 @@ export const Dashboard = () => {
                                                         <b>Task: {getKey(task)}</b>
                                                     </Typography>
                                                     <Typography >
-                                                        <i>Expected Time: {employee.workDay[task].expectedTime} </i>
+                                                        <i>Expected Time: {transformTo("ms","minutes",employee.workDay[task].expectedTime)} </i>
                                                     </Typography>
                                                     <Typography >
-                                                        <i>Achieved Time: {employee.workDay[task].achievedTime !== 0 ? employee.workDay[task].achievedTime : "Not finished"} </i>
+                                                        <i>Achieved Time: {employee.workDay[task].achievedTime !== 0 ? transformTo("ms","minutes",employee.workDay[task].achievedTime) : "Not finished"} </i>
                                                     </Typography>
                                                     <Typography >
                                                         <i>Employee: {employee.name} </i>
