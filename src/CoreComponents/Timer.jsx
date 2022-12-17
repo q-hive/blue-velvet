@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Typography } from '@mui/material'
 import useInterval from './useInterval';
 import useWorkingContext from '../contextHooks/useEmployeeContext';
+import { FormatClear } from '@mui/icons-material';
 
 
 
@@ -13,7 +14,7 @@ export const Timer = ({contxt}) => {
   let currentTaskFinished = (employeeIsWorking) && (WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.currentRender]].achieved !== undefined) || false
 
   const getCurrentContextTime = (context) => {
-    let currentContextTime = 0;
+    let currentContextTime ;
     
     if(context === "global"){
       currentContextTime = (Date.now()) - (TrackWorkModel.started)
@@ -29,12 +30,15 @@ export const Timer = ({contxt}) => {
         currentContextTime=WorkContext.cicle[actualTask].achieved
       }
 
-      if(workingOnThisTask)
-        currentContextTime=Date.now() - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].started
+      if(workingOnThisTask){
+        currentContextTime= Date.now() - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].started
+      }
     }
 
     return currentContextTime
   }
+  
+    
 
 
   
@@ -47,20 +51,21 @@ export const Timer = ({contxt}) => {
       setTime(0)
 
   }
+  
+  useMemo(() => {
+    setTime(0)
+    let currTime = getCurrentContextTime(contxt)
+    setTime(currTime)
+  }, [WorkContext.currentRender, WorkContext.current])
+
 
   
-
-
   
-  
-  useEffect(() => {
-    setTime(() => {
-      return getCurrentContextTime(contxt)
-    })
-  }, [WorkContext.currentRender])
+
     
   useInterval(updateTime, 1000)  
-  
+
+  function mainFunc (){
   if(currentTaskFinished && contxt != "global"){
     return (
       <Typography>Achieved time: {formatTime(WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.currentRender]].achieved)}</Typography>
@@ -71,9 +76,15 @@ export const Timer = ({contxt}) => {
       return (
       <Typography>Current {contxt === 'global' ? 'working' : 'task'} time: {formatTime(time)}</Typography>
     )
+  
+      } 
+
+
+   return mainFunc()
 }
 
 export function formatTime(value){
+  console.log("tiempo a Formatear", value)
   function addZero(i) {
     if (i < 10) {i = "0" + i}
     return i;

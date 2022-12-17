@@ -13,7 +13,7 @@ const Employee = new Schema({
     image:          { type: String,     required: true              },
     salary:         { type: Number,     required: true              },   
     address:        { type: Address,    required: true              },
-    workDay:        { type: {},         required: true              },
+    workDay:        { type: {},         required: false             },
     performance:    { type: 
         {
             level:              Number,

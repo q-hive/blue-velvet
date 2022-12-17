@@ -7,7 +7,7 @@ import { updateOrder } from '../orders/store.js'
 import { getProductById, updateProduct } from '../products/store.js'
 import { getProductionInContainer } from '../production/store.js'
 
-import { getProductionWorkByContainerId, grouPProductionForWorkDay } from '../production/controller.js'
+import { getProductionWorkByContainerId, grouPProductionForAnalytics, grouPProductionForWorkDay } from '../production/controller.js'
 import { updateEmployee } from '../employees/store.js'
 
 const orgModel = mongoose.model('organization', Organization)
@@ -68,21 +68,28 @@ export const updatePerformance = (orgId, id, array) => {
     })
 }
 
-export const updateWorkDayForEmployee = (req, res, isTask) => {
+export const updateWorkDayForEmployee = (req, res, isTask, paramOfTask = undefined) => {
     return new Promise(async (resolve, reject) => {
         if(isTask){
-            console.log("Task will be added to employee workday")
-            resolve()
+            console.log("Task will be updated in employee workday")
+            await updatePerformance(res.locals.organization, req.body.executedBy, [{query:"set", allocationRatio:1}])
+
+            const result = await updateEmployee(res.locals.organization,req.body.executedBy,{"workDayTask":{"type":req.body.taskType,"value":{[paramOfTask]:req.body[paramOfTask]}}})
+            resolve(result)
+            return
         }
 
         req.query.containerId = req.params.containerId
         let production = {}
+        let productionAnalytics = {}
         if(req.query.delete === undefined){
-            production = await getProductionWorkByContainerId(req, res, "workday")
+            production = await getProductionWorkByContainerId(req, res, "employee")
+
+            productionAnalytics = grouPProductionForAnalytics("tasks", production, "hash")
         }
 
         try {
-           const result =  await updateEmployee(res.locals.organization,req.params.employeeId,{"workDay":production})
+           const result =  await updateEmployee(res.locals.organization,req.params.employeeId,{"workDay":productionAnalytics})
            console.log(result)
            
         } catch (err) {
@@ -99,6 +106,7 @@ export const statusRequiredParameters = () => {
         "seeding":      "trays",
         "growing":      "trays",
         "harvestReady": "trays",
+        "ready":        "trays",
         "packing":      "trays"
     }
 }
@@ -126,15 +134,17 @@ export const calculateTimeEstimation = (totalProduction, isGroupped = false) => 
     
     const totals = productionGroupedByStatus.map((productionModel) => {
         const total = productionModel[Object.keys(productionModel)[0]].reduce((previous, current) => {
+
             const previousRequiredParameterTotal = previous[parametersByStatus[Object.keys(productionModel)[0]]]
             const currentRequiredParameterTotal = current[parametersByStatus[Object.keys(productionModel)[0]]]
             
-            return {[parametersByStatus[Object.keys(productionModel)[0]]]: previousRequiredParameterTotal + currentRequiredParameterTotal}
+            return {[parametersByStatus[Object.keys(productionModel)[0]]]:previousRequiredParameterTotal + currentRequiredParameterTotal}
         },{
             [parametersByStatus[Object.keys(productionModel)[0]]]:0,
         })
 
-        return {[`${Object.keys(productionModel)[0]}`]:{"minutes":total[parametersByStatus[Object.keys(productionModel)[0]]]*estimatedTimes[Object.keys(productionModel)[0]]}} 
+        console.log(total)
+        return {[`${Object.keys(productionModel)[0]}`]:{"minutes":Number((((total[parametersByStatus[Object.keys(productionModel)[0]]]*estimatedTimes[Object.keys(productionModel)[0]])*60)*1000).toFixed(2))}} 
     })
 
     
@@ -218,6 +228,35 @@ export const parseProduction = (req,res,work) => {
     })
 }
 
+export const buildTaskFromProductionAccumulated = (taskName, production) => {
+    console.log("Building " + taskName + " task for production data")
+
+    let time = calculateTimeEstimation(production, false)
+
+    time = time.find((taskTimeObj) => {
+        return Object.keys(taskTimeObj)[0] === taskName
+    })
+
+    const allModelsIds = production.flatMap((productionModel) => {
+        return productionModel?.modelsId 
+    })
+
+    
+    let task = {
+        [taskName]: {
+            expectedTime:time[taskName].minutes,
+            modelsIds:allModelsIds,
+            achievedTime:0 
+        }
+    }
+
+    //*GROUP ALL PRODUCTION MODEL IDS BY TASK
+    //*DETERMINE EXPECTED TIME FROM SEEDS, HARVEST AND TRAYS
+    //*SET ACHIEVED TIME IN 0
+
+    return task
+}
+
 export const updateOrgTasksHistory = (orgId, taskModel) => {
     return new Promise( async (resolve, reject) => {
         let mappedTaskModel
@@ -248,8 +287,6 @@ export const updateOrgTasksHistory = (orgId, taskModel) => {
                 }
             ).exec()
 
-            await updatePerformance(orgId, taskModel.executedBy, [{query:"set", allocationRatio:1}])
-            
             resolve(query)
         } catch (err) {
             reject(err)

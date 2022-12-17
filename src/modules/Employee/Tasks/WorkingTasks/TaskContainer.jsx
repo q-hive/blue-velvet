@@ -45,7 +45,7 @@ export const TaskContainer = (props) => {
     const theme = useTheme(BV_THEME);
     
     const {user, credential} = useAuth()
-    const {WorkContext,TrackWorkModel,employeeIsWorking, isOnTime} = useWorkingContext()
+    const {WorkContext,setWorkContext,TrackWorkModel,setTrackWorkModel,employeeIsWorking, isOnTime} = useWorkingContext()
     const {state} = useLocation();
 
     const [isFinished,setIsFinished] = useState(false)
@@ -176,6 +176,7 @@ export const TaskContainer = (props) => {
 
         case "ready":
             contentTitle = "Delivery"
+            expectedtTime = Math.ceil(state.time.times.harvestReady.time)
             content = <DeliveryContent index={activeStep}/>
             steps=[{step:"Delivery"}]
         break;
@@ -362,12 +363,14 @@ export const TaskContainer = (props) => {
 
             // hooks
             WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].finished = finished
+            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current+1]].started = finished+1
             WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved =  achieved
             TrackWorkModel.tasks.push(WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]])
-            // setTrackWorkModel({...TrackWorkModel, tasks:TrackWorkModel.tasks})
+            setTrackWorkModel({...TrackWorkModel, tasks:TrackWorkModel.tasks})
+
             WorkContext.current = WorkContext.current + 1
-            // setWorkContext({...WorkContext, current:WorkContext.current})
-            // localStorage.setItem("WorkContext", JSON.stringify(WorkContext)) 
+            setWorkContext({...WorkContext, current:WorkContext.current, currentRender:WorkContext.current})
+            localStorage.setItem("WorkContext", JSON.stringify(WorkContext)) 
             
             props.setSnack({...props.snack, open:true, message:"Production updated succesfully", status:"success"})
             props.setFinished({value:true,counter:props.counter+1});
@@ -407,7 +410,7 @@ export const TaskContainer = (props) => {
                         variant="contained"
                         onClick={isLastStep(index) ? handleCompleteTask : handleNext}
                         sx={()=>({...BV_THEME.button.standard,mt: 1, mr: 1,})}
-                        disabled={(!isOnTime && isLastStep(index))|| (isLastStep(index) && isFinished)}
+                        disabled={(!isOnTime && isLastStep(index)) || (isLastStep(index) && isFinished) && type === "growing"}
                         
                     >
                         {isLastStep(index) ? 'Finish Task' :'Continue'}
@@ -522,9 +525,15 @@ export const TaskContainer = (props) => {
 
                 {/*Specific task instructions*/}
                 <Box sx={{ width:{xs:"100%",sm:"65%"}, display:"flex", flexDirection:"column", padding:"5%", alignItems:"center" }}>          
-                    <Typography variant="h3" color="primary">{contentTitle}</Typography>
-                    <Typography>Expected time: {type === "preSoaking" ? expectedtTime + ` ${expectedtTime > 1 ? 'minutes' : 'minute'}` + ' for soaking seeds task plus ' + 6 + ' hours of soaking waiting time' : expectedtTime + ' Minutes'}</Typography>
-                    <Timer contxt="task"/>
+                    {
+                        type !== 'growing' && (
+                            <>
+                                <Typography variant="h3" color="primary">{contentTitle}</Typography>
+                                <Typography>Expected time: {type === "preSoaking" ? expectedtTime + ` ${expectedtTime > 1 ? 'minutes' : 'minute'}` + ' for soaking seeds task plus ' + 6 + ' hours of soaking waiting time' : expectedtTime + ' Minutes'}</Typography>
+                                <Timer contxt="task"/>
+                            </>
+                        )
+                    }
                     {content}
                     
                 </Box>

@@ -16,6 +16,7 @@ import api from '../../axios.js'
 import { formatTime } from '../../CoreComponents/Timer'
 import { finishWorkDayInDb, getWorkdayProdData, updateEmployeeWorkDay } from '../../CoreComponents/requests'
 import { getKey } from '../../utils/getDisplayKeyByStatus'
+import { transformTo } from '../../utils/times'
 
 //*UNUSED
 // import { Add } from '@mui/icons-material'
@@ -389,13 +390,13 @@ export const EntryPoint = () => {
             //*Delete from localStorage since journal has been ended.
             window.localStorage.removeItem("TrackWorkModel")
 
-            finishWorkDayInDb({user, credential})
-            .then(() => {
-                setSnackState({open:true,label:"Your work has been ended today",severity:"warning"})
-            })
-            .catch(err => {
-                setSnackState({open:true,label:"Something went wrong, please try again",severity:"error"})
-            })
+            // finishWorkDayInDb({user, credential})
+            // .then(() => {
+            //     setSnackState({open:true,label:"Your work has been ended today",severity:"warning"})
+            // })
+            // .catch(err => {
+            //     setSnackState({open:true,label:"Something went wrong, please try again",severity:"error"})
+            // })
             
             return
         }
@@ -589,8 +590,8 @@ export const EntryPoint = () => {
             }
         }
         
+        // checkTime()
         getTimeEstimate()
-        checkTime()
         getData()
         .then(({time}) => {
             let indexes =[]
@@ -627,7 +628,7 @@ export const EntryPoint = () => {
         <Container maxWidth="lg" sx={{paddingTop:4,paddingBottom:4,marginX:{xs:4,md:"auto"},marginTop:{xs:4,md:3}}}>
             <Typography variant="h2" color="primary">Welcome, {user.name}</Typography>
             <Typography variant="h5" color="secondary">Here's your work</Typography><br/>
-            <Typography variant="h6" color="secondary">{`You'll need aproximately ${estimatedTime.total != undefined ? estimatedTime.total.toFixed(2) : null} minutes to finish your Tasks`}</Typography>
+            <Typography variant="h6" color="secondary">{`You'll need aproximately ${estimatedTime.total != undefined ? transformTo("ms","minutes",estimatedTime.total)  : null} minutes to finish your Tasks`}</Typography>
             <Box pt={4}>
                 {/* <Typography variant="h6" >Pending Orders: {orders.length}</Typography> */}
                 <Box display="flex" sx={{justifyContent:"space-between"}}>
