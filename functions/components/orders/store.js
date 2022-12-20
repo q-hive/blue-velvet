@@ -19,6 +19,7 @@ import { getAllProducts } from '../products/store.js'
 import { buildProductionDataFromOrder } from '../production/controller.js'
 import { getOrdersPrice, newOrderDateValidation } from './controller.js'
 import { getProductionInContainer } from '../production/store.js'
+import { getContainerById, getContainers } from '../container/store.js'
 
 const orgModel = mongoose.model('organization', Organization)
 
@@ -269,7 +270,18 @@ export const createNewOrder = (orgId, order) => {
             }
 
             let end = addTimeToDate(new Date(), { w: 2 })
-            let production = await buildProductionDataFromOrder({...order, _id:id}, allProducts)
+
+            let overhead = await getContainers({organization:orgId})
+
+            console.log(overhead)
+            
+            const isValidContainerResponse = overhead !== null && overhead !== undefined && overhead.containers.length === 1
+            
+            if (isValidContainerResponse){
+                overhead = (overhead.containers[0].config.overhead)/100
+            }
+            
+            let production = await buildProductionDataFromOrder({...order, _id:id}, allProducts, overhead)
 
         
             if(allProducts && allProducts.length >0){

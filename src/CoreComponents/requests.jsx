@@ -295,3 +295,12 @@ export const finishWorkDayInDb = async (props) => {
     })
 
 }
+
+export const updateContainerConfig = async (user, credential, containerConfigModel) => {
+    return await api.api.patch(`${api.apiVersion}/container/config/${user.assignedContainer}`, containerConfigModel, {
+        headers: {
+            authorization:  credential._tokenResponse.idToken,
+            user:           user
+        }
+    })
+}

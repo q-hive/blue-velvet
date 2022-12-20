@@ -27,6 +27,22 @@ router.get('/:id', (req, res) => {
 
 
 //*UPDATE
+router.patch('/config/:_id', (req, res) => {
+    console.log(req.body)
+    updateContainerById(res.locals.organization, req.params._id, {"query":"set", "key":"config", "value":req.body})
+    .then((result) => {
+        if(result.matchedCount === 1 && result.modifiedCount === 0){
+            success(req, res, 204, "Container has been found, but not update was possible", result)
+            return
+        }
+        
+        success(req, res, 200, "Container updated succesfully", result)
+    })
+    .catch((err) => {
+        error(req, res, 500, "Error updating container", err, err)
+    })
+})
+//*UPDATE
 router.patch('/:id', (req, res) => {
     updateContainerById(res.locals.organization,req.params.id, req.query)
     .then((containerUpdated) => {

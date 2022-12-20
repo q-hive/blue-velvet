@@ -6,6 +6,7 @@ import mongoose from "mongoose"
 import { getOrderById } from "../orders/store.js"
 import { buildPackagesFromOrders } from "../delivery/controller.js"
 import { isLargeCicle } from "../products/controller.js"
+import { getContainerById } from "../container/store.js"
 
 
 export const getTaskByStatus = async (production, orgId=undefined, container=undefined) => {
@@ -410,7 +411,7 @@ export const getProductionWorkByContainerId = (req,res, criteria) => {
 }
 
 //*Build model for production control based on order packages and products parameters
-export const buildProductionDataFromOrder = async (order, dbproducts) => {
+export const buildProductionDataFromOrder = async (order, dbproducts, overHeadParam) => {
     //*Add grams per size to order product packages
     const productsModified = await Promise.all(
         order.products.map(async(prod, pidx) => {
@@ -437,10 +438,21 @@ export const buildProductionDataFromOrder = async (order, dbproducts) => {
                 }
             })
             
+
+            
+            let overhead = 0
+
+            if(overHeadParam !== undefined && typeof overHeadParam === "number"){
+                overhead = overHeadParam
+            }
+            
             //*Total grams will define number of trays based on seedingRate
-            const harvest = prod.packages.reduce((prev, curr) => {
+            let harvest = prod.packages.reduce((prev, curr) => {
                 return prev + curr.grams
             },0)
+
+            //*Add overhead config from containers configuration
+            harvest = harvest * (1 + overhead)
     
             if(prodFound){
                 if(prodFound.mix.isMix){
