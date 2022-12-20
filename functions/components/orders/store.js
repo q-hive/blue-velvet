@@ -148,6 +148,10 @@ export const getFilteredOrders = (orgId, req = undefined, production, filter = u
 
         getAllOrders(orgId, req, true, mappedFilter, production)
         .then((orders) => {
+            if(orders === null) {
+                resolve([])
+            }
+            
             resolve(orders)
         })
         .catch((err) => {

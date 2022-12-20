@@ -35,8 +35,8 @@ export const EntryPoint = () => {
         height: 240
     }
     const containerTasks = [ 
-        {name:"Cut mats", type:"mats"},
-        {name:"Cleaning", type:"cleaning"},
+        {name:"Mise en place", type:"mats"},
+        {name:"Maintenance", type:"cleaning"},
     ]
     
     //*contexts
@@ -46,7 +46,32 @@ export const EntryPoint = () => {
     
     //*DATA STATES
     const [orders, setOrders] = useState([])
-    const [estimatedTime, setEstimatedTime] = useState(0)
+    const [estimatedTime, setEstimatedTime] = useState({
+        times: {
+            preSoaking: {
+                time:0
+            }, 
+            harvestReady: {
+                time:0
+            }, 
+            packing: {
+                time:0
+            },
+            ready: {
+                time:0
+            },
+            seeding: {
+                time:0
+            },
+            cleaning: {
+                time:30*60*60*1000
+            },
+            growing: {
+                time:0
+            },
+        },
+        total:0
+    })
     const [activeStatusesArray,setActiveStatusesArray] = useState([])
 
 
@@ -106,10 +131,10 @@ export const EntryPoint = () => {
         setSnackState({...snackState,open:false});
     };
 
-    const handleViewTask = (typee) => {
+    const handleViewTask = (type) => {
             navigate('taskTest',
                         {state: {
-                            type: typee
+                            type
                         }}
                     )
     }
@@ -137,12 +162,6 @@ export const EntryPoint = () => {
                 preSoaking: {
                     time:0
                 }, 
-                // soaking1: {
-                //     time:0
-                // }, 
-                // soaking2: {
-                //     time:0
-                // }, 
                 harvestReady: {
                     time:0
                 }, 
@@ -154,6 +173,9 @@ export const EntryPoint = () => {
                 },
                 seeding: {
                     time:0
+                },
+                cleaning: {
+                    time:30*60*60*1000
                 },
                 growing: {
                     time:0
@@ -170,6 +192,8 @@ export const EntryPoint = () => {
                 let status = Object.keys(item)[0]
                 arr.push(item[status].minutes)
             })
+
+            // arr.push(result.times["cleaning"].minutes)
             return arr.reduce((a, b) => a + b, 0)
         } 
 
@@ -198,6 +222,9 @@ export const EntryPoint = () => {
                     },
                     seeding: {
                         time:request.data.data[4].seeding.minutes
+                    }, 
+                    cleaning: {
+                        time:30*60*1000
                     }, 
                     growing: {
                         time:request.data.data[5].growing.minutes
@@ -351,7 +378,11 @@ export const EntryPoint = () => {
 
         
         let testingKeys = Object.keys(workData) 
+        //*Delete growing from cycle (not useful now top display in cycle)
+        const growingStatusIndex = testingKeys.indexOf("growing")
+        testingKeys.splice(growingStatusIndex, 1)
         
+        testingKeys.push("cleaning")
         // psTrue?testingKeys.push("preSoaking"):setWorkContext((wrk) => delete wrk.cicle['preSoaking'])
         // sTrue?testingKeys.push("seeding"):null
         // hrTrue?testingKeys.push("harvestReady"):null
@@ -420,7 +451,7 @@ export const EntryPoint = () => {
                 setTimeout(() => {
                     setLoading({...loading, startWorkBtn:false})
                     let statusesArr = getActiveProductsStatuses2(workData);
-                    console.log(statusesArr)
+
                     setSnackState({open:false})
                     navigate('./../tasks/work',
                         {state: {
@@ -447,6 +478,7 @@ export const EntryPoint = () => {
             getWorkData()
             .then(({workData, packs, deliverys}) => {
                 let statusesArr = getActiveProductsStatuses2(workData);  //getActiveProductsStatuses(workData)
+                
                 if(statusesArr.length === 0){
                     setSnackState({open:true,label:"There's nothing for you to do right now",severity:"success"})
                 }
@@ -504,23 +536,6 @@ export const EntryPoint = () => {
         // }
     }
     
-    // const getKey = (status) => {
-    //     const dflt = "seeding"
-        
-    //     const statusObj = {
-    //         "preSoaking":"Soaking",
-    //         "seeding":"seeding",
-    //         "harvestReady": "harvest",
-    //         "mats":"cut Mats",
-    //         "growing":"growing",
-    //         "cleaning":"cleaning",
-    //         "packing":"packing",
-    //         "ready":"delivery"
-    //     }
-
-    //     return statusObj[`${status?? dflt}`]
-    // }
-
     function getAllProducts(){
         var productList = []
         orders.map((order, id)=>{
@@ -531,34 +546,19 @@ export const EntryPoint = () => {
         })
         return productList;
     }
-
-    // const allProducts = getAllProducts()
-    // const allStatusesObj = filterByKey(allProducts,"status")
-
+    
     function capitalize(word) {
         return(
         !word ? null : word[0].toUpperCase() + word.slice(1).toLowerCase())
     }
 
-    function displayTaskCards (){
-        return Object.keys(WorkContext.cicle).map((status,index)=>{ 
-        return(
-            <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
-                <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
-                    <Typography >
-                        <b>Task: {capitalize(getKey(status))}</b>
-                    </Typography>
-                    <Typography >
-                        <i>Expected Time: {(getKey(status)==="seeding" || getKey(status)==="harvest") ? 
-                            estimatedTime.times ? 
-                                estimatedTime.times[status].time.toFixed(2) 
-                            : "getting" 
-                        :getKey(status)==="pre Soaking" ? "12 hours ":"TBD"} </i>
-                    </Typography>
-                </Box>
-            </Paper>
-        )
-    })}
+    const displayTaskCards  = () => {
+        return (
+            <>
+                
+            </>    
+        ) 
+    }
 
     function getCompletedTasksRows(){
         
@@ -590,23 +590,9 @@ export const EntryPoint = () => {
             }
         }
         
-        // checkTime()
-        getTimeEstimate()
         getData()
         .then(({time}) => {
-            let indexes =[]
-            // orders.data.forEach((order, idx) => {
-            //     order.status === "delivered"
-            //     ?
-            //     indexes.push(idx) 
-            //     :
-            //     null
-            // })
-    
-            // for (var i = indexes.length -1; i >= 0; i--){
-            //     orders.data.splice(indexes[i],1);
-            // }
-            // setOrders(orders.data)
+            console.log(time)
             setEstimatedTime(time)
         })
         .catch((err) => {
@@ -616,10 +602,10 @@ export const EntryPoint = () => {
         
     }, [])
 
-    useEffect(()=>{
-        displayTaskCards()
+    // useEffect(()=>{
+    //     displayTaskCards()
 
-    }, [WorkContext.cicle])
+    // }, [WorkContext.cicle])
 
   return (<>
     <Fade in={true} timeout={1000} unmountOnExit>
@@ -686,8 +672,32 @@ export const EntryPoint = () => {
                 <Grow in={true} timeout={2000} unmountOnExit>
                 <Grid item xs={12} md={4} lg={4}>
                     <Paper elevation={4} sx={fixedHeightPaper}>
-                        <Typography variant="h6" color="secondary">Tasks</Typography>
-                            {displayTaskCards()}
+                        <Typography variant="h6" color="secondary">Daily Tasks</Typography>
+                        <Typography variant="body2" color="secondary">
+                            <i>
+                                <b>Times are displayed in minutes</b>
+                            </i>
+                        </Typography>
+                        {
+                            Object.keys(WorkContext.cicle).map((status,index)=>{ 
+                                return(
+                                    <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
+                                        <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
+                                            <Typography >
+                                                <b>Task: {capitalize(getKey(status))}</b>
+                                            </Typography>
+                                            <Typography >
+                                                <i>Expected Time: 
+                                                    {
+                                                        transformTo("ms","minutes", estimatedTime.times[status]?.time)
+                                                    } 
+                                                </i>
+                                            </Typography>
+                                        </Box>
+                                    </Paper>
+                                )
+                            })
+                        }
                     </Paper>
                 </Grid>
                 </Grow>

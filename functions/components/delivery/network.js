@@ -16,7 +16,7 @@ export const dateParamParser = (string) => {
     let date = new Date()
 
     if(string === "orders") {
-        return "all"
+        return "statusReady"
     }
 
     if(string === "yesterday"){

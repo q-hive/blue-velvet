@@ -227,7 +227,7 @@ export const ProductionMain = () => {
                             Production Management
                         </Typography>
                         <Box sx={{display:"flex", justifyContent:"space-between",marginBottom:"3vh"}} >
-                        <Button variant='contained' color='primary' startIcon={<Add/>} onClick={handleNewProduct} sx={{minWidth:"20%"}}>
+                        <Button variant='contained' disabled={user.role === "employee"} color='primary' startIcon={<Add/>} onClick={handleNewProduct} sx={{minWidth:"20%"}}>
                             Add New Product
                         </Button>
                     </Box>
