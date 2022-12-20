@@ -106,6 +106,7 @@ export const TaskContainer = (props) => {
         case "soaking1":
             contentTitle = "Soaking stage - 1"
             expectedtTime = transformTo("ms","minutes",state.time.times.preSoaking.time) 
+            
             content = <PreSoakingContent1 products={products} productsObj={productsByNameObj} workData={state.workData["preSoaking"]} index={activeStep}/>
             steps=[
                 {step:"Water change 1"},
