@@ -112,7 +112,7 @@ export const DeliveryComponent = (props) => {
                     </Box>*/
         
                     <Box display="flex" sx={{flexDirection:"row"}} p={1}>
-                        <Accordion sx={{width:{xs:"100%",md:"50%",lg:"100%",xl:"100%"}}}>
+                        <Accordion expanded sx={{width:{xs:"100%",md:"50%",lg:"100%",xl:"100%"}}}>
                             <AccordionSummary
                                 expandIcon={<ExpandMoreIcon />}
                                 aria-controls="panel1a-content"

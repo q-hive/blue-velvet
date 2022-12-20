@@ -5,6 +5,7 @@ import { getAllProducts, getProductById } from "../products/store.js"
 import mongoose from "mongoose"
 import { getOrderById } from "../orders/store.js"
 import { buildPackagesFromOrders } from "../delivery/controller.js"
+import { isLargeCicle } from "../products/controller.js"
 
 
 export const getTaskByStatus = async (production, orgId=undefined, container=undefined) => {
@@ -218,7 +219,21 @@ export const groupBy = (criteria, production, format, includeOrders = false, inc
                     hashDates[product.name] = {}     
                 }    
 
+                
+                
                 if(!hashDates[product.name][status]){
+                    //*If status === "preSoaking" check only for products that are large cycle products and that are not mixes
+                    let totalDays = !product.mix.isMix ?  product.parameters.night + product.parameters.day : 0
+    
+                    if(status === "preSoaking" && !isLargeCicle(totalDays)){
+                        return
+                    }
+
+                    if(status === "seeding" && product.mix.isMix){
+                        return
+                    }
+                    
+
                     hashDates[product.name][status] = {
                         ProductName:product.name,
                         ProductID:product._id,
@@ -264,7 +279,7 @@ export const groupBy = (criteria, production, format, includeOrders = false, inc
         "hash":accumulatedProduction,
         "orders":orders
     }
-    console.log(accumulatedProduction)
+    
     if(includeOrders){
         if(Array.isArray(requiredReturn[format])){
             requiredReturn[format].push({"orders":requiredReturn["orders"]})
@@ -450,8 +465,8 @@ export const buildProductionDataFromOrder = async (order, dbproducts) => {
                             EstimatedStartDate:     mixProductStartProductionDate,
                             ProductID:              mixFound._id,
                             harvest:                harvest * (mprod.amount/100),
-                            seeds:                  harvest * (mixFound.parameters.seedingRate/mixFound.parameters.harvestRate),
-                            trays:                  (harvest * (mixFound.parameters.seedingRate/mixFound.parameters.harvestRate)) / mixFound.parameters.seedingRate
+                            seeds:                  ((harvest * (mprod.amount/100)) * (mixFound.parameters.seedingRate/mixFound.parameters.harvestRate)),
+                            trays:                  ((harvest * (mprod.amount/100)) * (mixFound.parameters.seedingRate/mixFound.parameters.harvestRate)) / mixFound.parameters.seedingRate
                         }
     
                         return {...mprod, ...mixFound, mix:true}

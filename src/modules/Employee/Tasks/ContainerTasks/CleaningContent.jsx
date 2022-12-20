@@ -37,19 +37,19 @@ const stuffToClean2 = [
                         {value:"waterOutlet",label:"Water Outlet"},
                         {value:"dryStation",label:"Dry Station"},
                         {value:"airIntake",label:"Air Intake"},
-                        {value:"waste",label:"Manage Waste",
-                                tooltip:
-                                <Tooltip placement="right" title={
-                                            <>
-                                                <Typography color="inherit">Managing Waste</Typography>
-                                                <em>{"Check the unharvested fully grown trays and write down the amount of trays that produced too much"}</em><br/>
-                                                {"Normal Overhead is 5 to 10 %"}
-                                            </>
-                                        }>
-                                            <IconButton>
-                                                <HelpIcon />
-                                            </IconButton>
-                                </Tooltip>}
+                        // {value:"waste",label:"Manage Waste",
+                        //         tooltip:
+                        //         <Tooltip placement="right" title={
+                        //                     <>
+                        //                         <Typography color="inherit">Managing Waste</Typography>
+                        //                         <em>{"Check the unharvested fully grown trays and write down the amount of trays that produced too much"}</em><br/>
+                        //                         {"Normal Overhead is 5 to 10 %"}
+                        //                     </>
+                        //                 }>
+                        //                     <IconButton>
+                        //                         <HelpIcon />
+                        //                     </IconButton>
+                        //         </Tooltip>}
                     ]
 
 export const CleaningContent = (props) => {

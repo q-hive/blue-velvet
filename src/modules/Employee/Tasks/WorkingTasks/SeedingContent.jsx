@@ -60,10 +60,10 @@ export const SeedingContent = (props) => {
         return (
             <>
                 <Box sx={taskCard_sx}>
-                    <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+                    {/* <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
                         Check the unharvested fully grown trays and write down the amounts of trays that were
                         produced too much. 
-                    </Typography>
+                    </Typography> */}
 
                     <br></br>
                     
@@ -99,32 +99,26 @@ export const SeedingContent = (props) => {
             </>
         );
 
+    // if(props.index===1)
+    //     return (
+    //         <>
+    //             <Box sx={taskCard_sx}>
+    //                 <Typography variant="h4" align='center' color="secondary">
+    //                     Putting to the light
+    //                 </Typography>
+    //                 <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+    //                     Place the germinated Trays from the dark to the light-shelves. Highest germination level
+    //                     goes at top light level and vice-versa.
+    //                 </Typography>
+    //             </Box>
+
+    //         </>
+    //     );
+
     if(props.index===1)
         return (
             <>
                 <Box sx={taskCard_sx}>
-                    <Typography variant="h4" align='center' color="secondary">
-                        Putting to the light
-                    </Typography>
-                    <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                        Place the germinated Trays from the dark to the light-shelves. Highest germination level
-                        goes at top light level and vice-versa.
-                    </Typography>
-                </Box>
-
-            </>
-        );
-
-    if(props.index===2)
-        return (
-            <>
-                <Box sx={taskCard_sx}>
-                    <Typography variant="h4" align='center' color="primary">
-                        Seeding <br /><br/>
-                    </Typography>
-                    <Typography variant="h4" align='center' color="secondary">
-                        Gather what you need: <br /><br/>
-                    </Typography>
                     <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
                         <b>{totalTrays}</b> {totalTrays>1 ? "Trays": "Tray"} <br/> 
                     </Typography>
@@ -157,7 +151,7 @@ export const SeedingContent = (props) => {
             </>
         );
 
-    if(props.index===3){
+    if(props.index===2){
         const getSeeds = (product) => {
             if(product.productionData === undefined){
                 return parseFloat(product.seeds/product.trays).toFixed(2)
@@ -168,9 +162,9 @@ export const SeedingContent = (props) => {
         return (
         <>
             <Box sx={taskCard_sx}>
-                <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+                {/* <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
                     Spread the seeds equally on the mats and softly spray them with the <i><b>triangle-spray.</b></i> <br/><br/>
-                </Typography>
+                </Typography> */}
 
                 
                 <Stack  sx={{display:"flex",justifyContent:"space-between"}}>
@@ -178,14 +172,10 @@ export const SeedingContent = (props) => {
                     
                     workProducts.map((product,index)=>{
                         return(
-                            !product.minutes ?
-                        
-                        <Typography key={product+index+"2"} variant="h5" align='justify' color={BV_THEME.textColor.lightGray} >
-                            <b>{product.name}</b> <br/>{Math.ceil(product.trays)} {product.trays > 1 ? "trays.":"tray."} Max seeds per tray:  <b>{getSeeds(product)}</b> g <br/><br/>
-                        </Typography>
-                        :
-                        null
-                            
+                            <Typography key={product+index+"2"} variant="h5" align='justify' color={BV_THEME.textColor.lightGray} >
+                                Put {product.seeds} grs of <b>{product.ProductName}</b> in {Math.ceil(product.trays)} {product.trays > 1 ? "trays.":"tray."} 
+                                {/* Max seeds per tray:  <b>{getSeeds(product)}</b> g <br/><br/> */}
+                            </Typography>
                         )
                     })
                 }
@@ -198,16 +188,16 @@ export const SeedingContent = (props) => {
         )
     } 
 
-    if(props.index===4) 
-    return (
-        <>
-            <Box sx={taskCard_sx}>
-                <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                    Staple them slightly turned and bring them to the germination shelves.  
-                </Typography>
-            </Box>
+    // if(props.index===4) 
+    // return (
+    //     <>
+    //         <Box sx={taskCard_sx}>
+    //             <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+    //                 Staple them slightly turned and bring them to the germination shelves.  
+    //             </Typography>
+    //         </Box>
 
-        </>
-    )
+    //     </>
+    // )
 
 }

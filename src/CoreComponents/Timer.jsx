@@ -84,7 +84,6 @@ export const Timer = ({contxt}) => {
 }
 
 export function formatTime(value){
-  console.log("tiempo a Formatear", value)
   function addZero(i) {
     if (i < 10) {i = "0" + i}
     return i;

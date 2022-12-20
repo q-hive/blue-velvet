@@ -24,6 +24,7 @@ export const tasksCicleObj = {
         "packing": {...taskPerformanceModel, name:"Packing"},
         "ready": {...taskPerformanceModel, name:"Delivery"},
         "seeding": {...taskPerformanceModel, name:"Waste and control"},
+        "cleaning": {...taskPerformanceModel, name:"Cleaning"},
         "growing": {...taskPerformanceModel, name:"Waste and control"},
         // "pre-soaking": {
         //     "name": "TaskName",
@@ -44,7 +45,6 @@ export const tasksCicleObj = {
         //    "breaks": "", 
         // },
         //"ready": {...taskPerformanceModel, name:"Delivery"},
-        //"cleaning": {...taskPerformanceModel, name:"Cleaning"},
         //"mats":{...taskPerformanceModel, name:"Mats"},
     },
     "current": 0,

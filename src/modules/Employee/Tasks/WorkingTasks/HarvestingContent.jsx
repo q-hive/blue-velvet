@@ -93,19 +93,19 @@ export const HarvestingContent = (props) => {
     //             </Typography>
     //         </>
     //     );
-    if(props.index===0)
-        return (
-            <>
-                <Typography variant="h4" align='center' color="secondary">
-                    Gather what you need: <br /><br/>
-                </Typography>
-                <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                    Harvesting table, working table, harvesting knife, {reducedTrays > 1 ? reducedTrays +  ' dryracks' : reducedTrays  + ' dryrack'} , waste container
-                </Typography>
-            </>
-        );
+    // if(props.index===0)
+    //     return (
+    //         <>
+    //             <Typography variant="h4" align='center' color="secondary">
+    //                 Gather what you need: <br /><br/>
+    //             </Typography>
+    //             <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+    //                 Harvesting table, working table, harvesting knife, {reducedTrays > 1 ? reducedTrays +  ' dryracks' : reducedTrays  + ' dryrack'} , waste container
+    //             </Typography>
+    //         </>
+    //     );
 
-    if(props.index===1) 
+    if(props.index===0) 
         return (
             <>
                 {/* <Box sx={taskCard_sx}>
@@ -120,9 +120,9 @@ export const HarvestingContent = (props) => {
                         ?
                         <>
                             <Box sx={taskCard_sx}>
-                                <Typography variant="h4" align='center' color={BV_THEME.textColor.lightGray}>
+                                {/* <Typography variant="h4" align='center' color={BV_THEME.textColor.lightGray}>
                                     Harvest the single strains:
-                                </Typography>
+                                </Typography> */}
                                 {
                                     products.length > 0 && (
                                         <>
@@ -130,7 +130,11 @@ export const HarvestingContent = (props) => {
                                                 products.map(product => {
                                                     return (
                                                         <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                                                            <b>{product.ProductName}</b> trays and dry racks: {Math.ceil(product.trays)} 
+                                                            <b> {product.ProductName} </b> 
+                                                            <br></br>
+                                                                trays: {Math.ceil(product.trays)} 
+                                                            <br></br>
+                                                                dryracks: {Math.ceil(product.trays)} 
                                                             <br></br>
                                                         </Typography>
                                                         )
@@ -138,20 +142,21 @@ export const HarvestingContent = (props) => {
                                                 )
                                             }
 
-                                        <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+                                        {/* <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
                                             Cut with the <b>Harvesting-Knife </b> 
                                             from low to high.
                                         </Typography>
-                                            <img src={trayAt45Angle}/>
+                                            <img src={trayAt45Angle}/> */}
                                         </>
 
                                     )
+                                    
                                 }
                             </Box>
-                
+                            {/*                 
                             <IconButton onClick={handleHelpDialog}>
                                 <Info/>
-                            </IconButton>
+                            </IconButton> */}
 
                             <UserDialog dialog={dialog} setDialog={setDialog} open={dialog.open} title={dialog.title} content={dialog.content} actions={dialog.actions} children={dialog.children} />
                         </>

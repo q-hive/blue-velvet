@@ -20,7 +20,7 @@ export const buildDeliveryFromOrders = async (orders) => {
 
 export const getPackagingForDay = (date, orgId, container = undefined) => {
     return new Promise(async (resolve, reject) => {
-        if(date === "all"){
+        if(date === "statusReady"){
             const packaging = await getPackagingByOrders(orgId)
             return resolve(packaging)
         }
@@ -68,7 +68,7 @@ export const getPackagingForDay = (date, orgId, container = undefined) => {
 
 export const getDeliveryByDate = (date, orgId, container = undefined) => {
     return new Promise(async(resolve, reject) => {
-        if(date === "all"){
+        if(date === "statusReady"){
             const delivery = await getDeliveryByOrders(orgId)
             return resolve(delivery)
         }
@@ -118,7 +118,7 @@ export const getDeliveryByDate = (date, orgId, container = undefined) => {
 
 export const getPackagingByOrders = async (orgId) => {
     console.log("Getting packages for all orders in DB")
-    const orders2 = await getFilteredOrders(orgId,undefined, false, {"key":"status", "value":"uncompleted"})
+    const orders2 = await getFilteredOrders(orgId,undefined, false, {"key":"status", "value":"packing"})
     if(orders2.length >0) {
         const packages = buildPackagesFromOrders(orders2)
         console.log(packages)
@@ -129,7 +129,7 @@ export const getPackagingByOrders = async (orgId) => {
 }
 export const getDeliveryByOrders = async (orgId) => {
     console.log("Getting delivery data for all orders in DB")
-    const orders2 = await getFilteredOrders(orgId,undefined, false, {"key":"status", "value":"uncompleted"})
+    const orders2 = await getFilteredOrders(orgId,undefined, false, {"key":"status", "value":"ready"})
     if(orders2.length >0) {
         const delivery = await buildDeliveryFromOrders(orders2)
         return delivery

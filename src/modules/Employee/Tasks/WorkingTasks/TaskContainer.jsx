@@ -29,6 +29,7 @@ import { MatCutContent } from '../ContainerTasks/MatCutContent'
 import useWorkingContext from '../../../../contextHooks/useEmployeeContext'
 import { PreSoakingContent1 } from './PreSoakingContent1'
 import { PreSoakingContent2 } from './PreSoakingContent2'
+import { transformTo } from '../../../../utils/times'
 
 export const TaskContainer = (props) => {
     //*Variables declarations
@@ -47,6 +48,8 @@ export const TaskContainer = (props) => {
     const {user, credential} = useAuth()
     const {WorkContext,setWorkContext,TrackWorkModel,setTrackWorkModel,employeeIsWorking, isOnTime} = useWorkingContext()
     const {state} = useLocation();
+    const navigate = useNavigate()
+    
 
     const [isFinished,setIsFinished] = useState(false)
     //* STEPPER
@@ -60,7 +63,8 @@ export const TaskContainer = (props) => {
         products=props.products
         packs = props.packs
     }
-    const [isDisabled, setIsDisabled] = useState(state.workData[type].length<1)
+
+    // const [isDisabled, setIsDisabled] = useState(state.workData[type].length<1)
 
     if(state != null){
         if(state.type != undefined  ){
@@ -92,7 +96,7 @@ export const TaskContainer = (props) => {
 
         case "preSoaking":
             contentTitle = "Soaking seeds"
-            expectedtTime = Math.ceil(state.time.times.preSoaking.time) 
+            expectedtTime = transformTo("ms","minutes",state.time.times.preSoaking.time) 
             content = <PreSoakingContent products={products} productsObj={productsByNameObj} workData={state.workData["preSoaking"]} index={activeStep}/>
             steps=[
                 {step:"Pre Soak"},
@@ -101,7 +105,8 @@ export const TaskContainer = (props) => {
 
         case "soaking1":
             contentTitle = "Soaking stage - 1"
-            expectedtTime = Math.ceil(state.time.times.preSoaking.time) 
+            expectedtTime = transformTo("ms","minutes",state.time.times.preSoaking.time) 
+            
             content = <PreSoakingContent1 products={products} productsObj={productsByNameObj} workData={state.workData["preSoaking"]} index={activeStep}/>
             steps=[
                 {step:"Water change 1"},
@@ -110,7 +115,7 @@ export const TaskContainer = (props) => {
 
         case "soaking2":
             contentTitle = "Soaking stage - 2"
-            expectedtTime = Math.ceil(state.time.times.preSoaking.time) 
+            expectedtTime = transformTo("ms","minutes",state.time.times.preSoaking.time) 
             content = <PreSoakingContent2 products={products} productsObj={productsByNameObj} workData={state.workData["preSoaking"]} index={activeStep}/>
             steps=[
                 {step:"Water change 2"},
@@ -118,33 +123,32 @@ export const TaskContainer = (props) => {
         break;
 
         case "seeding":
-            contentTitle = "Waste and control"
-            expectedtTime = Math.ceil(state.time.times.seeding.time) 
+            contentTitle = "Seeding"
+            expectedtTime = transformTo("ms","minutes",state.time.times.seeding.time) 
             content = <SeedingContent products={products} productsObj={productsByNameObj} workData={state.workData["seeding"]} index={activeStep}/>
             steps=[
                 {step:"Waste and control"},
-                {step:"Putting to the light"},
                 {step:"Setup"},
                 {step:"Seeding"},
-                {step:"Spray Seeds"},
+                // {step:"Putting to the light"},
+                // {step:"Spray Seeds"},
             ]
         break;
 
         
         
 
-        case "growing":
-            contentTitle = "Cycle finished"
-            content = <Typography>Go to dashboard and finish your work</Typography>
-            steps=[{step:"Growing"}]
-        break;
+        // case "growing":
+        //     contentTitle = "Cycle finished"
+        //     content = <Typography>Go to dashboard and finish your work</Typography>
+        //     steps=[{step:"Growing"}]
+        // break;
 
         case "harvestReady":
             contentTitle = "Harvesting"
-            expectedtTime = Math.ceil(state.time.times.harvestReady.time)
+            expectedtTime = transformTo("ms","minutes",state.time.times.harvestReady.time)
             content = <HarvestingContent products={products} index={activeStep}/>
             steps=[
-                {step:"Setup"},
                 {step:"Recolection"},
                 // {step:"Dry Rack"},
                 // {step:"Dry Station"},
@@ -153,30 +157,19 @@ export const TaskContainer = (props) => {
 
         case "packing":
             contentTitle = "Packing"
-            // expectedtTime = Number(Math.ceil(trays) * 2).toFixed(2)
-            {/*const totalPacks = order.products.map((product) => {
-                const total = product.packages.reduce((prev, curr) => {
-                    return prev + curr.number
-                },0)
-
-                return total
-            })
-
-            expectedtTime = Number((0.5*totalPacks[0])).toFixed(2)
-            */}
-            expectedtTime = 3
+            expectedtTime = transformTo("ms","minutes",state.time.times.packing.time)
             content = <PackingContent index={activeStep} products={products} packs={packs}/>
             steps=[
-                {step:"Tools"},
-                {step:"Calibration"},
                 {step:"Packing Greens"},
-                {step:"Boxing"},
+                // {step:"Tools"},
+                // {step:"Calibration"},
+                // {step:"Boxing"},
             ]
         break;
 
         case "ready":
             contentTitle = "Delivery"
-            expectedtTime = Math.ceil(state.time.times.harvestReady.time)
+            expectedtTime = transformTo("ms","minutes",state.time.times.harvestReady.time)
             content = <DeliveryContent index={activeStep}/>
             steps=[{step:"Delivery"}]
         break;
@@ -358,6 +351,24 @@ export const TaskContainer = (props) => {
             )
         }
             
+        if(type === "cleaning"){
+            console.log("The production cannot be updated as the same way of a productin model based task")
+            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].finished = finished
+            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current+1]].started = finished+1
+            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved =  achieved
+            TrackWorkModel.tasks.push(WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]])
+            setTrackWorkModel({...TrackWorkModel, tasks:TrackWorkModel.tasks})
+
+            WorkContext.current = WorkContext.current + 1
+            setWorkContext({...WorkContext, current:WorkContext.current, currentRender:WorkContext.current})
+            localStorage.setItem("WorkContext", JSON.stringify(WorkContext)) 
+            
+            props.setSnack({...props.snack, open:true, message:"Production updated succesfully", status:"success"})
+            props.setFinished({value:true,counter:props.counter+1});
+            navigate(`/${user.uid}/${user.role}/dashboard`)
+            return
+        }
+        
         updateProduction()
         .then((result) => {
 

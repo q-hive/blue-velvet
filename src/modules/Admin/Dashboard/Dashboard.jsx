@@ -236,7 +236,8 @@ export const Dashboard = () => {
                                                 {container.name}:<br/>
                                                 </Typography>
                                             <Typography sx={{width:"98%"}}>
-                                                <b>Max: </b>{container.capacity}<b> Available: </b>{container.available}{" "}<LinearProgress sx={{height:"3vh"}} variant="determinate" value={(container.used * 100) / container.capacity} />
+                                                <b>Max: </b>{container.capacity}<b> Available: </b>{container.available}{" "}
+                                                <LinearProgress sx={{height:"3vh"}} variant="determinate" value={(container.available / container.capacity)*100} />
                                             </Typography>
                                             {/*<Button variant="contained" sx={{width:"34%"}} onClick={()=>handleViewTask(task.type)} color="primary" >
                                                 View

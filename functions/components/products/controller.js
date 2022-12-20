@@ -106,3 +106,7 @@ export const relateOrdersAndTasks = (orgId) => {
 
     })
 }
+
+export const isLargeCicle = (totalProductionTime) => {
+    return totalProductionTime > 7
+}

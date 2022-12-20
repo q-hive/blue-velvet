@@ -20,7 +20,6 @@ import { tasksCicleObj } from '../../../utils/models';
 import { UserDialog } from '../../../CoreComponents/UserFeedback/Dialog';
 import { BV_THEME } from '../../../theme/BV-theme';
 import { getWorkdayProdData } from '../../../CoreComponents/requests';
-import cy from 'date-fns/esm/locale/cy/index.js';
 
 //*UNUSED
 // import api from '../../../axios.js'
