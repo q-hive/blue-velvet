@@ -123,16 +123,16 @@ export const TaskContainer = (props) => {
         break;
 
         case "seeding":
-            contentTitle = "Seeding"
             expectedtTime = transformTo("ms","minutes",state.time.times.seeding.time) 
             content = <SeedingContent products={products} productsObj={productsByNameObj} workData={state.workData["seeding"]} index={activeStep}/>
             steps=[
                 {step:"Waste and control"},
                 {step:"Setup"},
-                {step:"Seeding"},
+                // {step:"Seeding"},
                 // {step:"Putting to the light"},
                 // {step:"Spray Seeds"},
             ]
+            contentTitle = steps[activeStep].step
         break;
 
         

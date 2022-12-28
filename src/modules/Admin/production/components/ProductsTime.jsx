@@ -10,8 +10,8 @@ const options = [
     }, 
     {
         type:"large",
-        day:"5",
-        night:"6"
+        day:"3",
+        night:"7"
     } 
 ]
 

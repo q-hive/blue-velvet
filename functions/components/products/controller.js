@@ -62,7 +62,7 @@ export const calculatePerformance = (product) => {
         return 0
     }
     
-    return (product.parameters.harvestRate / product.parameters.seedingRate) * (product.price[0].packageSize / product.price[0].amount)
+    return (product.parameters.harvestRate / product.parameters.seedingRate) * (product.price[0].amount / product.price[0].packageSize)
 }
 
 export const relateOrdersAndTasks = (orgId) => {
@@ -83,8 +83,8 @@ export const relateOrdersAndTasks = (orgId) => {
                     mutableProd.orders = orders.map((order) => order._id)
 
                     if(mutableProd.performance === undefined) {
-                        mutableProd.performance = calculatePerformance(mutableProd)
-                        await updateProduct(orgId, prod._id, "performance", mutableProd.performance)
+                        mutableProd.performance = Number(calculatePerformance(mutableProd).toFixed(2))
+                        await updateProduct(orgId, mutableProd)
                     }
                     
                     return {...mutableProd}

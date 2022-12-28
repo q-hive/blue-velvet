@@ -141,15 +141,21 @@ export const PackingContent = (props) => {
                     <br></br> */}
                     
                     <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                        Amount of products in packages: <br></br>
+                        Total packages: <br></br>
                         {
                             packs && packs.length > 0 ? (
                                 packs.map((pack) => {
                                     return (
                                         <>
-                                            <b>{Object.keys(pack)[0]}:</b> <br></br>    
-                                            Small:{pack[Object.keys(pack)[0]].packages.small} <br></br>
-                                            Medium:{pack[Object.keys(pack)[0]].packages.medium} <br></br>
+                                            <b>
+                                            {Object.keys(pack)[0]}: 
+                                            </b> 
+                                            <br></br>
+                                            {pack[Object.keys(pack)[0]].packages.large} pack X 1kg<br></br>
+                                            {pack[Object.keys(pack)[0]].packages.medium} pack X 80g <br></br>
+                                            {pack[Object.keys(pack)[0]].packages.small} pack X 25g<br></br>
+                                            
+                                            <br></br>    
                                         </>
                                     )
                                 })

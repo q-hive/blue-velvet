@@ -6,10 +6,10 @@ const Product = new Schema({
     name:       { type: String,   required: true,                    },
     image:      { type: String,   required: false                    }, // * BASE 64 PARSED PHOTO
     desc:       { type: String,   required: false                    }, // * Description
-    status:     { type: String,   required: true, default: 'on hold' },
+    status:     { type: String,   required: true, default: 'stopped' },
     // * ID of quality of the seeds - track the seeds origin - metadata 
-    seed:       { type: ObjectId, required: false                    }, 
-    provider:   { type: ObjectId, required: false                    },
+    seed:       { type: {}, required: false                    }, 
+    provider:   { type: {}, required: false                    },
     price:      { // * Cost per package 
         type: [{
             amount:         { type: Number, required: true }, // * Package price
@@ -42,10 +42,6 @@ const Product = new Schema({
     performance:Number
 },
 {
-    timestamps: {
-        "createdAt": "created",
-        "updatedAt": "updated"
-    },
     query: {
         byName(name) {
             return this.where({ name: new RegExp(name, 'i') })

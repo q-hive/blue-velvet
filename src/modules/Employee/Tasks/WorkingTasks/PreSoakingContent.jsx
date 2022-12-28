@@ -96,7 +96,7 @@ export const PreSoakingContent = (props) => {
                         ) 
                     }
 
-                    <Box sx={taskCard_sx}>
+                    {/* <Box sx={taskCard_sx}>
                         <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
                             <strong>{workProducts.length === 0 ? ' At the moment there are no products that need to be soak. ' : 'Put the indicated amount of seeds in each bucket and wash it twice.'}</strong>
                         </Typography>
@@ -110,15 +110,15 @@ export const PreSoakingContent = (props) => {
                             </Typography>
                         )
                         }
-                    </Box>
+                    </Box> */}
 
 
                     
-                    <IconButton onClick={handleHelpDialog} >
+                    {/* <IconButton onClick={handleHelpDialog} >
 
                         <QuestionMark/>
 
-                    </IconButton>
+                    </IconButton> */}
 
                     <UserDialog dialog={dialog} setDialog={setDialog} open={dialog.open} title={dialog.title} content={dialog.content} actions={dialog.actions} children={dialog.children}/>
 

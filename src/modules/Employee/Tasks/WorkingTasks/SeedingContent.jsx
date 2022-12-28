@@ -115,43 +115,43 @@ export const SeedingContent = (props) => {
     //         </>
     //     );
 
-    if(props.index===1)
-        return (
-            <>
-                <Box sx={taskCard_sx}>
-                    <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                        <b>{totalTrays}</b> {totalTrays>1 ? "Trays": "Tray"} <br/> 
-                    </Typography>
-                    {workProducts.map((product,index)=>{return(
-                        !product.minutes ?
-                        <Typography key={index} variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                            <b>{parseFloat(product.seeds).toFixed(2)}</b> grs of <b>{product.ProductName}</b> Seeds <br/>
-                        </Typography>
-                        :
-                        null
-                    )})}
+    // if(props.index===1)
+    //     return (
+    //         <>
+    //             <Box sx={taskCard_sx}>
+    //                 <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+    //                     <b>{totalTrays}</b> {totalTrays>1 ? "Trays": "Tray"} <br/> 
+    //                 </Typography>
+    //                 {workProducts.map((product,index)=>{return(
+    //                     !product.minutes ?
+    //                     <Typography key={index} variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+    //                         <b>{parseFloat(product.seeds).toFixed(2)}</b> grs of <b>{product.ProductName}</b> Seeds <br/>
+    //                     </Typography>
+    //                     :
+    //                     null
+    //                 )})}
 
-                    <Box sx={taskCard_sx}>
-                        <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                        Place the <b>{totalTrays}</b> {totalTrays > 1 ? "Trays" : "Tray"} on the Seeding-Table, and fill each of them with a pre-cut Hemp-Mat
-                        </Typography>
-                    </Box>
+    //                 <Box sx={taskCard_sx}>
+    //                     <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+    //                     Place the <b>{totalTrays}</b> {totalTrays > 1 ? "Trays" : "Tray"} on the Seeding-Table, and fill each of them with a pre-cut Hemp-Mat
+    //                     </Typography>
+    //                 </Box>
 
-                    <Box sx={taskCard_sx}>
-                        <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                        Staple them under the Table.
-                        </Typography>
-                    </Box>
+    //                 <Box sx={taskCard_sx}>
+    //                     <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+    //                     Staple them under the Table.
+    //                     </Typography>
+    //                 </Box>
 
 
                     
                     
-                </Box>
+    //             </Box>
 
-            </>
-        );
+    //         </>
+    //     );
 
-    if(props.index===2){
+    if(props.index===1){
         const getSeeds = (product) => {
             if(product.productionData === undefined){
                 return parseFloat(product.seeds/product.trays).toFixed(2)
@@ -173,7 +173,8 @@ export const SeedingContent = (props) => {
                     workProducts.map((product,index)=>{
                         return(
                             <Typography key={product+index+"2"} variant="h5" align='justify' color={BV_THEME.textColor.lightGray} >
-                                Put {product.seeds} grs of <b>{product.ProductName}</b> in {Math.ceil(product.trays)} {product.trays > 1 ? "trays.":"tray."} 
+                                {/* Put {product.seeds} grs of  */}
+                                <b>{product.ProductName}</b>: {Math.ceil(product.trays)} {product.trays > 1 ? "trays.":"tray."} 
                                 {/* Max seeds per tray:  <b>{getSeeds(product)}</b> g <br/><br/> */}
                             </Typography>
                         )
