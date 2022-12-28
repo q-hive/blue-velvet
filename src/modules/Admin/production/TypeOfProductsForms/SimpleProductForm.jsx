@@ -19,6 +19,7 @@ import { useEffect } from 'react';
 import useAuth from '../../../../contextHooks/useAuthContext.js';
 import { ProductsPrice } from '../components/ProductsPrice.jsx';
 import { ProductsTime } from '../components/ProductsTime.jsx';
+import { updateProduct } from '../../../../CoreComponents/requests.jsx';
 //Stepper
 // import VerticalLinearStepper from './StepperTest.jsx';
 
@@ -34,9 +35,9 @@ export const SimpleProductForm = ({editing, product}) => {
         label:              editing ? product.img : "",
         smallPrice:         editing ? product.price.find((price) => price.packageSize === 25).amount      : "",     
         mediumPrice:        editing ? product.price.find((price) => price.packageSize === 80).amount      : "",
-        seedId:             editing ? product.seedId : "",
-        provider:           editing ? product.provider : "",
-        providerSeedName:   editing ? product.provider : "",
+        seedId:             editing ? product.seed.seedId : "",
+        provider:           editing ? product.provider.name : "",
+        providerSeedName:   editing ? product.seed.seedName : "",
         day:                editing ? product.parameters.day : "",
         night:              editing ? product.parameters.night : "",
         //*HANDLE PRODUCSTS CYCLE TYPE
@@ -275,9 +276,61 @@ export const SimpleProductForm = ({editing, product}) => {
                          night:          Number(productData.night),     // * In days check email
                          seedingRate:    Number(productData.seeding),   // * Per tray
                          harvestRate:    Number(productData.harvest)    // * Per tray
-            }
+            },
         }
 
+        if(editing) {
+            mappedProduct.performamce = product.performance
+            mappedProduct._id = product._id
+            updateProduct(user,credential,mappedProduct)
+            .then((response) => {
+                setDialog({
+                    ...dialog,
+                    open:true,
+                    title:"Product updated succesfully",
+                    message:"What do you want to do?",
+                    actions:[
+                        {
+                            label:"Create another",
+                            execute: () => {
+                                window.location.reload()
+                            }
+                        },
+                        {
+                            label:"Exit",
+                            execute: () => {
+                                navigate(`/${user.uid}/${user.role}/production`)
+                            }
+                        },
+                    ]
+                })     
+            })
+            .catch(err => {
+                setDialog({
+                    ...dialog,
+                    open:true,
+                    title:"Error updating product",
+                    message:"What do you want to do?",
+                    actions:[
+                        {
+                            label:"Try again",
+                            execute: () => {
+                                window.location.reload()
+                            }
+                        },
+                        {
+                            label:"Cancel",
+                            execute: () => {
+                                navigate(`/${user.uid}/${user.role}/production`)
+                            }
+                        },
+                    ]   
+                })
+            })
+            
+            return
+        }
+        
         saveProduct(mappedProduct)
             
     }

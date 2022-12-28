@@ -136,6 +136,10 @@ router.patch('/', (req, res) => {
         if(field === "performance"){
             value = Number(req.query.value)
         }
+
+        // if(field === "seed"){
+        //     value = {}
+        // }
         
         const controllerConfig = {
             filter: {
@@ -157,7 +161,7 @@ router.patch('/', (req, res) => {
         //*TODO TRIGGER TASKS RELATED TO A PRODUCT CANCELLATION
         //*TODO WHEN AL THIS PROCESSES ARE COMPLETED, THEN UPDATE THE PRODUCT STATE
         //*TODO If a products is updated, then the container must be updated
-        controller = () => updateProduct(orgId,id,field,value)
+        controller = () => updateProduct(orgId,req.body.product)
         
     }
     

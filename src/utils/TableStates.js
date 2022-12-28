@@ -591,7 +591,13 @@ export const salesColumns = [
         headerAlign:"center",
         align:"center",
         minWidth:{xs:"25%",md:130},
-        flex:1
+        flex:1,
+        renderCell:(params) => {
+            return (
+                <>€ {params.row.income}</>
+            )
+            
+        }
     },
     {
         field:"status",

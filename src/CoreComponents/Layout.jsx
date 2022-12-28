@@ -42,10 +42,11 @@ import { BV_THEME } from '../theme/BV-theme';
 import { useEffect } from 'react';
 import { Clock } from './Clock';
 import { Timer } from './Timer';
+import { getContainerData } from './requests';
 
 
 const BV_Layout = (props) => {
-    const {user, logout} = useAuth()
+    const {user,credential ,logout} = useAuth()
     const theme = useTheme(BV_THEME)
     const navigate = useNavigate()
 
@@ -56,6 +57,7 @@ const BV_Layout = (props) => {
 
     const { window } = props;
     const [mobileOpen, setMobileOpen] = React.useState(false);
+    const [containerData, setContainerData] = useState({"city":"", "id":""})
   
     const handleDrawerToggle = () => {
       setMobileOpen(!mobileOpen);
@@ -72,54 +74,53 @@ const BV_Layout = (props) => {
 
     //Admin Options Drawer buttons content (label and Icon)
     const adminOptions = [
-                    {
-                      label:'Dashboard',
-                      icon:<DashboardIcon color="primary"/>,
-                    }, 
-                    {
-                      label:'Employees',
-                      icon:<GroupsIcon color="primary"/>,
-                    }, 
-                    {
-                      label:'Production',
-                      icon:<WorkspacesIcon color="primary"/>,
-                    }, 
-                    {
-                      label:'Sales',
-                      icon:<RequestPageIcon color="primary"/>,
-                    }, 
-                    {
-                      label:'Client',
-                      icon:<SupportAgentIcon color="primary"/>,
-                    }
-                  ];
+      {
+        label:'Dashboard',
+        icon:<DashboardIcon color="primary"/>,
+      }, 
+      {
+        label:'Employees',
+        icon:<GroupsIcon color="primary"/>,
+      }, 
+      {
+        label:'Production',
+        icon:<WorkspacesIcon color="primary"/>,
+      }, 
+      {
+        label:'Sales',
+        icon:<RequestPageIcon color="primary"/>,
+      }, 
+      {
+        label:'Client',
+        icon:<SupportAgentIcon color="primary"/>,
+      }
+    ];
 
     // Options Drawer for Employees 
     const employeeOptions = [
-                    {
-                      label:'Dashboard',
-                      icon:<DashboardIcon color="primary"/>,
-                    }, 
-                    {
-                      label:'Production',
-                      icon:<WorkspacesIcon color="primary"/>,
-                    }, 
-                  ];
+      {
+        label:'Dashboard',
+        icon:<DashboardIcon color="primary"/>,
+      }, 
+      {
+        label:'Production',
+        icon:<WorkspacesIcon color="primary"/>,
+      }, 
+    ];
 
     //Settings to show when user avatar is clicked
     const userSettings = [
-                    {
-                      label:  'Profile',
-                      action: () => navigate(`/${user.uid}/${user.role}/profile`) 
-                    },
-                    {
-                      label:  'Logout',
-                      action: () => logout() 
-                    },
-                ];
-
-
-  
+      {
+        label:  'Profile',
+        action: () => navigate(`/${user.uid}/${user.role}/profile`) 
+      },
+      {
+        label:  'Logout',
+        action: () => logout() 
+      },
+    ];
+          
+    
     // FRAGMENT , children of Drawer Component 
     const drawer = (
         <>
@@ -204,9 +205,10 @@ const BV_Layout = (props) => {
                       </Box>
 
                       
-                      <Clock color="secondary.dark"/> 
-
-                      <Typography color="secondary.dark" variant="h6" flexGrow={0}>Container: {user.assignedContainer}</Typography>  
+                      <Typography>
+                        <Clock color="secondary.dark"/>
+                        <Typography color="secondary.dark" variant="h6" flexGrow={0}>Container location: {containerData.city}</Typography>  
+                      </Typography>
                       
                       <IconButton
                         size="large" edge={false}
@@ -260,10 +262,23 @@ const BV_Layout = (props) => {
                     
                 </AppBar>
               </>
-              )
+    )
 
     const container = window !== undefined ? () => window().document.body : undefined;
                             
+    React.useEffect(() => {
+      getContainerData(user,credential,user.assignedContainer)
+      .then((containerResponse) => {
+        setContainerData((container) => {
+          return {
+            ...container,
+            city:containerResponse[0].address.city
+          }
+        })
+      })
+      .catch((err) => {console.log("Error getting containers data")})
+    },[])
+    
     return (
         <>
           <Grid container spacing={1}>

@@ -10,6 +10,7 @@ import GlobalWorkDay from './GlobalWorkDay.js';
 
 const Production = new Schema({
     ProductName:            String,
+    RelatedMix:             {isForMix: Boolean, mixName:String},
     ProductID:              ObjectId,
     ProductionStatus:       String,
     RelatedOrder:           ObjectId,
@@ -18,7 +19,9 @@ const Production = new Schema({
     seeds:                  Number,
     harvest:                Number,
     trays:                  Number,
-    ContainerId:            ObjectId
+    dryracks:               Number,
+    ContainerId:            ObjectId,
+    
 })
 
 export default Production

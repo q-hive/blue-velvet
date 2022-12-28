@@ -24,8 +24,16 @@ export const newProduct = (orgId, contId, product) => {
                 image:      product.image,
                 desc:       product.desc,
                 status:     product.status,
-                seed:       seedId,
-                provider:   provId,
+                seed:       {
+                    _id:        seedId,
+                    seedName:   product.seed.seedName,
+                    seedId:     product.seed.seedId
+                },
+                provider:   {
+                    _id:    provId,
+                    email:  product.provider.email,
+                    name:   product.provider.name
+                },
                 price:      product.price,
                 parameters: product.parameters,
                 mix:        product.mix,
@@ -154,28 +162,40 @@ export const getAllProducts = (orgId) => {
     })
 }
 
-export const updateProduct = (orgId, id, field, value) => {
+export const updateProduct = (orgId, newProduct) => {
     return new Promise(async (resolve, reject) => {
-        const org = await orgModel.findById(orgId)
+        try {
+            const operation = await orgModel.updateOne(
+                { "_id":mongoose.Types.ObjectId(orgId) },
+                { "$set": {"containers.$[].products.$[product]": newProduct } },
+                { "arrayFilters": [ {"product._id":newProduct._id} ] }    
+            )
 
-        if(org === null || org === undefined) {
-            reject("No organization found")
+            resolve(operation) 
+        } catch (err) {
+            reject(err)
         }
 
 
-        const product = org.containers[0].products.id(id)
 
-        if(product === null || product === undefined) {
-            reject("No product found")
-        }
+        // if(org === null || org === undefined) {
+        //     reject("No organization found")
+        // }
 
-        product[field] = value
 
-        org.save((err) => {
-            if(err) reject(err)
+        // const product = org.containers[0].products.id(id)
+
+        // if(product === null || product === undefined) {
+        //     reject("No product found")
+        // }
+
+        // product[field] = value
+
+        // org.save((err) => {
+        //     if(err) reject(err)
             
-            resolve(org)
-        })
+        //     resolve(org)
+        // })
     })
 }
 

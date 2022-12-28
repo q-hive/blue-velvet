@@ -132,10 +132,39 @@ export const HarvestingContent = (props) => {
                                                         <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
                                                             <b> {product.ProductName} </b> 
                                                             <br></br>
-                                                                trays: {Math.ceil(product.trays)} 
-                                                            <br></br>
-                                                                dryracks: {Math.ceil(product.trays)} 
-                                                            <br></br>
+                                                                {
+                                                                    product.isMixModel
+                                                                    ?
+                                                                    <>
+                                                                        {
+                                                                            product.modelsToHarvestMix.map((mixStrain) => {
+                                                                                return (
+                                                                                    <>
+                                                                                        Mix strain: {mixStrain.ProductName}
+                                                                                        <br></br>
+                                                                                        trays:   {Math.ceil(mixStrain.trays)}
+                                                                                        <br></br>
+                                                                                        dryracks:{Math.ceil(mixStrain.dryracks)}
+                                                                                        <br></br>
+                                                                                    </>    
+                                                                                )
+                                                                            })
+                                                                        }
+                                                                    </>
+                                                                    :
+                                                                    <>
+                                                                        trays: {Math.ceil(product.trays)} 
+
+                                                                        <br></br>
+
+                                                                        dryracks: {Math.ceil(product.dryracks)} 
+
+                                                                        <br></br>
+                                                                    </>
+
+                                                                }
+                                                            
+                                                            
                                                         </Typography>
                                                         )
                                                     }

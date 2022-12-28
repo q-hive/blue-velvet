@@ -14,7 +14,8 @@ const Container = new Schema({
     production:     { type: [Production],   required: true                 },
     products:       { type: [Product],      required: true                 },
     address:        { type: Address,        required: false                },
-    workday:        { type: {},             required: false                }
+    workday:        { type: {},             required: false                },
+    config:         { type: {},             required: false                }
 },    
 {
     query: {

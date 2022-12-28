@@ -3,6 +3,7 @@ import api from "../axios"
 
 
 import useAuth from '../contextHooks/useAuthContext'
+import { normalizeDate } from '../utils/times'
 
 export const getOrdersData = (props) => {
 
@@ -48,15 +49,16 @@ export const getOrdersData = (props) => {
         Promise.all(getCustomer)
         .then((newResponse) => {
             newResponse.forEach((order, idx) => {
-                const dayOfOrder = new Date(order.date).getDay()
-                switch(dayOfOrder){
+                const orderDate = new Date(order.date)
+                
+                switch(orderDate.getDay()){
                     case 2:
-                        newResponse[idx].date1 = order.date 
+                        newResponse[idx].date1 = normalizeDate(orderDate) 
                         newResponse[idx].date2 = null 
                         
                     break;
                     case 5:
-                        newResponse[idx].date2 = order.date
+                        newResponse[idx].date2 = normalizeDate(orderDate)
                         newResponse[idx].date1 = null
                     break;
                     default:
@@ -136,7 +138,7 @@ export  const getCustomerData = async  (props) => {
     let user = props.user
     let credential = props.credential
     let setLoading = props.setLoading
-    let setRows = props.setCustomers
+    // let setRows = props.setCustomers
     let dialog = props.dialog
     let setDialog = props.setDialog    
     
@@ -149,7 +151,7 @@ export  const getCustomerData = async  (props) => {
         .then((response) => {
         setLoading(false)
         console.log(response.data.data)
-        setRows(response.data.data)
+        // setRows(response.data.data)
         if(response.data.data.length === 0 ){
             setDialog({
                 ...dialog,
@@ -294,4 +296,35 @@ export const finishWorkDayInDb = async (props) => {
         Promise.reject(err)
     })
 
+}
+
+export const updateContainerConfig = async (user, credential, containerConfigModel) => {
+    return await api.api.patch(`${api.apiVersion}/container/config/${user.assignedContainer}`, containerConfigModel, {
+        headers: {
+            authorization:  credential._tokenResponse.idToken,
+            user:           user
+        }
+    })
+}
+
+export const updateProduct = (user,credential,mappedProduct) => {
+    return api.api.patch(`${api.apiVersion}/products/?id=${mappedProduct._id}`, {product:mappedProduct}, {
+        headers:{
+            authorization:credential._tokenResponse.idToken,
+            user:user,
+        }
+    })
+}
+
+export const getContainerData = async (user, credential)=> {
+    const userOrg = user.organization || JSON.parse(window.localStorage.getItem("usermeta"))?.organization
+    
+    const containersData = await api.api.get(`${api.apiVersion}/organizations?_id=${userOrg}`,{
+        headers:{
+            "authorization":    credential._tokenResponse.idToken,
+            "user":             user
+        }
+    })
+
+    return containersData.data.data[0].containers
 }

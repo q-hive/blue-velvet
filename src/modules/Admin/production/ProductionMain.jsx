@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react'
 
 //*MUI Components
-import { Box, Button, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Fade, Grid, LinearProgress, Paper, Typography, useTheme } from '@mui/material'
+import { Box, Button, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Fade, Grid, InputAdornment, LinearProgress, Paper, TextField, Typography, useTheme } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 //*THEME
 import {BV_THEME} from '../../../theme/BV-theme'
@@ -19,7 +19,8 @@ import api from '../../../axios'
 import { useNavigate } from 'react-router-dom'
 import useAuth from '../../../contextHooks/useAuthContext'
 import { Stack } from '@mui/system'
-import { getGrowingProducts } from '../../../CoreComponents/requests'
+import { getGrowingProducts, updateContainerConfig } from '../../../CoreComponents/requests'
+import { containerConfigModel } from '../../../utils/models'
 
 export const ProductionMain = () => {
     
@@ -38,6 +39,7 @@ export const ProductionMain = () => {
         message:"",
         actions:[]
     })
+    const [containerConfig, setContainerConfig] = useState(containerConfigModel)
 
     //*Network, routing and api
     const navigate = useNavigate()
@@ -76,6 +78,79 @@ export const ProductionMain = () => {
             open:false
         })
         
+    }
+
+    const handleOverHeadInput = (e) => {
+        setContainerConfig({
+            ...containerConfig,
+            overhead:Number(e.target.value)
+        })
+    }
+
+    const handleAcceptContainerConfig = () => {
+        setLoading(true)
+        updateContainerConfig(user, credential, containerConfig)
+        .then((result) => {
+            if(result.status === 200) {
+                setDialog({
+                    ...dialog,
+                    open:true,
+                    title:"Your container config has been updated successfully",
+                    actions:[ 
+                        {
+                            label:"Ok",
+                            btn_color:"primary",
+                            execute:() => {
+                                setLoading(false)
+                                handleCloseDialog()
+                            }
+                        },
+                    ]
+                })
+            }
+            if(result.status === 204) {
+                setDialog({
+                    ...dialog,
+                    open:true,
+                    title:result.data.message,
+                    actions:[ 
+                        {
+                            label:"Ok",
+                            btn_color:"primary",
+                            execute:() => {
+                                setLoading(false)
+                                handleCloseDialog()
+                            }
+                        },
+                    ]
+                })
+            }
+        })
+        .catch(err => {
+            console.log(err)
+            setDialog({
+                ...dialog,
+                open:true,
+                title:"Error updating the container configuration",
+                actions:[ {
+                    label:"Retry",
+                    btn_color:"primary",
+                    execute:async () => {
+                        await updateContainerConfig()
+                    }
+                    },
+                    {
+                        label:"Cancel",
+                        btn_color:"secondary",
+                        execute: () => {
+                            setLoading(false)
+                            handleCloseDialog()
+                            
+                        }
+                    }
+                ]
+            })
+        })
     }
     
     useEffect(() => {
@@ -221,97 +296,144 @@ export const ProductionMain = () => {
                         content={dialog.message}
                         actions={dialog.actions}
                         />
-                        
+                            
 
                         <Typography variant="h4" color="secondary" textAlign={"center"} margin={theme.margin.mainHeader}>
                             Production Management
                         </Typography>
-                        <Box sx={{display:"flex", justifyContent:"space-between",marginBottom:"3vh"}} >
-                        <Button variant='contained' disabled={user.role === "employee"} color='primary' startIcon={<Add/>} onClick={handleNewProduct} sx={{minWidth:"20%"}}>
-                            Add New Product
-                        </Button>
-                    </Box>
+                        <Box sx={{display:user.role === "employee" ? 'none' : 'flex', justifyContent:"space-between",marginBottom:"3vh"}} >
+                            <Button variant='contained' disabled={user.role === "employee"} color='primary' startIcon={<Add/>} onClick={handleNewProduct} sx={{minWidth:"20%"}}>
+                                Add New Product
+                            </Button>
+                        </Box>
 
-                    <Grid container maxWidth={"xl"} spacing={2} marginTop={2}>
-                        {/* <Grid item xs={12} md={6} lg={4} >
-                            <Paper elevation={5} sx={{
+                        <Grid container maxWidth={"xl"} spacing={2} marginTop={2}>
+                            {/* <Grid item xs={12} md={6} lg={4} >
+                                <Paper elevation={5} sx={{
+                                                            padding: BV_THEME.spacing(2),
+                                                            display: "flex",
+                                                            overflow: "auto",
+                                                            flexDirection: "column",
+                                                            minHeight: 480,
+                                                            
+                                                        }}>
+                                    <Typography variant="h6" color="secondary">
+                                        Growing Products
+                                    </Typography>
+
+                                    {
+                                        loading
+                                        ?   
+                                        <LinearProgress color="primary" sx={{marginY:"2vh"}}/>
+                                        :  
+                                        <Stack sx={{}}>
+                                        
+                                            {displayGrowingProducts()}
+
+                                            
+                                        </Stack>
+                                        
+                                    }      
+                                </Paper>
+                            </Grid> */}
+
+
+                            <Grid item xs={12} md={6} lg={12} >
+                                <Paper elevation={4} sx={{
                                                         padding: BV_THEME.spacing(2),
                                                         display: "flex",
                                                         overflow: "auto",
                                                         flexDirection: "column",
-                                                        minHeight: 480,
-                                                        
+                                                        minHeight: 480
                                                     }}>
-                                <Typography variant="h6" color="secondary">
-                                    Growing Products
-                                </Typography>
+                                    <Typography variant="h6" color="secondary">
+                                        All products
+                                    </Typography>
 
-                                {
-                                    loading
-                                    ?   
-                                    <LinearProgress color="primary" sx={{marginY:"2vh"}}/>
-                                    :  
-                                    <Stack sx={{}}>
-                                    
-                                        {displayGrowingProducts()}
-
+                                    {
+                                loading
+                                ?   
+                                <LinearProgress color="primary" sx={{marginY:"2vh"}}/>
+                                :   
+                                <>
+                                    <DataGrid
+                                        columns={columnsState}
+                                        rows={ rows
+                                        }
+                                        getRowId={(row) => {
+                                            return row._id
+                                        }}
+                                        getRowHeight={() => 'auto'}
+                                        sx={{marginY:"2vh", display:() => theme.mobile.hidden,height:"100%"}}
+                                    />
+                                    <DataGrid
+                                        columns={productsColumnsMobile}
+                                        rows={rows}
+                                        getRowId={(row) => {
+                                            return row._id
+                                        }}
+                                        onStateChange={(s,e,d) => {
+                                            // console.log(s)
+                                            // console.log(e)
+                                            // console.log(d)
+                                        }}
                                         
-                                    </Stack>
-                                    
-                                }      
-                            </Paper>
-                        </Grid> */}
+                                        sx={{marginY:"2vh", display:() => theme.mobile.only}}
+                                    />
+                                </>
+                            }     
+                                </Paper>
+                            </Grid>
 
-
-                        <Grid item xs={12} md={6} lg={12} >
-                            <Paper elevation={4} sx={{
-                                                    padding: BV_THEME.spacing(2),
-                                                    display: "flex",
-                                                    overflow: "auto",
-                                                    flexDirection: "column",
-                                                    minHeight: 480
-                                                }}>
-                                <Typography variant="h6" color="secondary">
-                                    All products
-                                </Typography>
-
-                                {
-                            loading
-                            ?   
-                            <LinearProgress color="primary" sx={{marginY:"2vh"}}/>
-                            :   
-                            <>
-                                <DataGrid
-                                    columns={columnsState}
-                                    rows={ rows
-                                    }
-                                    getRowId={(row) => {
-                                        return row._id
-                                    }}
-                                    getRowHeight={() => 'auto'}
-                                    sx={{marginY:"2vh", display:() => theme.mobile.hidden,height:"100%"}}
-                                />
-                                <DataGrid
-                                    columns={productsColumnsMobile}
-                                    rows={rows}
-                                    getRowId={(row) => {
-                                        return row._id
-                                    }}
-                                    onStateChange={(s,e,d) => {
-                                        // console.log(s)
-                                        // console.log(e)
-                                        // console.log(d)
-                                    }}
-                                    
-                                    sx={{marginY:"2vh", display:() => theme.mobile.only}}
-                                />
-                            </>
-                        }     
-                            </Paper>
+                        {/*Grid Container End */}    
                         </Grid>
 
-                    {/*Grid Container End */}    
-                    </Grid>
+                        {
+                            user.role === "admin" && (
+                                <Grid container maxWidth={"xl"} spacing={2} marginTop={2}>
+                                    <Grid item xs={12} md={6} lg={12} >
+                                        <Paper elevation={4} sx={{
+                                                                padding: BV_THEME.spacing(2),
+                                                                display: "flex",
+                                                                overflow: "auto",
+                                                                flexDirection: "column",
+                                                                minHeight: 480
+                                                            }}>
+                                            <Typography variant="h6" color="secondary">
+                                                Manage and configure the container
+                                            </Typography>
+
+                                            {
+                                        loading
+                                        ?   
+                                        <LinearProgress color="primary" sx={{marginY:"2vh"}}/>
+                                        :   
+                                        <>
+                                            <TextField
+                                                label="Overhead production %"
+                                                helperText="Place an INTEGER to setup the overhead"
+                                                inputProps={
+                                                    {
+                                                        endAdornment: <InputAdornment position="end"> % </InputAdornment>
+                                                    }
+                                                }  
+                                                onChange={handleOverHeadInput}
+                                                type="number"     
+                                            />
+
+                                            <Button variant='contained' disabled={user.role === "employee"} color='primary' startIcon={<Add/>} onClick={handleAcceptContainerConfig} sx={{minWidth:"20%"}}>
+                                                Accept configuration
+                                            </Button>
+                                        
+                                        </>
+                                    }     
+                                        </Paper>
+                                    </Grid>
+
+                                {/*Grid Container End */}    
+                                </Grid>
+                            ) 
+                        }
                         
                         
                     </Box>

@@ -50,7 +50,7 @@ export const SalesIndex = () => {
             setTotalIncome:setTotalIncome,
             user:user,
             credential:credential,
-            setLoading:setLoading
+            setLoading:setLoading,
         })
         getOrdersData({
             setOrders:setOrders,
@@ -122,7 +122,7 @@ export const SalesIndex = () => {
             
             
             {/* Recent */}
-            <Grow in={true} timeout={2000} unmountOnExit>
+            {/* <Grow in={true} timeout={2000} unmountOnExit>
             <Grid item xs={12} md={6} lg={4}>
                 <Paper elevation={4} sx={fixedHeightPaper}>
                     <Typography variant="h6" color="secondary">
@@ -142,10 +142,10 @@ export const SalesIndex = () => {
                     }      
                 </Paper>
             </Grid>
-            </Grow>
+            </Grow> */}
 
             {/* Delivered */}
-            <Grow in={true} timeout={2000} unmountOnExit>
+            {/* <Grow in={true} timeout={2000} unmountOnExit>
             <Grid item xs={12} md={6} lg={4}>
                 <Paper elevation={4} sx={fixedHeightPaper}>
                     <Typography variant="h6" color="secondary">Delivered</Typography>
@@ -163,10 +163,10 @@ export const SalesIndex = () => {
                     }        
                 </Paper>
             </Grid>
-            </Grow>
+            </Grow> */}
 
             {/* Cancelled */}
-            <Grow in={true} timeout={2000} unmountOnExit>
+            {/* <Grow in={true} timeout={2000} unmountOnExit>
             <Grid item xs={12} md={6} lg={4}>
                 <Paper elevation={4} sx={fixedHeightPaper}>
                     <Typography variant="h6" color="secondary">Cancelled</Typography>
@@ -183,7 +183,7 @@ export const SalesIndex = () => {
                     }      
                 </Paper>
             </Grid>
-            </Grow>
+            </Grow> */}
 
             <Grow in={true} timeout={2000} unmountOnExit>
             <Grid item xs={12} md={12} lg={12}>
