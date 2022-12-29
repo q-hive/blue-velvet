@@ -571,7 +571,7 @@ export const buildProductionDataFromOrder = async (order, dbproducts, overHeadPa
                         harvest:                harvest,
                         seeds:                  totalSeeds,
                         trays:                  totalTrays,
-                        dryracks:               isLargeCicle(totalProductionDays) ? trays : trays * 0.5
+                        dryracks:               isLargeCicle(totalProductionDays) ? totalTrays : totalTrays * 0.5
                     }]
     
                 }
