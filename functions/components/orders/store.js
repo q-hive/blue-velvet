@@ -254,7 +254,7 @@ export const createNewOrder = (orgId, order) => {
                     _id:            prod._id,
                     name:           prod.name,
                     status:         prod.status,
-                    seedId:         prod?.seed.seedId,
+                    seedId:         dbProduct?.seed?.seedId,
                     packages:       prod.packages,
                     mix:            dbProduct.mix.isMix,
                     price:          dbProduct.price
