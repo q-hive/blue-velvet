@@ -45,8 +45,13 @@ router.get('/analytics/performance', (req, res) => {
 router.get('/analytics/workday', (req, res) => {
     getEmployeesWithAggregation(res.locals.organization, {"employees":{"_id":true,"workDay":true, "name":true}})
     .then(data => {
-        console.log(data)
         const mappedData = data.employees.map((employee) => {
+            console.log(employee)
+            
+            if(employee.workDay === undefined || Object.keys(employee.workDay).length === 0) {
+                return {name:employee.name, _id:employee._id, workDay:{}}
+            }
+            
             // //*DELETE NO DATA TASKS
             Object.keys(employee.workDay).map((key) => {
                 if(employee.workDay[key].expectedTime === 0){
@@ -54,9 +59,7 @@ router.get('/analytics/workday', (req, res) => {
                 }
             })
             
-            if(employee.workDay === undefined || Object.keys(employee.workDay).length === 0) {
-                return {name:employee.name, _id:employee._id, workDay:{}}
-            }
+            
             
 
             console.log(employee)
