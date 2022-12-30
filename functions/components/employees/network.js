@@ -45,29 +45,27 @@ router.get('/analytics/performance', (req, res) => {
 router.get('/analytics/workday', (req, res) => {
     getEmployeesWithAggregation(res.locals.organization, {"employees":{"_id":true,"workDay":true, "name":true}})
     .then(data => {
-        const mappedData = data.employees.map((employee) => {
-            console.log(employee)
-            
-            if(employee.workDay === undefined || Object.keys(employee.workDay).length === 0) {
-                return {name:employee.name, _id:employee._id, workDay:{}}
-            }
-            
-            // //*DELETE NO DATA TASKS
-            Object.keys(employee.workDay).map((key) => {
-                if(employee.workDay[key].expectedTime === 0){
-                    delete employee.workDay[key]
+        try {
+            const mappedData = data.employees.map((employee) => {
+                if(employee.workDay === undefined || Object.keys(employee.workDay).length === 0) {
+                    return {name:employee.name, _id:employee._id, workDay:{}}
                 }
+                
+                // //*DELETE NO DATA TASKS
+                Object.keys(employee.workDay).map((key) => {
+                    if(employee.workDay[key].expectedTime === 0){
+                        delete employee.workDay[key]
+                    }
+                })
+                
+                return employee
             })
-            
-            
-            
-
-            console.log(employee)
-            
-            return employee
-        })
+            success(req, res, 200, "Employees workDay analytics obtained succesfully", mappedData)
+        } catch (err) {
+            success(req, res, 200, "Employees workday analytics obtained with errors: ", data)
+        }
         
-        success(req, res, 200, "Employees workDay analytics obtained succesfully", mappedData)
+        
     })
     .catch(err => {
         error(req, res, 500, "Error getting employees performance", err, err)
