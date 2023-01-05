@@ -35,7 +35,8 @@ const showAlert = () => {
 }
 
 
-export const CheckBoxGroup = ({valueState, valueUpdate,children}) => {
+export const CheckBoxGroup = (props) => {
+  console.log(props)
   const initialState = { checkedIds: [],filled:false }
   const [state, dispatch] = useReducer(reducer, initialState)
   const [snackState, setState] = React.useState({
@@ -70,8 +71,8 @@ export const CheckBoxGroup = ({valueState, valueUpdate,children}) => {
                               
                               dispatch({ id })
                               snackbarCheck()
-                              valueUpdate({
-                                ...valueState,
+                              props.valueUpdate({
+                                ...props.valueState,
                                 size: label
                               }) 
                             }} 

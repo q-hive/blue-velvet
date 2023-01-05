@@ -2,7 +2,11 @@ import React, {useEffect, useState} from 'react'
 //*MUI Components
 import { 
     Autocomplete, TextField, 
-    Typography, Button, Box, FormHelperText, getInputUtilityClass, Snackbar, Alert, Stack, CircularProgress, Fade 
+    Typography, Button, Box, 
+    Snackbar, Alert, Stack, 
+    CircularProgress, Fade, 
+    FormControl, FormControlLabel,
+    Checkbox 
 } from '@mui/material'
 import {DatePicker, LocalizationProvider} from '@mui/x-date-pickers'
 import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns'
@@ -71,7 +75,8 @@ export const NewOrder = (props) => {
         smallPackages:      undefined,
         mediumPackages:     undefined,
         size:               undefined,
-        date:               undefined
+        date:               undefined,
+        cyclic:             false
     });
 
     //*Render states
@@ -106,14 +111,13 @@ export const NewOrder = (props) => {
     //Snackbar
     const [open, setOpen] = useState(false);
 
-        const handleClose = (event, reason) => {
-            if (reason === 'clickaway') {
-            return;
-            }
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+        return;
+        }
 
-            setOpen(false);
-        };
-    //
+        setOpen(false);
+    };
 
     //Get invoice
     const getOrderInvoice = async (params) => {
@@ -182,7 +186,7 @@ export const NewOrder = (props) => {
                 break;
         }
         
-        if(error[id].active){
+        if(error[id] && error[id].active){
             setError({
                 ...error,
                 [id]:{
@@ -195,8 +199,6 @@ export const NewOrder = (props) => {
         
         // const newRgexp =  /^*packages/
         
-        console.log(id)
-        console.log(value)
         setInput({
             ...input,
             [id]:value
@@ -288,10 +290,10 @@ export const NewOrder = (props) => {
     const handleDeleteProduct = (product)=>{
         console.log("antes",products)
 
-          var arr = products.filter(prod =>{
-            return prod.name != product.name
-          })
-          setProducts(arr)
+        var arr = products.filter(prod =>{
+        return prod.name != product.name
+        })
+        setProducts(arr)
         
         console.log("despues",products)
         console.log("tempArr",arr)
@@ -377,7 +379,7 @@ export const NewOrder = (props) => {
                 "seedId": input.product.seed,
                 "provider": input.product.provider,
                 "_id": input.product._id,
-                "packages": packages
+                "packages": packages,
             }
 
             if(products.length>0){
@@ -390,7 +392,8 @@ export const NewOrder = (props) => {
                 "customer": input.customer,
                 "products": useProducts ? products : [mappedInput],
                 "status":"preSoaking",
-                "date": input.date
+                "date": input.date,
+                "cyclic": input.cyclic
             }
 
             return mappedData
@@ -618,7 +621,6 @@ export const NewOrder = (props) => {
 
                  <Typography variant="h6" mb="2vh" mt="4vh">Select size</Typography>
                 
-                <CheckBoxGroup valueState={input} valueUpdate={setInput}>{checkboxOptions}</CheckBoxGroup>
                  //*TODO MANAGE ERROR FOR CHECKBOXGROUP 
                 
                 <Button id="packages" onClick={handleAddToOrder}>
@@ -715,6 +717,19 @@ export const NewOrder = (props) => {
                         minDate={calculateMinDate()}
                     />
                 </LocalizationProvider>
+
+
+                <FormControl>
+                    <FormControlLabel 
+                    control={
+                        <Checkbox 
+                            id="cyclic"
+                            checked={input.cyclic} 
+                            onChange={(e) => handleChangeInput(e,e.target.checked,"input")}
+                        />
+                    } 
+                    label="Cyclic order"/>
+                </FormControl>
                 <Button id="accept" variant="contained" onClick={handleSetOrder} disabled={!canSendOrder} sx={{marginTop:"2vh", color:{...BV_THEME.palette.white_btn}}}>
                     Set Order
                 </Button>

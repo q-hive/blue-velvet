@@ -11,7 +11,8 @@ import {
     employeesRoutes, 
     containerRoutes,
     productionRoutes,
-    deliveryRoutes
+    deliveryRoutes,
+    backgroundJobsRouter
 } from './network/routes.js'
 
 import { authRoutes } from './network/routes.js'
@@ -40,7 +41,7 @@ useMorgan(app);
 const originsList = ["http://localhost:3000", "https://bluevelvetdeploy.herokuapp.com"]
 
 app.use(cors({
-    origin: originsList[1],
+    origin: originsList[0],
     credentials: true
 }));
 
@@ -82,6 +83,10 @@ productionRoutes(app)
 
 //*PACKING DELIVERY
 deliveryRoutes(app)
+
+//*Background tasks
+backgroundJobsRouter(app)
+
 
 
 const server = http.createServer(app)

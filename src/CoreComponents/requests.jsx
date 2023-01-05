@@ -22,18 +22,18 @@ export const getOrdersData = (props) => {
     
     }, setLoading(true))
     .then(async response => {
-        const cancelled = await api.api.get(`${api.apiVersion}/orders/cancelled`, {
-            headers: {
-                authorization:  credential._tokenResponse.idToken,
-                user:           user
-            }
-        })
-        const delivered = await api.api.get(`${api.apiVersion}/orders/delivered`, {
-            headers: {
-                authorization:  credential._tokenResponse.idToken,
-                user:           user
-            }
-        })
+        // const cancelled = await api.api.get(`${api.apiVersion}/orders/cancelled`, {
+        //     headers: {
+        //         authorization:  credential._tokenResponse.idToken,
+        //         user:           user
+        //     }
+        // })
+        // const delivered = await api.api.get(`${api.apiVersion}/orders/delivered`, {
+        //     headers: {
+        //         authorization:  credential._tokenResponse.idToken,
+        //         user:           user
+        //     }
+        // })
 
         const getCustomer = response.data.data.map(async (order, idx) => {
             const customer = await api.api.get(`${api.apiVersion}/customers/${order.customer}`, {
@@ -78,31 +78,32 @@ export const getOrdersData = (props) => {
             
             }
 
-            const cancelledRows = cancelled.data.data.map((order) => {
-                return {
-                    "id":       order._id,
-                    "customer": order.customer,
-                    "income":   order.price,
-                    "date2":    order.date,
-                }
-            })
+            // const cancelledRows = cancelled.data.data.map((order) => {
+            //     return {
+            //         "id":       order._id,
+            //         "customer": order.customer,
+            //         "income":   order.price,
+            //         "date2":    order.date,
+            //     }
+            // })
 
-            const deliveredRows = delivered.data.data.map((order) => {
-                return {
-                    "id":       order._id,
-                    "customer": order.customer,
-                    "income":   order.price,
-                    "date2":    order.date,
-                }
-            })
+            // const deliveredRows = delivered.data.data.map((order) => {
+            //     return {
+            //         "id":       order._id,
+            //         "customer": order.customer,
+            //         "income":   order.price,
+            //         "date2":    order.date,
+            //     }
+            // })
             const mappedRows = newResponse.map((order) => {
                 return {
                     "customer": order.fullCustomer.name,
                     "date1":    order.date1,
                     "date2":    order.date2,
-                    "type":     "No type",
+                    "cyclic":   order.cyclic,
                     "income":   order.price,
                     "status":   order.status,
+                    "job":      order.job,
                     "id":       order._id
                 }
             })
@@ -111,8 +112,8 @@ export const getOrdersData = (props) => {
                     {
                         ...o,
                         all:        mappedRows,
-                        cancelled:  cancelledRows,
-                        delivered:  deliveredRows,
+                        // cancelled:  cancelledRows,
+                        // delivered:  deliveredRows,
                         recent:     mappedRows    
                     }
                 )
@@ -201,6 +202,37 @@ export const getWorkdayProdData = async (props) => {
 
 }
 
+//*THIS METHOD
+export const getWorkData = async ({user, credential})=> {
+    if(window.localStorage.getItem("workData")){
+        return {
+            workData: JSON.parse(window.localStorage.getItem("workData")),
+            packs: JSON.parse(window.localStorage.getItem("packs")),
+            deliverys: JSON.parse(window.localStorage.getItem("deliverys")),
+        }
+    }
+    
+    const production = await api.api.get(`${api.apiVersion}/production/workday?containerId=${user.assignedContainer}`,{
+        headers:{
+            "authorization":    credential._tokenResponse.idToken,
+            "user":             user
+        }
+    })
+    const packs = await api.api.get(`${api.apiVersion}/delivery/packs/orders`,{
+        headers:{
+            "authorization":    credential._tokenResponse.idToken,
+            "user":             user
+        }
+    })
+    const deliverys = await api.api.get(`${api.apiVersion}/delivery/routes/orders`,{
+        headers:{
+            "authorization":    credential._tokenResponse.idToken,
+            "user":             user
+        }
+    })
+
+    return {workData:production.data.data, packs:packs.data.data, deliverys: deliverys.data.data}
+}
 
 export const getGrowingProducts = async (props) => {
     let user = props.user
@@ -327,4 +359,15 @@ export const getContainerData = async (user, credential)=> {
     })
 
     return containersData.data.data[0].containers
+}
+
+export const stopBackgroundTask = async (user, credential,jobid) => {
+    const stopTaskResponse = await api.api.post(`${api.apiVersion}/backgroundJobs/stopJob/${jobid}`,{},{
+        headers:{
+            "authorization":    credential._tokenResponse.idToken,
+            "user":             user
+        }
+    })
+
+    return stopTaskResponse
 }

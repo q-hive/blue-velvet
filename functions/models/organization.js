@@ -28,7 +28,8 @@ const Organization = new Schema({
         orders:         { type: [ObjectId], required: false                    },
         taskType:       { type: String,     required: false                    },
         workDay:        { type: Date,       required: true                     }
-    }],                                     required: false                    }
+    }],                                     required: false                    },
+    
 },
 {
     timestamps: {
@@ -42,7 +43,11 @@ const Organization = new Schema({
         byOwner(owner) {
             return this.where({ owner: owner })
         }
-    }
-})
+    },
+    validateBeforeSave:false
+},
+)
+
+
 
 export default Organization

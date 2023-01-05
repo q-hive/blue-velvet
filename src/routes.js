@@ -24,6 +24,7 @@ import { MaintenanceTask } from "./modules/Employee/Tasks/StandaloneTasks/Mainte
 import { GrowingTask } from "./modules/Employee/Tasks/StandaloneTasks/Growing";
 import { TaskContainer} from "./modules/Employee/Tasks/WorkingTasks/TaskContainer";
 import { EditionAbstract } from "./CoreComponents/Edition/EditionAbstract";
+import { TasksReview } from "./modules/Admin/Tasks/TasksReview";
 
 
 
@@ -44,6 +45,10 @@ export const AppRoutes  = [
     {
         path:"/:uid/admin/production/editProduct",
         component:<NewProduct edit={true}/>
+    },
+    {
+        path:"/:uid/admin/tasks/review/:task",
+        component:<TasksReview/>
     },
     {
         path:"/:uid/admin/edition",
@@ -87,10 +92,10 @@ export const AppRoutes  = [
         path:"/:uid/employee/profile",
         component:<Profile/>
     },
-    {
-        path:"/:uid/employee/dashboard/taskTest",
-        component:<TaskContainer/>
-    },
+    // {
+    //     path:"/:uid/employee/dashboard/taskTest",
+    //     component:<TaskContainer/>
+    // },
     {
         path:"/:uid/employee/production",
         component:<ProductionMain/>

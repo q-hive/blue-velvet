@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 
 //*MUI COMPONENTS
-import { Box, Button, Container, Grid, Paper, Stack, Typography, useTheme, LinearProgress, Grow, Fade} from '@mui/material'
+import { Box, Button, Container, Grid, Paper, Stack, Typography, useTheme, LinearProgress, Grow, Fade, Tooltip} from '@mui/material'
 
 //*ROUTER
 import { navigate } from '../../../utils/router'
@@ -20,6 +20,7 @@ import {tasksCicleObj} from '../../../utils/models.js'
 import { getKey } from '../../../utils/getDisplayKeyByStatus';
 import { finishWorkDayInDb } from '../../../CoreComponents/requests';
 import { transformTo } from '../../../utils/times';
+import { DailyTasksCard } from '../../../CoreComponents/TasksPresentation/DailyTasksCard';
 
 export const Dashboard = () => {
     const {user,credential} = useAuth()
@@ -187,11 +188,20 @@ export const Dashboard = () => {
             <Grid container spacing={3} marginTop={3}>
 
                 {/* Tasks */}
+                    <Tooltip title={`Only employees can execute tasks to update production data. \n 
+                                    If you want to update production executing tasks by yourself, \n 
+                                    log-in as an employee.`}>
+                        <Grid item xs={12} md={4} lg={4}>
+                            <DailyTasksCard cycle={tasksCicleObj.cicle} adminRender={user.role}/>
+                        </Grid>
+                    </Tooltip>
                 <Grow in={true} timeout={2000} unmountOnExit>
+                    
                     <Grid item xs={12} md={4} lg={4}>
-                        <Paper elevation={4} sx={fixedHeightPaper}>
-                            <Typography variant="h6" color="secondary.dark">Tasks</Typography>
-                            <Box sx={{display:"flex",flexDirection:"column", }}>
+                        
+                        {/* <Paper elevation={4} sx={fixedHeightPaper}> */}
+                            {/* <Typography variant="h6" color="secondary.dark">Tasks</Typography> */}
+                            {/* <Box sx={{display:"flex",flexDirection:"column", }}> */}
                                 {/*Delivery Task Only acrive when there are orders on ready to deliver status*/
                                 true?
                                     <Paper variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"1.5vh",paddingX:"1.5vh",marginTop:"1vh",display:"flex", flexDirection:"row"}}>
@@ -217,8 +227,8 @@ export const Dashboard = () => {
                                 }
 
                                 
-                            </Box> 
-                        </Paper>
+                            {/* </Box>  */}
+                        {/* </Paper> */}
                     </Grid>
                 </Grow>
 

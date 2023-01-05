@@ -50,7 +50,7 @@ export const productionCycleObject = {
         "requireNewDoc":true,
         "affectsCapacity":{
             "affect":true,
-            "how":"dec"
+            "how":"inc"
         }
     },
     "ready": {
@@ -279,9 +279,17 @@ export const updateManyProductionModels = (orgId,container,productionIds) => {
                 }
 
                 if(productionCycleObject[productionStatus]?.affectsCapacity.affect){
-
+                    let trays = newmodel.trays
                     console.log("El container must be updated")
-                    await updateContainerById(orgId, container, {query:"add",key:"available", value:-(Math.ceil(newmodel.trays))})
+                    if(productionCycleObject[productionStatus]?.affectsCapacity.how === "dec"){
+                        trays = trays
+                    }
+
+                    if(productionCycleObject[productionStatus]?.affectsCapacity.how === "inc"){
+                        trays = -trays
+                    }
+                    
+                    await updateContainerById(orgId, container, {query:"add",key:"available", value:-trays})
                 }
 
                 return op

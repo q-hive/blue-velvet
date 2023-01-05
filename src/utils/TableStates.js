@@ -11,6 +11,7 @@ import { BV_THEME } from "../theme/BV-theme"
 import { Button, Typography, Box, Accordion, AccordionSummary, AccordionDetails, Divider, CircularProgress } from "@mui/material"
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { LoadingButton } from "@mui/lab"
+import { stopBackgroundTask } from "../CoreComponents/requests"
 
 export const productsColumns = [
     {
@@ -576,13 +577,16 @@ export const salesColumns = [
         flex:1
     },
     {
-        field:"type",
+        field:"cyclic",
         headerName:"type",
         headerClassName:"header-sales-table",
         headerAlign:"center",
         align:"center",
         minWidth:{xs:"25%",md:130},
-        flex:1
+        flex:1,
+        renderCell:(params) => {
+            return (<>{params.row.cyclic ? 'cyclic' : 'simple'}</>)
+        }
     },
     {
         field:"income",
@@ -778,6 +782,53 @@ export const salesColumns = [
                                 })
                             }
                         },
+                        {
+                            label:"Stop cyclic generation",
+                            type:"dangerous",
+                            btn_color:"primary",
+                            execute:()=>{
+                                stopBackgroundTask(user, credential, params.row.job)
+                                .then(response => {
+                                    setModal({
+                                        ...modal,
+                                        open:false
+                                    })
+
+                                    setDialog({
+                                        ...dialog,
+                                        open:true,
+                                        title:"Sucess",
+                                        message:"Re-order has been stopped",
+                                        actions: [
+                                            {
+                                                label:"Ok",
+                                                execute: () => window.location.reload()
+                                            }
+                                        ]
+                                    })
+                                })
+                                .catch(err => {
+                                    setModal({
+                                        ...modal,
+                                        open:false
+                                    })
+
+                                    setDialog({
+                                        ...dialog,
+                                        open:true,
+                                        title:"There was an error",
+                                        message:"Error stopping re-order",
+                                        actions: [
+                                            {
+                                                label:"Reload",
+                                                execute: () => window.location.reload()
+                                            }
+                                        ]
+                                    })
+                                })
+                            },
+                            disabled:!Boolean(params.row.job)
+                        }
                     ]
                 })
 

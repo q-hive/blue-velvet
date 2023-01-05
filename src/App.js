@@ -15,6 +15,7 @@ import { PrivateRoutes } from './CoreComponents/PrivateRoutes'
 import { AppRoutes } from './routes.js'
 import { WorkingContextWrapper } from './contexts/EmployeeContext.js'
 import { ErrorPage } from './CoreComponents/ErrorPage.jsx'
+import { AdminAccessGuard } from './contexts/AdminAccessGuard.js'
 
 export const App = () => {
   return (
@@ -35,12 +36,13 @@ export const App = () => {
                                         {
                                             val.path.split('/').includes('employee')
                                             ?
-                                            
                                             <WorkingContextWrapper>
                                                 {val.component}
                                             </WorkingContextWrapper>
                                             :
-                                            val.component
+                                            <AdminAccessGuard>
+                                                {val.component}
+                                            </AdminAccessGuard>
                                             
                                         }
                                     </PrivateRoutes>

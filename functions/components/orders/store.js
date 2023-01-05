@@ -17,7 +17,7 @@ import { getAllProducts } from '../products/store.js'
 
 
 import { buildProductionDataFromOrder } from '../production/controller.js'
-import { getOrdersPrice, newOrderDateValidation } from './controller.js'
+import { getOrdersPrice, newOrderDateValidation, setOrderAbonment } from './controller.js'
 import { getProductionInContainer } from '../production/store.js'
 import { getContainerById, getContainers } from '../container/store.js'
 
@@ -203,7 +203,6 @@ export const createNewOrder = (orgId, order) => {
             "message":  "Error obtaining organization",
             "status":    500
         }
-
         const errorSaving = {
             "message": "Error saving organization",
             "status":   400
@@ -217,39 +216,49 @@ export const createNewOrder = (orgId, order) => {
             "message":  "No products in DB",
             "status":   204
         }
+        const priceFailure = {
+            "message": "There was an error calculating the price",
+            "status":   500
+        }
+        const errorGettingProducts = {
+            "message":"There was an error while getting products to match with the order.",
+            "status":500
+        }
+        const invalidDate = {
+            "message":"The date for the order is invalid, please compare the production times with the date you selected.",
+            "status":400
+        }
         
         // * Id for order
         let id = new ObjectId()
 
         
-        const priceFailure = {
-            "message": "There was an error calculating the price",
-            "status":   500
-        }
         let allProducts
         let mappedProducts
         let mappedAndUpdatedProducts
+        let prc
 
         
-        try {
-        
-            
-            //*Get all products of container to make validations (products on order have no the complete data)
+        //*Get all products of container to make validations (products on order have no the complete data)
+        try{
             allProducts = await getAllProducts(orgId)
-            
+        }catch(err){
+            reject(new Error(JSON.stringify(errorGettingProducts)))
+        }
+        
+        //*Check if is a valid date compared with production times estimations.
+        try {
             newOrderDateValidation(order, allProducts)
-            
-            mappedProducts = order.products.map(async (prod) => {
+        } catch (err){
+            reject(new Error(JSON.stringify(errorGettingProducts)))
+        }
+
+        //*Mapea los productos para completar el modelo de la base de datos en la propiedad products
+        try {
+            mappedProducts = order.products.map((prod) => {
                 const dbProduct = allProducts.find((product) => {
                     return product._id.equals(prod._id)
                 })
-
-
-                
-                // await orgModel.updateOne({_id:orgId,"containers.0.products":{"$elemMatch":{_id:product._id}}},{"$set":{
-                //     "containers.0.products.$.status":"seeding"
-                // }})
-            
                 return {
                     _id:            prod._id,
                     name:           prod.name,
@@ -261,24 +270,31 @@ export const createNewOrder = (orgId, order) => {
                 }
             })
 
-            mappedAndUpdatedProducts = await Promise.all(mappedProducts)
+            mappedAndUpdatedProducts = mappedProducts;
+        } catch(err){
+            reject(err)
+        }
 
-            let prc = getOrdersPrice(order, allProducts)
+        try{
+            prc = getOrdersPrice(order, allProducts)
             
             if(prc === undefined || prc === null){
                 return reject(new Error(JSON.stringify(priceFailure)))
             }
+        }
+        catch(err){
+            reject(err)
+        }
 
-            let end = addTimeToDate(new Date(), { w: 2 })
-
+        try{
             let overhead = await getContainers({organization:orgId})
 
-            console.log(overhead)
-            
             const isValidContainerResponse = overhead !== null && overhead !== undefined && overhead.containers.length === 1
             
             if (isValidContainerResponse){
                 overhead = (overhead.containers[0].config.overhead)/100
+            } else {
+                overhead = 0;
             }
             
             let production = await buildProductionDataFromOrder({...order, _id:id}, allProducts, overhead)
@@ -291,11 +307,17 @@ export const createNewOrder = (orgId, order) => {
                     customer:       order.customer._id,
                     price:          prc,
                     date:           order.date,
-                    end:            end,
                     products:       mappedAndUpdatedProducts,
-                    status:         "production"
+                    status:         "production",
+                    cyclic:          order.cyclic
                 }
+
+                if(order.cyclic){
+                    setOrderAbonment(orgId,orderMapped, allProducts, overhead)
+                }
+
                 
+
                 getOrganizationById(orgId)
                 .then(organization => {
                     if(!organization){
@@ -307,7 +329,7 @@ export const createNewOrder = (orgId, order) => {
                     production.forEach((productionModel) => {
                         organization.containers[0].production.push(productionModel)
                     })
-                    
+
                     organization.save((err, org) => {
                         if(err) {
                             console.log(err)

@@ -28,7 +28,7 @@ export const UserModal = ({modal, setModal, title, content, actions, loading}) =
                     ?
                     <>
                         {actions.map((action, idx) => {
-                            return <LoadingButton loading={loading} variant="contained" sx={()=>({...theme.button.dialog, borderRadius:"20px"})} key={idx} color={action.btn_color} onClick={action.execute}>{action.label}</LoadingButton>
+                            return <LoadingButton disabled={Boolean(action.disabled)} loading={loading} variant="contained" sx={()=>({...theme.button.dialog, borderRadius:"20px"})} key={idx} color={action.btn_color} onClick={action.execute}>{action.label}</LoadingButton>
                             
                         })}
                     </>
