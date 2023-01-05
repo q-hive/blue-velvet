@@ -14,3 +14,20 @@ const createMixApiRequest = () => {
         }
     })
 }
+
+const createEmployeeApiRequest = (mappedEmployeeData) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const response = await api.api.post(`/auth/create/employee`, mappedEmployeeData, {
+                headers:{
+                    authorization: credential._tokenResponse.idToken,
+                    user:          user
+                }
+            })
+
+            return response
+        } catch (err) {
+            reject(err)
+        }
+    })
+}
