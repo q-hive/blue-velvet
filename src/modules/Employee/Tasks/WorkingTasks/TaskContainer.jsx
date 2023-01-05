@@ -30,6 +30,7 @@ import useWorkingContext from '../../../../contextHooks/useEmployeeContext'
 import { PreSoakingContent1 } from './PreSoakingContent1'
 import { PreSoakingContent2 } from './PreSoakingContent2'
 import { transformTo } from '../../../../utils/times'
+import { MaintenanceContent } from '../ContainerTasks/MaintenanceContent'
 
 export const TaskContainer = (props) => {
     //*Variables declarations
@@ -179,6 +180,12 @@ export const TaskContainer = (props) => {
             contentTitle = "Cleaning"
             content = <CleaningContent index={activeStep}/>
             steps=[{step:"Cleaning"}]
+        break;
+
+        case "maintenance":
+            contentTitle = "Maintenance"
+            content = <MaintenanceContent index={activeStep}/>
+            steps=[{step:"Maintenance"}]
         break;
 
         case "mats":

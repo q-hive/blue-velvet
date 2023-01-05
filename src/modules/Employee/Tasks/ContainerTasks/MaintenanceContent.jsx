@@ -22,12 +22,10 @@ const taskCard_sx = {
 }
 
 const stuffToClean1 = [
-                        {value:"tables",label:"Tables"},
-                        {value:"sinks",label:"Sinks"},
-                        {value:"scales",label:"Scales"},
-                        {value:"knives",label:"Knives"},
-                        {value:"buckets",label:"Buckets"},
-                        //{value:"lights",label:"Lights"}
+                        {value:"tables",label:"Sharpen Knives"},
+                        {value:"sinks",label:"Clean Air Intake"},
+                        {value:"lights",label:" Clean Lights"},
+                        {value:"scales",label:"Replace Scales' Batteries"},
                     ]
 
 const stuffToClean2 = [
@@ -35,8 +33,7 @@ const stuffToClean2 = [
                         {value:"floor",label:"Floor"},
                         {value:"waterOutlet",label:"Water Outlet"},
                         {value:"dryStation",label:"Dry Station"},
-                        {value:"fridge",label:"Fridge"},
-                        //{value:"airIntake",label:"Air Intake"},
+                        {value:"airIntake",label:"Air Intake"},
                         // {value:"waste",label:"Manage Waste",
                         //         tooltip:
                         //         <Tooltip placement="right" title={
@@ -52,13 +49,13 @@ const stuffToClean2 = [
                         //         </Tooltip>}
                     ]
 
-export const CleaningContent = (props) => {
+export const MaintenanceContent = (props) => {
 
     if(props.index===0) 
         return (<>
             <Box sx={taskCard_sx}>
                 <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                Check and clean each of the following:<br/><br/>
+                It's time for maintenance, please do the following Tasks:<br/><br/>
                 </Typography>
 
                 <FormControl component="fieldset" sx={{width:"100%"}}>
@@ -74,7 +71,7 @@ export const CleaningContent = (props) => {
                                 />
                             ))}
                         </FormGroup>
-                        <FormGroup aria-label="position" >
+                        {/* <FormGroup aria-label="position" >
                             {stuffToClean2.map((stuff,index)=>{
                                 return (
                                     stuff.tooltip == undefined ?
@@ -97,8 +94,8 @@ export const CleaningContent = (props) => {
                                             {stuff.tooltip}
                                         </Stack> 
                                 )
-                            })}
-                        </FormGroup>
+                            })} 
+                        </FormGroup> */}
                     </Box>
                 </FormControl>
             </Box>

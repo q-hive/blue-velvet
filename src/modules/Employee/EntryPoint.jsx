@@ -37,7 +37,7 @@ export const EntryPoint = () => {
     }
     const containerTasks = [ 
         {name:"Mise en place", type:"mats"},
-        {name:"Maintenance", type:"cleaning"},
+        {name:"Maintenance", type:"maintenance"},
     ]
     
     //*contexts
