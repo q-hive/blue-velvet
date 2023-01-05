@@ -13,6 +13,7 @@ import workRouter from '../components/work/network.js'
 import employeesRouter from '../components/employees/network.js'
 import containerRouter from '../components/container/network.js'
 import deliveryRouter from '../components/delivery/network.js'
+import backgroundRouter from '../components/backgroundJobs/network.js'
 
 
 //*Middlewares
@@ -75,6 +76,12 @@ export const adminRoutes = (app) => {
 export const employeesRoutes = (app) => {
     const authorized = ["admin"]
     app.use(`${apiV1}/employees`, isAuthenticated, isAuthorized(authorized), employeesRouter)
+}
+
+export const backgroundJobsRouter = (app) => {
+    const authorized = ["admin"];
+
+    app.use(`${apiV1}/backgroundJobs`, isAuthenticated, isAuthorized(authorized), backgroundRouter)
 }
 
 

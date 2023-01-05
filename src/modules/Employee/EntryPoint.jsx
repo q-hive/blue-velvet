@@ -18,6 +18,8 @@ import { finishWorkDayInDb, getWorkdayProdData, updateEmployeeWorkDay } from '..
 import { getKey } from '../../utils/getDisplayKeyByStatus'
 import { transformTo } from '../../utils/times'
 import { getColorByPercentage } from '../../utils/getColorByPercentage'
+import { capitalize } from '../../utils/capitalize'
+import { DailyTaskRef, DailyTasksCard } from '../../CoreComponents/TasksPresentation/DailyTasksCard'
 
 //*UNUSED
 // import { Add } from '@mui/icons-material'
@@ -373,7 +375,7 @@ export const EntryPoint = () => {
             return statusesInProds
     }
 
-    function getActiveProductsStatuses2 (workData) {
+    function prepareProductionStatusesForRender (workData) {
         let psTrue = workData.preSoaking?.length>0
         let sTrue = workData.seeding?.length>0
         let hrTrue = workData.harvestReady?.length>0
@@ -385,9 +387,6 @@ export const EntryPoint = () => {
         testingKeys.splice(growingStatusIndex, 1)
         
         testingKeys.push("cleaning")
-        // psTrue?testingKeys.push("preSoaking"):setWorkContext((wrk) => delete wrk.cicle['preSoaking'])
-        // sTrue?testingKeys.push("seeding"):null
-        // hrTrue?testingKeys.push("harvestReady"):null
 
         return testingKeys;
     }
@@ -452,7 +451,7 @@ export const EntryPoint = () => {
                 
                 setTimeout(() => {
                     setLoading({...loading, startWorkBtn:false})
-                    let statusesArr = getActiveProductsStatuses2(workData);
+                    let statusesArr = prepareProductionStatusesForRender(workData);
 
                     setSnackState({open:false})
                     navigate('./../tasks/work',
@@ -479,7 +478,7 @@ export const EntryPoint = () => {
             
             getWorkData()
             .then(({workData, packs, deliverys}) => {
-                let statusesArr = getActiveProductsStatuses2(workData);  //getActiveProductsStatuses(workData)
+                let statusesArr = prepareProductionStatusesForRender(workData);  //getActiveProductsStatuses(workData)
                 
                 if(statusesArr.length === 0){
                     setSnackState({open:true,label:"There's nothing for you to do right now",severity:"success"})
@@ -549,11 +548,6 @@ export const EntryPoint = () => {
         return productList;
     }
     
-    function capitalize(word) {
-        return(
-        !word ? null : word[0].toUpperCase() + word.slice(1).toLowerCase())
-    }
-
     const displayTaskCards  = () => {
         return (
             <>
@@ -671,38 +665,11 @@ export const EntryPoint = () => {
                 */}
 
 
-                {/* Tasks */}
+                {/* Daily tasks */}
                 <Grow in={true} timeout={2000} unmountOnExit>
-                <Grid item xs={12} md={4} lg={4}>
-                    <Paper elevation={4} sx={fixedHeightPaper}>
-                        <Typography variant="h6" color="secondary">Daily Tasks</Typography>
-                        <Typography variant="body2" color="secondary">
-                            <i>
-                                <b>Times are displayed in minutes</b>
-                            </i>
-                        </Typography>
-                        {
-                            Object.keys(WorkContext.cicle).map((status,index)=>{ 
-                                return(
-                                    <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
-                                        <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
-                                            <Typography >
-                                                <b>Task: {capitalize(getKey(status))}</b>
-                                            </Typography>
-                                            <Typography >
-                                                <i>Expected Time: 
-                                                    {
-                                                        transformTo("ms","minutes", estimatedTime.times[status]?.time)
-                                                    } 
-                                                </i>
-                                            </Typography>
-                                        </Box>
-                                    </Paper>
-                                )
-                            })
-                        }
-                    </Paper>
-                </Grid>
+                    <Grid item xs={12} md={4} lg={4}>
+                        <DailyTasksCard time={estimatedTime} cycle={WorkContext.cicle} /> 
+                    </Grid>
                 </Grow>
 
                 {/* Container's tasks */}

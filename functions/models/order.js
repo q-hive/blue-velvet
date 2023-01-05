@@ -5,10 +5,11 @@ const { ObjectId } = mongoose.Types
 const Order = new Schema({
     organization:   { type: ObjectId,   required: true },
     customer:       { type: ObjectId,   required: true },
-    // type:        { type: String,     required: true }, // REPETEAD ORDERS HAVE A START AND END DATE
+    cyclic:         { type: Boolean,    required: true }, // REPETEAD ORDERS HAVE A START AND END DATE
+    job:            { type: String,     default:"No job"},
     price:          { type: Number,     required: true },
     date:           { type: Date,       required: true },
-    end:            { type: Date,       required: true },
+    // end:            { type: Date,       required: true },
     products:   {
         type: [{
             _id:        { type: ObjectId, required: true  },

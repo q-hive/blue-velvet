@@ -11,7 +11,8 @@ import {
     employeesRoutes, 
     containerRoutes,
     productionRoutes,
-    deliveryRoutes
+    deliveryRoutes,
+    backgroundJobsRouter
 } from './network/routes.js'
 
 import { authRoutes } from './network/routes.js'
@@ -82,6 +83,10 @@ productionRoutes(app)
 
 //*PACKING DELIVERY
 deliveryRoutes(app)
+
+//*Background tasks
+backgroundJobsRouter(app)
+
 
 
 const server = http.createServer(app)

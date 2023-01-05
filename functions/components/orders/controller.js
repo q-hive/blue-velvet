@@ -2,6 +2,10 @@ import { areSameDay } from "../../utils/time.js";
 import { getCustomerById } from "../customer/store.js";
 import { updateManyOrders } from "./store.js";
 
+import nodeschedule from 'node-schedule'
+import { buildProductionDataFromOrder } from "../production/controller.js";
+import { getOrganizationById } from "../organization/store.js";
+
 const sortProductsPrices = (order,products) => {
     const orderProducts = order.products.map((prod) => {
         return {prodId: prod._id, packages: prod.packages}
@@ -285,4 +289,49 @@ export const groupOrders = (criteria, orders, groupValue) => {
     }
 
     return grouppedOrders
+}
+
+export const setOrderAbonment = (org, ordr, prods, ovrhd) => {
+    console.log(`A order will re-created every ${new Date(ordr.date).getDay()}`)
+    const callBack = async (orgId, order, allProducts, overhead) => {
+        console.log("The production data will be re-saved")
+        const production = await buildProductionDataFromOrder({...order, _id:ordr._id}, allProducts, overhead)
+        getOrganizationById(orgId)
+        .then((organization) => {
+            production.forEach((productionModel) => {
+                organization.containers[0].production.push(productionModel)
+            })
+
+            organization.save((err, org) => {
+                if(err) {
+                    console.log(err)
+                    Promise.reject(err)
+                }
+                
+                
+                console.log("The production data has been re-saved for the order")
+                Promise.resolve(org)
+            })
+        })
+        .catch(err => {
+            Promise.reject(err)
+        })
+    }
+    
+    const job  = nodeschedule.scheduleJob(`Reorder-${ordr._id}`, {dayOfWeek:new Date(ordr.date).getDay()}, callBack(org, ordr, prods, ovrhd))
+
+    //*TESTJOB
+    // const job  = nodeschedule.scheduleJob(`Reorder-${ordr._id}`, `*/1 * * * *`, () => {
+    //     callBack(org, ordr, prods, ovrhd)
+    //     .then((result) => {
+    //         console.log(result)
+    //     })
+    //     .catch(err => {
+    //         console.log("Re-order failed")
+    //     })
+    // })
+
+    ordr.job = job.name;
+
+    return job
 }
