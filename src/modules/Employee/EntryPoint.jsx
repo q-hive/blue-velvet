@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import { Alert, Box, Button, Container, Grid, Paper, Snackbar, Typography, Fade, Grow } from '@mui/material'
 import { LoadingButton } from '@mui/lab'
@@ -17,6 +17,7 @@ import { formatTime } from '../../CoreComponents/Timer'
 import { finishWorkDayInDb, getWorkdayProdData, updateEmployeeWorkDay } from '../../CoreComponents/requests'
 import { getKey } from '../../utils/getDisplayKeyByStatus'
 import { transformTo } from '../../utils/times'
+import { getColorByPercentage } from '../../utils/getColorByPercentage'
 
 //*UNUSED
 // import { Add } from '@mui/icons-material'
@@ -79,6 +80,7 @@ export const EntryPoint = () => {
     const [loading, setLoading] = useState({
         startWorkBtn:false
     })
+    const [maintenanceColor,setMaintenanceColor]=useState("primary")
 
     //*Snackbar
     const defaultSeverity = "warning" //default value to avoid warning.
@@ -578,6 +580,7 @@ export const EntryPoint = () => {
         return completedTasksRows
     }
 
+
     useEffect(() => {
         const getData = async () => {
             try {
@@ -711,7 +714,7 @@ export const EntryPoint = () => {
                             return(
                                 <Paper key={index} variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"1.5vh",paddingX:"1.5vh",marginTop:"1vh",display:"flex", flexDirection:"row"}}>
                                     <Typography><b>{task.name}</b></Typography>
-                                    <Button variant="contained" sx={{width:"34%"}} onClick={()=>handleViewTask(task.type)} color="primary" >
+                                    <Button variant="contained" sx={{width:"34%",}} onClick={()=>handleViewTask(task.type)} color={getColorByPercentage(.5)} >
                                         View
                                     </Button>
                                 </Paper>                             
