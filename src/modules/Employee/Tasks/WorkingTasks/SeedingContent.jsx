@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 
 //*MUI Components
     // import { DataGrid } from '@mui/x-data-grid'
-import { Box, Button, Fade, Stack, TextField, Typography } from '@mui/material'
+import { Box, Button, Fade, Grid, Stack, TextField, Typography } from '@mui/material'
 
 //*UTILS
 
@@ -66,24 +66,29 @@ export const SeedingContent = (props) => {
                     </Typography> */}
 
                     <br></br>
-                    
+                    <Grid container maxWidth="lg" spacing={2}>
                     {
                         workProducts.length > 0 && (
                             workProducts.map((Product) => {
                                return (
                                    <>
-                                       <Typography variant='h5' align="center" color={BV_THEME.textColor.lightGray}>
+                                     <Grid item xs={7} lg={4}>
+                                     <Typography variant='h6' marginTop={"1vh"} marginLeft={"5px"} align="left" color={BV_THEME.textColor.lightGray}>
                                            <b>
                                                {Product.ProductName}:
                                            </b>
                                        </Typography>
-                                       <TextField label="Number of trays" type="number" />
-                                       <br></br>
+                                    </Grid>
+                                    <Grid item xs={5} lg={2}>
+                                        <TextField label="Trays" type="number" />
+
+                                    </Grid>
                                    </>
                                )
                            })
                         )
                     }
+                    </Grid>
 
                     {
                         workProducts.length < 1 && (
@@ -167,22 +172,32 @@ export const SeedingContent = (props) => {
                 </Typography> */}
 
                 
-                <Stack  sx={{display:"flex",justifyContent:"space-between"}}>
+                <Grid container spacing={2}>
                 {
                     
                     workProducts.map((product,index)=>{
                         return(
-                            <Typography key={product+index+"2"} variant="h5" align='justify' color={BV_THEME.textColor.lightGray} >
+                            <>
+                            <Grid item xs={6} lg={3}>
+                                <Typography key={product+index+"2"} variant="h6" align='justify' marginLeft={"1.5vh"} color={BV_THEME.textColor.lightGray} >
                                 {/* Put {product.seeds} grs of  */}
-                                <b>{product.ProductName}</b>: {Math.ceil(product.trays)} {product.trays > 1 ? "trays.":"tray."} 
+                                <b>{product.ProductName}</b>: 
                                 {/* Max seeds per tray:  <b>{getSeeds(product)}</b> g <br/><br/> */}
-                            </Typography>
+                                </Typography>
+                            </Grid>
+                            <Grid item xs={6} lg={3}>
+                                <Typography key={product+index+"2"} variant="h6" align='center' color={BV_THEME.textColor.lightGray} >
+                                {/* Put {product.seeds} grs of  */}
+                                {Math.ceil(product.trays)} {product.trays == 1 ? "tray.":"trays."} 
+                                {/* Max seeds per tray:  <b>{getSeeds(product)}</b> g <br/><br/> */}
+                                </Typography>
+                            </Grid>
+                            </>
                         )
                     })
                 }
+                </Grid>
 
-                <br/>
-                </Stack>
             </Box>
 
         </>

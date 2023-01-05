@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 
 //*MUI Components
     // import { DataGrid } from '@mui/x-data-grid'
-import { Box, Button, Fade, IconButton, Typography } from '@mui/material'
+import { Box, Button, Fade, IconButton, Paper, styled, Table, TableBody, TableCell, tableCellClasses, TableContainer, TableHead, TableRow, Typography } from '@mui/material'
 
 import workingTablePosition from '../../../../assets/images/production/working table position.png'
 import trayAt45Angle from '../../../../assets/images/production/tray at 45 angle.png'
@@ -25,7 +25,7 @@ const taskCard_sx = {
     alignItems:"center"
 }
 
-const estimated = 60*2;
+
 
 export const HarvestingContent = (props) => {
     const [dialog, setDialog] = useState({
@@ -44,6 +44,134 @@ export const HarvestingContent = (props) => {
 
         reducedTrays = Math.ceil(mappedTrays.reduce((prev, curr) => prev + curr, 0))
         console.log(reducedTrays)
+    }
+
+
+
+    const StyledTableCell = styled(TableCell)(({theme }) => ({
+        [`&.${tableCellClasses.head}`]: {
+          backgroundColor: "#93cf0f",
+          color: BV_THEME.palette.common.white,
+        },
+        [`&.${tableCellClasses.body}`]: {
+          fontSize: 14,
+        },
+      }));
+      
+      const StyledTableRow = styled(TableRow)(({ theme }) => ({
+        '&:nth-of-type(odd)': {
+          backgroundColor: "#E8F7C8",
+        },
+        // hide last border
+        '&:last-child td, &:last-child th': {
+          border: 0,
+        },
+      }));
+
+    const displayHarvestingInfo = () =>{
+        products.map(product => {
+        return (
+            <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+                <b> {product.ProductName} </b> 
+                <br></br>
+                    {
+                        product.isMixModel
+                        ?
+                        <>
+                            {
+                                product.modelsToHarvestMix.map((mixStrain) => {
+                                    return (
+                                        <>
+                                            Mix strain: {mixStrain.ProductName}
+                                            <br></br>
+                                            trays:   {Math.ceil(mixStrain.trays)}
+                                            <br></br>
+                                            dryracks:{Math.ceil(mixStrain.dryracks)}
+                                            <br></br>
+                                        </>    
+                                    )
+                                })
+                            }
+                        </>
+                        :
+                        <>
+                            trays: {Math.ceil(product.trays)} 
+    
+                            <br></br>
+    
+                            dryracks: {Math.ceil(product.dryracks)} 
+    
+                            <br></br>
+                        </>
+    
+                    }
+                
+                
+            </Typography>
+            )
+        }
+    )
+    return (
+    <TableContainer component={Paper}>
+      <Table sx={{}} aria-label="customized table">
+        <TableHead>
+          <TableRow>
+            <StyledTableCell width="34%"><Typography variant="subtitle1"> Product </Typography></StyledTableCell>
+            <StyledTableCell width="33%" align="right"><Typography variant="subtitle1"> Trays </Typography></StyledTableCell>
+            <StyledTableCell width="33%" align="right"><Typography variant="subtitle1"> Dryracks </Typography></StyledTableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {products.map((product) => (
+
+                product.isMixModel ? 
+                <>
+                <StyledTableRow key={product.productName}>
+                    <StyledTableCell component="th" scope="row">
+                        <b>{product.ProductName}</b>
+                    </StyledTableCell>
+                    <StyledTableCell  colSpan={2} ></StyledTableCell>
+                </StyledTableRow> 
+                {product.modelsToHarvestMix.length>0 ? 
+                    <StyledTableRow key={product.productName}>
+                        <StyledTableCell  align="center" component="th" scope="row"><b> Mix Strain </b></StyledTableCell>
+                        <StyledTableCell align="right"><b>Trays</b></StyledTableCell>
+                        <StyledTableCell align="right"><b>Dryracks</b></StyledTableCell>
+                    </StyledTableRow> 
+                :
+                null}
+                {
+                    product.modelsToHarvestMix.map((mixStrain) => {
+                        return (
+                            <>
+                                <TableRow key={mixStrain.productName}>
+                                    <StyledTableCell align="right" component="th" scope="row">
+                                        {mixStrain.ProductName}
+                                    </StyledTableCell>
+                                    <StyledTableCell align="right">{Math.ceil(mixStrain.trays)}</StyledTableCell>
+                                    <StyledTableCell align="right">{Math.ceil(mixStrain.dryracks)}</StyledTableCell>
+                                </TableRow> 
+                                
+                            </>    
+                        )
+                    })
+                }
+                </>
+
+                : 
+
+                <StyledTableRow key={product.productName}>
+                    <StyledTableCell component="th" scope="row">
+                        {product.ProductName}
+                    </StyledTableCell>
+                    <StyledTableCell align="right">{product.trays}</StyledTableCell>
+                    <StyledTableCell align="right">{product.dryracks}</StyledTableCell>
+                </StyledTableRow> 
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+    )
     }
     
     const handleHelpDialog = () => {
@@ -127,48 +255,7 @@ export const HarvestingContent = (props) => {
                                     products.length > 0 && (
                                         <>
                                             {
-                                                products.map(product => {
-                                                    return (
-                                                        <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                                                            <b> {product.ProductName} </b> 
-                                                            <br></br>
-                                                                {
-                                                                    product.isMixModel
-                                                                    ?
-                                                                    <>
-                                                                        {
-                                                                            product.modelsToHarvestMix.map((mixStrain) => {
-                                                                                return (
-                                                                                    <>
-                                                                                        Mix strain: {mixStrain.ProductName}
-                                                                                        <br></br>
-                                                                                        trays:   {Math.ceil(mixStrain.trays)}
-                                                                                        <br></br>
-                                                                                        dryracks:{Math.ceil(mixStrain.dryracks)}
-                                                                                        <br></br>
-                                                                                    </>    
-                                                                                )
-                                                                            })
-                                                                        }
-                                                                    </>
-                                                                    :
-                                                                    <>
-                                                                        trays: {Math.ceil(product.trays)} 
-
-                                                                        <br></br>
-
-                                                                        dryracks: {Math.ceil(product.dryracks)} 
-
-                                                                        <br></br>
-                                                                    </>
-
-                                                                }
-                                                            
-                                                            
-                                                        </Typography>
-                                                        )
-                                                    }
-                                                )
+                                                displayHarvestingInfo()
                                             }
 
                                         {/* <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
