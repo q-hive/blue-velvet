@@ -227,6 +227,7 @@ export const groupOrdersForPackaging = (orders, date=undefined) => {
     })
     return result
 }
+
 export const groupOrdersForDelivery = async (orders, date=undefined) => {
     const mappedProducts = (products) => {
         const map = products.map(product => {
@@ -277,6 +278,7 @@ export const groupOrdersForDelivery = async (orders, date=undefined) => {
 
 export const groupOrders = (criteria, orders, groupValue) => {
     let grouppedOrders
+    
     if(criteria === "date"){
         if(groupValue !== undefined) {
             grouppedOrders = groupOrdersByDate(orders, groupValue)
@@ -290,6 +292,82 @@ export const groupOrders = (criteria, orders, groupValue) => {
 
     return grouppedOrders
 }
+
+export const groupOrdersForMonthlyInvoice = (orders, customerData) => {
+    const Model = {
+        customer:{
+            clientName: "",
+            clientAddress: "customer.address.street",
+            adressContainer:{
+                city:"customer.address.city",
+                state:"customer.address.state",
+                cp:"customer.address.zip",
+            },
+        },
+        totalIncome:    0,
+        orders:         [],
+        products:       [{}],
+    }
+
+    try {
+        Model.customer["clientName"]                = customerData.name
+        Model.customer["clientAddress"]             = customerData.address.street
+        Model.customer["adressContainer"]["city"]   = customerData.address.city
+        Model.customer["adressContainer"]["state"]  = customerData.address.state
+        Model.customer["adressContainer"]["cp"]     = customerData.address.zip
+    } catch (err) {
+        console.log(err)
+        throw new Error("Error building customer model for monthly invoice")
+    }
+
+    try {
+        orders.forEach((order) => {
+            Model.orders.push({"_id":order._id, "created":order.created})
+        })
+        
+    } catch (err) {
+        throw new Error("Error processing orders to build monthly invoice")
+    }
+
+    try {
+        const mappedOrdersProducts = orders.map((order) => {
+            const product = order.products.map((product) => {
+                const mapProd = product.packages.map((pack) => {
+                    let indexSize;
+                    switch(pack.size){
+                        case "small": 
+                            indexSize = 0;
+                        case "medium": 
+                            indexSize = 1;
+                        case "large": 
+                            indexSize = 2;
+                    }
+                    
+                    
+                    return {
+                        size:   pack.size, 
+                        price:  product.price[0].amount/product.price[0].packageSize, 
+                        qty:    pack.number, 
+                        total:  (product.price[0].amount / product.price[0].packageSize)*pack.number
+                    }
+                })
+                const total = mapProd.reduce((prev, curr) => {
+                    return prev + curr.total
+                },0)
+
+                return {product:mapProd, total:total}
+            })
+
+            return {reducedProducts: product}
+        })
+
+        // console.log(mappedOrdersProducts)
+    } catch (err) {
+        console.log(err)
+        throw new Error("Error reducing products to build monthly invoice")
+    }
+}
+
 
 export const setOrderAbonment = (org, ordr, prods, ovrhd) => {
     console.log(`A order will re-created every ${new Date(ordr.date).getDay()}`)

@@ -40,6 +40,9 @@ const Order = new Schema({
     status:         { type:String,      required:true   }
 },
 {
+    timestamps:{
+        createdAt:"created"
+    },
     query: {
         byType(type) {
             return this.where({ type: type })

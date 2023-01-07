@@ -3,11 +3,11 @@ import { mongoose } from '../../mongo.js'
 let { ObjectId } = mongoose.Types
 
 //*Schema
-import Organization from '../../models/organization.js'
+import Organization, { organizationModel } from '../../models/organization.js'
 import Order from '../../models/order.js'
 
 //*UTILS
-import { addTimeToDate } from '../../utils/time.js'
+import { actualMonthInitialDate, addTimeToDate } from '../../utils/time.js'
 
 //*Org controllers
 import { getOrganizationById } from '../organization/store.js'
@@ -21,7 +21,7 @@ import { getOrdersPrice, newOrderDateValidation, setOrderAbonment } from './cont
 import { getProductionInContainer } from '../production/store.js'
 import { getContainerById, getContainers } from '../container/store.js'
 
-const orgModel = mongoose.model('organization', Organization)
+const orgModel = organizationModel;
 
 export const getAllOrders = (orgId, req, filtered=false, filter=undefined, production=false) => {
     return new Promise((resolve, reject) => {
@@ -157,6 +157,60 @@ export const getFilteredOrders = (orgId, req = undefined, production, filter = u
         })
         .catch((err) => {
             return reject("Error getting filtered orders")
+        })
+    })
+}
+
+export const getMonthlyOrders = (orgId) => {
+    return new Promise((resolve, reject) => {
+        organizationModel.findOne(
+            {"_id":mongoose.Types.ObjectId(orgId)},
+            {
+                "orders":{
+                    "$filter":{
+                        "input":"$orders",
+                        "as":"order",
+                        "cond": { "$gte":["$$order.created", actualMonthInitialDate()] }
+                    }
+                }
+            }
+        )
+        .then((data) => {
+            console.log(data)
+            resolve(data.orders)
+        })
+        .catch((err) => {
+            reject(err)
+        })
+    })
+}
+
+export const getMonthlyOrdersByCustomer = (orgId, customerId) => {
+    return new Promise((resolve, reject) => {
+        organizationModel.findOne(
+            {"_id":mongoose.Types.ObjectId(orgId)},
+            {
+                "orders":{
+                    "$filter":{
+                        "input":"$orders",
+                        "as":"order",
+                        "cond": {
+                            "$and": [
+                                { "$gte":["$$order.created", new Date(actualMonthInitialDate())] },
+                                { "$lt":["$$order.created", new Date(new Date().getUTCFullYear(),new Date().getUTCMonth()+1,1)] },
+                                { "$eq":["$$order.customer", mongoose.Types.ObjectId(customerId)] }
+                            ]
+                        }
+                    }
+                }
+            }
+        )
+        .then((data) => {
+            console.log(data)
+            resolve(data.orders)
+        })
+        .catch((err) => {
+            reject(err)
         })
     })
 }
@@ -429,7 +483,6 @@ export const updateManyOrders = (filter, update) => {
         }
     })
 }
-
 
 export const getOrderById = async (orgId, orderId) => {
     const filter = {

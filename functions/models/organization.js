@@ -21,6 +21,7 @@ const Organization = new Schema({
     address:        { type: Address,        required: true                     },
     packaging:      { type: [{type: ObjectId, unique:true}],             required: false                    },
     deliveryReady:  { type: [{type: ObjectId, unique:true}],             required: false                    },
+    invoices:       { type:[],              required:false                     },
     tasksHistory:   { type: [{
         executedBy:     { type: ObjectId,   required: true, unique: false      },
         expectedTime:   { type: Number,     required: true, default: false     },
@@ -48,6 +49,6 @@ const Organization = new Schema({
 },
 )
 
-
+export const organizationModel = new mongoose.model('organization', Organization)
 
 export default Organization

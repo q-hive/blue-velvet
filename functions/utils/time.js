@@ -72,3 +72,10 @@ export const yesterDay = (date) => {
     date.setDate(date.getDate() - 1);
     return date 
 }
+
+export const actualMonthInitialDate = () => {
+    const thisMonth = new Date().getUTCMonth();
+    const thisYear = new Date().getUTCFullYear();
+
+    return new Date(thisYear,thisMonth,1).toISOString()
+}
