@@ -140,7 +140,7 @@ export const Dashboard = () => {
                 </Typography>
                 {
                     employeesPerformanceRows.map((employee, index) => {
-                        return Object.keys(employee.workDay).length>0 && (
+                        return (employee.workDay) && Object.keys(employee.workDay).length>0 && (
                             <>
                                 {
                                     Object.keys(employee.workDay).map((task, idx) => {
