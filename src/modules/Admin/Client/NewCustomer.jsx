@@ -38,19 +38,19 @@ export const NewCustomer = (props) => {
     const {user, credential} = useAuth()
     
     const [input, setInput] = useState({
-        name:           props.edit ? props.edit.values.customer.name :  undefined,
-        email:          props.edit ? props.edit.values.customer.email :  undefined,
-        image:          props.edit ? props.edit.values.customer.image :  undefined,
+        name:           props.edit.isEdition ? props.edit.values.customer.name :  undefined,
+        email:          props.edit.isEdition ? props.edit.values.customer.email :  undefined,
+        image:          props.edit.isEdition ? props.edit.values.customer.image :  undefined,
         role:           undefined,
-        street:         props.edit ? props.edit.values.customer.address.street :  undefined,
-        number:         props.edit ? props.edit.values.customer.address.stNumber :  undefined,
-        ZipCode:        props.edit ? props.edit.values.customer.address.zip :  undefined,
-        city:           props.edit ? props.edit.values.customer.address.city :  undefined,
-        state:          props.edit ? props.edit.values.customer.address.state :  undefined,
-        country:        props.edit ? props.edit.values.customer.address.country :  undefined,
-        references:     props.edit ? props.edit.values.customer.address.references :  undefined,
-        businessName:   props.edit ? props.edit.values.customer.businessData.name :  undefined,
-        bnkAcc:         props.edit ? props.edit.values.customer.businessData.bankAccount :  undefined
+        street:         props.edit.isEdition ? props.edit.values.customer.address.street :  undefined,
+        number:         props.edit.isEdition ? props.edit.values.customer.address.stNumber :  undefined,
+        ZipCode:        props.edit.isEdition ? props.edit.values.customer.address.zip :  undefined,
+        city:           props.edit.isEdition ? props.edit.values.customer.address.city :  undefined,
+        state:          props.edit.isEdition ? props.edit.values.customer.address.state :  undefined,
+        country:        props.edit.isEdition ? props.edit.values.customer.address.country :  undefined,
+        references:     props.edit.isEdition ? props.edit.values.customer.address.references :  undefined,
+        businessName:   props.edit.isEdition ? props.edit.values.customer.businessData.name :  undefined,
+        bnkAcc:         props.edit.isEdition ? props.edit.values.customer.businessData.bankAccount :  undefined
     })
     
     const [options, setOptions] = useState({
