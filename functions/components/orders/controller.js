@@ -467,7 +467,17 @@ export const setOrderAbonment = (org, ordr, forProdOrder,prods, ovrhd) => {
         
     }
     
-    const job  = nodeschedule.scheduleJob(`Reorder-${ordr._id}`, {dayOfWeek:new Date(ordr.date).getDay()}, callBack(org, ordr, prods, ovrhd))
+    const job  = nodeschedule.scheduleJob(`Reorder-${ordr._id}`, {dayOfWeek:new Date(ordr.date).getDay()}, () => {
+        callBack(org, ordr,forProdOrder, prods, ovrhd)
+        .then((result) => {
+            console.log("Callback of job finished")
+            console.log(result)
+        })
+        .catch(err => {
+            console.log("Callback of job failed")
+            console.log(err)
+        })
+    })
 
     //*TESTJOB
     // const job  = nodeschedule.scheduleJob(`Reorder-${ordr._id}`, `*/10 * * * * *`, () => {
