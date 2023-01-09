@@ -296,15 +296,18 @@ export const createNewOrder = (orgId, order) => {
         //*Get all products of container to make validations (products on order have no the complete data)
         try{
             allProducts = await getAllProducts(orgId)
+            console.log(allProducts)
         }catch(err){
-            reject(new Error(JSON.stringify(errorGettingProducts)))
+            console.log(err)
+            return reject(new Error(JSON.stringify(errorGettingProducts)))
         }
         
         //*Check if is a valid date compared with production times estimations.
         try {
             newOrderDateValidation(order, allProducts)
         } catch (err){
-            reject(new Error(JSON.stringify(errorGettingProducts)))
+            console.log(err)
+            return reject(new Error(JSON.stringify(invalidDate)))
         }
 
         //*Mapea los productos para completar el modelo de la base de datos en la propiedad products
@@ -363,17 +366,12 @@ export const createNewOrder = (orgId, order) => {
                     date:           order.date,
                     products:       mappedAndUpdatedProducts,
                     status:         "production",
-                    cyclic:          order.cyclic
+                    cyclic:          order.cyclic,
                 }
 
-                if(order.cyclic){
-                    setOrderAbonment(orgId,orderMapped, allProducts, overhead)
-                }
-
-                
 
                 getOrganizationById(orgId)
-                .then(organization => {
+                .then(async organization => {
                     if(!organization){
                         return reject(new Error(JSON.stringify(emptyOrgs)))
                     }
@@ -384,15 +382,52 @@ export const createNewOrder = (orgId, order) => {
                         organization.containers[0].production.push(productionModel)
                     })
 
-                    organization.save((err, org) => {
-                        if(err) {
-                            console.log(err)
-                            reject(new Error(JSON.stringify(errorSaving)))
-                        }
+                    try {
+                        await organization.save()
+                    }catch(err) {
+                        console.log(err)
+                        reject(new Error(JSON.stringify(errorSaving)))
+                    }
+                    console.log("Order mapped and saved, checking if it is cyclic")
+                    if(order.cyclic){
+                        const orgWithNewOrdersFiltered = await organizationModel.findOne(
+                            {
+                                "_id":mongoose.Types.ObjectId(orgId)
+                            },
+                            {
+                                "orders":{
+                                    "$filter":{
+                                        "input":"$orders",
+                                        "as":"order",
+                                        "cond":{ "$eq":["$$order._id", id] }
+                                    }
+                                }
+                            }
+                        ).exec()
+
                         
-                        
-                        resolve(orderMapped)
-                    })
+                        console.log("Order abonment required")
+                        await organizationModel.updateOne(
+                            {
+                                "_id":mongoose.Types.ObjectId(orgId)
+                            },
+                            {
+                                "$set":{
+                                    "orders.$[order].job":`Reorder-${id}`
+                                }
+                            },
+                            {
+                                "arrayFilters":[
+                                    {"order._id":id}
+                                ]
+                            }
+                        )
+                        const jobName = setOrderAbonment(orgId,orgWithNewOrdersFiltered.orders[0],orderMapped, allProducts, overhead)
+
+                        resolve()
+                    }
+
+                    resolve()
                 })
                 .catch(err => {
                     console.log(err)

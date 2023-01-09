@@ -27,6 +27,32 @@ export const Dashboard = () => {
 
     const [containers, setContainers] = useState([])
     const [employeesPerformanceRows,  setEmployeesPerformanceRows] = useState([])
+    const [time, setTime] = useState({
+        times: {
+            preSoaking: {
+                time:0
+            }, 
+            harvestReady: {
+                time:0
+            }, 
+            packing: {
+                time:0
+            },
+            ready: {
+                time:0
+            },
+            seeding: {
+                time:0
+            },
+            cleaning: {
+                time:30*60*60*1000
+            },
+            growing: {
+                time:0
+            },
+        },
+        total:0
+    })
 
     const theme = useTheme(BV_THEME)
 
@@ -148,15 +174,143 @@ export const Dashboard = () => {
             
         )    
     }
+
+    const getTimeEstimate = async () => {
+        const request = await api.api.get(`${api.apiVersion}/work/time/${user._id}?containerId=${user.assignedContainer}`, {
+            headers: {
+                authorization:  credential._tokenResponse.idToken,
+                user:           user
+            }
+        })
+        
+        let result = {
+            times: {
+                preSoaking: {
+                    time:0
+                }, 
+                harvestReady: {
+                    time:0
+                }, 
+                packing: {
+                    time:0
+                },
+                ready: {
+                    time:0
+                },
+                seeding: {
+                    time:0
+                },
+                cleaning: {
+                    time:30*60*60*1000
+                },
+                growing: {
+                    time:0
+                },
+            },
+            total:0
+        }
+        
+        const sumTimes = () => {
+            let arr = []
+            request.data.data.forEach((item,id)=>{
+                let status = Object.keys(item)[0]
+                arr.push(item[status].minutes)
+            })
+
+            // arr.push(result.times["cleaning"].minutes)
+            return arr.reduce((a, b) => a + b, 0)
+        } 
+
+        let totalTime = sumTimes()
+
+        if (request.data.data){
+            result = {
+                times: {
+                    preSoaking: {
+                        time:request.data.data[0].preSoaking.minutes
+                    }, 
+                    // soaking1: {
+                    //     time:request.data.data[1].soaking1.minutes
+                    // }, 
+                    // soaking1: {
+                    //     time:request.data.data[2].soaking2.minutes
+                    // }, 
+                    harvestReady: {
+                        time:request.data.data[1].harvestReady.minutes
+                    }, 
+                    packing: {
+                        time:request.data.data[2].packing.minutes
+                    },
+                    ready: {
+                        time:request.data.data[3].ready.minutes
+                    },
+                    seeding: {
+                        time:request.data.data[4].seeding.minutes
+                    }, 
+                    cleaning: {
+                        time:30*60*1000
+                    }, 
+                    growing: {
+                        time:request.data.data[5].growing.minutes
+                    },
+                }, 
+                total:totalTime
+            }
+        }
+        /*
+            const reduced = request.data.data.reduce((prev, curr) => {
+                const prevseedTime = prev.times.seeding.time
+                const prevharvestTime = prev.times.harvest.time
+
+                const currseedTime = curr.times.seeding.time
+                const currharvestTime = curr.times.harvest.time
+
+                const prevTotal = prevseedTime + prevharvestTime
+                
+                const currTotal = currseedTime + currharvestTime
+
+                return {
+                    times: {
+                        preSoaking: {
+                            time:prevharvestTime + currharvestTime
+                        }, 
+                        harvest: {
+                            time:prevharvestTime + currharvestTime
+                        }, 
+                        seeding: {
+                            time:prevseedTime + currseedTime
+                        }
+                    }, 
+                    total:prevTotal + currTotal
+                }
+            }, 
+            {
+                times: {
+                    preSoaking: {
+                        time:0
+                    }, 
+                    harvest: {
+                        time:0
+                    }, 
+                    seeding: {
+                        time:0
+                    }
+                },
+                total:0
+            })
+        */ 
+        
+        return result
+    }
     
     useEffect(() => {
         const getData = async () => {
             try {
                 const containers2 = await getContainers()
                 const employeesData = await getEmployees()
-
+                const time = await getTimeEstimate()
                 // const mappedEmployees = mapEmployeesData(employeesData)
-                return {containers2, employeesData}
+                return {containers2, employeesData, time}
             } catch(err) {
                 console.log(err)
                 throw "There was an error trying to get data for dashboard"
@@ -167,10 +321,12 @@ export const Dashboard = () => {
         .then((response)=>{
             setContainers(response.containers2)
             setEmployeesPerformanceRows(response.employeesData)
+            setTime(response.time)
         })
         .catch((err) =>{
             console.log(err)
         })
+        
         
     }, [])
 
@@ -192,7 +348,7 @@ export const Dashboard = () => {
                                     If you want to update production executing tasks by yourself, \n 
                                     log-in as an employee.`}>
                         <Grid item xs={12} md={4} lg={4}>
-                            <DailyTasksCard cycle={tasksCicleObj.cicle} adminRender={user.role}/>
+                            <DailyTasksCard cycle={tasksCicleObj.cicle} time={time} adminRender={user.role}/>
                         </Grid>
                     </Tooltip>
                 <Grow in={true} timeout={2000} unmountOnExit>
@@ -246,8 +402,8 @@ export const Dashboard = () => {
                                                 {container.name}:<br/>
                                                 </Typography>
                                             <Typography sx={{width:"98%"}}>
-                                                <b>Max: </b>{container.capacity}<b> Available: </b>{container.available}{" "}
-                                                <LinearProgress sx={{height:"3vh"}} variant="determinate" value={(container.available / container.capacity)*100} />
+                                                <b>Used trays: </b>{container.capacity - container.available}
+                                                <LinearProgress sx={{height:"3vh"}} variant="determinate" value={((container.capacity - container.available)/container.capacity)*100} />
                                             </Typography>
                                             {/*<Button variant="contained" sx={{width:"34%"}} onClick={()=>handleViewTask(task.type)} color="primary" >
                                                 View

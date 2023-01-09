@@ -13,10 +13,6 @@ const Customer = new Schema({
     },  required: false               },
 },
 {
-    timestamps: {
-        createdAt: 'created',
-        updatedAt: 'updated'
-    },
     query: {
         
     }

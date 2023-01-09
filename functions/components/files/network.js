@@ -6,16 +6,40 @@ import { getFilteredOrders, getMonthlyOrdersByCustomer } from '../orders/store.j
 import {createConfigObjectFromManyOrders, createConfigObjectFromOrder, createOrderInvoicePdf} from './controller.js'
 import {mongoose} from '../../mongo.js'
 import { groupOrdersForMonthlyInvoice } from '../orders/controller.js';
+import fs from 'fs';
+import { pdfBuildPath } from './pdfManager.js';
 
 
 const router = express.Router()
 
 router.get('/order/invoice/:_id', async (req, res) => {
     //* GET ORDER FROM ID
-    let order = await getFilteredOrders(res.locals.organization, req, false,  {key:"_id", value:req.params._id})
-
-    if(order && order.orders.length > 0) {
-        order = order.orders
+    let orgQuery;
+    try {
+        orgQuery = await organizationModel.findOne(
+            {
+                "_id":mongoose.Types.ObjectId(res.locals.organization)
+            },
+            {
+                "orders": {
+                    "$filter":{
+                        "input":"$orders",
+                        "as":"order",
+                        "cond":{
+                            "$eq":["$$order._id", mongoose.Types.ObjectId(req.params._id)]
+                        }
+                    }
+                }
+            }
+        )
+    } catch (err) {
+        error(req, res, 500, "Error getting organization filtered orders", err, err)
+        return;
+    }
+    let order; 
+    console.log(orgQuery)
+    if(orgQuery && orgQuery.orders.length > 0) {
+        order = orgQuery.orders
     }
     console.log("A new PDF file will be created from the following order")
     console.log(order)
@@ -25,6 +49,12 @@ router.get('/order/invoice/:_id', async (req, res) => {
         const config = await createConfigObjectFromOrder(order[0])
         createOrderInvoicePdf(config)
         .then((file) => {
+            const fl = fs.createReadStream(pdfBuildPath)
+            const stat = fs.statSync(pdfBuildPath)
+            res.setHeader('Content-Length', stat.size)
+            res.setHeader('Content-Type', 'application/pdf')
+            res.setHeader('Content-Disposition', 'attachment; filename=order.pdf')
+            fl.pipe(res)
             success(req, res, 200, "PDF obtained succesfully", file)
         })
         .catch((err) => {
@@ -110,10 +140,11 @@ router.get('/orders/invoice/bydate/month/:_id', async (req, res) => {
                 "totalIncome":shapedOrgData[0].totalIncome,
                 "customer":shapedOrgData[0].customer[0]._id,
                 "orders":shapedOrgData[0].ordersId,
-                "issuerOrganization": res.locals.organization
+                "issuerOrganization": res.locals.organization,
+                "payed":false
             }
             await mongoose.connection.collection("invoices").insertOne(shapedOrgData[0].invoice)
-            await organizationModel.updateOne({"_id":mongoose.Types.ObjectId(res.locals.organization)},{"$push":{"invoices":{"date":date, "_id":invoiceId}}},{upsert:true})
+            await organizationModel.updateOne({"_id":mongoose.Types.ObjectId(res.locals.organization)},{"$push":{"invoices":{"date":date, "_id":invoiceId, "payed":false}}},{upsert:true})
             console.log("INVOICE METADATA ADDED TO THE ORGANIZATION")
         } catch (err) {
             error(req, res, 500, "There was an error updating the organization", err, err)
@@ -134,12 +165,18 @@ router.get('/orders/invoice/bydate/month/:_id', async (req, res) => {
 
         createOrderInvoicePdf(config)   
         .then(file => {
+            const fl = fs.createReadStream(pdfBuildPath)
+            const stat = fs.statSync(pdfBuildPath)
+            res.setHeader('Content-Length', stat.size)
+            res.setHeader('Content-Type', 'application/pdf')
+            res.setHeader('Content-Disposition', 'attachment; filename=order.pdf')
+            fl.pipe(res)
             success(req, res, 200, "PDF obtained succesfully", file)
         })
         .catch(err => {
             error(req, res, 500, "Error building pdf", err, err)
         })
-        
+        return
     }
 
     console.log("Aggregation does not meet the conditions")

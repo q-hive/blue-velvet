@@ -408,10 +408,13 @@ export const createConfigObjectFromOrder = async (order) => {
             switch(pack.size){
                 case "small": 
                     indexSize = 0;
+                    break;
                 case "medium": 
                     indexSize = 1;
+                    break;
                 case "large": 
                     indexSize = 2;
+                    break;
             }
             
             return {

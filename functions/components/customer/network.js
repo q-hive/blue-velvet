@@ -1,5 +1,6 @@
 import express from 'express'
 import { error, success } from '../../network/response.js'
+import { updateClient } from '../client/store.js'
 import { validateBodyNotEmpty } from '../security/secureHelpers.js'
 import { createNewCustomer, deleteCustomer, getAllCustomers, getCustomerById } from './store.js'
 
@@ -69,4 +70,14 @@ router.delete('/:id', (req, res) => {
     })
 })  
 
+
+router.patch('/:id', (req, res) => {
+    updateClient(req, res)
+    .then(result => {
+        success(req, res, 200, "Successfully updated a customer", result)
+    })
+    .catch(err => {
+        error(req, res, 500, "There was an error updating thte customer", err, err)
+    })
+})
 export default router

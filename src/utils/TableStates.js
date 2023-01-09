@@ -4,14 +4,14 @@ import { UserModal } from "../CoreComponents/UserActions/UserModal"
 
 import api from '../axios'
 import useAuth from "../contextHooks/useAuthContext"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import { UserDialog } from "../CoreComponents/UserFeedback/Dialog"
 
 import { BV_THEME } from "../theme/BV-theme"
-import { Button, Typography, Box, Accordion, AccordionSummary, AccordionDetails, Divider, CircularProgress } from "@mui/material"
+import { Button, Typography, Box, Accordion, AccordionSummary, AccordionDetails, Divider, CircularProgress, Chip } from "@mui/material"
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { LoadingButton } from "@mui/lab"
-import { stopBackgroundTask } from "../CoreComponents/requests"
+import { getInvoicesByCustomer, markInvoiceAsPayed, stopBackgroundTask } from "../CoreComponents/requests"
 
 export const productsColumns = [
     {
@@ -206,7 +206,7 @@ export const productsColumns = [
                         },
                         {
                             label:"Edit product",
-                            btn_color:"white_btn",
+                            btn_color:"warning",
                             type:"privileged",
                             execute:() => {
                                 navigate(`/${user.uid}/${user.role}/production/editProduct/?id=${params.id}`)
@@ -214,8 +214,8 @@ export const productsColumns = [
                         },
                         {
                             label:"Delete",
-                            type:"dangerous",
-                            btn_color:"secondary",
+                            type:"privileged",
+                            btn_color:"warning",
                             execute:() => {
                                 console.log("Are you sure you want to delete this product?")
                                 setModal({
@@ -438,7 +438,7 @@ export const productsColumnsMobile = [
                         },
                         {
                             label:"Edit product",
-                            btn_color:"white_btn",
+                            btn_color:"warning",
                             type:"privileged",
                             execute:() => {
                                 navigate(`/${user.uid}/${user.role}/production/editProduct/?id=${params.id}`)
@@ -447,7 +447,7 @@ export const productsColumnsMobile = [
                         {
                             label:"Delete",
                             type:"dangerous",
-                            btn_color:"secondary",
+                            btn_color:"warning",
                             execute:() => {
                                 console.log("Are you sure you want to delete this product?")
                                 setModal({
@@ -785,7 +785,7 @@ export const salesColumns = [
                         {
                             label:"Stop cyclic generation",
                             type:"dangerous",
-                            btn_color:"primary",
+                            btn_color:"warning",
                             execute:()=>{
                                 stopBackgroundTask(user, credential, params.row.job)
                                 .then(response => {
@@ -827,7 +827,7 @@ export const salesColumns = [
                                     })
                                 })
                             },
-                            disabled:!Boolean(params.row.job)
+                            disabled:params.row.job === "No job"
                         }
                     ]
                 })
@@ -1019,6 +1019,16 @@ export const CustomerColumns = [
 
                 return deleteCustomerOperation
             }
+            const monthlyInvoice = async () => {
+                setLoading(true)
+                const orderPDF = await api.api.get(`${api.apiVersion}/files/orders/invoice/bydate/month/${params.id}`, {
+                    headers: {
+                        authorization: credential._tokenResponse.idToken,
+                        user:user
+                    }
+                })
+                return orderPDF
+            }
             
             const handleModal = () => {
                 setModal({
@@ -1036,9 +1046,46 @@ export const CustomerColumns = [
                             }
                         },
                         {
+                            label:"Download monthly invoice",
+                            btn_color:"white_btn",
+                            type:"privileged",
+                            execute:() => {
+                                monthlyInvoice()
+                                .then((result) => {
+                                    console.log(result)
+                                    const url = window.URL.createObjectURL(new Blob([new Uint8Array(result.data.data.data).buffer]))
+                                    const link = document.createElement('a')
+                                    link.href = url;
+                                    
+                                    link.setAttribute('download', `Invoice for ${params.row.name}.pdf`)
+                                    
+                                    document.body.appendChild(link)
+                                    link.click()
+                                    setLoading(false)
+                                })
+                                .catch((err) => {
+                                    setLoading(false)
+                                    setDialog({
+                                        ...dialog,
+                                        open:true,
+                                        title:"Error getting file",
+                                        message: "Please try again, there was an issue getting the file",
+                                        actions:[
+                                            {
+                                                label:"Ok",
+                                                execute:() => window.location.reload()
+                                            }
+                                        ]
+
+                                    })
+                                })
+
+                            }
+                        },
+                        {
                             label:"Delete customer",
                             type:"dangerous",
-                            btn_color:"secondary",
+                            btn_color:"warning",
                             execute:() => {
                                 setModal({
                                     ...modal,
@@ -1106,6 +1153,22 @@ export const CustomerColumns = [
                                         },
                                     ]
                                 })
+                            }
+                        },
+                        {
+                            label:"Review invoices",
+                            type:"white_btn",
+                            btn_color:"primary",
+                            execute:async() => {
+                                setLoading(true)
+
+                                let invoicesRes
+                                try {
+                                    invoicesRes = await getInvoicesByCustomer(user,credential,params.row._id) 
+                                    navigate(`/${user.uid}/${user.role}/invoices/${params.row._id}`,{state:{customerData:params.row, invoices:invoicesRes.data}})
+                                } catch (err) {
+                                    console.log(err)
+                                }
                             }
                         },
                     ]
@@ -1345,4 +1408,50 @@ export const adminDashboardEmployees = [
     minWidth:{xs:"25%",md:130},
     flex:1
 }
+]
+
+export const invoicesColumns = [
+    {
+        headerName:"Creation date",
+        field:"date",
+        width:250
+    },
+    {
+        headerName:"ID",
+        field:"_id",
+        width:250
+    },
+    {
+        headerName:"Income",
+        field:"totalIncome"
+    },
+    {
+        headerName:"Payment status",
+        field:"payed",
+        width:150,
+        renderCell: (params) => {
+            return <Chip label={params.row.payed ? "paid" : "unpaid"} color={params.row.payed ? "success" : "warning"}/>
+        }
+    },
+    {
+        field:"actions",
+        headerName:" ",
+        width:200,
+        renderCell:(params) => {
+            const {user, credential} = useAuth()
+            const navigate = useNavigate('/');
+            
+            const handleMarkAsPayed = () => {
+                markInvoiceAsPayed(user, credential, params.row._id)
+                .then((response) => {
+                    navigate(`/${user.uid}/${user.role}/client`)
+                } )
+                .catch(err => {
+                    console.log(err)
+                })
+            }
+            
+            return <Button onClick={handleMarkAsPayed} variant="contained">Mark as payed</Button>
+        }
+    }
 ]

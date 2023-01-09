@@ -4,7 +4,7 @@ import path from 'path'
 import { doesFileExist } from './controller.js'
 
 
-const pdfBuildPath = path.resolve('./components/files/filesDB/order.pdf')
+export const pdfBuildPath = path.resolve('./components/files/filesDB/order.pdf')
 /**
  * @description build a pdf from html taking a snapshot using puppeteer
  * @param {String} html receives a string containing the path to trhe html file to render the PDF 

@@ -5,6 +5,8 @@ import { updateManyOrders } from "./store.js";
 import nodeschedule from 'node-schedule'
 import { buildProductionDataFromOrder } from "../production/controller.js";
 import { getOrganizationById } from "../organization/store.js";
+import { organizationModel } from "../../models/organization.js";
+import mongoose from "mongoose";
 
 const sortProductsPrices = (order,products) => {
     const orderProducts = order.products.map((prod) => {
@@ -68,7 +70,8 @@ const sortProductsPrices = (order,products) => {
 }
 
 export const getOrdersPrice = (order, products) => {
-    //*Filter unnecesary data from prods object
+    try {
+        //*Filter unnecesary data from prods object
     const orderProducts = order.products.map((prod) => {
         return {prodId: prod._id, packages: prod.packages}
     })
@@ -120,7 +123,10 @@ export const getOrdersPrice = (order, products) => {
         return prev + curr.total
     }, 0)
     //*RETURN ORDER TOTAL
-    return orderTotal
+    return orderTotal    
+    } catch (err) {
+        throw new Error(err)
+    }
 }
 
 
@@ -136,6 +142,7 @@ export const newOrderDateValidation = (order, allProducts = undefined) => {
     const times = completeObjectProducts.flatMap((product) => {
         if(product.mix.isMix){
             const mixProductsCompleteObjects = product.mix.products.map((mixProd) => allProducts.find((dbProd) => dbProd._id.equals(mixProd.strain)))
+            console.log(mixProductsCompleteObjects)
 
             const mixTimes = mixProductsCompleteObjects.map((mixProd) => mixProd.parameters.day + mixProd.parameters.night)
 
@@ -144,8 +151,6 @@ export const newOrderDateValidation = (order, allProducts = undefined) => {
         return product.parameters.day + product.parameters.night
     })
 
-    console.log(deliveryDateLeftDays)
-    console.log(times)
 
     const maxTime = Math.max(...times)
 
@@ -316,7 +321,6 @@ export const groupOrdersForMonthlyInvoice = (orders, customerData) => {
         Model.customer["adressContainer"]["state"]  = customerData.address.state
         Model.customer["adressContainer"]["cp"]     = customerData.address.zip
     } catch (err) {
-        console.log(err)
         throw new Error("Error building customer model for monthly invoice")
     }
 
@@ -361,53 +365,122 @@ export const groupOrdersForMonthlyInvoice = (orders, customerData) => {
             return {reducedProducts: product}
         })
 
-        // console.log(mappedOrdersProducts)
     } catch (err) {
-        console.log(err)
         throw new Error("Error reducing products to build monthly invoice")
     }
 }
 
+export const buildOrderFromExistingOrder = (orderData,oldOrderObject ,allProducts) => {
+    let newOrder = {};
+    
+    const deliveryDate = orderData.date;
+    const creationDate = orderData.created;
+    console.log(deliveryDate.getTime())
+    console.log(creationDate.getTime())
+    const differenceFromCreationAndDeliveryDateInValidOrder = deliveryDate.getTime() - creationDate.getTime()
 
-export const setOrderAbonment = (org, ordr, prods, ovrhd) => {
-    console.log(`A order will re-created every ${new Date(ordr.date).getDay()}`)
-    const callBack = async (orgId, order, allProducts, overhead) => {
-        console.log("The production data will be re-saved")
-        const production = await buildProductionDataFromOrder({...order, _id:ordr._id}, allProducts, overhead)
-        getOrganizationById(orgId)
-        .then((organization) => {
-            production.forEach((productionModel) => {
-                organization.containers[0].production.push(productionModel)
-            })
+    let mappedProducts = orderData.products.map((prod) => {
+        const dbProduct = allProducts.find((product) => {
+            return product._id.equals(prod._id)
+        })
 
-            organization.save((err, org) => {
-                if(err) {
-                    console.log(err)
-                    Promise.reject(err)
+        console.log(prod.packages)
+        return {
+            _id:            prod._id,
+            name:           prod.name,
+            status:         prod.status,
+            seedId:         dbProduct?.seed?.seedId,
+            packages:       [...prod.packages],
+            mix:            dbProduct.mix.isMix,
+            price:          dbProduct.price
+        }
+    })
+    let prc = getOrdersPrice(orderData, allProducts)
+    
+    newOrder._id = mongoose.Types.ObjectId()
+    newOrder.cyclic = false;
+    newOrder.price = oldOrderObject.price
+    newOrder.products = mappedProducts
+    newOrder.date = new Date(new Date().getTime() + differenceFromCreationAndDeliveryDateInValidOrder)
+    newOrder.customer = orderData.customer
+    newOrder.organization = orderData.organization
+    newOrder.status = orderData.status
+    newOrder.job = oldOrderObject.job
+
+    return newOrder
+}
+
+
+export const setOrderAbonment = (org, ordr, forProdOrder,prods, ovrhd) => {
+    console.log("New order will be recreated every: " + new Date(ordr.date).getDay())
+    const callBack = async (orgId, order, productionOrder,allProducts, overhead) => {
+        try {
+            console.log(order.products)
+            const production = await buildProductionDataFromOrder(productionOrder, allProducts, overhead)
+            console.log(`Production of the new order set:  ${typeof production} from the original order production data`)
+
+            console.log("New order and production automatic building started...")
+            const newOrder = buildOrderFromExistingOrder(order,productionOrder, allProducts)
+            console.log(`New order id: ${newOrder._id}`)
+            
+            // console.log(production)
+            const updateOP = await organizationModel.updateOne(
+                {
+                    "_id":mongoose.Types.ObjectId(orgId)
+                },
+                {
+                    "$push":{
+                        "orders":newOrder,
+                        "containers.$[].production": {"$each": production},
+                    },
+                },
+            )
+            console.log("Organization automatic update completed")
+            console.log(updateOP)
+            
+            const updateOrder = await organizationModel.updateOne(
+                {
+                    "_id":mongoose.Types.ObjectId(orgId)
+                },
+                {
+                    "$push":{
+                        "orders.$[order].relatedOrdersFromJob":mongoose.Types.ObjectId(newOrder._id)
+                    },
+                },
+                {
+                    "arrayFilters":[
+                        {
+                            "order._id":mongoose.Types.ObjectId(order._id)
+                        }
+                    ]
                 }
-                
-                
-                console.log("The production data has been re-saved for the order")
-                Promise.resolve(org)
-            })
-        })
-        .catch(err => {
-            Promise.reject(err)
-        })
+            )
+            console.log("Order related to the new orders created has been updated")
+            console.log(updateOrder)
+
+            return newOrder
+        } catch (err) {
+            console.log(err)
+            throw new Error(err)
+        }
+        
+        
     }
     
-    const job  = nodeschedule.scheduleJob(`Reorder-${ordr._id}`, {dayOfWeek:new Date(ordr.date).getDay()}, callBack(org, ordr, prods, ovrhd))
+    // const job  = nodeschedule.scheduleJob(`Reorder-${ordr._id}`, {dayOfWeek:new Date(ordr.date).getDay()}, callBack(org, ordr, prods, ovrhd))
 
     //*TESTJOB
-    // const job  = nodeschedule.scheduleJob(`Reorder-${ordr._id}`, `*/1 * * * *`, () => {
-    //     callBack(org, ordr, prods, ovrhd)
-    //     .then((result) => {
-    //         console.log(result)
-    //     })
-    //     .catch(err => {
-    //         console.log("Re-order failed")
-    //     })
-    // })
+    const job  = nodeschedule.scheduleJob(`Reorder-${ordr._id}`, `*/10 * * * * *`, () => {
+        callBack(org, ordr, forProdOrder,prods, ovrhd)
+        .then((result) => {
+            console.log("Callback of job finished")
+            console.log(result)
+        })
+        .catch(err => {
+            console.log("Callback of job failed")
+            console.log(err)
+        })
+    })
 
     ordr.job = job.name;
 

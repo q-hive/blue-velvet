@@ -3,6 +3,7 @@ import { Box } from '@mui/system'
 import React, { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { CleaningContent } from '../../modules/Employee/Tasks/ContainerTasks/CleaningContent'
+import { MaintenanceContent } from '../../modules/Employee/Tasks/ContainerTasks/MaintenanceContent'
 import { MatCutContent } from '../../modules/Employee/Tasks/ContainerTasks/MatCutContent'
 import { DeliveryContent } from '../../modules/Employee/Tasks/WorkingTasks/DeliveryContent'
 import { HarvestingContent } from '../../modules/Employee/Tasks/WorkingTasks/HarvestingContent'
@@ -169,6 +170,11 @@ export const TaskContainer = (props) => {
             contentTitle = "Cut Mats"
             content = <MatCutContent index={activeStep}/>
             steps=[{step:"Cut Mats"}]
+        break;
+        case "maintenance":
+            contentTitle = "Maintenance"
+            content = <MaintenanceContent index={activeStep}/>
+            steps=[{step:"Maintenance"}]
         break;
         
         default: 
