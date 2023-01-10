@@ -451,7 +451,7 @@ export const createConfigObjectFromOrder = async (order) => {
         return {data:productData}
     })
 
-    const footer = ['<td id="total" class="right, endTable"><b>Total :</b><th/>', `<td class="endTable">${order.price}</td>`]
+    const footer = ['<th id="total" class="right, endTable"><b>Total :</b><th/>', `<td class="endTable">${order.price}</td>`]
     mappedTable = {headers, rows, footer}
     return {
         header:{
