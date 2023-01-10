@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import Organization from '../../models/organization.js';
 import { getMongoQueryByObject } from '../../utils/getMongoQuery.js';
+import { actualMonthInitialDate } from '../../utils/time.js';
 
 const orgModel = mongoose.model('organizations', Organization)
 
@@ -65,44 +66,38 @@ export const getAllCustomers = (orgId) => {
                                 }
                             },
                             {
-                                "$unwind":"$orders"
-                            },
-                            {
-                                "$match":{
-                                    "orders.customer": mongoose.Types.ObjectId(customerId),
-                                    "orders.date": {"$gte": new Date(new Date().getFullYear(), new Date().getMonth(), 1), "$lte": new Date()}
+                                "$project":{
+                                    "orders":{
+                                        "$filter":{
+                                          "input":"$orders",
+                                          "as":"order",
+                                          "cond":{
+                                            "$and":[
+                                              { "$gte":["$$order.created",new Date(new Date().getUTCFullYear(), new Date().getUTCMonth(),1)] },
+                                              { "$lt":["$$order.created",new Date(new Date().getUTCFullYear(),new Date().getUTCMonth()+1,1)] },
+                                              { "$eq": ["$$order.customer", mongoose.Types.ObjectId(customerId)] }
+                                            ]
+                                          }
+                                        }
+                                    }
                                 }
                             },
                             {
-                                "$project": {
-                                    "orders":true
+                                "$addFields":{
+                                    "totalMonth":{"$sum":"$orders.price"}
                                 }
                             }
-                            // {
-                            //     "$unwind":"$orders"
-                            // },
-                            // {
-                            //     "$addFields": {
-                            //         "total": {
-                            //             "$sum":"$orders.price"
-                            //         }
-                            //     }
-                            // }
                         ]    
                     )
 
-                    const mapped = models.map((orgModel) => {
-                        return orgModel.orders
-                    })
+                    console.log(models)
+                    if(models.length>0){
+                        resolve(models[0].totalMonth)
+                        return
+                    }
 
-                    const extracted = mapped.map((model, index) => {
-                        return model.price  
-                    })
+                    resolve(0)
                     
-                    const reduced = extracted.reduce((prev,curr) => {
-                        return prev + curr
-                    }, 0)
-                    resolve(reduced)
                 })
             }
             if(orgDoc.customers.length > 0){

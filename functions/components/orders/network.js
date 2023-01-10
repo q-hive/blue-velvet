@@ -1,6 +1,6 @@
 import express from 'express'
 import { success, error } from '../../network/response.js'
-import { createNewOrder, deleteOrders, getAllOrders, getFilteredOrders, updateOrder } from './store.js'
+import { createNewOrder, deleteOrders, getAllOrders, getFilteredOrders, getMonthlyOrders, getMonthlyOrdersByCustomer, updateOrder } from './store.js'
 import {modelsValidationError} from '../../utils/errorHandler.js'
 import { updateContainerById } from '../container/store.js'
 import { updateAllOrders } from './controller.js'
@@ -17,6 +17,7 @@ router.post('/', (req, res) => {
         
     })
 })
+
 
 router.get('/', (req, res) => {
     const hasFilter = Object.keys(req.query).length > 0
@@ -46,6 +47,26 @@ router.get('/:status', (req, res) => {
     .catch(err => {
         error(req, res, 500, "Error getting orders - GENERIC ERROR", err)
     })    
+})
+
+router.get('/bydate/month', (req, res) => {
+    getMonthlyOrders(res.locals.organization)
+    .then((orders) => {
+        success(req, res, 200, "Monthly orders obtained succesfully", orders)
+    })
+    .catch((err) => {
+        error(req, res, 500, "Error getting monthly orders", err, err)
+    })
+})
+
+router.get('/bydate/month/customer/:_id', (req, res) => {
+    getMonthlyOrdersByCustomer(res.locals.organization, req.params._id)
+    .then((orders) => {
+        success(req, res, 200, "Monthly orders of customer obtained succesfully", orders)
+    })
+    .catch((err) => {
+        error(req, res, 500, "Error getting monthly orders", err, err)
+    })
 })
 
 /** 
@@ -114,5 +135,6 @@ router.patch('/all', (req, res) => {
         error(req, res, 500, "Error updating all orders of organization", err)
     })
 })
+
 
 export default router

@@ -25,6 +25,8 @@ import { GrowingTask } from "./modules/Employee/Tasks/StandaloneTasks/Growing";
 import { TaskContainer} from "./modules/Employee/Tasks/WorkingTasks/TaskContainer";
 import { EditionAbstract } from "./CoreComponents/Edition/EditionAbstract";
 import { TasksReview } from "./modules/Admin/Tasks/TasksReview";
+import { InvoicesIndex } from "./modules/Admin/Client/invoices/InvoicesIndex";
+import { ContainerTaskWrapper } from "./modules/Employee/Tasks/ContainerTasks/ContainerTaskWrapper";
 
 
 
@@ -67,6 +69,10 @@ export const AppRoutes  = [
         component:<ClientIndex/>
     },
     {
+        path:"/:uid/:rol/invoices/:customerId",
+        component:<InvoicesIndex/>
+    },
+    {
         path:"/:uid/admin/client/NewCustomer",
         component:<NewCustomer edit={{isEdition:false}}/>
     },
@@ -92,10 +98,10 @@ export const AppRoutes  = [
         path:"/:uid/employee/profile",
         component:<Profile/>
     },
-    // {
-    //     path:"/:uid/employee/dashboard/taskTest",
-    //     component:<TaskContainer/>
-    // },
+    {
+        path:"/:uid/employee/dashboard/taskTest",
+        component:<ContainerTaskWrapper/>
+    },
     {
         path:"/:uid/employee/production",
         component:<ProductionMain/>

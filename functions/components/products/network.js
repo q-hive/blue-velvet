@@ -155,13 +155,11 @@ router.patch('/', (req, res) => {
     }
     
     if(req.query.id !== undefined && req.query.id !== ""){
-        const orgId = res.locals.organization
-        const id = req.query.id
         //*TODO IF THERE IS AN ORDER RELATED TO A PRODUCT. NOTIFY CLIENT THAT MUST FIRST CANCEL THE ORDER
         //*TODO TRIGGER TASKS RELATED TO A PRODUCT CANCELLATION
         //*TODO WHEN AL THIS PROCESSES ARE COMPLETED, THEN UPDATE THE PRODUCT STATE
         //*TODO If a products is updated, then the container must be updated
-        controller = () => updateProduct(orgId,req.body.product)
+        controller = () => updateProduct(req,res)
         
     }
     

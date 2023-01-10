@@ -29,6 +29,8 @@ const softwareLogoPath = "https://github.com/q-hive/blue-velvet/blob/deploy/src/
  * }
  */
 export const createRow = (item) => {
+    console.log("Building row for table")
+    console.log(item)
     return `
         <tr>
             ${item.data.map((data) => {
@@ -114,6 +116,8 @@ export const createInvoiceHeader = (data) => {
         return adressHTML
     }
     const getClientContainer = () => {
+        console.log("Building client data container")
+        console.log(data)
         const headerColumn1 = `
             <h2 id="businessName">${data.textLines.businessName}</h2>
             ${getAddressContainer()}
@@ -351,7 +355,8 @@ export const createOrderInvoicePdf = (orderPDFConfig) => {
             const config = createStructure("order", orderPDFConfig)
     
             const html = createHTML(config)
-            console.log(buildPath)
+
+            console.log("The file will be saved on the following path: " + buildPath)
             fs.writeFileSync(buildPath, html)
 
 
@@ -398,7 +403,19 @@ export const createConfigObjectFromOrder = async (order) => {
     const rows = order.products.map((product) => {
         let productData
         const mapProd = product.packages.map((pack) => {
-            let indexSize = pack.size === "small" ? 0 : 1
+            let indexSize;
+
+            switch(pack.size){
+                case "small": 
+                    indexSize = 0;
+                    break;
+                case "medium": 
+                    indexSize = 1;
+                    break;
+                case "large": 
+                    indexSize = 2;
+                    break;
+            }
             
             return {
                 size:   pack.size, 
@@ -568,5 +585,260 @@ export const createConfigObjectFromOrder = async (order) => {
             Total: order.price
         },
         table:mappedTable
+    }
+}
+
+
+
+const buildTableForInvoiceFromManyOrders = (orders, totalAmount) => {
+    let mappedTable
+    let rows
+
+    const headers = [
+        {
+            name:"Product name"
+        },
+        {
+            name:"Product price"
+        },
+        {
+            name:"Quantity"
+        },
+        {
+            name:"Total"
+        },
+    ]
+
+    const hashProducts = {}
+    
+    orders.map((order) => {
+        const mappedProducts = order.products.map((product) => {
+            let productData
+            
+            if(hashProducts[product.name]){
+                
+            } else {
+                hashProducts[product.name] = {
+                    "small":{
+                        "number":0,
+                        "price":0,
+                        "totalPrice":0
+                    },
+                    "medium":{
+                        "number":0,
+                        "price":0,
+                        "totalPrice":0
+                    },
+                    "large":{
+                        "number":0,
+                        "price":0,
+                        "totalPrice":0
+                    },
+                    "total":0
+                }
+            }
+            
+            const mapProd = product.packages.map((pack) => {
+                let indexSize;
+    
+                switch(pack.size){
+                    case "small": 
+                        indexSize = 0;
+                        break;
+                    case "medium": 
+                        indexSize = 1;
+                        break;
+                    case "large": 
+                        indexSize = 2;
+                        break;
+                }
+
+                
+                hashProducts[product.name][pack.size]["number"] = hashProducts[product.name][pack.size]["number"] + pack["number"];
+                hashProducts[product.name][pack.size]["price"] = product.price[indexSize].amount;
+                hashProducts[product.name][pack.size]["totalPrice"] = hashProducts[product.name][pack.size]["totalPrice"] + product.price[indexSize].amount*pack.number;
+                return {
+                    size:   pack.size, 
+                    price:  product.price[indexSize].amount, 
+                    qty:    pack.number, 
+                    total:  product.price[indexSize].amount*pack.number
+                }
+            })
+            
+            const total = mapProd.reduce((prev, curr) => {
+                return prev + curr.total
+            },0)
+
+            hashProducts[product.name]["total"] +=+ total; 
+        })
+        
+    })
+
+    rows = Object.keys(hashProducts).map((name) => {
+        const data = [
+            {
+                value:name,
+            },
+            {
+                value: `${Object.keys(hashProducts[name]).map((size) => {
+                    return `${size}: ${hashProducts[name][size]["price"]}`
+                })}`
+            },
+            {
+                value: `${Object.keys(hashProducts[name]).map((size) => {
+                    return `${size}: ${hashProducts[name][size]["number"]}`
+                })}`
+            },
+            {
+                value:hashProducts[name]["total"]
+            },
+        ]
+        
+        return {data:data}
+    })
+
+
+    const footer = ['<td id="total" class="right, endTable"><b>Total :</b><th/>', `<td class="endTable">${totalAmount}</td>`]
+    mappedTable = {headers, rows, footer}
+
+    return mappedTable
+    
+}
+
+export const createConfigObjectFromManyOrders = (shapedOrgData) => {
+    let table = buildTableForInvoiceFromManyOrders(shapedOrgData[0].orders, shapedOrgData[0].totalIncome)
+        
+    return {
+        header:{
+            style: ` 
+            body{
+                font-family: Arial, Helvetica, sans-serif;
+                width:65em;
+                padding-bottom: 5%;
+            }
+
+            p{
+                font-size: 1.8vh;
+                font-weight: 500;
+            }
+            h3{
+                font-weight: 500;
+            }
+            html {
+                -webkit-print-color-adjust: exact;
+            }
+            .right{text-align:right;align-items: right;}
+            
+            table {
+                width: 100%;
+                border-spacing: 0px;
+                border-width: 0px;
+                border-style: hidden hidden solid;
+                border-collapse: collapse;
+            }
+            tr {
+                text-align: left;
+            }
+
+            th,td {
+                border-width: 2px;
+                padding: 15px;
+                border-style: solid;
+                border-color: #2F4DA5;
+            }
+
+            thead tr th {
+                background: #93cf0f;
+                color: #FFF;
+            }
+
+
+            tfoot td{
+                background: #FFF;
+                border-style: hidden;
+            }
+
+            .endTable{
+                background: #FFF;
+                border-style: hidden hidden solid ;
+                border-collapse: separate !important;
+            }
+
+            tr:nth-child(odd) {
+                background: #CCC
+            }
+
+            tr:nth-child(even) {
+                background: #FFF
+            }
+
+            .no-content {
+                background-color: red;
+            }
+
+            .orderContainer{
+                width:95%;
+                padding:3%;
+                margin-top: 1%;
+                overflow: auto;
+                
+            }
+
+            #clientContainer {
+                justify-content: space-between;
+            }
+
+            #billingContainer{
+
+            }
+
+            #addressContainer {
+                justify-content: space-evenly;
+            }
+            
+            #tableContainer {
+                width:100%;
+                display:flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .headerColumn{
+                width:50%;
+                float:left;
+            }
+            .divider{
+                border: 10px solid #2F4DA5;
+                border-radius: 5px;
+            }
+            `,
+            textLines: {
+                pdfType:"Invoice",
+                businessName:shapedOrgData[0].name,
+                businessAddress: shapedOrgData[0].address.street,
+                adressContainer:{
+                    city:shapedOrgData[0].address.country,
+                    state:shapedOrgData[0].address.state,
+                    cp:shapedOrgData[0].address.zip,
+                },
+                phone:shapedOrgData[0].owner[0].phone,
+                email:shapedOrgData[0].owner[0].email,
+            }
+        },
+        customerData:{
+            clientName: shapedOrgData[0].customer[0].name,
+            clientAddress: shapedOrgData[0].customer[0].address.street,
+            adressContainer:{
+                city:shapedOrgData[0].customer[0].address.city,
+                state:shapedOrgData[0].customer[0].address.state,
+                cp:shapedOrgData[0].customer[0].address.zip,
+            },
+        },
+        invoiceData:{
+            price:shapedOrgData[0].totalIncome,
+            date:shapedOrgData[0].invoice.date,
+            invoiceNumber:shapedOrgData[0].invoice._id
+        },
+        table:table,
     }
 }

@@ -441,11 +441,15 @@ export const getProductionWorkByContainerId = (req,res, criteria) => {
 //*Build model for production control based on order packages and products parameters
 export const buildProductionDataFromOrder = async (order, dbproducts, overHeadParam) => {
     //*Add grams per size to order product packages
+    console.log("Order received in production controller")
+    console.log(order.products)
     const productsModified = await Promise.all(
         order.products.map(async(prod, pidx) => {
             //*Find the product in database
             const prodFound = dbproducts.find((fprod) => fprod._id.equals(prod._id))
             prod.packages.forEach((pkg, idx) => {
+                console.log("Required " + pkg.number + " packages");
+                console.log(prod)
                 switch(pkg.size){
                     case "small":
                         prod.packages[idx] = {
@@ -473,7 +477,8 @@ export const buildProductionDataFromOrder = async (order, dbproducts, overHeadPa
                 }
             })
             
-
+            console.log("Packages after maping")
+            console.log(prod.packages)
             
             let overhead = 0
 
@@ -482,7 +487,9 @@ export const buildProductionDataFromOrder = async (order, dbproducts, overHeadPa
             }
             
             //*Total grams will define number of trays based on seedingRate
+            console.log("REDUCING GRAMS")
             let harvest = prod.packages.reduce((prev, curr) => {
+                console.log(curr.grams)
                 return prev + curr.grams
             },0)
 
@@ -498,14 +505,20 @@ export const buildProductionDataFromOrder = async (order, dbproducts, overHeadPa
                     const mappedMixComposition = mixProds.map(async (mprod) => {
                         
                         const mixFound = dbproducts.find((fprod) => fprod._id.equals(mprod.strain)).toObject()
+                        console.log("Mix found for production")
+                        if(!mixFound){
+                            console.log("noMixFound")
+                        }
+                        
                         const mixProductStartProductionDate = getEstimatedStartProductionDate(order.date, mixFound)
                         const mixProductHarvestDate = await getEstimatedHarvestDate(mixProductStartProductionDate,mixFound)
 
                         console.group()
                         console.log("Building production models for MIX: " + prodFound.name + " strains")
+                        console.log(`Is required a total harvest for the order of: ${harvest}`)
                         const strharvest = Number((harvest * (mprod.amount/100)).toFixed(2))
-                        const seeds = strharvest * (mixFound.parameters.seedingRate/mixFound.parameters.harvestRate)
-                        const trays = seeds / mixFound.parameters.seedingRate
+                        const seeds = strharvest / (mixFound.parameters.harvestRate/mixFound.parameters.seedingRate) 
+                        const trays = Math.ceil(seeds / mixFound.parameters.seedingRate)
                         const totalProductionDays = mixFound.parameters.day + mixFound.parameters.night
                         console.log(seeds + " seeds")
                         console.log(trays + " trays")
@@ -556,8 +569,8 @@ export const buildProductionDataFromOrder = async (order, dbproducts, overHeadPa
                     const estimatedStartDate = getEstimatedStartProductionDate(order.date, prodFound)
                     const harvestDate = await getEstimatedHarvestDate(estimatedStartDate, prodFound)
                     
-                    const totalSeeds = harvest * (prodFound.parameters.seedingRate / prodFound.parameters.harvestRate)
-                    const totalTrays = totalSeeds / prodFound.parameters.seedingRate
+                    const totalSeeds = harvest / (prodFound.parameters.harvestRate / prodFound.parameters.seedingRate)
+                    const totalTrays = Math.ceil(totalSeeds / prodFound.parameters.seedingRate) 
                     const totalProductionDays = prodFound.parameters.day + prodFound.parameters.night 
                     
                     prod["productionData"] = [{
@@ -611,7 +624,6 @@ export const getEstimatedHarvestDate = async (startDate,product, orgId, containe
 }
 
 export const getEstimatedStartProductionDate = (orderDate,product) => {
-    console.log(product)
     try {
 
         const lightTime = product.parameters.day

@@ -12,6 +12,7 @@ import useAuth from '../../../contextHooks/useAuthContext';
 import api from '../../../axios.js'
 import { UserDialog } from '../../../CoreComponents/UserFeedback/Dialog';
 import { useLocation } from 'react-router-dom';
+import { editCustomer } from '../../../CoreComponents/requests';
 
 
 
@@ -37,19 +38,19 @@ export const NewCustomer = (props) => {
     const {user, credential} = useAuth()
     
     const [input, setInput] = useState({
-        name:           undefined,
-        email:          undefined,
-        image:          undefined,
+        name:           props.edit ? props.edit.values.customer.name :  undefined,
+        email:          props.edit ? props.edit.values.customer.email :  undefined,
+        image:          props.edit ? props.edit.values.customer.image :  undefined,
         role:           undefined,
-        street:         undefined,
-        number:         undefined,
-        ZipCode:        undefined,
-        city:           undefined,
-        state:          undefined,
-        country:        undefined,
-        references:     undefined,
-        businessName:   undefined,
-        bnkAcc:         undefined
+        street:         props.edit ? props.edit.values.customer.address.street :  undefined,
+        number:         props.edit ? props.edit.values.customer.address.stNumber :  undefined,
+        ZipCode:        props.edit ? props.edit.values.customer.address.zip :  undefined,
+        city:           props.edit ? props.edit.values.customer.address.city :  undefined,
+        state:          props.edit ? props.edit.values.customer.address.state :  undefined,
+        country:        props.edit ? props.edit.values.customer.address.country :  undefined,
+        references:     props.edit ? props.edit.values.customer.address.references :  undefined,
+        businessName:   props.edit ? props.edit.values.customer.businessData.name :  undefined,
+        bnkAcc:         props.edit ? props.edit.values.customer.businessData.bankAccount :  undefined
     })
     
     const [options, setOptions] = useState({
@@ -90,6 +91,58 @@ export const NewCustomer = (props) => {
                 "bankAccount":  input.bnkAcc
             }
         }
+
+        if(isEdition){
+            mappedCustomer["_id"] = props.edit.values.customer._id
+            editCustomer(user, credential, mappedCustomer)
+            .then(response => {
+                console.log(response)
+                if(response.status === 500){
+                    setDialog({
+                        ...dialog,
+                        open:true,
+                        title:"Customer could not be added",
+                        actions:[ 
+                            {
+                                label:"Retry",
+                                btn_color:"primary",
+                                execute:() => {
+                                    setDialog({...dialog,open:false}),
+                                    setActiveStep(0)
+                                }
+                            },
+                            {
+                                label:"Close",
+                                btn_color:"secondary",
+                                execute:() => {
+                                    setDialog({...dialog,open:false})
+                                }
+                            }
+                        ]
+                        
+                    }) 
+                }
+                if(response.status === 200){
+                    setDialog({
+                        ...dialog,
+                        open:true,
+                        title:"Customer modified",
+                        actions:[ {
+                            label:"Ok",
+                            btn_color:"primary",
+                            execute:() => {
+                                window.location.reload()
+                            }
+                            }
+                        ]
+                        
+                    })
+                }
+            
+            })
+            .catch(err => console.log(err))
+            return
+        }
         
         api.api.post(`${api.apiVersion}/customers/`, mappedCustomer, {
             headers:{
@@ -123,7 +176,7 @@ export const NewCustomer = (props) => {
                         }
                     ]
                     
-                }) }
+            }) }
             if(response.status === 201){
                 setDialog({
                     ...dialog,
@@ -139,7 +192,6 @@ export const NewCustomer = (props) => {
                     ]
                     
                 })
-                
             }
         })
         .catch(err => {

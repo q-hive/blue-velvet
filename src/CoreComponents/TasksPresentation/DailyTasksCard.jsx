@@ -37,7 +37,7 @@ export const DailyTasksCard = (props) => {
     }
 
     const time = props.time ? props.time : buildObjectDefault();
-
+    
     const navigate = useNavigate();
     const params = useParams()
     const {user, credential} = useAuth()

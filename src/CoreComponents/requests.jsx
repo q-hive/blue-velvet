@@ -14,13 +14,14 @@ export const getOrdersData = (props) => {
     let setLoading = props.setLoading
     let setOrders = props.setOrders
     
+    setLoading(true)
+    
     api.api.get(`${api.apiVersion}/orders/`, {
         headers: {
             authorization:  credential._tokenResponse.idToken,
             user:           user
         }
-    
-    }, setLoading(true))
+    })
     .then(async response => {
         // const cancelled = await api.api.get(`${api.apiVersion}/orders/cancelled`, {
         //     headers: {
@@ -370,4 +371,56 @@ export const stopBackgroundTask = async (user, credential,jobid) => {
     })
 
     return stopTaskResponse
+}
+
+export const markInvoiceAsPayed = async (user,credential,invoiceId) => {
+    const invoiceMarkAsPayedResponse  = await api.api.patch(`${api.apiVersion}/orders/invoices/pay/${invoiceId}?payed=true`,{},{
+        headers:{
+            "authorization":    credential._tokenResponse.idToken,
+            "user":             user
+        }
+    })
+
+    return invoiceMarkAsPayedResponse
+}
+
+
+export const getInvoicesByCustomer = async (user, credential, customerId) => {
+    const invoicesReponse  = await api.api.get(`${api.apiVersion}/orders/invoices/${customerId}`,{
+        headers:{
+            "authorization":    credential._tokenResponse.idToken,
+            "user":             user
+        }
+    })
+
+    return invoicesReponse
+}
+
+export const editCustomer =async (user, credential, data) => {
+    const mappedCustomer = {
+            "name":               data.name,
+            "role":               data.role,
+            "email":              data.email,
+            "image":              "N/A",
+            "address":            {
+                "stNumber":   data.address.number,   
+                "street":     data.address.street,
+                "zip":        data.address.zip,
+                "city":       data.address.city,
+                "state":      data.address.state,
+                "country":    data.address.country,
+                "references": data.address.references,
+            },
+            "businessData": {
+                "name":         data.businessData.name,
+                "bankAccount":  data.businessData.bankAccount
+            }
+        }
+    
+    return api.api.patch(`${api.apiVersion}/customers/${data._id}`, mappedCustomer, {
+        headers:{
+            authorization:credential._tokenResponse.idToken,
+            user:user,
+        }
+    })
 }

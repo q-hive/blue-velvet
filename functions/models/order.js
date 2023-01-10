@@ -9,6 +9,7 @@ const Order = new Schema({
     job:            { type: String,     default:"No job"},
     price:          { type: Number,     required: true },
     date:           { type: Date,       required: true },
+    relatedOrdersFromJob: { type:[],    required:false },
     // end:            { type: Date,       required: true },
     products:   {
         type: [{
@@ -40,6 +41,10 @@ const Order = new Schema({
     status:         { type:String,      required:true   }
 },
 {
+    timestamps:{
+        createdAt:"created",
+        updatedAt:false
+    },
     query: {
         byType(type) {
             return this.where({ type: type })

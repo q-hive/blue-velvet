@@ -2,7 +2,7 @@ import { mongoose } from '../../mongo.js'
 import { createProvider } from '../providers/store.js'
 import { createSeed } from '../seeds/store.js'
 import { getOrganizationById } from '../organization/store.js'
-import Organization from '../../models/organization.js'
+import Organization, { organizationModel } from '../../models/organization.js'
 const { ObjectId } = mongoose.Types
 
 const orgModel = mongoose.model("organization", Organization)
@@ -143,32 +143,25 @@ export const insertManyProducts = (array) => {
 
 export const getAllProducts = (orgId) => {
     return new Promise(async (resolve, reject) => {
-        const org =  await orgModel.findById(orgId)
-        if(!org){
-            return reject("No organization found")
-        }
-        const container =  org.containers[0]
-        if(!container) {
-            return reject("No containers found")
-        }
+        const organization = await organizationModel.findOne({
+            "_id":mongoose.Types.ObjectId(orgId)
+        },{"containers.products":true})
 
-        const products = container.products
-
-        if(!products){
-            return reject("No products found")
-        }
-
-        resolve(products)
+        resolve(organization.containers[0].products)
     })
 }
 
-export const updateProduct = (orgId, newProduct) => {
+export const updateProduct = (req, res) => {
     return new Promise(async (resolve, reject) => {
         try {
+            
+            req.body.product._id = mongoose.Types.ObjectId(req.body.product._id)
+            
+            console.log(req.body.product)
             const operation = await orgModel.updateOne(
-                { "_id":mongoose.Types.ObjectId(orgId) },
-                { "$set": {"containers.$[].products.$[product]": newProduct } },
-                { "arrayFilters": [ {"product._id":newProduct._id} ] }    
+                { "_id":mongoose.Types.ObjectId(res.locals.organization) },
+                { "$set": {"containers.$[].products.$[product]": req.body.product } },
+                { "arrayFilters": [ {"product._id":mongoose.Types.ObjectId(req.query.id)} ] }    
             )
 
             resolve(operation) 

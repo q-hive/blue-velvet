@@ -14,6 +14,7 @@ import employeesRouter from '../components/employees/network.js'
 import containerRouter from '../components/container/network.js'
 import deliveryRouter from '../components/delivery/network.js'
 import backgroundRouter from '../components/backgroundJobs/network.js'
+import invoicesRouter from '../components/orders/invoices/network.js'
 
 
 //*Middlewares
@@ -43,7 +44,7 @@ export const productsRoutes = (app) => {
 }
 export const ordersRoutes = (app) => {
     const authorized = ["admin"]
-    app.use(`${apiV1}/orders`, isAuthenticated, isAuthorized(authorized), ordersRouter)
+    app.use(`${apiV1}/orders`, isAuthenticated, isAuthorized(authorized), ordersRouter, invoicesRouter)
 
 }
 export const customerRoutes = (app) => {

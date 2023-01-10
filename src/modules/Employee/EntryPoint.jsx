@@ -14,7 +14,7 @@ import { BV_THEME } from '../../theme/BV-theme'
 import { useNavigate } from 'react-router-dom'
 import api from '../../axios.js'
 import { formatTime } from '../../CoreComponents/Timer'
-import { finishWorkDayInDb, getWorkdayProdData, updateEmployeeWorkDay } from '../../CoreComponents/requests'
+import { finishWorkDayInDb, getContainerData, getWorkdayProdData, updateEmployeeWorkDay } from '../../CoreComponents/requests'
 import { getKey } from '../../utils/getDisplayKeyByStatus'
 import { transformTo } from '../../utils/times'
 import { getColorByPercentage } from '../../utils/getColorByPercentage'
@@ -138,7 +138,8 @@ export const EntryPoint = () => {
     const handleViewTask = (type) => {
             navigate('taskTest',
                         {state: {
-                            type
+                            type,
+                            
                         }}
                     )
     }
@@ -154,13 +155,13 @@ export const EntryPoint = () => {
         return ordersData.data
     }
     const getTimeEstimate = async () => {
-
         const request = await api.api.get(`${api.apiVersion}/work/time/${user._id}?containerId=${user.assignedContainer}`, {
             headers: {
                 authorization:  credential._tokenResponse.idToken,
                 user:           user
             }
         })
+        
         let result = {
             times: {
                 preSoaking: {
@@ -179,7 +180,7 @@ export const EntryPoint = () => {
                     time:0
                 },
                 cleaning: {
-                    time:30*60*60*1000
+                    time:30*60*1000
                 },
                 growing: {
                     time:0
@@ -187,8 +188,6 @@ export const EntryPoint = () => {
             },
             total:0
         }
-
-        
         
         const sumTimes = () => {
             let arr = []
@@ -197,7 +196,7 @@ export const EntryPoint = () => {
                 arr.push(item[status].minutes)
             })
 
-            // arr.push(result.times["cleaning"].minutes)
+            arr.push(result.times["cleaning"].time)
             return arr.reduce((a, b) => a + b, 0)
         } 
 
@@ -237,10 +236,6 @@ export const EntryPoint = () => {
                 total:totalTime
             }
         }
-
-            
-        
-
         /*
             const reduced = request.data.data.reduce((prev, curr) => {
                 const prevseedTime = prev.times.seeding.time
@@ -285,11 +280,6 @@ export const EntryPoint = () => {
         */ 
         
         return result
-
-
-
-
-
     }
     const getWorkData = async ()=> {
         if(window.localStorage.getItem("workData")){
@@ -415,12 +405,12 @@ export const EntryPoint = () => {
         
         if(finish) {
             TrackWorkModel.finished = Date.now()
-            TrackWorkModel.tasks = getFinishedTasks()
+            // TrackWorkModel.tasks = getFinishedTasks()
             // TrackWorkModel.breaks = getAllBreaks()
             window.localStorage.setItem("isWorking", "false")
             setEmployeeIsWorking(JSON.parse(localStorage.getItem("isWorking")))
             //*Delete from localStorage since journal has been ended.
-            window.localStorage.removeItem("TrackWorkModel")
+            // window.localStorage.removeItem("TrackWorkModel")
 
             // finishWorkDayInDb({user, credential})
             // .then(() => {
@@ -536,25 +526,6 @@ export const EntryPoint = () => {
         //     setSnackState({open:true,label:"There is no work to do!",severity:"success"})
         // }
     }
-    
-    function getAllProducts(){
-        var productList = []
-        orders.map((order, id)=>{
-            order.products.map((product,idx)=>{
-                productList.push({...product,status:order.status})
-            })
-            
-        })
-        return productList;
-    }
-    
-    const displayTaskCards  = () => {
-        return (
-            <>
-                
-            </>    
-        ) 
-    }
 
     function getCompletedTasksRows(){
         
@@ -598,11 +569,6 @@ export const EntryPoint = () => {
         
         
     }, [])
-
-    // useEffect(()=>{
-    //     displayTaskCards()
-
-    // }, [WorkContext.cicle])
 
   return (<>
     <Fade in={true} timeout={1000} unmountOnExit>
@@ -681,7 +647,7 @@ export const EntryPoint = () => {
                             return(
                                 <Paper key={index} variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"1.5vh",paddingX:"1.5vh",marginTop:"1vh",display:"flex", flexDirection:"row"}}>
                                     <Typography><b>{task.name}</b></Typography>
-                                    <Button variant="contained" sx={{width:"34%",}} onClick={()=>handleViewTask(task.type)} color={getColorByPercentage(.5)} >
+                                    <Button variant="contained" sx={{width:"34%",}} onClick={()=>handleViewTask(task.type)} color={getColorByPercentage(.8)} >
                                         View
                                     </Button>
                                 </Paper>                             
