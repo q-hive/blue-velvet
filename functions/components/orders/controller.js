@@ -468,7 +468,9 @@ export const setOrderAbonment = (org, ordr, forProdOrder,prods, ovrhd) => {
     }
     
     const rule = new nodeschedule.RecurrenceRule()
-    rule.dayOfWeek = new Date(ordr.date).getDay()
+    rule.dayOfWeek = new Date(ordr.date).getUTCDay()
+    rule.hour = new Date(ordr.date).getUTCHours()
+    rule.minute = 0;
     const job  = nodeschedule.scheduleJob(`Reorder-${ordr._id}`,rule, () => {
         callBack(org, ordr,forProdOrder, prods, ovrhd)
         .then((result) => {
