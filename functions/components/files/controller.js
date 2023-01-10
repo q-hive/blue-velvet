@@ -698,7 +698,7 @@ const buildTableForInvoiceFromManyOrders = (orders, totalAmount) => {
     })
 
 
-    const footer = ['<td id="total" class="right, endTable"><b>Total :</b><th/>', `<td class="endTable">${totalAmount}</td>`]
+    const footer = ['<td id="total" class="right, endTable"><b>Total :</b><td/>', `<td class="endTable">${totalAmount}</td>`]
     mappedTable = {headers, rows, footer}
 
     return mappedTable
