@@ -21,6 +21,9 @@ export const getColorByPercentage = (percentage,colorArr) => {
          return result = color
             
         }
+        if(percentage>(bp*colorArr.length)){
+            return result = colorArr[colorArr.length-1]
+        }
          
     })
     return result
