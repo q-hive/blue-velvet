@@ -151,9 +151,20 @@ export const getAllProducts = (orgId) => {
     })
 }
 
-export const updateProduct = (req, res) => {
+export const updateProduct = (req, res, orgId = undefined, mutableProd = undefined) => {
     return new Promise(async (resolve, reject) => {
         try {
+            
+            
+            if(req === undefined || res=== undefined){
+                const updateOp = await orgModel.updateOne(
+                    { "_id":mongoose.Types.ObjectId(orgId) },
+                    { "$set": {"containers.$[].products.$[product]": mutableProd } },
+                    { "arrayFilters": [ {"product._id":mongoose.Types.ObjectId(mutableProd._id)} ] }    
+                    )
+                    resolve(updateOp)
+                    return
+            }
             
             req.body.product._id = mongoose.Types.ObjectId(req.body.product._id)
             

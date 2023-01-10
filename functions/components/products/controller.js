@@ -84,7 +84,7 @@ export const relateOrdersAndTasks = (orgId) => {
 
                     if(mutableProd.performance === undefined) {
                         mutableProd.performance = Number(calculatePerformance(mutableProd).toFixed(2))
-                        await updateProduct(orgId, mutableProd)
+                        await updateProduct(undefined, undefined, orgId, mutableProd)
                     }
                     
                     return {...mutableProd}

@@ -467,11 +467,12 @@ export const setOrderAbonment = (org, ordr, forProdOrder,prods, ovrhd) => {
         
     }
     
-    // const job  = nodeschedule.scheduleJob(`Reorder-${ordr._id}`, {dayOfWeek:new Date(ordr.date).getDay()}, callBack(org, ordr, prods, ovrhd))
-
-    //*TESTJOB
-    const job  = nodeschedule.scheduleJob(`Reorder-${ordr._id}`, `*/10 * * * * *`, () => {
-        callBack(org, ordr, forProdOrder,prods, ovrhd)
+    const rule = new nodeschedule.RecurrenceRule()
+    rule.dayOfWeek = new Date(ordr.date).getUTCDay()
+    rule.hour = new Date(ordr.date).getUTCHours();
+    rule.minute = 0;
+    const job  = nodeschedule.scheduleJob(`Reorder-${ordr._id}`,rule, () => {
+        callBack(org, ordr,forProdOrder, prods, ovrhd)
         .then((result) => {
             console.log("Callback of job finished")
             console.log(result)
@@ -481,6 +482,19 @@ export const setOrderAbonment = (org, ordr, forProdOrder,prods, ovrhd) => {
             console.log(err)
         })
     })
+
+    //*TESTJOB
+    // const job  = nodeschedule.scheduleJob(`Reorder-${ordr._id}`, `*/10 * * * * *`, () => {
+    //     callBack(org, ordr, forProdOrder,prods, ovrhd)
+    //     .then((result) => {
+    //         console.log("Callback of job finished")
+    //         console.log(result)
+    //     })
+    //     .catch(err => {
+    //         console.log("Callback of job failed")
+    //         console.log(err)
+    //     })
+    // })
 
     ordr.job = job.name;
 
