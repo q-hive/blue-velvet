@@ -467,7 +467,9 @@ export const setOrderAbonment = (org, ordr, forProdOrder,prods, ovrhd) => {
         
     }
     
-    const job  = nodeschedule.scheduleJob(`Reorder-${ordr._id}`, {dayOfWeek:new Date(ordr.date).getDay()}, () => {
+    const rule = new nodeschedule.RecurrenceRule()
+    rule.dayOfWeek = new Date(ordr.date).getDay()
+    const job  = nodeschedule.scheduleJob(`Reorder-${ordr._id}`,rule, () => {
         callBack(org, ordr,forProdOrder, prods, ovrhd)
         .then((result) => {
             console.log("Callback of job finished")

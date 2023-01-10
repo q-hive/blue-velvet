@@ -75,7 +75,6 @@ router.get('/bydate/month/customer/:_id', (req, res) => {
 */
 router.delete('/custom/', (req, res) => {
     
-    
     deleteOrdersDirect(req, res)
     .then((result) => {
         success(req, res, 200, "Orders deleted")
