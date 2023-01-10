@@ -1414,29 +1414,50 @@ export const invoicesColumns = [
     {
         headerName:"Creation date",
         field:"date",
-        width:250
+        headerAlign:"center",
+        align:"center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1
     },
     {
         headerName:"ID",
         field:"_id",
-        width:250
+        headerAlign:"center",
+        align:"center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1
     },
     {
         headerName:"Income",
-        field:"totalIncome"
+        field:"totalIncome",
+        headerAlign:"center",
+        align:"center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1
     },
     {
         headerName:"Payment status",
         field:"payed",
-        width:150,
+        headerAlign:"center",
+        align:"center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1,
         renderCell: (params) => {
             return <Chip label={params.row.payed ? "paid" : "unpaid"} color={params.row.payed ? "success" : "warning"}/>
         }
     },
     {
         field:"actions",
-        headerName:" ",
-        width:200,
+        headerName:"More",
+        headerAlign:"center",
+        align:"center",
+        headerClassName:"header-sales-table",
+        minWidth:{xs:"25%",md:130},
+        flex:1,
         renderCell:(params) => {
             const {user, credential} = useAuth()
             const navigate = useNavigate('/');
