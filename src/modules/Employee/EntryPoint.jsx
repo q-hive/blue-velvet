@@ -372,7 +372,7 @@ export const EntryPoint = () => {
 
         
         let testingKeys = Object.keys(workData) 
-        //*Delete growing from cycle (not useful now top display in cycle)
+        //*Delete growing from cycle (not useful display in cycle)
         const growingStatusIndex = testingKeys.indexOf("growing")
         testingKeys.splice(growingStatusIndex, 1)
         

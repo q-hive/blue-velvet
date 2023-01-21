@@ -266,19 +266,22 @@ export const groupBy = (criteria, production, format, includeOrders = false, inc
 
                             if(!alreadyExistsInModels){
                                 hashDates[RelatedMix.mixName][status].modelsToHarvestMix.push({ProductName, seeds, trays,dryracks, harvest})
+                                // continue
                             }
 
                             if(alreadyExistsInModels){
                                 hashDates[RelatedMix.mixName][status].modelsToHarvestMix.forEach((model, idx) => {
-                                    model.seeds +=+ seeds
-                                    model.trays +=+ trays
-                                    model.harvest +=+ harvest
-                                    model.dryracks +=+ dryracks
+                                    if(model.ProductName ===  ProductName){
+                                        model.seeds +=+ seeds
+                                        model.trays +=+ trays
+                                        model.harvest +=+ harvest
+                                        model.dryracks +=+ dryracks
+                                    }
                                 })
                             }
                             hashDates[RelatedMix.mixName][status].modelsId.push(_id)
                             hashDates[RelatedMix.mixName][status].relatedOrders.push(RelatedOrder)
-                            continue
+                            // continue
                         }
                         
                         hashDates[ProductName][ProductionStatus].seeds +=+ seeds
