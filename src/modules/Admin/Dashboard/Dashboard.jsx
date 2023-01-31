@@ -22,6 +22,9 @@ import { finishWorkDayInDb } from '../../../CoreComponents/requests';
 import { transformTo } from '../../../utils/times';
 import { DailyTasksCard } from '../../../CoreComponents/TasksPresentation/DailyTasksCard';
 
+import ImgProgressBar from "../../../CoreComponents/ImageProgressBar/ImgProgressBar"
+import containerImg from "../../../assets/images/production/container-blue.png"
+
 export const Dashboard = () => {
     const {user,credential} = useAuth()
 
@@ -403,8 +406,13 @@ export const Dashboard = () => {
                                                 </Typography>
                                             <Typography sx={{width:"98%"}}>
                                                 <b>Used trays: </b>{container.capacity - container.available}
-                                                <LinearProgress sx={{height:"3vh"}} variant="determinate" value={((container.capacity - container.available)/container.capacity)*100} />
                                             </Typography>
+                                            <Box sx={{display:"flex"}}>
+                                                <ImgProgressBar 
+                                                    percentage={((container.capacity - container.available)/container.capacity)*100} 
+                                                    imageUrl={containerImg}
+                                                />
+                                            </Box>
                                             {/*<Button variant="contained" sx={{width:"34%"}} onClick={()=>handleViewTask(task.type)} color="primary" >
                                                 View
                                             </Button>*/}
