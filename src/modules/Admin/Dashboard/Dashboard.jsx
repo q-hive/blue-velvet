@@ -21,10 +21,13 @@ import { getKey } from '../../../utils/getDisplayKeyByStatus';
 import { finishWorkDayInDb } from '../../../CoreComponents/requests';
 import { transformTo } from '../../../utils/times';
 import { DailyTasksCard } from '../../../CoreComponents/TasksPresentation/DailyTasksCard';
+import { useTranslation } from 'react-i18next';
+import { capitalize } from '../../../utils/capitalize';
 
 export const Dashboard = () => {
     const {user,credential} = useAuth()
-
+    const {t,i18} = useTranslation(['default', 'daily_tasks_cards','admin', 'tasks', 'buttons'])
+    
     const [containers, setContainers] = useState([])
     const [employeesPerformanceRows,  setEmployeesPerformanceRows] = useState([])
     const [time, setTime] = useState({
@@ -135,7 +138,7 @@ export const Dashboard = () => {
             <>
                 <Typography variant="body2">
                     <i>
-                        <b>Times are displayed in minutes</b>
+                        <b>{t('times_display_specification', {ns:'daily_tasks_cards'})}</b>
                     </i>
                 </Typography>
                 {
@@ -144,20 +147,22 @@ export const Dashboard = () => {
                             <>
                                 {
                                     Object.keys(employee.workDay).map((task, idx) => {
+                                        let time = employee.workDay[task].achievedTime !== 0 ? transformTo("ms","minutes",employee.workDay[task].achievedTime) : `${t('not_finished_times', {ns:'tasks'})}`
+                                        
                                         return (
                                             <Paper key={idx} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
                                                 <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
                                                     <Typography >
-                                                        <b>Task: {getKey(task)}</b>
+                                                        <b>{t('task_word',{ns:'tasks', task:getKey(task)})}</b>
                                                     </Typography>
                                                     <Typography >
-                                                        <i>Expected Time: {transformTo("ms","minutes",employee.workDay[task].expectedTime)} </i>
+                                                        <i>{t('expected_time_admn_dashboard',{ns:'tasks', times:transformTo("ms","minutes",employee.workDay[task].expectedTime)})} </i>
                                                     </Typography>
                                                     <Typography >
-                                                        <i>Achieved Time: {employee.workDay[task].achievedTime !== 0 ? transformTo("ms","minutes",employee.workDay[task].achievedTime) : "Not finished"} </i>
+                                                        <i>{t('achieved_time_admn_dashboard',{ns:'tasks', time})}</i>
                                                     </Typography>
                                                     <Typography >
-                                                        <i>Employee: {employee.name} </i>
+                                                        <i>{t('employee_name_admn_dashboard_times',{ns:'tasks', employee})} </i>
                                                     </Typography>
                                                 </Box>  
                                             </Paper>
@@ -337,16 +342,14 @@ export const Dashboard = () => {
     <Box component="div" display="flex"  >
 
         <Container maxWidth="lg" sx={{paddingTop:4,paddingBottom:4,marginX:{xs:4,md:"auto"},marginTop:{xs:4,md:3}}}>
-            <Typography variant="h2" color="primary">Welcome, Admin</Typography>
-            <Typography variant="h5" color="secondary.dark">Here's your dashboard</Typography>
+            <Typography variant="h2" color="primary">{t('welcome_admin')}</Typography>
+            <Typography variant="h5" color="secondary.dark">{t('welcome_message')}</Typography>
 
 
             <Grid container spacing={3} marginTop={3}>
 
                 {/* Tasks */}
-                    <Tooltip title={`Only employees can execute tasks to update production data. \n 
-                                    If you want to update production executing tasks by yourself, \n 
-                                    log-in as an employee.`}>
+                    <Tooltip title={t('card_admin_tooltip',{ns:'daily_tasks_cards'})}>
                         <Grid item xs={12} md={4} lg={4}>
                             <DailyTasksCard cycle={tasksCicleObj.cicle} time={time} adminRender={user.role}/>
                         </Grid>
@@ -354,37 +357,18 @@ export const Dashboard = () => {
                 <Grow in={true} timeout={2000} unmountOnExit>
                     
                     <Grid item xs={12} md={4} lg={4}>
-                        
-                        {/* <Paper elevation={4} sx={fixedHeightPaper}> */}
-                            {/* <Typography variant="h6" color="secondary.dark">Tasks</Typography> */}
-                            {/* <Box sx={{display:"flex",flexDirection:"column", }}> */}
-                                {/*Delivery Task Only acrive when there are orders on ready to deliver status*/
-                                true?
-                                    <Paper variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"1.5vh",paddingX:"1.5vh",marginTop:"1vh",display:"flex", flexDirection:"row"}}>
-                                        <Typography><b>Packing</b></Typography>
-                                        <Button variant="contained" sx={{width:"34%"}} onClick={()=>navigate(`/${user.uid}/employee/tasks/delivery`)} color="primary" >
-                                            View
-                                        </Button>
-                                    </Paper>  
-                                :
-                                    null
-                                }
-
-                                {/*Delivery Task Only acrive when there are orders on ready to deliver status*/
-                                true?
-                                    <Paper variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"1.5vh",paddingX:"1.5vh",marginTop:"1vh",display:"flex", flexDirection:"row"}}>
-                                        <Typography><b>Delivery</b></Typography>
-                                        <Button variant="contained" sx={{width:"34%"}} onClick={()=>navigate(`/${user.uid}/employee/tasks/delivery`)} color="primary" >
-                                            View
-                                        </Button>
-                                    </Paper>  
-                                :
-                                    null
-                                }
-
-                                
-                            {/* </Box>  */}
-                        {/* </Paper> */}
+                        <Paper variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"1.5vh",paddingX:"1.5vh",marginTop:"1vh",display:"flex", flexDirection:"row"}}>
+                            <Typography><b>{capitalize(t('packing_dlytask_title',{ns:'tasks'}))}</b></Typography>
+                            <Button variant="contained" sx={{width:"34%"}} onClick={()=>navigate(`/${user.uid}/employee/tasks/delivery`)} color="primary" >
+                                {t('button_view_word',{ns:'buttons'})}
+                            </Button>
+                        </Paper>  
+                        <Paper variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"1.5vh",paddingX:"1.5vh",marginTop:"1vh",display:"flex", flexDirection:"row"}}>
+                            <Typography><b>{capitalize(t('ready_status_dlytask_title',{ns:'tasks'}))}</b></Typography>
+                            <Button variant="contained" sx={{width:"34%"}} onClick={()=>navigate(`/${user.uid}/employee/tasks/delivery`)} color="primary" >
+                                {t('button_view_word',{ns:'buttons'})}
+                            </Button>
+                        </Paper>  
                     </Grid>
                 </Grow>
 
@@ -393,7 +377,7 @@ export const Dashboard = () => {
                 <Grow in={true} timeout={2000} unmountOnExit>
                     <Grid item xs={12} md={4} lg={4}>
                         <Paper elevation={4} sx={fixedHeightPaper}>
-                            <Typography variant="h6" color="secondary.dark">Containers' capacity</Typography>
+                            <Typography variant="h6" color="secondary.dark">{t('container_capacity_card',{ns:'admin'})}</Typography>
                             <Box sx={{display:"flex",flexDirection:"column", }}>
 
                                 {containers.map((container,index) => { return(
@@ -402,7 +386,7 @@ export const Dashboard = () => {
                                                 {container.name}:<br/>
                                                 </Typography>
                                             <Typography sx={{width:"98%"}}>
-                                                <b>Used trays: </b>{container.capacity - container.available}
+                                                <b>{t('used_trays_container_capacity_card',{ns:'admin'})}</b>{container.capacity - container.available}
                                                 <LinearProgress sx={{height:"3vh"}} variant="determinate" value={((container.capacity - container.available)/container.capacity)*100} />
                                             </Typography>
                                             {/*<Button variant="contained" sx={{width:"34%"}} onClick={()=>handleViewTask(task.type)} color="primary" >
@@ -428,8 +412,8 @@ export const Dashboard = () => {
                                 backgroundColor:BV_THEME.palette.primary.main,
                                 color:"white"
                             }}}>
-                            <Typography variant="h6" color="secondary.dark">Employees tasks</Typography>
-                            <Button onClick={handleCleanEmployeesTasks}>Clean data for today</Button>
+                            <Typography variant="h6" color="secondary.dark">{t('employee_tasks_cards_title',{ns:'admin'})}</Typography>
+                            <Button onClick={handleCleanEmployeesTasks}>{t('clear_data_employees_times',{ns:'admin'})}</Button>
                             {displayTaskCards()}
                             
                         </Paper>

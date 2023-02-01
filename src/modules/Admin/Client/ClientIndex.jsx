@@ -16,12 +16,14 @@ import { DataGrid } from '@mui/x-data-grid'
 import { CustomerColumns } from '../../../utils/TableStates'
 import api from '../../../axios.js'
 import { UserDialog } from '../../../CoreComponents/UserFeedback/Dialog'
+import { useTranslation } from 'react-i18next'
 
 
 
 
 
 export const ClientIndex = () => {
+    const {t} = useTranslation()
     //*CONTEXTS
     const {user, credential} = useAuth()
     
@@ -106,14 +108,14 @@ export const ClientIndex = () => {
                 >
                     
                     <Typography variant="h4" color="secondary" textAlign={"center"} margin={BV_THEME.margin.mainHeader}>
-                        Client Management
+                        {t('index_module_title', {ns:'client_management_module'})}
                     </Typography>
 
                 <Box sx={{width:"100%", height:"100%"}}>
                     
                     <Box sx={{display:"flex", justifyContent:"space-between", marginBottom:"3vh"}} >
                         <Button variant='contained' color='primary' startIcon={<Add/>} onClick={handleNewCustomer} sx={{minWidth:"20%"}}>
-                            New Customer
+                            {t('button_new_customer', {ns:'client_management_module'})}
                         </Button>
                     </Box>
 

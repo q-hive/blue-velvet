@@ -21,7 +21,7 @@ import { useMorgan } from './logs/morgan.js';
 
 const app = express()
 
-const port = normalizePort(process.env.PORT || 9999)
+const port = normalizePort(process.env.PORT || 8001)
 
 app.set('port', port)
 

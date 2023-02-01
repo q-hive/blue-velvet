@@ -12,16 +12,34 @@ import { Button, Typography, Box, Accordion, AccordionSummary, AccordionDetails,
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { LoadingButton } from "@mui/lab"
 import { getInvoicesByCustomer, markInvoiceAsPayed, stopBackgroundTask } from "../CoreComponents/requests"
+import { useTranslation } from "react-i18next"
+import { t } from "i18next"
+import { currencyByLang } from "./currencyByLanguage"
 
 export const productsColumns = [
     {
         field:"name",
         headerClassName:"header-products-table",
+        headerName:"Microgreen",
+        renderHeader:() => {
+            const {t} = useTranslation(['buttons', 'production_management_module'])
+            return (
+                <>{t('table_header_products_name',{ns:'production_management_module'})}</>
+            )
+        },
         headerAlign:"center",
         align:"center",
-        headerName:"Microgreen",
         minWidth:150,
         flex:1,
+        renderCell:(params) => {
+            const {t} = useTranslation()
+            
+            return (
+                <>
+                    {t(`product_${params.value}`,{ns:'production_management_module'})}    
+                </>
+            )
+        }
     },
     {
         field:"orders",
@@ -29,6 +47,12 @@ export const productsColumns = [
         headerAlign:"center",
         align:"center",
         headerName:"Orders",
+        renderHeader:() => {
+            const {t} = useTranslation(['buttons', 'production_management_module'])
+            return (
+                <>{t('table_header_products_ordersNumber',{ns:'production_management_module'})}</>
+            )
+        },
         width:150,
         renderCell:(params) => {
             params.value.forEach((order, idx) => {
@@ -47,9 +71,17 @@ export const productsColumns = [
         headerAlign:"center",
         //align:"center",
         headerName:"Prod. Price",
+        renderHeader:() => {
+            const {t} = useTranslation(['buttons', 'production_management_module'])
+            return (
+                <>{t('table_header_products_price',{ns:'production_management_module'})}</>
+            )
+        },
         minWidth:180,
         flex:1,
         renderCell:(params) => {
+            const {t, i18n} = useTranslation(['production_management_module'])
+            
             return (
                 
                         <Accordion sx={{width:"100%",marginY:"1vh"}}>
@@ -58,14 +90,31 @@ export const productsColumns = [
                                 aria-controls="panel1a-content"
                                 id="panel1a-header" 
                             >
-                                <Typography>Price</Typography>
+                                <Typography>{t('price_cell_dropdown_header_production_table',{ns:'production_management_module'})}</Typography>
                             </AccordionSummary>
 
                             <AccordionDetails >
                                     {params.formattedValue.map((obj) => {
                                         return (
                                             <>
-                                            <Typography align="justify">Size {obj.packageSize}:  €{obj.amount} </Typography>
+                                            <Typography align="justify">
+                                                {
+                                                    t(
+                                                        'price_size_cell_dropdown_header_production_table',
+                                                        {
+                                                            ns:'production_management_module', 
+                                                            grams:obj.packageSize,
+                                                            price:new Intl.NumberFormat(
+                                                                i18n.language,
+                                                                {
+                                                                    style:'currency', 
+                                                                    currency:currencyByLang[i18n.language]
+                                                                }
+                                                            ).format(obj.amount)
+                                                        }
+                                                    )
+                                                }
+                                            </Typography>
                                             <Divider sx={{maxWidth:"100%"}} /> 
                                             </>
                                             )})}
@@ -81,6 +130,12 @@ export const productsColumns = [
         headerAlign:"center",
         align:"center",
         headerName:"Seeds /gr",
+        renderHeader:() => {
+            const {t} = useTranslation(['buttons', 'production_management_module'])
+            return (
+                <>{t('table_header_products_seedingRate',{ns:'production_management_module'})}</>
+            )
+        },
         renderCell:(params) => {
             if(params.formattedValue != undefined){
                 return params.formattedValue.seedingRate
@@ -95,6 +150,12 @@ export const productsColumns = [
         headerAlign:"center",
         align:"center",
         headerName:"Harvest",
+        renderHeader:() => {
+            const {t} = useTranslation(['buttons', 'production_management_module'])
+            return (
+                <>{t('table_header_products_harvestRate',{ns:'production_management_module'})}</>
+            )
+        },
         valueGetter:(params) => {
             if(params.row.parameters != undefined){
                 return params.row.parameters.harvestRate
@@ -109,6 +170,12 @@ export const productsColumns = [
         headerAlign:"center",
         align:"center",
         headerName:"Performance",
+        renderHeader:() => {
+            const {t} = useTranslation(['buttons', 'production_management_module'])
+            return (
+                <>{t('table_header_products_performance',{ns:'production_management_module'})}</>
+            )
+        },
         minWidth:150,
         flex:1,
     },
@@ -118,7 +185,15 @@ export const productsColumns = [
         headerAlign:"center",
         align:"center",
         headerName:"Actions",
+        renderHeader:() => {
+            const {t} = useTranslation(['buttons', 'production_management_module'])
+            return (
+                <>{t('table_header_products_actions',{ns:'production_management_module'})}</>
+            )
+        },
         renderCell: (params) => {
+            const {t} = useTranslation(['buttons','production_management_module'])
+            
             const [modal,setModal] = useState({
                 open:false,
                 title:"",
@@ -144,7 +219,7 @@ export const productsColumns = [
                     title:"Select an action",
                     actions: [
                         {
-                            label:"Stop production",
+                            label:`${t('product_management_action_stop',{ns:'production_management_module'})}`,
                             type:"normal",
                             btn_color:"white_btn",
                             execute:() => {
@@ -205,7 +280,15 @@ export const productsColumns = [
                             }
                         },
                         {
-                            label:"Edit product",
+                            label:`${t('product_management_action_manage',{ns:'production_management_module'})}`,
+                            type:"normal",
+                            btn_color:"white_btn",
+                            execute:() => {
+                                navigate(`/${user.uid}/${user.role}/production/management/${params.id}`,{state:{strain:params.row}})
+                            }
+                        },
+                        {
+                            label:`${t('product_management_action_edit',{ns:'production_management_module'})}`,
                             btn_color:"warning",
                             type:"privileged",
                             execute:() => {
@@ -213,7 +296,7 @@ export const productsColumns = [
                             }
                         },
                         {
-                            label:"Delete",
+                            label:`${t('product_management_action_delete',{ns:'production_management_module'})}`,
                             type:"privileged",
                             btn_color:"warning",
                             execute:() => {
@@ -297,7 +380,7 @@ export const productsColumns = [
                     open={dialog.open}
                     />    
                 
-                    <Button variant='contained' onClick={handleModal} disabled={loading || (user.role === "employee")} sx={BV_THEME.button.table}> {loading ? 'Loading...' : 'View'} </Button>    
+                    <Button variant='contained' onClick={handleModal} disabled={loading || (user.role === "employee")} sx={BV_THEME.button.table}> {loading ? 'Loading...' : `${t('button_view_word', {ns:'buttons'})}`} </Button>    
                 
                 </>
                 
@@ -311,6 +394,12 @@ export const productsColumns = [
         headerAlign:"center",
         align:"center",
         headerName:"Status",
+        renderHeader:() => {
+            const {t} = useTranslation(['buttons', 'production_management_module'])
+            return (
+                <>{t('table_header_products_status',{ns:'production_management_module'})}</>
+            )
+        },
         flex:1
     },
 ]
@@ -543,6 +632,12 @@ export const salesColumns = [
     {
         field:"id",
         headerName:"ID",
+        renderHeader:(v) => {
+            const {t} = useTranslation(['buttons', 'sales_management_module'])
+            return (
+                <>{t('employee_table_header_ID',{ns:'sales_management_module'})}</>    
+            )
+        },  
         headerAlign:"center",
         align:"center",
         headerClassName:"header-sales-table",
@@ -552,6 +647,12 @@ export const salesColumns = [
     {
         field:"customer",
         headerName:"Customer",
+        renderHeader:(v) => {
+            const {t} = useTranslation(['buttons', 'sales_management_module'])
+            return (
+                <>{t('sales_table_header_customer',{ns:'sales_management_module'})}</>    
+            )
+        },  
         headerAlign:"center",
         align:"center",
         headerClassName:"header-sales-table",
@@ -579,6 +680,12 @@ export const salesColumns = [
     {
         field:"cyclic",
         headerName:"type",
+        renderHeader:(v) => {
+            const {t} = useTranslation(['buttons', 'sales_management_module'])
+            return (
+                <>{t('sales_table_header_orderType',{ns:'sales_management_module'})}</>    
+            )
+        },
         headerClassName:"header-sales-table",
         headerAlign:"center",
         align:"center",
@@ -591,6 +698,12 @@ export const salesColumns = [
     {
         field:"income",
         headerName:"Income",
+        renderHeader:(v) => {
+            const {t} = useTranslation(['buttons', 'sales_management_module'])
+            return (
+                <>{t('sales_table_header_orderIncome',{ns:'sales_management_module'})}</>    
+            )
+        },
         headerClassName:"header-sales-table",
         headerAlign:"center",
         align:"center",
@@ -606,6 +719,12 @@ export const salesColumns = [
     {
         field:"status",
         headerName:"Status",
+        renderHeader:(v) => {
+            const {t} = useTranslation(['buttons', 'sales_management_module'])
+            return (
+                <>{t('sales_table_header_orderStatus',{ns:'sales_management_module'})}</>    
+            )
+        },
         headerAlign:"center",
         align:"center",
         headerClassName:"header-sales-table",
@@ -615,12 +734,19 @@ export const salesColumns = [
     {
         field:"actions",
         headerName:"Actions",
+        renderHeader:(v) => {
+            const {t} = useTranslation(['buttons', 'sales_management_module'])
+            return (
+                <>{t('sales_table_header_actions',{ns:'sales_management_module'})}</>    
+            )
+        },
         headerAlign:"center",
         align:"center",
         headerClassName:"header-sales-table",
         minWidth:{xs:"25%",md:130},
         flex:1,
         renderCell:(params) => {
+            const {t} = useTranslation(['buttons', 'sales_management_module'])
             const navigate = useNavigate()
             const {user, credential} = useAuth()
             const [loading, setLoading] = useState(false)
@@ -670,7 +796,7 @@ export const salesColumns = [
                     title:"Select an action",
                     actions: [
                         {
-                            label:"Update order",
+                            label:`${t('sales_table_modal_action_update', {ns:'sales_management_module'})}`,
                             btn_color:"white_btn",
                             type:"privileged",
                             execute:() => {
@@ -679,7 +805,7 @@ export const salesColumns = [
                             }
                         },
                         {
-                            label:loading ? <CircularProgress/> : "Get Order's invoice",
+                            label:loading ? <CircularProgress/> : `${t('sales_table_modal_action_delete', {ns:'sales_management_module'})}`,
                             btn_color:"white_btn",
                             type:"privileged",
                             execute:() => {
@@ -715,7 +841,7 @@ export const salesColumns = [
                             }
                         },
                         {
-                            label:"Delete order",
+                            label:`${t('sales_table_modal_action_delete', {ns:'sales_management_module'})}`,
                             type:"dangerous",
                             btn_color:"secondary",
                             execute:() => {
@@ -783,7 +909,7 @@ export const salesColumns = [
                             }
                         },
                         {
-                            label:"Stop cyclic generation",
+                            label:`${t('sales_table_modal_action_stop_Cyclic', {ns:'sales_management_module'})}`,
                             type:"dangerous",
                             btn_color:"warning",
                             execute:()=>{
@@ -935,6 +1061,12 @@ export const CustomerColumns = [
     {
         field:"_id",
         headerName: "ID",
+        renderHeader:(v) => {
+            const {t} = useTranslation(['client_management_module'])
+            return (
+                <>{t('client_table_header_ID',{ns:'client_management_module'})}</>    
+            )
+        },  
         headerAlign: "center",
         align:"center",
         headerClassName:"header-sales-table",
@@ -944,6 +1076,12 @@ export const CustomerColumns = [
     {
         field:"name",
         headerName: "Name",
+        renderHeader:(v) => {
+            const {t} = useTranslation(['client_management_module'])
+            return (
+                <>{t('client_table_header_name',{ns:'client_management_module'})}</>    
+            )
+        },  
         headerAlign: "center",
         align:"center",
         headerClassName:"header-sales-table",
@@ -953,6 +1091,12 @@ export const CustomerColumns = [
     {
         field:"sales",
         headerName: "$ Sales",
+        renderHeader:(v) => {
+            const {t} = useTranslation(['client_management_module'])
+            return (
+                <>{t('client_table_header_sales',{ns:'client_management_module'})}</>    
+            )
+        },  
         headerAlign: "center",
         align:"center",
         headerClassName:"header-sales-table",
@@ -962,6 +1106,12 @@ export const CustomerColumns = [
     {
         field:"monthlySales",
         headerName: "$ This Month's Sales",
+        renderHeader:(v) => {
+            const {t} = useTranslation(['client_management_module'])
+            return (
+                <>{t('client_table_header_monthlySales',{ns:'client_management_module'})}</>    
+            )
+        },
         headerAlign: "center",
         align:"center",
         headerClassName:"header-sales-table",
@@ -971,6 +1121,12 @@ export const CustomerColumns = [
     {
         field:"orders",
         headerName: "Pending Orders",
+        renderHeader:(v) => {
+            const {t} = useTranslation(['client_management_module'])
+            return (
+                <>{t('client_table_header_pendingOrders',{ns:'client_management_module'})}</>    
+            )
+        },
         headerAlign: "center",
         align:"center",
         headerClassName:"header-sales-table",
@@ -983,12 +1139,19 @@ export const CustomerColumns = [
     {
         field: "actions",
         headerName:"Actions",
+        renderHeader:(v) => {
+            const {t} = useTranslation(['client_management_module'])
+            return (
+                <>{t('client_table_header_actions',{ns:'client_management_module'})}</>    
+            )
+        },
         headerAlign:"center",
         align:"center",
         headerClassName:"header-sales-table",
         minWidth:{xs:"25%",md:130},
         flex:1,
         renderCell:(params) => {
+            const {t} = useTranslation(['buttons'])
             const [modal,setModal] = useState({
                 open:false,
                 title:"",
@@ -1037,7 +1200,7 @@ export const CustomerColumns = [
                     title:"Select an action",
                     actions: [
                         {
-                            label:"Edit customer",
+                            label:`${t('actions_modal_edit', {ns:'client_management_module'})}`,
                             btn_color:"white_btn",
                             type:"privileged",
                             execute:() => {
@@ -1046,7 +1209,7 @@ export const CustomerColumns = [
                             }
                         },
                         {
-                            label:"Download monthly invoice",
+                            label:`${t('actions_modal_monthInvoice', {ns:'client_management_module'})}`,
                             btn_color:"white_btn",
                             type:"privileged",
                             execute:() => {
@@ -1083,7 +1246,7 @@ export const CustomerColumns = [
                             }
                         },
                         {
-                            label:"Delete customer",
+                            label:`${t('actions_modal_monthInvoice', {ns:'client_management_module'})}`,
                             type:"dangerous",
                             btn_color:"warning",
                             execute:() => {
@@ -1156,7 +1319,7 @@ export const CustomerColumns = [
                             }
                         },
                         {
-                            label:"Review invoices",
+                            label:`${t('actions_modal_reviewInvoices', {ns:'client_management_module'})}`,
                             type:"white_btn",
                             btn_color:"primary",
                             execute:async() => {
@@ -1194,7 +1357,7 @@ export const CustomerColumns = [
                     actions={dialog.actions}
                     open={dialog.open}
                     />
-                    <Button variant="contained" onClick={handleModal} disabled={loading} sx={BV_THEME.button.table}>View</Button>
+                    <Button variant="contained" onClick={handleModal} disabled={loading} sx={BV_THEME.button.table}>{t('button_view_word', {ns:'buttons'})}</Button>
                 </>
 
                 
@@ -1205,16 +1368,27 @@ export const CustomerColumns = [
 export const EmployeeColumns = [
     {
         field:"_id",
-        headerName: "ID",
+        renderHeader:(v) => {
+            const {t} = useTranslation(['employee_management_module'])
+            return (
+                <>{t('employee_table_header_ID',{ns:'employee_management_module'})}</>    
+            )
+        },  
         headerAlign: "center",
         align:"center",
         headerClassName:"header-sales-table",
         minWidth:{xs:"25%",md:130},
-        flex:1
+        flex:1,
     },
     {
         field:"name",
         headerName: "Name",
+        renderHeader:() => {
+            const {t} = useTranslation(['employee_management_module'])
+            return (
+                <>{t('employee_table_header_Name',{ns:'employee_management_module'})}</>    
+            )
+        },
         headerAlign: "center",
         align:"center",
         headerClassName:"header-sales-table",
@@ -1224,6 +1398,12 @@ export const EmployeeColumns = [
     {
         field:"tasks",
         headerName: "Pending tasks",
+        renderHeader:() => {
+            const {t} = useTranslation(['employee_management_module'])
+            return (
+                <>{t('employee_table_header_PendingTasks',{ns:'employee_management_module'})}</>    
+            )
+        },
         headerAlign: "center",
         align:"center",
         headerClassName:"header-sales-table",
@@ -1233,6 +1413,12 @@ export const EmployeeColumns = [
     {
         field:"salary",
         headerName: "Salary",
+        renderHeader:() => {
+            const {t} = useTranslation(['employee_management_module'])
+            return (
+                <>{t('employee_table_header_Salary',{ns:'employee_management_module'})}</>    
+            )
+        },
         headerAlign: "center",
         align:"center",
         headerClassName:"header-sales-table",
@@ -1242,13 +1428,19 @@ export const EmployeeColumns = [
     {
         field: "actions",
         headerName:"Actions",
+        renderHeader:() => {
+            const {t} = useTranslation(['employee_management_module'])
+            return (
+                <>{t('employee_table_header_Actions',{ns:'employee_management_module'})}</>    
+            )
+        },
         headerAlign:"center",
         align:"center",
         headerClassName:"header-sales-table",
         minWidth:{xs:"25%",md:130},
         flex:1,
         renderCell:(params) => {
-            
+            const {t} = useTranslation(['buttons', 'employee_management_module'])
             const [modal,setModal] = useState({
                 open:false,
                 title:"",
@@ -1290,7 +1482,7 @@ export const EmployeeColumns = [
                     title:"Select an action",
                     actions: [
                         {
-                            label:"Edit employee",
+                            label:`${t('employee_management_action_edit',{ns:'employee_management_module'})}`,
                             btn_color:"white_btn",
                             type:"privileged",
                             execute:() => {
@@ -1299,7 +1491,7 @@ export const EmployeeColumns = [
                             }
                         },
                         {
-                            label:"Delete employee",
+                            label:t('employee_management_action_delete',{ns:'employee_management_module'}),
                             type:"dangerous",
                             btn_color:"secondary",
                             execute:() => {
@@ -1380,7 +1572,7 @@ export const EmployeeColumns = [
                     actions={dialog.actions}
                     open={dialog.open}
                     />
-                    <Button variant="contained" onClick={handleModal} disabled={loading} sx={BV_THEME.button.table}>View</Button>
+                    <Button variant="contained" onClick={handleModal} disabled={loading} sx={BV_THEME.button.table}>{t('button_view_word',{ns:'buttons'})}</Button>
                 </>
 
                 

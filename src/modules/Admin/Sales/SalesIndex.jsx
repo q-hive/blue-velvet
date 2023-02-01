@@ -16,11 +16,14 @@ import api from '../../../axios.js'
 import useAuth from '../../../contextHooks/useAuthContext'
 
 import { getCustomerData, getOrdersData } from '../../../CoreComponents/requests'
+import { useTranslation } from 'react-i18next'
+import { currencyByLang } from '../../../utils/currencyByLanguage'
 
 
 
 
 export const SalesIndex = () => {
+    const {t, i18n} = useTranslation(['sales_management_module', 'buttons'])
     const {user, credential} = useAuth()
     
     //*DATA STATES
@@ -77,7 +80,7 @@ export const SalesIndex = () => {
             >
                 
                 <Typography variant="h4" color="secondary" textAlign={"center"} margin={BV_THEME.margin.mainHeader}>
-                    Sales management
+                    {t('module_index_title',{ns:'sales_management_module'})}
                 </Typography>
 
                 <Box sx={{width:"100%", height:"100%"}}>
@@ -85,10 +88,10 @@ export const SalesIndex = () => {
                 
                     <Box sx={{display:"flex", justifyContent:"space-between"}} >
                         <Button variant='contained' color='primary' startIcon={<Add/>} onClick={handleNewOrder} sx={{minWidth:"20%"}}>
-                            New order
+                            {t('button_new_order', {ns:'buttons'})}
                         </Button>
                         <Typography>
-                            Orders' Total Income : €{totalIncome.toFixed(2)}
+                            {t('total_income', {ns:'sales_management_module', income:new Intl.NumberFormat(i18n.language, {style:'currency', currency:currencyByLang[i18n.language]}).format(Number(totalIncome.toFixed(2)))})}
                         </Typography>
                     </Box>
                     {/*

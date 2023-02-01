@@ -35,7 +35,8 @@ const Product = new Schema({
             day:            { type: Number, required: true }, // * In days check email
             night:          { type: Number, required: true }, // * In days check email
             seedingRate:    { type: Number, required: true }, // * Per tray
-            harvestRate:    { type: Number, required: true }  // * Per tray
+            harvestRate:    { type: Number, required: true }, // * Per tray
+            overhead:       { type: Number, required: true, default: 0}
         },
         required:   false
     },

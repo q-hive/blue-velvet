@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const hosts = ['http://localhost:9999', "https://bluevelvetdeploy.herokuapp.com"]
+const hosts = ['http://localhost:8001', "https://bluevelvetdeploy.herokuapp.com"]
 
 const apiVersion = '/api/v1'
 

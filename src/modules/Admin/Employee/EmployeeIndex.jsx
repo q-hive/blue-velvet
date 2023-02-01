@@ -7,10 +7,11 @@ import { BV_THEME } from '../../../theme/BV-theme'
 import { EmployeeColumns } from '../../../utils/TableStates'
 import api from '../../../axios.js'
 import useAuth from '../../../contextHooks/useAuthContext'
+import { useTranslation } from 'react-i18next'
 
 export const EmployeeIndex = () => {
     const {user, credential} = useAuth()
-    
+    const {t} = useTranslation(['employee_management_module', 'buttons'])
     const [rows, setRows] = useState([])
     const [loading, setLoading] = useState(false)
 
@@ -56,13 +57,13 @@ export const EmployeeIndex = () => {
             >
                 
                 <Typography variant="h4" color="secondary" textAlign={"center"} margin={BV_THEME.margin.mainHeader}>
-                    Employee management
+                    {t('module_index_title',{ns:'employee_management_module'})}
                 </Typography>
 
                 <Box sx={{width:"100%", height:"100%"}}>
                     <Box sx={{display:"flex", justifyContent:"space-between",marginBottom:"3vh"}} >
                         <Button variant='contained' color='primary' startIcon={<Add/>} onClick={handleNewEmployee} sx={{minWidth:"20%"}}>
-                            New Employee
+                            {t('button_new_employee',{ns:'buttons'})}
                         </Button>
                     </Box>
                     {

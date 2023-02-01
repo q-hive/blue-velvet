@@ -27,6 +27,7 @@ import { EditionAbstract } from "./CoreComponents/Edition/EditionAbstract";
 import { TasksReview } from "./modules/Admin/Tasks/TasksReview";
 import { InvoicesIndex } from "./modules/Admin/Client/invoices/InvoicesIndex";
 import { ContainerTaskWrapper } from "./modules/Employee/Tasks/ContainerTasks/ContainerTaskWrapper";
+import { ProductionManagementDashboard } from "./modules/Admin/production/management/ProductionManagementDashboard";
 
 
 
@@ -39,6 +40,10 @@ export const AppRoutes  = [
     {
         path:"/:uid/admin/production",
         component:<ProductionMain/>
+    },
+    {
+        path:"/:uid/admin/production/management/:productId",
+        component:<ProductionManagementDashboard/>
     },
     {
         path:"/:uid/admin/production/newProduct",

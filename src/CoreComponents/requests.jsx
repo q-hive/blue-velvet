@@ -205,13 +205,13 @@ export const getWorkdayProdData = async (props) => {
 
 //*THIS METHOD
 export const getWorkData = async ({user, credential})=> {
-    if(window.localStorage.getItem("workData")){
-        return {
-            workData: JSON.parse(window.localStorage.getItem("workData")),
-            packs: JSON.parse(window.localStorage.getItem("packs")),
-            deliverys: JSON.parse(window.localStorage.getItem("deliverys")),
-        }
-    }
+    // if(window.localStorage.getItem("workData")){
+    //     return {
+    //         workData: JSON.parse(window.localStorage.getItem("workData")),
+    //         packs: JSON.parse(window.localStorage.getItem("packs")),
+    //         deliverys: JSON.parse(window.localStorage.getItem("deliverys")),
+    //     }
+    // }
     
     const production = await api.api.get(`${api.apiVersion}/production/workday?containerId=${user.assignedContainer}`,{
         headers:{

@@ -8,6 +8,7 @@ import {ErrorBoundary} from 'react-error-boundary'
 
 //*Contexts
 import { AuthContext } from './contexts/AuthContext'
+import { ApplicationContext } from './contexts/ApplicationContext.js'
 
 //*Componentes
 import { Login } from './CoreComponents/Login/Login'
@@ -21,40 +22,42 @@ export const App = () => {
   return (
     <Router history={history}>
         <ErrorBoundary FallbackComponent={ErrorPage}>
-            <AuthContext>
-                <Routes>
-                    <Route path="/" element={<Login/>}></Route>
-                    
-                    {AppRoutes.map((val, idx) => {
-                        return (
-                            <Route
-                            key={idx}
-                            path={val.path}
-                            element={
-                                <>
-                                    <PrivateRoutes>
-                                        {
-                                            val.path.split('/').includes('employee')
-                                            ?
-                                            <WorkingContextWrapper>
-                                                {val.component}
-                                            </WorkingContextWrapper>
-                                            :
-                                            <AdminAccessGuard>
-                                                {val.component}
-                                            </AdminAccessGuard>
-                                            
-                                        }
-                                    </PrivateRoutes>
-                                
-                                </>
-                            }
-                            >
-                            </Route> 
-                        )
-                    })}
-                </Routes>
-            </AuthContext>
+            <ApplicationContext>
+                <AuthContext>
+                    <Routes>
+                        <Route path="/" element={<Login/>}></Route>
+                        
+                        {AppRoutes.map((val, idx) => {
+                            return (
+                                <Route
+                                key={idx}
+                                path={val.path}
+                                element={
+                                    <>
+                                        <PrivateRoutes>
+                                            {
+                                                val.path.split('/').includes('employee')
+                                                ?
+                                                <WorkingContextWrapper>
+                                                    {val.component}
+                                                </WorkingContextWrapper>
+                                                :
+                                                <AdminAccessGuard>
+                                                    {val.component}
+                                                </AdminAccessGuard>
+                                                
+                                            }
+                                        </PrivateRoutes>
+                                    
+                                    </>
+                                }
+                                >
+                                </Route> 
+                            )
+                        })}
+                    </Routes>
+                </AuthContext>
+            </ApplicationContext>
         </ErrorBoundary>
     </Router>
         

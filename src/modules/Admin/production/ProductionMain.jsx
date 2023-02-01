@@ -21,12 +21,14 @@ import useAuth from '../../../contextHooks/useAuthContext'
 import { Stack } from '@mui/system'
 import { getGrowingProducts, updateContainerConfig } from '../../../CoreComponents/requests'
 import { containerConfigModel } from '../../../utils/models'
+import { useTranslation } from 'react-i18next'
 
 export const ProductionMain = () => {
     
     const theme = useTheme(BV_THEME);
     //*CONTEXTS
     const {user, credential} = useAuth()
+    const {t} = useTranslation(['production_management_module', 'buttons'])
     
     //*Render states
     const [columnsState, setColumnsState] = useState(productsColumns)
@@ -299,11 +301,11 @@ export const ProductionMain = () => {
                             
 
                         <Typography variant="h4" color="secondary" textAlign={"center"} margin={theme.margin.mainHeader}>
-                            Production Management
+                            {t('module_index_title',{ns:'production_management_module'})}
                         </Typography>
                         <Box sx={{display:user.role === "employee" ? 'none' : 'flex', justifyContent:"space-between",marginBottom:"3vh"}} >
                             <Button variant='contained' disabled={user.role === "employee"} color='primary' startIcon={<Add/>} onClick={handleNewProduct} sx={{minWidth:"20%"}}>
-                                Add New Product
+                                {t('button_new_product',{ns:'buttons'})}
                             </Button>
                         </Box>
 
