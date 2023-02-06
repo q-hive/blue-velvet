@@ -10,8 +10,256 @@ import { UserDialog } from "../CoreComponents/UserFeedback/Dialog"
 import { BV_THEME } from "../theme/BV-theme"
 import { Button, Typography, Box, Accordion, AccordionSummary, AccordionDetails, Divider, CircularProgress, Chip } from "@mui/material"
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { LoadingButton } from "@mui/lab"
 import { getInvoicesByCustomer, markInvoiceAsPayed, stopBackgroundTask } from "../CoreComponents/requests"
+import { ProductCard } from "../modules/Admin/production/ProductionMain"
+
+export function DisplayViewButton ({params,setShowProduct}) {
+    console.log("params",params)
+    const [modal,setModal] = useState({
+        open:false,
+        title:"",
+        content:"",
+        actions:[]
+    })
+    const [dialog, setDialog] = useState({
+        open:false,
+        title:"",
+        message:"",
+        actions:[]
+    })
+
+    const [loading, setLoading] = useState(false)
+
+
+    const {user, credential} = useAuth()
+    const navigate = useNavigate()
+    
+    const handleModal = () => {
+        setShowProduct(true)
+       /* setModal({
+            ...modal,
+            open:true,
+            title:"Select an action",
+            actions: [
+                {
+                    label:"Stop production",
+                    type:"normal",
+                    btn_color:"white_btn",
+                    execute:() => {
+                        setLoading(true)
+                        setModal({
+                            ...modal,
+                            open:false
+                        })
+                        api.api.patch(`${api.apiVersion}/products/?id=${params.id}&field=status`,{value:"stopped"},{
+                            headers:{
+                                authorization:credential._tokenResponse.idToken,
+                                user:user
+                            }
+                        })
+                        .then((res) => {
+                            setLoading(false)
+                            setDialog({
+                                ...dialog,
+                                open:true,
+                                title:"Production stopped",
+                                message:"The production of the product you selected has been stopped.",
+                                actions:[
+                                    {
+                                        label:"Ok",
+                                        btn_color:"primary",
+                                        execute:() => {
+                                            params.api.forceUpdate()
+                                            setDialog({
+                                                ...dialog,
+                                                open:false
+                                            })
+                                        }
+                                    }
+                                ]
+                            })
+                        })
+                        .catch(err => {
+                            setLoading(false)
+                            setDialog({
+                                ...dialog,
+                                open:true,
+                                title:"Product update failed",
+                                message:"There was an error updating the product status.",
+                                actions:[
+                                    {
+                                        label:"Ok",
+                                        btn_color:"primary",
+                                        execute:() => {
+                                            setDialog({
+                                                ...dialog,
+                                                open:false
+                                            })
+                                        }
+                                    }
+                                ]
+                            })
+                        })
+                    }
+                },
+                {
+                    label:"Edit product",
+                    btn_color:"warning",
+                    type:"privileged",
+                    execute:() => {
+                        navigate(`/${user.uid}/${user.role}/production/editProduct/?id=${params.id}`)
+                    }
+                },
+                {
+                    label:"Delete",
+                    type:"privileged",
+                    btn_color:"warning",
+                    execute:() => {
+                        console.log("Are you sure you want to delete this product?")
+                        setModal({
+                            ...modal,
+                            open:false
+                        })
+                        setDialog({
+                            ...dialog,
+                            open:true,
+                            title:"Are you sure you want to delete this product?",
+                            message:"The product, and the orders related to this product are going to be deleted.",
+                            actions:[
+                                {
+                                    label:"Yes",
+                                    btn_color:"primary",
+                                    execute:() => {
+                                        setDialog({
+                                            ...dialog,
+                                            open:false,
+                                        })
+                                        setLoading(true)
+                                        
+                                        api.api.delete(`${api.apiVersion}/products/?id=${params.id}`,{
+                                            headers:{
+                                                authorization:credential._tokenResponse.idToken,
+                                                user:user
+                                            }
+                                        })
+                                        .then(() => {
+                                            console.log(params)
+                                        })
+                                        .catch((err) => {
+                                            setDialog({
+                                                ...dialog,
+                                                open:true,
+                                                title:"Error deleting product",
+                                                message:"",
+                                                actions:[
+                                                    {
+                                                        label:"Ok",
+                                                        btn_color:"primary",
+                                                        execute:() => {
+                                                            setDialog({
+                                                                ...dialog,
+                                                                open:false
+                                                            })
+                                                        }
+                                                    }
+                                                ]
+                                            })
+                                        })
+                                    }
+                                }
+                            ]
+                        })
+                    }
+                },
+            ]
+        })*/
+
+    }
+
+    const deleteProduct = (params) => {
+        console.log("Are you sure you want to delete this product?")
+        setModal({
+            ...modal,
+            open:false
+        })
+        setDialog({
+            ...dialog,
+            open:true,
+            title:"Are you sure you want to delete this product?",
+            message:"The product, and the orders related to this product are going to be deleted.",
+            actions:[
+                {
+                    label:"Yes",
+                    btn_color:"primary",
+                    execute:() => {
+                        setDialog({
+                            ...dialog,
+                            open:false,
+                        })
+                        setLoading(true)
+                        
+                        api.api.delete(`${api.apiVersion}/products/?id=${params.id}`,{
+                            headers:{
+                                authorization:credential._tokenResponse.idToken,
+                                user:user
+                            }
+                        })
+                        .then(() => {
+                            console.log(params)
+                        })
+                        .catch((err) => {
+                            setDialog({
+                                ...dialog,
+                                open:true,
+                                title:"Error deleting product",
+                                message:"",
+                                actions:[
+                                    {
+                                        label:"Ok",
+                                        btn_color:"primary",
+                                        execute:() => {
+                                            setDialog({
+                                                ...dialog,
+                                                open:false
+                                            })
+                                        }
+                                    }
+                                ]
+                            })
+                        })
+                    }
+                }
+            ]
+        })
+    }
+    
+    return (
+        <>
+            <UserModal
+            modal={modal}
+            setModal={setModal}
+            title={modal.title}
+            content={modal.content}
+            actions={modal.actions}
+            />
+
+            <UserDialog
+            title={dialog.title}
+            content={dialog.message}
+            dialog={dialog}
+            setDialog={setDialog}
+            actions={dialog.actions}
+            open={dialog.open}
+            />    
+        
+            <Button variant='contained' onClick={handleModal} disabled={loading || (user.role === "employee")} sx={BV_THEME.button.table}> {loading ? 'Loading...' : 'View'} </Button>    
+            <Button onClick={()=>deleteProduct(params)} color="error" disabled={loading || (user.role === "employee")} sx={{padding:"0px",margin:"0px"}}> {loading ? 'Loading...' : <DeleteIcon/>} </Button>    
+        </>
+        
+    )
+}
 
 export const productsColumns = [
     {
@@ -118,191 +366,7 @@ export const productsColumns = [
         headerAlign:"center",
         align:"center",
         headerName:"Actions",
-        renderCell: (params) => {
-            const [modal,setModal] = useState({
-                open:false,
-                title:"",
-                content:"",
-                actions:[]
-            })
-            const [dialog, setDialog] = useState({
-                open:false,
-                title:"",
-                message:"",
-                actions:[]
-            })
-
-            const [loading, setLoading] = useState(false)
-
-            const {user, credential} = useAuth()
-            const navigate = useNavigate()
-            
-            const handleModal = () => {
-                setModal({
-                    ...modal,
-                    open:true,
-                    title:"Select an action",
-                    actions: [
-                        {
-                            label:"Stop production",
-                            type:"normal",
-                            btn_color:"white_btn",
-                            execute:() => {
-                                setLoading(true)
-                                setModal({
-                                    ...modal,
-                                    open:false
-                                })
-                                api.api.patch(`${api.apiVersion}/products/?id=${params.id}&field=status`,{value:"stopped"},{
-                                    headers:{
-                                        authorization:credential._tokenResponse.idToken,
-                                        user:user
-                                    }
-                                })
-                                .then((res) => {
-                                    setLoading(false)
-                                    setDialog({
-                                        ...dialog,
-                                        open:true,
-                                        title:"Production stopped",
-                                        message:"The production of the product you selected has been stopped.",
-                                        actions:[
-                                            {
-                                                label:"Ok",
-                                                btn_color:"primary",
-                                                execute:() => {
-                                                    params.api.forceUpdate()
-                                                    setDialog({
-                                                        ...dialog,
-                                                        open:false
-                                                    })
-                                                }
-                                            }
-                                        ]
-                                    })
-                                })
-                                .catch(err => {
-                                    setLoading(false)
-                                    setDialog({
-                                        ...dialog,
-                                        open:true,
-                                        title:"Product update failed",
-                                        message:"There was an error updating the product status.",
-                                        actions:[
-                                            {
-                                                label:"Ok",
-                                                btn_color:"primary",
-                                                execute:() => {
-                                                    setDialog({
-                                                        ...dialog,
-                                                        open:false
-                                                    })
-                                                }
-                                            }
-                                        ]
-                                    })
-                                })
-                            }
-                        },
-                        {
-                            label:"Edit product",
-                            btn_color:"warning",
-                            type:"privileged",
-                            execute:() => {
-                                navigate(`/${user.uid}/${user.role}/production/editProduct/?id=${params.id}`)
-                            }
-                        },
-                        {
-                            label:"Delete",
-                            type:"privileged",
-                            btn_color:"warning",
-                            execute:() => {
-                                console.log("Are you sure you want to delete this product?")
-                                setModal({
-                                    ...modal,
-                                    open:false
-                                })
-                                setDialog({
-                                    ...dialog,
-                                    open:true,
-                                    title:"Are you sure you want to delete this product?",
-                                    message:"The product, and the orders related to this product are going to be deleted.",
-                                    actions:[
-                                        {
-                                            label:"Yes",
-                                            btn_color:"primary",
-                                            execute:() => {
-                                                setDialog({
-                                                    ...dialog,
-                                                    open:false,
-                                                })
-                                                setLoading(true)
-                                                
-                                                api.api.delete(`${api.apiVersion}/products/?id=${params.id}`,{
-                                                    headers:{
-                                                        authorization:credential._tokenResponse.idToken,
-                                                        user:user
-                                                    }
-                                                })
-                                                .then(() => {
-                                                    console.log(params)
-                                                })
-                                                .catch((err) => {
-                                                    setDialog({
-                                                        ...dialog,
-                                                        open:true,
-                                                        title:"Error deleting product",
-                                                        message:"",
-                                                        actions:[
-                                                            {
-                                                                label:"Ok",
-                                                                btn_color:"primary",
-                                                                execute:() => {
-                                                                    setDialog({
-                                                                        ...dialog,
-                                                                        open:false
-                                                                    })
-                                                                }
-                                                            }
-                                                        ]
-                                                    })
-                                                })
-                                            }
-                                        }
-                                    ]
-                                })
-                            }
-                        },
-                    ]
-                })
-
-            }
-            
-            return (
-                <>
-                    <UserModal
-                    modal={modal}
-                    setModal={setModal}
-                    title={modal.title}
-                    content={modal.content}
-                    actions={modal.actions}
-                    />
-
-                    <UserDialog
-                    title={dialog.title}
-                    content={dialog.message}
-                    dialog={dialog}
-                    setDialog={setDialog}
-                    actions={dialog.actions}
-                    open={dialog.open}
-                    />    
-                
-                    <Button variant='contained' onClick={handleModal} disabled={loading || (user.role === "employee")} sx={BV_THEME.button.table}> {loading ? 'Loading...' : 'View'} </Button>    
-                
-                </>
-                
-            )
-        },
+        renderCell:(params)=> DisplayViewButton(params) ,
         flex:1
     },
     {
@@ -322,27 +386,41 @@ export const productsColumnsMobile = [
         headerAlign:"center",
         align:"center",
         headerName:"Microgreen",
-        minWidth:150,
         flex:1,
     },
     {
-        field:"orders",
+        field:"price",
         headerClassName:"header-products-table",
         headerAlign:"center",
-        align:"center",
-        headerName:"Orders",
-        width:150,
+        //align:"center",
+        headerName:"Prod. Price",
+        minWidth:120,
+        flex:1,
         renderCell:(params) => {
-            params.value.forEach((order, idx) => {
-                if(!order){
-                    params.value.splice(idx, 1)
-                }
-                return
-            })
-            return params.value.length
-        },
-        flex:1
-        
+            return (
+                
+                        <Accordion sx={{width:"100%",marginY:"1vh"}}>
+                            <AccordionSummary
+                                expandIcon={<ExpandMoreIcon />}
+                                aria-controls="panel1a-content"
+                                id="panel1a-header" 
+                            >
+                                <Typography>Price</Typography>
+                            </AccordionSummary>
+
+                            <AccordionDetails >
+                                    {params.formattedValue.map((obj) => {
+                                        return (
+                                            <>
+                                            <Typography align="justify">Size {obj.packageSize}:  €{obj.amount} </Typography>
+                                            <Divider sx={{maxWidth:"100%"}} /> 
+                                            </>
+                                            )})}
+                            </AccordionDetails>
+                        </Accordion>
+                
+            )
+        }
     },
     {
         field:"actions",
@@ -350,191 +428,7 @@ export const productsColumnsMobile = [
         headerAlign:"center",
         align:"center",
         headerName:"Actions",
-        renderCell: (params) => {
-            const [modal,setModal] = useState({
-                open:false,
-                title:"",
-                content:"",
-                actions:[]
-            })
-            const [dialog, setDialog] = useState({
-                open:false,
-                title:"",
-                message:"",
-                actions:[]
-            })
-
-            const [loading, setLoading] = useState(false)
-
-            const {user, credential} = useAuth()
-            const navigate = useNavigate()
-            
-            const handleModal = () => {
-                setModal({
-                    ...modal,
-                    open:true,
-                    title:"Select an action",
-                    actions: [
-                        {
-                            label:"Stop production",
-                            type:"normal",
-                            btn_color:"white_btn",
-                            execute:() => {
-                                setLoading(true)
-                                setModal({
-                                    ...modal,
-                                    open:false
-                                })
-                                api.api.patch(`${api.apiVersion}/products/?id=${params.id}&field=status`,{value:"stopped"},{
-                                    headers:{
-                                        authorization:credential._tokenResponse.idToken,
-                                        user:user
-                                    }
-                                })
-                                .then((res) => {
-                                    setLoading(false)
-                                    setDialog({
-                                        ...dialog,
-                                        open:true,
-                                        title:"Production stopped",
-                                        message:"The production of the product you selected has been stopped.",
-                                        actions:[
-                                            {
-                                                label:"Ok",
-                                                btn_color:"primary",
-                                                execute:() => {
-                                                    params.api.forceUpdate()
-                                                    setDialog({
-                                                        ...dialog,
-                                                        open:false
-                                                    })
-                                                }
-                                            }
-                                        ]
-                                    })
-                                })
-                                .catch(err => {
-                                    setLoading(false)
-                                    setDialog({
-                                        ...dialog,
-                                        open:true,
-                                        title:"Product update failed",
-                                        message:"There was an error updating the product status.",
-                                        actions:[
-                                            {
-                                                label:"Ok",
-                                                btn_color:"primary",
-                                                execute:() => {
-                                                    setDialog({
-                                                        ...dialog,
-                                                        open:false
-                                                    })
-                                                }
-                                            }
-                                        ]
-                                    })
-                                })
-                            }
-                        },
-                        {
-                            label:"Edit product",
-                            btn_color:"warning",
-                            type:"privileged",
-                            execute:() => {
-                                navigate(`/${user.uid}/${user.role}/production/editProduct/?id=${params.id}`)
-                            }
-                        },
-                        {
-                            label:"Delete",
-                            type:"dangerous",
-                            btn_color:"warning",
-                            execute:() => {
-                                console.log("Are you sure you want to delete this product?")
-                                setModal({
-                                    ...modal,
-                                    open:false
-                                })
-                                setDialog({
-                                    ...dialog,
-                                    open:true,
-                                    title:"Are you sure you want to delete this product?",
-                                    message:"The product, and the orders related to this product are going to be deleted.",
-                                    actions:[
-                                        {
-                                            label:"Yes",
-                                            btn_color:"primary",
-                                            execute:() => {
-                                                setDialog({
-                                                    ...dialog,
-                                                    open:false,
-                                                })
-                                                setLoading(true)
-                                                
-                                                api.api.delete(`${api.apiVersion}/products/?id=${params.id}`,{
-                                                    headers:{
-                                                        authorization:credential._tokenResponse.idToken,
-                                                        user:user
-                                                    }
-                                                })
-                                                .then(() => {
-                                                    console.log(params)
-                                                })
-                                                .catch((err) => {
-                                                    setDialog({
-                                                        ...dialog,
-                                                        open:true,
-                                                        title:"Error deleting product",
-                                                        message:"",
-                                                        actions:[
-                                                            {
-                                                                label:"Ok",
-                                                                btn_color:"primary",
-                                                                execute:() => {
-                                                                    setDialog({
-                                                                        ...dialog,
-                                                                        open:false
-                                                                    })
-                                                                }
-                                                            }
-                                                        ]
-                                                    })
-                                                })
-                                            }
-                                        }
-                                    ]
-                                })
-                            }
-                        },
-                    ]
-                })
-
-            }
-            
-            return (
-                <>
-                    <UserModal
-                    modal={modal}
-                    setModal={setModal}
-                    title={modal.title}
-                    content={modal.content}
-                    actions={modal.actions}
-                    />
-
-                    <UserDialog
-                    title={dialog.title}
-                    content={dialog.message}
-                    dialog={dialog}
-                    setDialog={setDialog}
-                    actions={dialog.actions}
-                    open={dialog.open}
-                    />    
-                
-                    <Button variant='contained' onClick={handleModal} disabled={loading || (user.role === "employee")} sx={BV_THEME.button.table}> {loading ? 'Loading...' : 'View'} </Button>    
-                
-                </>
-                
-            )
-        },
+        renderCell: (params)=> DisplayViewButton(params) ,
         flex:1
     },
 ]
