@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react'
 
 //*MUI Components
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Fade, Grid, IconButton, InputAdornment, LinearProgress, Menu, MenuItem, Paper, TextField, Typography, useTheme } from '@mui/material'
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Fade, Grid, Grow, IconButton, InputAdornment, LinearProgress, Menu, MenuItem, Paper, Slide, TextField, Typography, useTheme } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 //*THEME
 import {BV_THEME} from '../../../theme/BV-theme'
@@ -253,7 +253,8 @@ export const ProductionMain = () => {
                 );
               }
 
-              return  <Grid container spacing={2}>
+              return <Grid container spacing={2}>
+                    <Grow in={true} mountOnEnter unmountOnExit sx={{transfromOrigin:"0 0 0"}}>
                     <Grid item xs={12}>
                         <Paper elevation={4} sx={{
                             padding: BV_THEME.spacing(2),
@@ -370,7 +371,9 @@ export const ProductionMain = () => {
                             </Box>
                         </Paper>
                     </Grid>
-                    {(!!showEdit && !selectedProduct.mix.isMix) && <Grid item xs={12} >
+                    </Grow>
+                    {(!!showEdit && !selectedProduct.mix.isMix) && <Grow in={true} mountOnEnter unmountOnExit>
+                        <Grid item xs={12} >
                         <Paper elevation={4} sx={{
                             padding: BV_THEME.spacing(2),
                             display: "flex",
@@ -396,8 +399,8 @@ export const ProductionMain = () => {
                                 Accept configuration
                             </Button>
                         </Paper>
-                    </Grid>}
-                </Grid>        
+                    </Grid></Grow>}
+                </Grid> 
             
         }
 
@@ -940,388 +943,354 @@ export const ProductionMain = () => {
                         <Typography variant="h4" color="secondary" textAlign={"center"} margin={theme.margin.mainHeader}>
                             Production Management
                         </Typography>
+
                         <Box sx={{display:user.role === "employee" ? 'none' : 'flex', justifyContent:"space-between",marginBottom:"3vh"}} >
                             <Button variant='contained' disabled={user.role === "employee"} color='primary' startIcon={<Add/>} onClick={handleNewProduct} sx={{minWidth:"20%"}}>
                                 Add New Product
                             </Button>
                         </Box>
 
-                        <Grid container maxWidth={"xl"} spacing={4} marginTop={2}>
-                            {/* <Grid item xs={12} md={6} lg={4} >
-                                <Paper elevation={5} sx={{
-                                                            padding: BV_THEME.spacing(2),
-                                                            display: "flex",
-                                                            overflow: "auto",
-                                                            flexDirection: "column",
-                                                            minHeight: 480,
-                                                            
-                                                        }}>
-                                    <Typography variant="h6" color="secondary">
-                                        Growing Products
-                                    </Typography>
+                          <Grid container maxWidth={"xl"} spacing={4} marginTop={2}>
+                              {/* //GROWING PRODUCTS CARD
 
-                                    {
-                                        loading
-                                        ?   
-                                        <LinearProgress color="primary" sx={{marginY:"2vh"}}/>
-                                        :  
-                                        <Stack sx={{}}>
-                                        
-                                            {displayGrowingProducts()}
-
-                                            
-                                        </Stack>
-                                        
-                                    }      
-                                </Paper>
-                            </Grid> */}
-
-
-                            <Grid item xs={12} md={6} lg={4} order={{xs:"3",md:"1"}}>
-                                <Paper elevation={4} sx={{
-                                                        padding: BV_THEME.spacing(2),
-                                                        display: "flex",
-                                                        overflow: "auto",
-                                                        flexDirection: "column",
-                                                        minHeight: 508
-                                                    }}>
-                                    <Typography variant="h6" color="secondary">
-                                        All products
-                                    </Typography>
-
-                                    {
-                                loading
-                                ?   
-                                <LinearProgress color="primary" sx={{marginY:"2vh"}}/>
-                                :   
-                                <>
-                                    <DataGrid
-                                        columns={productsColumnsMobile}
-                                        rows={ rows
-                                        }
-                                        getRowId={(row) => {
-                                            return row._id
-                                        }}
-                                        getRowHeight={() => 'auto'}
-                                        onStateChange={(s,e,d) => {
-                                            console.log(s)
-                                            console.log(e)
-                                            console.log(d)
-                                       }}
-                                        sx={{marginY:"2vh", maxWidth:"100%"}}
-                                    />
-                                </>
-                            }     
-                                </Paper>
-                            </Grid>
-
-                        {/*Grid Container End */} 
-                            {!!selectedProduct ?  <Grid item xs={12} md={6} lg={4} order={{xs:"1",md:"2"}}>
-                               {ProductCard(selectedProduct)}
-                            </Grid>   
-                            :
-                            null
-                            }
-
-                            {/* Edit Product Card / Component */}
-                            {user.role === "admin" && !!showEdit && !selectedProduct.mix.isMix ? 
-                            <Grid item xs={12} lg={4} order={{xs:"2",md:"3"}}>
-                                <Paper elevation={4} sx={{padding: BV_THEME.spacing(2),
-                                                        display: "flex",
-                                                        overflow: "auto",
-                                                        flexDirection: "column",
-                                                        minHeight: 508}}
-                                >
-                                <Box sx={{display:"flex",align:"right", justifyContent:"right"}}> 
-                                    <IconButton onClick={()=>setShowEdit(false)} sx={{width:"3vh", height:"3vh", align:"right"}}>
-                                        <CloseIcon />
-                                    </IconButton>
-                                </Box>
-
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12}>
-                                        <Typography variant="h6" color="secondary.main">
-                                        Edit Product
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item xs={12}>
-
-                                    </Grid>
-                                    <Grid item xs={12}>
-                                        <TextField 
-                                        //defaultValue={selectedProduct.name} 
-                                        value={productData.name} 
-                                        //helperText={error.seeding.message} 
-                                        //error={error.seeding.failed} 
-                                        id="name" 
-                                        type="text"
-                                        variant='standard' 
-                                        onChange={handleChangeProductData} 
-                                        label="Name" 
-                                        sx={theme.input.mobile.fullSize.desktop.fullSize}/>
-                                    </Grid>
-                                    <Grid item xs={6}>
-                                        <TextField 
-                                        //defaultValue={selectedProduct.parameters.seedingRate} 
-                                        value={productData.seeding} 
-                                        //helperText={error.seeding.message} 
-                                        //error={error.seeding.failed} 
-                                        id="seeding" 
-                                        type="number"
-                                        variant='standard' 
-                                        onChange={handleChangeProductData} 
-                                        label="Seeding Rate" 
-                                        sx={theme.input.mobile.fullSize.desktop.fullSize}/>
-                                    </Grid>
-                                    <Grid item xs={6}>
-                                        <TextField 
-                                        //defaultValue={selectedProduct.parameters.harvestRate} 
-                                        value={productData.harvest} 
-                                        //helperText={error.seeding.message} 
-                                        //error={error.seeding.failed} 
-                                        id="harvest" 
-                                        type="number"
-                                        variant='standard' 
-                                        onChange={handleChangeProductData} 
-                                        label="harvest Rate" 
-                                        sx={theme.input.mobile.fullSize.desktop.fullSize}/>
-                                    </Grid>
-                                    <Grid item xs={12}>
-                                        <Typography variant="body2">Price</Typography>
-                                    </Grid>
-                                    <Grid item xs={6}>
-                                        <TextField 
-                                        //defaultValue={selectedProduct.price[0].amount} 
-                                        value={productData.smallPrice} 
-                                        //helperText={error.seeding.message} 
-                                        //error={error.seeding.failed} 
-                                        id="25" 
-                                        type="number"
-                                        variant='standard' 
-                                        onChange={handleChangeProductData} 
-                                        label="25 g" 
-                                        sx={theme.input.mobile.fullSize.desktop.fullSize}/>
-                                    </Grid>
-                                    <Grid item xs={6}>
-                                        <TextField 
-                                        //defaultValue={selectedProduct.price[1].amount} 
-                                        value={productData.mediumPrice} 
-                                        //helperText={error.seeding.message} 
-                                        //error={error.seeding.failed} 
-                                        id="80" 
-                                        type="number"
-                                        variant='standard' 
-                                        onChange={handleChangeProductData} 
-                                        label="80 g" 
-                                        sx={theme.input.mobile.fullSize.desktop.fullSize}/>
-                                    </Grid>
-
-                                    <Grid item xs={12}>
-                                        <Typography variant="body2">Seed</Typography>
-                                    </Grid>
-                                    <Grid item xs={6}>
-                                        <TextField 
-                                        //defaultValue={selectedProduct.seed.seedId} 
-                                        value={productData.seedId} 
-                                        //helperText={error.seeding.message} 
-                                        //error={error.seeding.failed} 
-                                        id="seedId" 
-                                        type="text"
-                                        variant='standard' 
-                                        onChange={handleChangeProductData} 
-                                        label="Seed ID" 
-                                        sx={theme.input.mobile.fullSize.desktop.fullSize}/>
-                                    </Grid>
-                                    <Grid item xs={6}>
-                                        <TextField 
-                                        //defaultValue={selectedProduct.seed.seedName} 
-                                        value={productData.providerSeedName} 
-                                        //helperText={error.seeding.message} 
-                                        //error={error.seeding.failed} 
-                                        id="providerSeedName" 
-                                        type="text"
-                                        variant='standard' 
-                                        onChange={handleChangeProductData} 
-                                        label="Seed Name" 
-                                        sx={theme.input.mobile.fullSize.desktop.fullSize}/>
-                                    </Grid>
-                                    <Grid item xs={6}>
-                                        <TextField 
-                                        //defaultValue={selectedProduct.provider.name} 
-                                        value={productData.provider} 
-                                        //helperText={error.seeding.message} 
-                                        //error={error.seeding.failed} 
-                                        id="provider" 
-                                        type="text"
-                                        variant='standard' 
-                                        onChange={handleChangeProductData} 
-                                        label="Seed provider" 
-                                        sx={theme.input.mobile.fullSize.desktop.fullSize}/>
-                                    </Grid>
-                                    
-
-                                    <Grid item xs={6}>
-                                        <Button variant="contained" color="secondary" onClick={handleComplete} sx={{width:"100%"}}>
-                                            <SaveIcon />
-                                        </Button>
-                                    </Grid>
-
-                                </Grid>
-
-                                </Paper>
-                            </Grid> 
-                            :
-                            !!showEdit && selectedProduct.mix.isMix && user.role === "admin" ?
-                            <Grid item xs={12} lg={4} order={{xs:"2",md:"3"}}>
-                                <Paper elevation={4} sx={{padding: BV_THEME.spacing(2),
-                                                        display: "flex",
-                                                        overflow: "auto",
-                                                        flexDirection: "column",
-                                                        minHeight: 508}}
-                                >
-                                <Box sx={{display:"flex",align:"right", justifyContent:"right"}}> 
-                                    <IconButton onClick={()=>setShowEdit(false)} sx={{width:"3vh", height:"3vh", align:"right"}}>
-                                        <CloseIcon />
-                                    </IconButton>
-                                </Box>
-
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12}>
-                                        <Typography variant="h6" color="secondary.main">
-                                        Edit Mix
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item xs={12}>
-
-                                    </Grid>
-                                    <Grid item xs={12}>
-                                        <TextField 
-                                        //defaultValue={selectedProduct.name} 
-                                        value={productData.name} 
-                                        //helperText={error.seeding.message} 
-                                        //error={error.seeding.failed} 
-                                        id="name" 
-                                        type="text"
-                                        variant='standard' 
-                                        onChange={handleChangeProductData} 
-                                        label="Name" 
-                                        sx={theme.input.mobile.fullSize.desktop.fullSize}/>
-                                    </Grid>
-                                    {productData.mix.products.map((prod,idx)=>{
-                                        console.log("indecs",idx)
-                                        let actualProduct
-                                        actualProduct=rows.find((prd)=>prd._id === prod.strain)
-                                        return(<>
-                                        <Grid item xs={6}>
-                                        <Typography alignSelf={"center"} marginTop="2vh">{actualProduct.name}</Typography>
-                                    </Grid>
-                                    <Grid item xs={6}>
-                                        <TextField 
-                                        //defaultValue={selectedProduct.parameters.seedingRate} 
-                                        value={prod.amount}
-                                        name={idx}
-                                        //helperText={error.seeding.message} 
-                                        //error={error.seeding.failed} 
-                                        id="percentage" 
-                                        type="number"
-                                        variant='standard' 
-                                        onChange={handleChangeProductData} 
-                                        label="Percentage of mix" 
-                                        sx={theme.input.mobile.fullSize.desktop.fullSize}/>
-                                    </Grid>
-                                        </>
-
-                                        )
-                                        
-
-                                    },[])}
-                                    
-                                    <Grid item xs={12}>
-                                        <Typography variant="body2">Price</Typography>
-                                    </Grid>
-                                    {productData.price.map((price,idx)=>{
-
-
-                                        return(
-                                            <Grid item xs={6}>
-                                        <TextField 
-                                        //defaultValue={selectedProduct.price[0].amount} 
-                                        value={productData.price[idx].amount} 
-                                        //helperText={error.seeding.message} 
-                                        //error={error.seeding.failed} 
-                                        id={`${price.packageSize}`} 
-                                        type="number"
-                                        variant='standard' 
-                                        onChange={handleChangeProductData} 
-                                        label={`${price.packageSize}` + "g"}
-                                        sx={theme.input.mobile.fullSize.desktop.fullSize}/>
-                                    </Grid>
-
-                                        )
-                                    })}
-                                    
-
-                                    <Grid item xs={12}>
-                                        <Button variant="contained" color="secondary" onClick={handleComplete} sx={{width:"100%"}}>
-                                            <SaveIcon />
-                                        </Button>
-                                    </Grid>
-
-                                </Grid>
-
-                                </Paper>
-                            </Grid> 
-                            
-                            :
-                            null}
-                        </Grid>
-
-                        {/* {
-                            user.role === "admin" && (
-                                <Grid container maxWidth={"xl"} spacing={2} marginTop={2}>
-                                    <Grid item xs={12} md={6} lg={12} >
-                                        <Paper elevation={4} sx={{
-                                                                padding: BV_THEME.spacing(2),
-                                                                display: "flex",
-                                                                overflow: "auto",
-                                                                flexDirection: "column",
-                                                                minHeight: 480
-                                                            }}>
+                                    <Grid item xs={12} md={6} lg={4} >
+                                        <Paper elevation={5} sx={{
+                                                                    padding: BV_THEME.spacing(2),
+                                                                    display: "flex",
+                                                                    overflow: "auto",
+                                                                    flexDirection: "column",
+                                                                    minHeight: 480,
+                                                                    
+                                                                }}>
                                             <Typography variant="h6" color="secondary">
-                                                Manage and configure the container
+                                                Growing Products
                                             </Typography>
-
                                             {
-                                        loading
-                                        ?   
-                                        <LinearProgress color="primary" sx={{marginY:"2vh"}}/>
-                                        :   
-                                        <>
-                                            {/* <TextField
-                                                label="Overhead production %"
-                                                helperText="Place an INTEGER to setup the overhead"
-                                                inputProps={
-                                                    {
-                                                        endAdornment: <InputAdornment position="end"> % </InputAdornment>
-                                                    }
-                                                }  
-                                                onChange={handleOverHeadInput}
-                                                type="number"     
-                                            /> }
-
-                                            <Button variant='contained' disabled={user.role === "employee"} color='primary' startIcon={<Add/>} onClick={handleAcceptContainerConfig} sx={{minWidth:"20%"}}>
-                                                Accept configuration
-                                            </Button>
-                                        
-                                        </>
-                                    }     
+                                                loading
+                                                ?   
+                                                <LinearProgress color="primary" sx={{marginY:"2vh"}}/>
+                                                :  
+                                                <Stack sx={{}}>
+                                                    {displayGrowingProducts()}
+                                                </Stack> 
+                                            }      
                                         </Paper>
-                                    </Grid>
+                                    </Grid> 
+                                */}
 
-                                {/*Grid Container End }    
-                                </Grid>
-                            ) 
-                        } */}
+
+                              {/* Products DataGrid */}
+                              <Grid item xs={12} md={6} lg={4} order={{ xs: "3", md: "1" }}>
+                                  <Paper elevation={4} sx={{
+                                      padding: BV_THEME.spacing(2),
+                                      display: "flex",
+                                      overflow: "auto",
+                                      flexDirection: "column",
+                                      minHeight: 508
+                                  }}>
+                                      <Typography variant="h6" color="secondary">
+                                          All products
+                                      </Typography>
+
+                                      {
+                                          loading
+                                              ?
+                                              <LinearProgress color="primary" sx={{ marginY: "2vh" }} />
+                                              :
+                                              <>
+                                                  <DataGrid
+                                                      columns={productsColumnsMobile}
+                                                      rows={rows}
+                                                      getRowId={(row) => {
+                                                          return row._id
+                                                      }}
+                                                      getRowHeight={() => 'auto'}
+                                                      onStateChange={(s, e, d) => {
+                                                          console.log(s)
+                                                          console.log(e)
+                                                          console.log(d)
+                                                      }}
+                                                      sx={{ marginY: "2vh", maxWidth: "100%" }}
+                                                  />
+                                              </>
+                                      }
+                                  </Paper>
+                              </Grid>
+                              {/* Products Data<Grid End */}
+
+
+
+                              {/* Product Card */}
+                              {!!selectedProduct ? <Grid item xs={12} md={6} lg={4} order={{ xs: "1", md: "2" }}>
+                                  {ProductCard(selectedProduct)}
+                              </Grid>
+                                  :
+                                  null
+                              }
+
+                              {/* Edit Product Card / Component */}
+                              {user.role === "admin" && !!showEdit ?
+                                  //Load Card
+                                  <Grow in={true} mountOnEnter unmountOnExit>
+                                      <Grid item xs={12} lg={4} order={{ xs: "2", md: "3" }}>
+                                          <Paper elevation={4} sx={{
+                                              padding: BV_THEME.spacing(2),
+                                              display: "flex",
+                                              overflow: "auto",
+                                              flexDirection: "column",
+                                              minHeight: 508
+                                          }}
+                                          >
+                                              <Box sx={{ display: "flex", align: "right", justifyContent: "right" }}>
+                                                  <IconButton onClick={() => setShowEdit(false)} sx={{ width: "3vh", height: "3vh", align: "right" }}>
+                                                      <CloseIcon />
+                                                  </IconButton>
+                                              </Box>
+
+                                              {/*Load content depending on wether product is a mix */}
+                                              {
+                                                  !selectedProduct.mix.isMix
+                                                      ?
+                                                      <Grid container spacing={2}>
+                                                          <Grid item xs={12}>
+                                                              <Typography variant="h6" color="secondary.main">
+                                                                  Edit Product
+                                                              </Typography>
+                                                          </Grid>
+
+                                                          <Grid item xs={12}>
+
+                                                          </Grid>
+                                                          <Grid item xs={12}>
+                                                              <TextField
+                                                                  //defaultValue={selectedProduct.name} 
+                                                                  value={productData.name}
+                                                                  //helperText={error.seeding.message} 
+                                                                  //error={error.seeding.failed} 
+                                                                  id="name"
+                                                                  type="text"
+                                                                  variant='standard'
+                                                                  onChange={handleChangeProductData}
+                                                                  label="Name"
+                                                                  sx={theme.input.mobile.fullSize.desktop.fullSize} />
+                                                          </Grid>
+                                                          <Grid item xs={6}>
+                                                              <TextField
+                                                                  //defaultValue={selectedProduct.parameters.seedingRate} 
+                                                                  value={productData.seeding}
+                                                                  //helperText={error.seeding.message} 
+                                                                  //error={error.seeding.failed} 
+                                                                  id="seeding"
+                                                                  type="number"
+                                                                  variant='standard'
+                                                                  onChange={handleChangeProductData}
+                                                                  label="Seeding Rate"
+                                                                  sx={theme.input.mobile.fullSize.desktop.fullSize} />
+                                                          </Grid>
+                                                          <Grid item xs={6}>
+                                                              <TextField
+                                                                  //defaultValue={selectedProduct.parameters.harvestRate} 
+                                                                  value={productData.harvest}
+                                                                  //helperText={error.seeding.message} 
+                                                                  //error={error.seeding.failed} 
+                                                                  id="harvest"
+                                                                  type="number"
+                                                                  variant='standard'
+                                                                  onChange={handleChangeProductData}
+                                                                  label="harvest Rate"
+                                                                  sx={theme.input.mobile.fullSize.desktop.fullSize} />
+                                                          </Grid>
+                                                          <Grid item xs={12}>
+                                                              <Typography variant="body2">Price</Typography>
+                                                          </Grid>
+                                                          <Grid item xs={6}>
+                                                              <TextField
+                                                                  //defaultValue={selectedProduct.price[0].amount} 
+                                                                  value={productData.smallPrice}
+                                                                  //helperText={error.seeding.message} 
+                                                                  //error={error.seeding.failed} 
+                                                                  id="25"
+                                                                  type="number"
+                                                                  variant='standard'
+                                                                  onChange={handleChangeProductData}
+                                                                  label="25 g"
+                                                                  sx={theme.input.mobile.fullSize.desktop.fullSize} />
+                                                          </Grid>
+                                                          <Grid item xs={6}>
+                                                              <TextField
+                                                                  //defaultValue={selectedProduct.price[1].amount} 
+                                                                  value={productData.mediumPrice}
+                                                                  //helperText={error.seeding.message} 
+                                                                  //error={error.seeding.failed} 
+                                                                  id="80"
+                                                                  type="number"
+                                                                  variant='standard'
+                                                                  onChange={handleChangeProductData}
+                                                                  label="80 g"
+                                                                  sx={theme.input.mobile.fullSize.desktop.fullSize} />
+                                                          </Grid>
+
+                                                          <Grid item xs={12}>
+                                                              <Typography variant="body2">Seed</Typography>
+                                                          </Grid>
+                                                          <Grid item xs={6}>
+                                                              <TextField
+                                                                  //defaultValue={selectedProduct.seed.seedId} 
+                                                                  value={productData.seedId}
+                                                                  //helperText={error.seeding.message} 
+                                                                  //error={error.seeding.failed} 
+                                                                  id="seedId"
+                                                                  type="text"
+                                                                  variant='standard'
+                                                                  onChange={handleChangeProductData}
+                                                                  label="Seed ID"
+                                                                  sx={theme.input.mobile.fullSize.desktop.fullSize} />
+                                                          </Grid>
+                                                          <Grid item xs={6}>
+                                                              <TextField
+                                                                  //defaultValue={selectedProduct.seed.seedName} 
+                                                                  value={productData.providerSeedName}
+                                                                  //helperText={error.seeding.message} 
+                                                                  //error={error.seeding.failed} 
+                                                                  id="providerSeedName"
+                                                                  type="text"
+                                                                  variant='standard'
+                                                                  onChange={handleChangeProductData}
+                                                                  label="Seed Name"
+                                                                  sx={theme.input.mobile.fullSize.desktop.fullSize} />
+                                                          </Grid>
+                                                          <Grid item xs={6}>
+                                                              <TextField
+                                                                  //defaultValue={selectedProduct.provider.name} 
+                                                                  value={productData.provider}
+                                                                  //helperText={error.seeding.message} 
+                                                                  //error={error.seeding.failed} 
+                                                                  id="provider"
+                                                                  type="text"
+                                                                  variant='standard'
+                                                                  onChange={handleChangeProductData}
+                                                                  label="Seed provider"
+                                                                  sx={theme.input.mobile.fullSize.desktop.fullSize} />
+                                                          </Grid>
+
+
+                                                          <Grid item xs={6}>
+                                                              <Button variant="contained" color="secondary" onClick={handleComplete} sx={{ width: "100%" }}>
+                                                                  <SaveIcon />
+                                                              </Button>
+                                                          </Grid>
+
+                                                      </Grid>
+
+                                                      //Single Product Content Ends
+
+                                                      :
+
+
+
+                                                      //Mix Content begins
+
+                                                      <Grid container spacing={2}>
+                                                          <Grid item xs={12}>
+                                                              <Typography variant="h6" color="secondary.main">
+                                                                  Edit Mix
+                                                              </Typography>
+                                                          </Grid>
+                                                          <Grid item xs={12}>
+
+                                                          </Grid>
+                                                          <Grid item xs={12}>
+                                                              <TextField
+                                                                  //defaultValue={selectedProduct.name} 
+                                                                  value={productData.name}
+                                                                  //helperText={error.seeding.message} 
+                                                                  //error={error.seeding.failed} 
+                                                                  id="name"
+                                                                  type="text"
+                                                                  variant='standard'
+                                                                  onChange={handleChangeProductData}
+                                                                  label="Name"
+                                                                  sx={theme.input.mobile.fullSize.desktop.fullSize} />
+                                                          </Grid>
+                                                          {productData.mix.products.map((prod, idx) => {
+                                                              console.log("indecs", idx)
+                                                              let actualProduct
+                                                              actualProduct = rows.find((prd) => prd._id === prod.strain)
+                                                              return (<>
+                                                                  <Grid item xs={6}>
+                                                                      <Typography alignSelf={"center"} marginTop="2vh">{actualProduct.name}</Typography>
+                                                                  </Grid>
+                                                                  <Grid item xs={6}>
+                                                                      <TextField
+                                                                          //defaultValue={selectedProduct.parameters.seedingRate} 
+                                                                          value={prod.amount}
+                                                                          name={idx}
+                                                                          //helperText={error.seeding.message} 
+                                                                          //error={error.seeding.failed} 
+                                                                          id="percentage"
+                                                                          type="number"
+                                                                          variant='standard'
+                                                                          onChange={handleChangeProductData}
+                                                                          label="Percentage of mix"
+                                                                          sx={theme.input.mobile.fullSize.desktop.fullSize} />
+                                                                  </Grid>
+                                                              </>
+
+                                                              )
+
+
+                                                          })}
+
+                                                          <Grid item xs={12}>
+                                                              <Typography variant="body2">Price</Typography>
+                                                          </Grid>
+                                                          {productData.price.map((price, idx) => {
+
+
+                                                              return (
+                                                                  <Grid item xs={6}>
+                                                                      <TextField
+                                                                          //defaultValue={selectedProduct.price[0].amount} 
+                                                                          value={productData.price[idx].amount}
+                                                                          //helperText={error.seeding.message} 
+                                                                          //error={error.seeding.failed} 
+                                                                          id={`${price.packageSize}`}
+                                                                          type="number"
+                                                                          variant='standard'
+                                                                          onChange={handleChangeProductData}
+                                                                          label={`${price.packageSize}` + "g"}
+                                                                          sx={theme.input.mobile.fullSize.desktop.fullSize} />
+                                                                  </Grid>
+
+                                                              )
+                                                          })}
+
+
+                                                          <Grid item xs={12}>
+                                                              <Button variant="contained" color="secondary" onClick={handleComplete} sx={{ width: "100%" }}>
+                                                                  <SaveIcon />
+                                                              </Button>
+                                                          </Grid>
+
+                                                      </Grid>
+
+
+
+                                                  //Mix Content ends
+
+                                              }
+
+
+                                          </Paper>
+                                      </Grid>
+                                  </Grow>
+
+                                  //Card ends
+                                  :
+                                  null
+                              }
+                          </Grid>
+
                         
                         
                     </Box>
