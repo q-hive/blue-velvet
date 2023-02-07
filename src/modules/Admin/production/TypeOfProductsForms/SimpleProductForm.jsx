@@ -528,7 +528,16 @@ export const SimpleProductForm = ({editing, product}) => {
                     {
                     activeStep === 0 ? (
                         <>
-                        <TextField defaultValue={editing ? product.name : undefined} value={productData.name} helperText={error.name.message} error={error.name.failed} id="name" onChange={handleChangeProductData} label="Product name" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
+                        <TextField 
+                            defaultValue={editing ? product.name : undefined} 
+                            value={productData.name} 
+                            helperText={error.name.message} 
+                            error={error.name.failed} 
+                            id="name" 
+                            onChange={handleChangeProductData} 
+                            label="Product name" 
+                            sx={theme.input.mobile.fullSize.desktop.fullSize}
+                        />
                         <Fab color="primary" component="label" id="label" aria-label="add" sx={{marginY:"4%"}} size="large" helpertext="Label">
                             <input  type="file" accept="image/*" onChange={handleChangeLabel} hidden />
                             <CameraIcon />
@@ -539,7 +548,17 @@ export const SimpleProductForm = ({editing, product}) => {
                     {
                     activeStep === 1 ? (
                         <>
-                        <TextField defaultValue={editing ? product.parameters.seedingRate : undefined} value={productData.seeding} helperText={error.seeding.message} error={error.seeding.failed} id="seeding" type="number" onChange={handleChangeProductData} label="Seeding" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
+                        <TextField 
+                            defaultValue={editing ? product.parameters.seedingRate : undefined} 
+                            value={productData.seeding} 
+                            helperText={error.seeding.message} 
+                            error={error.seeding.failed} 
+                            id="seeding" 
+                            type="number" 
+                            onChange={handleChangeProductData} 
+                            label="Seeding" 
+                            sx={theme.input.mobile.fullSize.desktop.fullSize}
+                        />
                         <TextField defaultValue={editing ? product.parameters.harvestRate : undefined} value={productData.harvest} helperText={error.harvest.message} error={error.harvest.failed} id="harvest" type="number" onChange={handleChangeProductData} label="Harvest" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
                         {/* <TextField defaultValue={editing ? product.parameters.harvestRate : undefined} helperText={error.harvest.message} error={error.harvest.failed} id="day" type="number" onChange={handleChangeProductData} label="Day" sx={theme.input.mobile.fullSize.desktop.fullSize}/>
                         <TextField defaultValue={editing ? product.parameters.harvestRate : undefined} helperText={error.harvest.message} error={error.harvest.failed} id="night" type="number" onChange={handleChangeProductData} label="Night" sx={theme.input.mobile.fullSize.desktop.fullSize}/> */}

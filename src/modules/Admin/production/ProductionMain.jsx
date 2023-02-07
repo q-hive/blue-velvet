@@ -26,7 +26,7 @@ import api from '../../../axios'
 import { useNavigate } from 'react-router-dom'
 import useAuth from '../../../contextHooks/useAuthContext'
 import { Stack } from '@mui/system'
-import { getGrowingProducts, updateContainerConfig } from '../../../CoreComponents/requests'
+import { getGrowingProducts, updateContainerConfig, updateProduct } from '../../../CoreComponents/requests'
 import { containerConfigModel } from '../../../utils/models'
 import { set } from 'date-fns'
 
@@ -68,6 +68,7 @@ export const ProductionMain = () => {
 
     //*Network, routing and api
     const navigate = useNavigate()
+
 
     const deleteProduct = (params) => {
         console.log("Are you sure you want to delete this product?")
@@ -167,6 +168,27 @@ export const ProductionMain = () => {
         const renderCell = (params) => {
           const handleClick = () => {
             setSelectedProduct(params.row);
+            if(!params.row.mix.isMix){
+            setProductData({
+                    name:               params.row.name ,
+                    label:              params.row.img ,
+                    smallPrice:         params.row.price.find((price) => price.packageSize === 25).amount ,     
+                    mediumPrice:        params.row.price.find((price) => price.packageSize === 80).amount ,
+                    seedId:             params.row.seed.seedId ,
+                    provider:           params.row.provider.name ,
+                    providerSeedName:   params.row.seed.seedName ,
+                    day:                params.row.parameters.day ,
+                    night:              params.row.parameters.night ,
+                    overhead:           params.row.parameters.overhead, 
+                    //*HANDLE PRODUCSTS CYCLE TYPE
+                    cycleType:          "",
+                    seeding:            params.row.parameters.seedingRate ,
+                    harvest:            params.row.parameters.harvestRate ,
+                    status:             params.row.status 
+            })
+            }else {
+                setProductData(params.row)
+            }
             console.log("rowmijo",params.row)
         }
         
@@ -181,7 +203,7 @@ export const ProductionMain = () => {
         function ProductCard(product){
 
             const handleOverHeadInput = (e) => {
-                
+                setProductData({...productData, overhead:Number(e.target.value)})
             }
 
             
@@ -238,7 +260,8 @@ export const ProductionMain = () => {
                             display: "flex",
                             overflow: "auto",
                             flexDirection: "column",
-                            minHeight: 280
+                            minHeight: 280,
+                            padding:3
                         }}><Box sx={{display:"flex", justifyContent:"space-between"}}> 
                             <Typography variant="h5" color="secondary.main">
                                 {product.name}
@@ -256,25 +279,36 @@ export const ProductionMain = () => {
 
                                 <Grid item xs={4}>
                                     <Typography variant="body2" color="grayText">
-                                        Active Orders:  {product.orders.length}
+                                        Active Orders:  <b>{product.orders.length}</b>
                                     </Typography>
                                 </Grid>
 
                                 <Grid item xs={4}>
                                     <Typography variant="body2" color="grayText">
-                                        Performance:  {product.performance}
+                                        Performance:  <b>{product.performance}</b>
                                     </Typography>
                                 </Grid>
 
                                 {product.mix.isMix && <Grid item xs={12}>
                                     <Grid container spacing={2}>
                                     <Grid item xs={12}>
-                                        <Typography>Products in Mix</Typography>
+                                        <Typography variant={"body1"} color={"grayText"}>Products in Mix</Typography>
                                     </Grid>
-                                    {product.mix.products.map((prod)=>{
-                                        return <Grid item xs={12}>
-                                            <Typography>{prod.strain}</Typography>
+                                    {product.mix.products.map((obj)=>{
+                                        let tempProd = rows.find((prod)=>prod._id === obj.strain)
+                                        return <><Grid item xs={6}>
+                                            <Typography 
+                                                variant={"body2"} 
+                                                color={"grayText"}
+                                                marginLeft={"20%"}
+                                            >
+                                                {tempProd.name}: 
+                                            </Typography>
                                         </Grid>
+                                        <Grid item xs={6}>
+                                            <Typography variant={"body2"} color={"grayText"}><b>{obj.amount}%</b></Typography>
+                                        </Grid>
+                                        </>
                                     })}
                                     </Grid></Grid>}
 
@@ -288,7 +322,7 @@ export const ProductionMain = () => {
                                 {!product.mix.isMix && product.parameters.seedingRate ?
                                 <Grid item xs={4}>
                                     <Typography variant="body2" color="grayText">
-                                         Seeding Rate: {product.parameters.seedingRate }
+                                         Seeding Rate: <b>{product.parameters.seedingRate }</b>
                                     </Typography>
                                 </Grid>
                                 : null}
@@ -296,21 +330,21 @@ export const ProductionMain = () => {
                                 {!product.mix.isMix && product.parameters.harvestRate ?
                                 <Grid item xs={4}>
                                     <Typography variant="body2" color="grayText">
-                                         Harvest Rate: {product.parameters.harvestRate }
+                                         Harvest Rate: <b>{product.parameters?.harvestRate }</b>
                                     </Typography>
                                 </Grid>
                                 : null}
 
                                 <Grid item xs={4}>
                                     <Typography variant="body2" color="grayText">
-                                        Overhead:  {product.parameters.overhead}
+                                        Overhead:  <b>{product.parameters?.overhead}</b>
                                     </Typography>
                                 </Grid>
 
                                 {!product.mix.isMix && product.parameters.day ?
                                 <Grid item xs={4}>
                                     <Typography variant="body2" color="grayText">
-                                         Day: {product.parameters.day }
+                                         Day: <b>{product.parameters?.day }</b>
                                     </Typography>
                                 </Grid>
                                 : null}
@@ -318,7 +352,7 @@ export const ProductionMain = () => {
                                 {!product.mix.isMix && product.parameters.night ?
                                 <Grid item xs={4}>
                                     <Typography variant="body2" color="grayText">
-                                         Night: {product.parameters.night }
+                                         Night: <b>{product.parameters.night }</b>
                                     </Typography>
                                 </Grid>
                                 : null}
@@ -336,7 +370,7 @@ export const ProductionMain = () => {
                             </Box>
                         </Paper>
                     </Grid>
-                    {!!showEdit && <Grid item xs={12} >
+                    {(!!showEdit && !selectedProduct.mix.isMix) && <Grid item xs={12} >
                         <Paper elevation={4} sx={{
                             padding: BV_THEME.spacing(2),
                             display: "flex",
@@ -351,13 +385,14 @@ export const ProductionMain = () => {
                                 label="Overhead production %"
                                 helperText="Place an INTEGER to setup the overhead"
                                 inputProps={{
-                                    endAdornment: <InputAdornment position="end"> % </InputAdornment>
+                                    endadornment: <InputAdornment position="end"> % </InputAdornment>
                                 }}
                                 onChange={handleOverHeadInput}
+                                value={productData.overhead}
                                 type="number"
                             />
         
-                            <Button variant='contained' disabled={user.role === "employee"} color='primary' onClick={handleAcceptContainerConfig} sx={{ minWidth: "20%" }}>
+                            <Button variant='contained' disabled={user.role === "employee"} color='primary' onClick={handleComplete} sx={{ minWidth: "20%" }}>
                                 Accept configuration
                             </Button>
                         </Paper>
@@ -396,12 +431,12 @@ export const ProductionMain = () => {
                                 </AccordionSummary>
     
                                 <AccordionDetails >
-                                        {params.formattedValue.map((obj) => {
+                                        {params.formattedValue.map((obj,idx) => {
                                             return (
-                                                <>
+                                                <React.Fragment key={"frag"+idx}>
                                                 <Typography align="justify">Size {obj.packageSize}:  €{obj.amount} </Typography>
                                                 <Divider sx={{maxWidth:"100%"}} /> 
-                                                </>
+                                                </React.Fragment>
                                                 )})}
                                 </AccordionDetails>
                             </Accordion>
@@ -456,13 +491,6 @@ export const ProductionMain = () => {
             open:false
         })
         
-    }
-
-    const handleOverHeadInput = (e) => {
-        setContainerConfig({
-            ...containerConfig,
-            overhead:Number(e.target.value)
-        })
     }
 
     const handleAcceptContainerConfig = () => {
@@ -529,6 +557,230 @@ export const ProductionMain = () => {
                 ]
             })
         })
+    }
+
+    const [productData, setProductData] = useState({/*
+        name:               selectedProduct ? selectedProduct.name : null,
+        label:              selectedProduct ? selectedProduct.img : null,
+        smallPrice:         selectedProduct ? selectedProduct.price.find((price) => price.packageSize === 25).amount      : null,     
+        mediumPrice:        selectedProduct ? selectedProduct.price.find((price) => price.packageSize === 80).amount      : null,
+        seedId:             selectedProduct ? selectedProduct.seed.seedId : null,
+        provider:           selectedProduct ? selectedProduct.provider.name : null,
+        providerSeedName:   selectedProduct ? selectedProduct.seed.seedName : null,
+        day:                selectedProduct ? selectedProduct.parameters.day : null,
+        night:              selectedProduct ? selectedProduct.parameters.night : null,
+        //*HANDLE PRODUCSTS CYCLE TYPE
+        cycleType:          "",
+        seeding:            selectedProduct ? selectedProduct.parameters.seedingRate : null,
+        harvest:            selectedProduct ? selectedProduct.parameters.harvestRate : null,
+        status:             selectedProduct ? selectedProduct.status : null
+*/})
+
+
+    const handleChangeProductData = (e) => {
+        /*
+        if(error[e.target.id] && error[e.target.id].failed){
+            setError({
+                ...error,
+                [e.target.id]:{
+                    failed:false,
+                    message:""
+                }
+            })
+        }
+        */
+        if(!selectedProduct.mix.isMix){
+            switch(e.target.id){
+                case "25":
+                    setProductData({
+                        ...productData,
+                        smallPrice:Number(e.target.value)
+                    })
+                    console.log("pd",productData)
+                    break;
+                case "80":
+                    setProductData({
+                        ...productData,
+                        mediumPrice:Number(e.target.value)
+                    })
+                    console.log("pd",productData)
+                    break;
+                case "1000":
+                    setProductData({
+                        ...productData,
+                        largePrice:Number(e.target.value)
+                    })
+                    console.log("pd",productData)
+                    break;
+                default:
+                    setProductData({
+                        ...productData,
+                        [e.target.id]:e.target.value
+                    })
+                    console.log("pd",productData)
+                    break;
+    
+            }
+
+        }else {
+
+            
+            let tempPrice = productData.price
+            let tempArr = productData.mix.products
+
+            switch(e.target.id){
+                case "name":
+                    setProductData({
+                        ...productData,
+                        name:e.target.value
+                    })
+                    console.log("pd",productData)
+                    break;
+                case "25":
+                    tempPrice[0].amount = e.target.value
+                    setProductData({
+                        ...productData,
+                        price:tempPrice
+                    })
+                    console.log("pd",productData)
+                    break;
+                case "80":
+                    tempPrice[1].amount = e.target.value
+                    setProductData({
+                        ...productData,
+                        price:tempPrice
+                    })
+                    console.log("pd",productData)
+                    break;
+                case "percentage":
+                        console.log("arregloj",productData,productData.products,tempArr)
+                        tempArr[Number(e.target.name)].amount = e.target.value
+                        
+                        
+                        setProductData({
+                            ...productData,
+                            mix:{...productData.mix,products:tempArr}
+                        })
+                        console.log("pd",productData)
+                        break;
+                default:
+                    setProductData({
+                        ...productData,
+                        [e.target.id]:e.target.value
+                    })
+                    console.log("pd",productData)
+                    break;
+    
+            }
+        }
+
+        
+    }
+
+    const handleComplete = () => {
+        
+        /*const {errors, errorMapped} = mapErrors()
+        if(errors.length>0){
+            setError({
+                ...error,
+                ...errorMapped
+            })
+            setDialog({
+                ...dialog,
+                open:true,
+                title:"You cannot save an uncomplete product",
+                message:"Please complete the values marked.",
+            })
+            return
+        }*/
+        let mappedProduct = {}
+
+
+        if(!selectedProduct.mix.isMix){
+        //*Request if is creating product
+        mappedProduct = {
+            name:       productData.name,
+            // image:      { type: String,   required: false },     // *TODO MANAGE IMAGE PROCESSING
+            // desc:       { type: String,   required: false },     // * Description
+            status:     productData.status,
+            // * ID of quality of the seeds - track the seeds origin - metadata 
+            seed:       { 
+                        seedId:         productData.seedId, 
+                        seedName:       productData.providerSeedName
+            }, //* SEND THE SEED ID AND CREATE IT IN THE DATABASE 
+            provider:   { 
+                        email:          productData.provider, 
+                        name:           productData.provider
+            }, //* SEND THE PROVIDER DATA AND CREATE FIRST IN DB
+            price:      [
+                {
+                    amount:         productData.smallPrice,
+                    packageSize:    25
+                },
+                {
+                    amount:         productData.mediumPrice,
+                    packageSize:    80
+                },
+            ], 
+            mix:        { isMix:        false},
+            parameters: {
+                         overhead:       Number(productData.overhead),
+                         day:            Number(productData.day),       // * In days check email
+                         night:          Number(productData.night),     // * In days check email
+                         seedingRate:    Number(productData.seeding),   // * Per tray
+                         harvestRate:    Number(productData.harvest),    // * Per tray
+            },
+        }
+    } else {
+        mappedProduct=productData
+    }
+
+            mappedProduct.performamce = selectedProduct.performance
+            mappedProduct._id = selectedProduct._id
+            console.log("overhead b4 update", mappedProduct.parameters?.overhead)
+            updateProduct(user,credential,mappedProduct)
+            .then((response) => {
+                setDialog({
+                    ...dialog,
+                    open:true,
+                    title:"Product updated succesfully",
+                    //message:"What do you want to do?",
+                    actions:[
+                        {
+                            label:"Reload",
+                            execute: () => {
+                                window.location.reload()
+                            }
+                        },
+                    ]
+                })     
+            })
+            .catch(err => {
+                setDialog({
+                    ...dialog,
+                    open:true,
+                    title:"Error updating product",
+                    message:"What do you want to do?",
+                    actions:[
+                        {
+                            label:"Try again",
+                            execute: () => {
+                                handleComplete
+                            }
+                        },
+                        {
+                            label:"Cancel",
+                            execute: () => {
+                                window.location.reload()
+                            }
+                        },
+                    ]   
+                })
+            })
+            
+            return
+        
+            
     }
     
     useEffect(() => {
@@ -646,6 +898,7 @@ export const ProductionMain = () => {
     <Typography>there are no growing products at the moment</Typography>
     )
     }
+
 
     
 
@@ -771,7 +1024,8 @@ export const ProductionMain = () => {
                             }
 
                             {/* Edit Product Card / Component */}
-                            {user.role === "admin" && !!showEdit ? <Grid item xs={12} lg={4} order={{xs:"2",md:"3"}}>
+                            {user.role === "admin" && !!showEdit && !selectedProduct.mix.isMix ? 
+                            <Grid item xs={12} lg={4} order={{xs:"2",md:"3"}}>
                                 <Paper elevation={4} sx={{padding: BV_THEME.spacing(2),
                                                         display: "flex",
                                                         overflow: "auto",
@@ -795,40 +1049,40 @@ export const ProductionMain = () => {
                                     </Grid>
                                     <Grid item xs={12}>
                                         <TextField 
-                                        defaultValue={selectedProduct.name} 
-                                        value={selectedProduct.name} 
+                                        //defaultValue={selectedProduct.name} 
+                                        value={productData.name} 
                                         //helperText={error.seeding.message} 
                                         //error={error.seeding.failed} 
                                         id="name" 
                                         type="text"
                                         variant='standard' 
-                                        //onChange={handleChangeProductData} 
+                                        onChange={handleChangeProductData} 
                                         label="Name" 
                                         sx={theme.input.mobile.fullSize.desktop.fullSize}/>
                                     </Grid>
                                     <Grid item xs={6}>
                                         <TextField 
-                                        defaultValue={selectedProduct.parameters.seedingRate} 
-                                        value={modifiedProduct.parameters.seedingRate} 
+                                        //defaultValue={selectedProduct.parameters.seedingRate} 
+                                        value={productData.seeding} 
                                         //helperText={error.seeding.message} 
                                         //error={error.seeding.failed} 
-                                        id="name" 
-                                        type="text"
+                                        id="seeding" 
+                                        type="number"
                                         variant='standard' 
-                                        //onChange={handleChangeProductData} 
+                                        onChange={handleChangeProductData} 
                                         label="Seeding Rate" 
                                         sx={theme.input.mobile.fullSize.desktop.fullSize}/>
                                     </Grid>
                                     <Grid item xs={6}>
                                         <TextField 
-                                        defaultValue={selectedProduct.parameters.harvestRate} 
-                                        value={selectedProduct.parameters.harvestRate} 
+                                        //defaultValue={selectedProduct.parameters.harvestRate} 
+                                        value={productData.harvest} 
                                         //helperText={error.seeding.message} 
                                         //error={error.seeding.failed} 
-                                        id="name" 
-                                        type="text"
+                                        id="harvest" 
+                                        type="number"
                                         variant='standard' 
-                                        //onChange={handleChangeProductData} 
+                                        onChange={handleChangeProductData} 
                                         label="harvest Rate" 
                                         sx={theme.input.mobile.fullSize.desktop.fullSize}/>
                                     </Grid>
@@ -837,27 +1091,27 @@ export const ProductionMain = () => {
                                     </Grid>
                                     <Grid item xs={6}>
                                         <TextField 
-                                        defaultValue={selectedProduct.price[0].amount} 
-                                        value={selectedProduct.price[0].amount} 
+                                        //defaultValue={selectedProduct.price[0].amount} 
+                                        value={productData.smallPrice} 
                                         //helperText={error.seeding.message} 
                                         //error={error.seeding.failed} 
-                                        id="name" 
-                                        type="text"
+                                        id="25" 
+                                        type="number"
                                         variant='standard' 
-                                        //onChange={handleChangeProductData} 
+                                        onChange={handleChangeProductData} 
                                         label="25 g" 
                                         sx={theme.input.mobile.fullSize.desktop.fullSize}/>
                                     </Grid>
                                     <Grid item xs={6}>
                                         <TextField 
-                                        defaultValue={selectedProduct.price[1].amount} 
-                                        value={selectedProduct.price[1].amount} 
+                                        //defaultValue={selectedProduct.price[1].amount} 
+                                        value={productData.mediumPrice} 
                                         //helperText={error.seeding.message} 
                                         //error={error.seeding.failed} 
-                                        id="name" 
-                                        type="text"
+                                        id="80" 
+                                        type="number"
                                         variant='standard' 
-                                        //onChange={handleChangeProductData} 
+                                        onChange={handleChangeProductData} 
                                         label="80 g" 
                                         sx={theme.input.mobile.fullSize.desktop.fullSize}/>
                                     </Grid>
@@ -867,47 +1121,47 @@ export const ProductionMain = () => {
                                     </Grid>
                                     <Grid item xs={6}>
                                         <TextField 
-                                        defaultValue={selectedProduct.seed.seedId} 
-                                        value={selectedProduct.seed.seedId} 
+                                        //defaultValue={selectedProduct.seed.seedId} 
+                                        value={productData.seedId} 
                                         //helperText={error.seeding.message} 
                                         //error={error.seeding.failed} 
-                                        id="name" 
+                                        id="seedId" 
                                         type="text"
                                         variant='standard' 
-                                        //onChange={handleChangeProductData} 
+                                        onChange={handleChangeProductData} 
                                         label="Seed ID" 
                                         sx={theme.input.mobile.fullSize.desktop.fullSize}/>
                                     </Grid>
                                     <Grid item xs={6}>
                                         <TextField 
-                                        defaultValue={selectedProduct.seed.seedName} 
-                                        value={selectedProduct.seed.seedName} 
+                                        //defaultValue={selectedProduct.seed.seedName} 
+                                        value={productData.providerSeedName} 
                                         //helperText={error.seeding.message} 
                                         //error={error.seeding.failed} 
-                                        id="name" 
+                                        id="providerSeedName" 
                                         type="text"
                                         variant='standard' 
-                                        //onChange={handleChangeProductData} 
+                                        onChange={handleChangeProductData} 
                                         label="Seed Name" 
                                         sx={theme.input.mobile.fullSize.desktop.fullSize}/>
                                     </Grid>
                                     <Grid item xs={6}>
                                         <TextField 
-                                        defaultValue={selectedProduct.provider.name} 
-                                        value={selectedProduct.provider.name} 
+                                        //defaultValue={selectedProduct.provider.name} 
+                                        value={productData.provider} 
                                         //helperText={error.seeding.message} 
                                         //error={error.seeding.failed} 
-                                        id="name" 
+                                        id="provider" 
                                         type="text"
                                         variant='standard' 
-                                        //onChange={handleChangeProductData} 
+                                        onChange={handleChangeProductData} 
                                         label="Seed provider" 
                                         sx={theme.input.mobile.fullSize.desktop.fullSize}/>
                                     </Grid>
                                     
 
                                     <Grid item xs={6}>
-                                        <Button variant="contained" color="secondary" sx={{width:"100%"}}>
+                                        <Button variant="contained" color="secondary" onClick={handleComplete} sx={{width:"100%"}}>
                                             <SaveIcon />
                                         </Button>
                                     </Grid>
@@ -916,6 +1170,108 @@ export const ProductionMain = () => {
 
                                 </Paper>
                             </Grid> 
+                            :
+                            !!showEdit && selectedProduct.mix.isMix && user.role === "admin" ?
+                            <Grid item xs={12} lg={4} order={{xs:"2",md:"3"}}>
+                                <Paper elevation={4} sx={{padding: BV_THEME.spacing(2),
+                                                        display: "flex",
+                                                        overflow: "auto",
+                                                        flexDirection: "column",
+                                                        minHeight: 508}}
+                                >
+                                <Box sx={{display:"flex",align:"right", justifyContent:"right"}}> 
+                                    <IconButton onClick={()=>setShowEdit(false)} sx={{width:"3vh", height:"3vh", align:"right"}}>
+                                        <CloseIcon />
+                                    </IconButton>
+                                </Box>
+
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12}>
+                                        <Typography variant="h6" color="secondary.main">
+                                        Edit Mix
+                                        </Typography>
+                                    </Grid>
+                                    <Grid item xs={12}>
+
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <TextField 
+                                        //defaultValue={selectedProduct.name} 
+                                        value={productData.name} 
+                                        //helperText={error.seeding.message} 
+                                        //error={error.seeding.failed} 
+                                        id="name" 
+                                        type="text"
+                                        variant='standard' 
+                                        onChange={handleChangeProductData} 
+                                        label="Name" 
+                                        sx={theme.input.mobile.fullSize.desktop.fullSize}/>
+                                    </Grid>
+                                    {productData.mix.products.map((prod,idx)=>{
+                                        console.log("indecs",idx)
+                                        let actualProduct
+                                        actualProduct=rows.find((prd)=>prd._id === prod.strain)
+                                        return(<>
+                                        <Grid item xs={6}>
+                                        <Typography alignSelf={"center"} marginTop="2vh">{actualProduct.name}</Typography>
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <TextField 
+                                        //defaultValue={selectedProduct.parameters.seedingRate} 
+                                        value={prod.amount}
+                                        name={idx}
+                                        //helperText={error.seeding.message} 
+                                        //error={error.seeding.failed} 
+                                        id="percentage" 
+                                        type="number"
+                                        variant='standard' 
+                                        onChange={handleChangeProductData} 
+                                        label="Percentage of mix" 
+                                        sx={theme.input.mobile.fullSize.desktop.fullSize}/>
+                                    </Grid>
+                                        </>
+
+                                        )
+                                        
+
+                                    },[])}
+                                    
+                                    <Grid item xs={12}>
+                                        <Typography variant="body2">Price</Typography>
+                                    </Grid>
+                                    {productData.price.map((price,idx)=>{
+
+
+                                        return(
+                                            <Grid item xs={6}>
+                                        <TextField 
+                                        //defaultValue={selectedProduct.price[0].amount} 
+                                        value={productData.price[idx].amount} 
+                                        //helperText={error.seeding.message} 
+                                        //error={error.seeding.failed} 
+                                        id={`${price.packageSize}`} 
+                                        type="number"
+                                        variant='standard' 
+                                        onChange={handleChangeProductData} 
+                                        label={`${price.packageSize}` + "g"}
+                                        sx={theme.input.mobile.fullSize.desktop.fullSize}/>
+                                    </Grid>
+
+                                        )
+                                    })}
+                                    
+
+                                    <Grid item xs={12}>
+                                        <Button variant="contained" color="secondary" onClick={handleComplete} sx={{width:"100%"}}>
+                                            <SaveIcon />
+                                        </Button>
+                                    </Grid>
+
+                                </Grid>
+
+                                </Paper>
+                            </Grid> 
+                            
                             :
                             null}
                         </Grid>
