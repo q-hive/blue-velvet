@@ -24,6 +24,9 @@ import { DailyTasksCard } from '../../../CoreComponents/TasksPresentation/DailyT
 import { useTranslation } from 'react-i18next';
 import { capitalize } from '../../../utils/capitalize';
 
+import ImgProgressBar from "../../../CoreComponents/ImageProgressBar/ImgProgressBar"
+import containerImg from "../../../assets/images/production/container-blue.png"
+
 export const Dashboard = () => {
     const {user,credential} = useAuth()
     const {t,i18} = useTranslation(['default', 'daily_tasks_cards','admin', 'tasks', 'buttons'])
@@ -387,8 +390,14 @@ export const Dashboard = () => {
                                                 </Typography>
                                             <Typography sx={{width:"98%"}}>
                                                 <b>{t('used_trays_container_capacity_card',{ns:'admin'})}</b>{container.capacity - container.available}
-                                                <LinearProgress sx={{height:"3vh"}} variant="determinate" value={((container.capacity - container.available)/container.capacity)*100} />
+                                                {/* <LinearProgress sx={{height:"3vh"}} variant="determinate" value={((container.capacity - container.available)/container.capacity)*100} /> */}
                                             </Typography>
+                                            <Box sx={{display:"flex"}}>
+                                                <ImgProgressBar 
+                                                    percentage={((container.capacity - container.available)/container.capacity)*100} 
+                                                    imageUrl={containerImg}
+                                                />
+                                            </Box>
                                             {/*<Button variant="contained" sx={{width:"34%"}} onClick={()=>handleViewTask(task.type)} color="primary" >
                                                 View
                                             </Button>*/}
