@@ -269,7 +269,6 @@ export const groupBy = (criteria, production, format, includeOrders = false, inc
                             
                             if(!alreadyExistsInModels){
                                 hashDates[RelatedMix.mixName][status].modelsToHarvestMix.push({ProductName, seeds, trays,dryracks, harvest})
-                                console.log("Extract from single strain:")
                                 extractFromMixDryRacks = dryracks;
                                 // continue
                             }
@@ -287,6 +286,8 @@ export const groupBy = (criteria, production, format, includeOrders = false, inc
                             }
                             hashDates[RelatedMix.mixName][status].modelsId.push(_id)
                             hashDates[RelatedMix.mixName][status].relatedOrders.push(RelatedOrder)
+                            hashDates[ProductName][ProductionStatus].trays +=+ trays
+                            continue
                         }
                         
                         hashDates[ProductName][ProductionStatus].RelatedMix = RelatedMix;
@@ -297,7 +298,9 @@ export const groupBy = (criteria, production, format, includeOrders = false, inc
                         hashDates[ProductName][ProductionStatus].modelsId.push(_id)
                         hashDates[ProductName][ProductionStatus].relatedOrders.push(RelatedOrder)
 
-                        hashDates[ProductName][ProductionStatus].dryracks = hashDates[ProductName][ProductionStatus].dryracks - extractFromMixDryRacks;
+                        hashDates[ProductName][ProductionStatus].dryracks = hashDates[ProductName][ProductionStatus].dryracks;
+                        console.log(`${ProductName} single strain dry racks: ${hashDates[ProductName][ProductionStatus].dryracks}`)
+
                         orders.push(RelatedOrder)
                     }
                 }
@@ -513,7 +516,7 @@ export const buildProductionDataFromOrder = async (order, dbproducts, overHeadPa
     
                             const strharvest = Number((harvest * (mprod.amount/100)).toFixed(2)) * (1 + mixFound.parameters.overhead)
                             const seeds = strharvest / (mixFound.parameters.harvestRate/mixFound.parameters.seedingRate) 
-                            const trays = Math.ceil(seeds / mixFound.parameters.seedingRate)
+                            const trays = Math.floor(seeds / mixFound.parameters.seedingRate)
                             const totalProductionDays = mixFound.parameters.day + mixFound.parameters.night
                             console.log(seeds + " seeds")
                             console.log(trays + " trays")
@@ -566,7 +569,7 @@ export const buildProductionDataFromOrder = async (order, dbproducts, overHeadPa
                         
                         const strainHarvest = harvest * (1 + prodFound.parameters.overhead)
                         const totalSeeds = harvest / (prodFound.parameters.harvestRate / prodFound.parameters.seedingRate)
-                        const totalTrays = Math.ceil(totalSeeds / prodFound.parameters.seedingRate) 
+                        const totalTrays = Math.floor(totalSeeds / prodFound.parameters.seedingRate) 
                         const totalProductionDays = prodFound.parameters.day + prodFound.parameters.night 
                         
                         prod["productionData"] = [{

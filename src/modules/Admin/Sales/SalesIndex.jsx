@@ -201,6 +201,7 @@ export const SalesIndex = () => {
                             columns={salesColumns}
                             rows={orders.all}
                             sx={{marginY:"2vh",}}
+                            pageSize={25}
                         />
                     }       
                 </Paper>

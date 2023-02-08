@@ -262,7 +262,7 @@ export const ProductionManagementDashboard = () => {
                                             />
 
                                             <Button variant='contained' disabled={user.role === "employee"} color='primary' startIcon={<Add/>} onClick={handleAcceptContainerConfig} sx={{minWidth:"20%"}}>
-                                                Accept configuration
+                                                {t('accept_config',{ns:'buttons'})}
                                             </Button>
                                         
                                         </>
