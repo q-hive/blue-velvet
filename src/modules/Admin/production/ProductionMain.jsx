@@ -249,7 +249,7 @@ export const ProductionMain = () => {
                         {product.mix.isMix && <Grid item xs={12}>
                             <Grid container spacing={2}>
                             <Grid item xs={12}>
-                                <Typography variant={"body1"} color={"grayText"}>Products in Mix</Typography>
+                                <Typography variant={"body1"} color={"grayText"}>Mix composition</Typography>
                             </Grid>
                             {product.mix.products.map((obj)=>{
                                 let tempProd = rows.find((prod)=>prod._id === obj.strain)
