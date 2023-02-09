@@ -59,6 +59,7 @@ const BV_Layout = (props) => {
     const handleRedirect = (e) => {
       console.log(user.role)
       navigate(`/${user.uid}/${user.role}/${e.target.id}`)
+      if(mobileOpen)setMobileOpen(false)
     }
 
     const { window } = props;
@@ -179,7 +180,7 @@ const BV_Layout = (props) => {
                     justifyContent:"center",
                     textAlign:"center",
                     width:"100%",
-                    margin:2,
+                    //margin:{xs:6,md:2},
                   }}
             >
               <Typography 
@@ -196,7 +197,7 @@ const BV_Layout = (props) => {
           <Divider />
 
           <Box sx={{display:"flex", flexDirection:"column", width:"auto", height:"auto", alignItems:"left", justifyContent:"left", p:2}}>
-            {/* IF admin */}
+            {/* IF Employee */}
             {user.role === "employee" ? 
                 employeeOptions.map((option) => (
                   <Button key={option.label} sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
@@ -205,7 +206,7 @@ const BV_Layout = (props) => {
                 ))
                 : 
 
-                /*ElSE Employee? */
+                /*ElSE ? admin*/
 
                   adminOptions.map((option) => (
                     <Button key={option.label} sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
@@ -246,7 +247,7 @@ const BV_Layout = (props) => {
                         <Box
                           component="img"
                           sx={{
-                            maxHeight: { xs: 65, md: 80 },
+                            maxHeight: { xs: 45,sm:60, md: 80 },
                           }}
                           alt="GreenBox by Blue Velvet"
                           src={Logo}
@@ -254,16 +255,19 @@ const BV_Layout = (props) => {
                       </Box>
 
                       
-                      <Typography>
-                        <Clock color="secondary.dark"/>
-                        <Typography color="secondary.dark" variant="h6" flexGrow={0}>{t('layout_cont_container_location')} {containerData.city}</Typography>  
-                      </Typography>
+                        <Box paddingLeft={"20px"} flexDirection={"column"} sx={{display:"flex",paddingLeft:1}}>
+                          <Box sx={{display:{xs:"none",sm:"flex"},paddingLeft:1}} justifyContent={"center"}>
+                            <Clock color="secondary.dark"/>
+                          </Box> 
+                        <Typography color="secondary.dark" fontSize={{xs:"1.5vh",md:"2vh"}} variant="h6" flexGrow={0}>{t('layout_cont_container_location')} {containerData.city}</Typography>  
+
+                        </Box>
                       
-                      <IconButton
+                      {/*<IconButton
                         size="large" edge={false}
                       >
                         <NotificationsIcon />
-                      </IconButton>
+                        </IconButton>*/}
 
                       <Box sx={{flexGrow:0}}>
 
@@ -276,7 +280,6 @@ const BV_Layout = (props) => {
                           <Language />
                         </IconButton>
                         <Menu
-                          sx={{ mt: '60px' }}
                           transformOrigin={{
                             vertical: 'top',
                             horizontal: 'right',
@@ -304,11 +307,11 @@ const BV_Layout = (props) => {
                       <Box sx={{ flexGrow: 0 }}>
                         <Tooltip title="Open settings">
                           <IconButton edge={false} onClick={handleOpenUserMenu} sx={{ p: 0 , m: 2}}>
-                            <Avatar alt={user.name} src="/static/images/avatar/2.jpg" />
+                            <Avatar alt={user.name} src="/static/images/avatar/2.jpg" sx={{ width: {xs:26,sm:28,md:35}, height: {xs:26,sm:28,md:35} }}/>
                           </IconButton>
                         </Tooltip>
                         <Menu
-                          sx={{ mt: '60px' }}
+                          sx={{ mt: '50px' }}
                           id="menu-appbar"
                           anchorEl={anchorElUser}
                           anchorOrigin={{
@@ -323,11 +326,18 @@ const BV_Layout = (props) => {
                           open={Boolean(anchorElUser)}
                           onClose={handleCloseUserMenu}
                         >
-                          {userSettings.map((setting, idx) => (
+                          {user.role === "employee" ? 
+                          
+                          userSettings.map((setting, idx) => (
                             <MenuItem key={idx} onClick={setting.action}>
                               <Typography textAlign="center">{setting.label}</Typography>
                             </MenuItem>
-                          ))}
+                          ))
+                        :
+                        <MenuItem onClick={userSettings[1].action}>
+                              <Typography textAlign="center">{userSettings[1].label}</Typography>
+                        </MenuItem>
+                        }
                         </Menu>
                       </Box>
                       {/* END AVATAR BUTTON AND MENU*/ }
@@ -379,11 +389,11 @@ const BV_Layout = (props) => {
                 open={mobileOpen}
                 onClose={handleDrawerToggle}
                 ModalProps={{
-                  keepMounted: true, // Better open performance on mobile.
+                  keepMounted: false, // Better open performance on mobile.
                 }}
                 sx={{
                   display: { xs: 'block', md: 'none' },
-                  '& .MuiDrawer-paper': { boxSizing: 'border-box', width: '80%' },
+                  '& .MuiDrawer-paper': { boxSizing: 'border-box', width: {xs:'80%',sm:"50%"} },
                   
                 }}
               >

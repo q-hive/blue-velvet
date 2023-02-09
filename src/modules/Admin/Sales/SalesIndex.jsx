@@ -116,12 +116,12 @@ export const SalesIndex = () => {
 
         
         {/* GRID CONTAINER */}
-        <Container maxWidth="xl" sx={{paddingTop:1,paddingBottom:4,marginX:{xs:4,md:"auto"},marginTop:{xs:4,md:1},
+        <Container  sx={{paddingTop:1,paddingBottom:4,marginX:{xs:"auto",md:"auto"},marginTop:{xs:4,md:1},
                                         "& .header-sales-table":{
                                             backgroundColor:BV_THEME.palette.primary.main,
                                             color:"white"
                                         }}}>
-        <Grid container maxWidth={"xl"} spacing={3}>
+        <Grid container  spacing={3}>
             
             
             {/* Recent */}

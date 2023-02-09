@@ -344,7 +344,7 @@ export const Dashboard = () => {
     <Fade in={true} timeout={1000} unmountOnExit>
     <Box component="div" display="flex"  >
 
-        <Container maxWidth="lg" sx={{paddingTop:4,paddingBottom:4,marginX:{xs:4,md:"auto"},marginTop:{xs:4,md:3}}}>
+        <Container maxWidth="lg" sx={{paddingTop:4,paddingBottom:4,marginX:{xs:2,md:"auto"},marginTop:{xs:4,md:3}}}>
             <Typography variant="h2" color="primary">{t('welcome_admin')}</Typography>
             <Typography variant="h5" color="secondary.dark">{t('welcome_message')}</Typography>
 
@@ -353,13 +353,13 @@ export const Dashboard = () => {
 
                 {/* Tasks */}
                     <Tooltip title={t('card_admin_tooltip',{ns:'daily_tasks_cards'})}>
-                        <Grid item xs={12} md={4} lg={4}>
+                        <Grid item xs={12} sm={6} lg={4}>
                             <DailyTasksCard cycle={tasksCicleObj.cicle} time={time} adminRender={user.role}/>
                         </Grid>
                     </Tooltip>
                 <Grow in={true} timeout={2000} unmountOnExit>
                     
-                    <Grid item xs={12} md={4} lg={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                         <Paper variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"1.5vh",paddingX:"1.5vh",marginTop:"1vh",display:"flex", flexDirection:"row"}}>
                             <Typography><b>{capitalize(t('packing_dlytask_title',{ns:'tasks'}))}</b></Typography>
                             <Button variant="contained" sx={{width:"34%"}} onClick={()=>navigate(`/${user.uid}/employee/tasks/delivery`)} color="primary" >
@@ -378,7 +378,7 @@ export const Dashboard = () => {
                 {/* Capacity */}
                 
                 <Grow in={true} timeout={2000} unmountOnExit>
-                    <Grid item xs={12} md={4} lg={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                         <Paper elevation={4} sx={fixedHeightPaper}>
                             <Typography variant="h6" color="secondary.dark">{t('container_capacity_card',{ns:'admin'})}</Typography>
                             <Box sx={{display:"flex",flexDirection:"column", }}>
@@ -415,7 +415,7 @@ export const Dashboard = () => {
 
                 {/* Employee Performance */}
                 <Grow in={true} timeout={2000} unmountOnExit>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                         <Paper elevation={4} sx={{...fixedHeightPaper,height:400,
                             "& .header-sales-table":{
                                 backgroundColor:BV_THEME.palette.primary.main,
