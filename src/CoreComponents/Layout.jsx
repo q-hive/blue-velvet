@@ -43,10 +43,16 @@ import { useEffect } from 'react';
 import { Clock } from './Clock';
 import { Timer } from './Timer';
 import { getContainerData } from './requests';
+import { Language } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
+import useAppContext from '../contextHooks/appContext';
 
 
 const BV_Layout = (props) => {
     const {user,credential ,logout} = useAuth()
+    const {setApplicationLanguage} = useAppContext()
+    const {t, i18n} = useTranslation(['default', 'layout'])
+    
     const theme = useTheme(BV_THEME)
     const navigate = useNavigate()
 
@@ -65,6 +71,7 @@ const BV_Layout = (props) => {
 
     //User Menu
     const [anchorElUser, setAnchorElUser] = React.useState(null);
+    const [anchorElLang, setAnchorElLang] = React.useState(null);
     const handleOpenUserMenu = (event) => {
       setAnchorElUser(event.currentTarget);
     };
@@ -72,26 +79,38 @@ const BV_Layout = (props) => {
       setAnchorElUser(null);
     };
 
+    const handleOpenUserLanguageMenu = (e) => {
+      setAnchorElLang(e.currentTarget)
+    }
+    const handleCloseUserMenuLanguage = () => {
+      setAnchorElLang(null)
+    }
+
     //Admin Options Drawer buttons content (label and Icon)
     const adminOptions = [
       {
         label:'Dashboard',
+        transKey:'dashboard_sidebar_label',
         icon:<DashboardIcon color="primary"/>,
       }, 
       {
         label:'Employees',
+        transKey:'admin_employees_management_sidebar_label',
         icon:<GroupsIcon color="primary"/>,
       }, 
       {
         label:'Production',
+        transKey:'admin_production_management_sidebar_label',
         icon:<WorkspacesIcon color="primary"/>,
       }, 
       {
         label:'Sales',
+        transKey:'admin_sales_management_sidebar_label',
         icon:<RequestPageIcon color="primary"/>,
       }, 
       {
         label:'Client',
+        transKey:'admin_customer_management_sidebar_label',
         icon:<SupportAgentIcon color="primary"/>,
       }
     ];
@@ -100,13 +119,38 @@ const BV_Layout = (props) => {
     const employeeOptions = [
       {
         label:'Dashboard',
+        transKey:'employee_dashboard_sidebar_label',
         icon:<DashboardIcon color="primary"/>,
       }, 
       {
         label:'Production',
+        transKey:'employee_production_sidebar_label',
         icon:<WorkspacesIcon color="primary"/>,
       }, 
     ];
+
+    const languages = [
+      {
+        "lng":"en",
+        "label":"English"
+      },
+      {
+        "lng":"zh",
+        "label":"Chinese"
+      },
+      {
+        "lng":"de",
+        "label":"German"
+      },
+      {
+        "lng":"fr",
+        "label":"French"
+      },
+      {
+        "lng":"it",
+        "label":"Italian"
+      },
+    ]
 
     //Settings to show when user avatar is clicked
     const userSettings = [
@@ -120,6 +164,9 @@ const BV_Layout = (props) => {
       },
     ];
           
+    const handleChangeLanguage = (language) => {
+      setApplicationLanguage(language)
+    }
     
     // FRAGMENT , children of Drawer Component 
     const drawer = (
@@ -141,7 +188,7 @@ const BV_Layout = (props) => {
                   color="grey.A100" 
                   display="block" 
               >
-                  {user.role === "employee" ?  "Employee Options" : "Administrator Options" }
+                  {user.role === "employee" ?  `${t('drawer_title_employee',{ns:'layout'})}` : `${t('drawer_title_admin',{ns:'layout'})}` }
               </Typography>
             </Box>
           </Toolbar>
@@ -153,7 +200,7 @@ const BV_Layout = (props) => {
             {user.role === "employee" ? 
                 employeeOptions.map((option) => (
                   <Button key={option.label} sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
-                    {option.label}
+                    {t(`${option.transKey}`,{ns:'layout'})}
                   </Button>
                 ))
                 : 
@@ -162,7 +209,7 @@ const BV_Layout = (props) => {
 
                   adminOptions.map((option) => (
                     <Button key={option.label} sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
-                      {option.label}
+                      {t(`${option.transKey}`,{ns:'layout'})}
                     </Button>
                   ))
               
@@ -174,7 +221,9 @@ const BV_Layout = (props) => {
             
           <Divider />
         </>
-      );
+    );
+      
+      
     
 
     // FRAGMENT , cleaner look on layout
@@ -207,7 +256,7 @@ const BV_Layout = (props) => {
                       
                       <Typography>
                         <Clock color="secondary.dark"/>
-                        <Typography color="secondary.dark" variant="h6" flexGrow={0}>Container location: {containerData.city}</Typography>  
+                        <Typography color="secondary.dark" variant="h6" flexGrow={0}>{t('layout_cont_container_location')} {containerData.city}</Typography>  
                       </Typography>
                       
                       <IconButton
@@ -215,6 +264,40 @@ const BV_Layout = (props) => {
                       >
                         <NotificationsIcon />
                       </IconButton>
+
+                      <Box sx={{flexGrow:0}}>
+
+                        <IconButton
+                          size="large" 
+                          edge={false}
+                          onClick={handleOpenUserLanguageMenu}
+                          
+                        >
+                          <Language />
+                        </IconButton>
+                        <Menu
+                          sx={{ mt: '60px' }}
+                          transformOrigin={{
+                            vertical: 'top',
+                            horizontal: 'right',
+                          }}
+                          anchorEl={anchorElLang}
+                          open={Boolean(anchorElLang)}
+                          onClose={handleCloseUserMenuLanguage}
+                          keepMounted
+                        >
+                          {
+                            languages.map((lng, idx) =>(
+                              <MenuItem key={idx} onClick={() => handleChangeLanguage(lng.lng)}>
+                                <Typography textAlign="center">{lng.label}</Typography>
+                              </MenuItem>  
+                            ))
+                          }
+                        </Menu>
+
+                      </Box>
+
+
                     
 
                       {/*AVATAR BUTTON AND MENU*/ }

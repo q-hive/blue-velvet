@@ -20,6 +20,7 @@ import { transformTo } from '../../utils/times'
 import { getColorByPercentage } from '../../utils/getColorByPercentage'
 import { capitalize } from '../../utils/capitalize'
 import { DailyTaskRef, DailyTasksCard } from '../../CoreComponents/TasksPresentation/DailyTasksCard'
+import { useTranslation } from 'react-i18next'
 
 //*UNUSED
 // import { Add } from '@mui/icons-material'
@@ -28,7 +29,7 @@ import { DailyTaskRef, DailyTasksCard } from '../../CoreComponents/TasksPresenta
 // import { intlFormat } from 'date-fns'
 
 export const EntryPoint = () => {
-
+    const {t} = useTranslation(['employee_module', 'buttons'])
     //*Data declarations
     const fixedHeightPaper = {
         padding: BV_THEME.spacing(2),
@@ -575,9 +576,10 @@ export const EntryPoint = () => {
     <Box component="div" display="flex"  >
 
         <Container maxWidth="lg" sx={{paddingTop:4,paddingBottom:4,marginX:{xs:4,md:"auto"},marginTop:{xs:4,md:3}}}>
-            <Typography variant="h2" color="primary">Welcome, {user.name}</Typography>
-            <Typography variant="h5" color="secondary">Here's your work</Typography><br/>
-            <Typography variant="h6" color="secondary">{`You'll need aproximately ${estimatedTime.total != undefined ? transformTo("ms","minutes",estimatedTime.total)  : null} minutes to finish your Tasks`}</Typography>
+            <Typography variant="h2" color="primary">{t('entry_point_welcome', {ns:'employee_module', name:user.name})}</Typography>
+            <Typography variant="h5" color="secondary">{t('work_indicator', {ns:'employee_module'})}</Typography><br/>
+            
+            <Typography variant="h6" color="secondary">{t('main_time_indicator', {ns:'employee_module', minutes:estimatedTime.total != undefined ? transformTo("ms","minutes",estimatedTime.total)  : null})}</Typography>
             <Box pt={4}>
                 {/* <Typography variant="h6" >Pending Orders: {orders.length}</Typography> */}
                 <Box display="flex" sx={{justifyContent:"space-between"}}>
@@ -587,7 +589,7 @@ export const EntryPoint = () => {
                     onClick={() => handleWorkButton(false)} 
                     loading={loading.startWorkBtn}
                     >
-                        {employeeIsWorking ? "Continue work...":"Start Workday"}
+                        {employeeIsWorking ? "Continue work...": `${t('button_start_workday', {ns:'buttons'})}`}
                     </LoadingButton>
 
                     {

@@ -1,10 +1,11 @@
 import { Box, Button, Grid, Paper, Typography } from '@mui/material';
 import React from 'react'
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import useAuth from '../../contextHooks/useAuthContext';
 import { BV_THEME } from '../../theme/BV-theme';
 import { capitalize } from '../../utils/capitalize';
-import { getKey } from '../../utils/getDisplayKeyByStatus';
+import { getKey, translationKeysByStatusLabel } from '../../utils/getDisplayKeyByStatus';
 import { transformTo } from '../../utils/times';
 import { getWorkData } from '../requests';
 import { prepareProductionStatusesForRender } from './methods/CycleKeysManagement';
@@ -18,6 +19,8 @@ const fixedHeightPaper = {
 }
 
 export const DailyTasksCard = (props) => {
+    const {t} = useTranslation(['daily_tasks_cards','tasks', 'buttons'])
+    
     const cycle = props.cycle;
 
     const timeObjectDefault = {time: { times: {}  } }
@@ -57,30 +60,33 @@ export const DailyTasksCard = (props) => {
     
   return (
     <Paper elevation={4} sx={fixedHeightPaper}>
-        <Typography variant="h6" color="secondary">Daily Tasks</Typography>
+        <Typography variant="h6" color="secondary">{t('daily_tasks_card_title',{ns:'daily_tasks_cards'})}</Typography>
         <Typography variant="body2" color="secondary">
             <i>
-                <b>Times are displayed in minutes</b>
+                <b>{t('times_display_specification',{ns:'daily_tasks_cards'})}</b>
             </i>
         </Typography>
         {
             Object.keys(cycle).map((status,index)=>{
+                let task = capitalize(t(translationKeysByStatusLabel[getKey(status)],{ns:'tasks'}))
+                let times = transformTo("ms","minutes", time.times[status]?.time)
+                
                 return(
                     <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
                         <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
                             <Typography >
-                                <b>Task: {capitalize(getKey(status))}</b>
+                                <b>{t('task_word',{ns:'tasks',task})}</b>
                             </Typography>
                             <Typography >
-                                <i>Expected Time:
-                                    {
-                                        transformTo("ms","minutes", time.times[status]?.time)
-                                    }
+                                <i>
+                                    {t('expected_time_admn_dashboard',{ns:'tasks', times})}
                                 </i>
                             </Typography>
                             {
                                 adminRender && (
-                                    <Button id={status} variant="contained" onClick={handleReview}> Review data </Button>
+                                    <Button id={status} variant="contained" onClick={handleReview}>
+                                        {t('admin_dashboard_tasks_review',{ns:'buttons'})}
+                                    </Button>
                                 )
                             }
                         </Box>

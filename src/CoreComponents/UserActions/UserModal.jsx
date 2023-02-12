@@ -3,7 +3,7 @@ import { Box, Button, Modal, Typography, useTheme } from '@mui/material'
 import React from 'react'
 import { BV_THEME } from '../../theme/BV-theme'
 
-export const UserModal = ({modal, setModal, title, content, actions, loading}) => {
+export const UserModal = ({modal, setModal, title, content, actions, loading = null}) => {
     const handleCloseModal = () => {
         setModal({
             ...modal,
@@ -28,7 +28,33 @@ export const UserModal = ({modal, setModal, title, content, actions, loading}) =
                     ?
                     <>
                         {actions.map((action, idx) => {
-                            return <LoadingButton disabled={Boolean(action.disabled)} loading={loading} variant="contained" sx={()=>({...theme.button.dialog, borderRadius:"20px"})} key={idx} color={action.btn_color} onClick={action.execute}>{action.label}</LoadingButton>
+                            return <>
+                                    {
+                                        loading
+                                        ?
+                                        <LoadingButton 
+                                        disabled={Boolean(action.disabled)} 
+                                        loading={loading} 
+                                        variant="contained" 
+                                        sx={()=>({...theme.button.dialog, borderRadius:"20px"})} 
+                                        key={idx} 
+                                        color={action.btn_color} 
+                                        onClick={action.execute}>
+                                            {action.label}
+                                        </LoadingButton>
+                                        :
+                                        <Button
+                                        disabled={Boolean(action.disabled)} 
+                                        variant="contained" 
+                                        sx={()=>({...theme.button.dialog, borderRadius:"20px"})} 
+                                        key={idx} 
+                                        color={action.btn_color} 
+                                        onClick={action.execute}
+                                        >
+                                            {action.label}
+                                        </Button>
+                                    } 
+                            </>
                             
                         })}
                     </>

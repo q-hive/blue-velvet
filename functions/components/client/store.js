@@ -9,8 +9,8 @@ const clientModel = mongoose.model('clients', Client)
 
 export const updateClient = (req, res) => {
     return new Promise((resolve, reject) => {
-        console.log(req.body)
-        console.log(req.params.id)
+        console.log("Updating customer with ID: " + req.params.id)
+        req.body._id = req.params.id
         organizationModel.updateOne(
             {
                 "_id":mongoose.Types.ObjectId(res.locals.organization),

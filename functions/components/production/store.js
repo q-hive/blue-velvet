@@ -142,6 +142,7 @@ export const getPosibleStatusesForProduction = () => {
     const statuses = Object.keys(productionCycleObject)
     return statuses
 }
+
 export const nextStatusForProduction = (productionModels) => {
     const cycleModel = productionCycleObject
 

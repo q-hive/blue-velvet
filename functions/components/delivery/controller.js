@@ -21,8 +21,13 @@ export const buildDeliveryFromOrders = async (orders) => {
 export const getPackagingForDay = (date, orgId, container = undefined) => {
     return new Promise(async (resolve, reject) => {
         if(date === "statusReady"){
-            const packaging = await getPackagingByOrders(orgId)
-            return resolve(packaging)
+            try {
+                const packaging = await getPackagingByOrders(orgId)
+                return resolve(packaging)
+            } catch (err) {
+                return reject(err)
+            }
+            
         }
         
         const ordersInPackaging = await orgModel.findOne({"_id":mongoose.Types.ObjectId(orgId)},{"packaging":true})
@@ -69,8 +74,12 @@ export const getPackagingForDay = (date, orgId, container = undefined) => {
 export const getDeliveryByDate = (date, orgId, container = undefined) => {
     return new Promise(async(resolve, reject) => {
         if(date === "statusReady"){
-            const delivery = await getDeliveryByOrders(orgId)
-            return resolve(delivery)
+            try {
+                const delivery = await getDeliveryByOrders(orgId)
+                return resolve(delivery)
+            } catch(err) {
+                return reject(err)
+            }
         }
         
         const ordersReadyForDelivery = await orgModel.findOne({"_id":mongoose.Types.ObjectId(orgId)},{"deliveryReady":true})

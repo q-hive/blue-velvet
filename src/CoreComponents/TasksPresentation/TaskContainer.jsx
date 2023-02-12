@@ -112,7 +112,7 @@ export const TaskContainer = (props) => {
             content = <SeedingContent products={products} productsObj={productsByNameObj} workData={state.workData["seeding"]} index={activeStep}/>
             steps=[
                 {step:"Waste and control"},
-                {step:"Setup"},
+                {step:"Seeding"},
                 // {step:"Seeding"},
                 // {step:"Putting to the light"},
                 // {step:"Spray Seeds"},

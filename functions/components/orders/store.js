@@ -425,25 +425,36 @@ export const createNewOrder = (orgId, order) => {
                         ).exec()
 
                         
-                        console.log("Order abonment required")
-                        await organizationModel.updateOne(
-                            {
-                                "_id":mongoose.Types.ObjectId(orgId)
-                            },
-                            {
-                                "$set":{
-                                    "orders.$[order].job":`Reorder-${id}`
+                        let jobName
+                        try {
+                            console.log("Order abonment required, setting up the background job")
+                            jobName = setOrderAbonment(orgId,orgWithNewOrdersFiltered.orders[0],orderMapped, allProducts, overhead)
+                        } catch (err) {
+                            reject(err)
+                        }
+                        
+                        try {
+                            await organizationModel.updateOne(
+                                {
+                                    "_id":mongoose.Types.ObjectId(orgId)
+                                },
+                                {
+                                    "$set":{
+                                        "orders.$[order].job":`Reorder-${id}`
+                                    }
+                                },
+                                {
+                                    "arrayFilters":[
+                                        {"order._id":id}
+                                    ]
                                 }
-                            },
-                            {
-                                "arrayFilters":[
-                                    {"order._id":id}
-                                ]
-                            }
-                        )
-                        const jobName = setOrderAbonment(orgId,orgWithNewOrdersFiltered.orders[0],orderMapped, allProducts, overhead)
+                            )
+                        } catch (err) {
+                            reject(err)
+                        }
 
                         resolve()
+                        return
                     }
 
                     resolve()

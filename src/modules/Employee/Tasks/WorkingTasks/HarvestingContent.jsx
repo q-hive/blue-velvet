@@ -69,109 +69,148 @@ export const HarvestingContent = (props) => {
       }));
 
     const displayHarvestingInfo = () =>{
-        products.map(product => {
+        // products.map(product => {
+        // return (
+        //     <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
+        //         <b> {product.ProductName} </b> 
+        //         <br></br>
+        //             {
+        //                 product.isMixModel
+        //                 ?
+        //                 <>
+        //                     {
+        //                         product.modelsToHarvestMix.map((mixStrain) => {
+        //                             return (
+        //                                 <>
+        //                                     Mix strain: {mixStrain.ProductName}
+        //                                     <br></br>
+        //                                     trays:   {Math.ceil(mixStrain.trays)}
+        //                                     <br></br>
+        //                                     dryracks:{Math.ceil(mixStrain.dryracks)}
+        //                                     <br></br>
+        //                                 </>    
+        //                             )
+        //                         })
+        //                     }
+        //                 </>
+        //                 :
+        //                 <>
+        //                     trays: {Math.ceil(product.trays)} 
+        //                     trays: {Math.ceil(product.trays)} 
+        //                     trays: {Math.ceil(product.trays)} 
+        //                     trays: {Math.ceil(product.trays)} 
+    
+        //                     <br></br>
+    
+        //                     dryracks: {Math.ceil(product.dryracks)} 
+    
+        //                     <br></br>
+        //                 </>
+    
+        //             }
+                
+                
+        //     </Typography>
+        // )})
         return (
-            <Typography variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                <b> {product.ProductName} </b> 
-                <br></br>
-                    {
-                        product.isMixModel
-                        ?
+            <TableContainer component={Paper}>
+            <Table sx={{}} aria-label="customized table">
+                <TableHead>
+                <TableRow>
+                    <StyledTableCell width="34%"><Typography variant="subtitle1"> Product </Typography></StyledTableCell>
+                    <StyledTableCell width="33%" align="right"><Typography variant="subtitle1"> Trays </Typography></StyledTableCell>
+                    <StyledTableCell width="33%" align="right"><Typography variant="subtitle1"> Dryracks </Typography></StyledTableCell>
+                </TableRow>
+                </TableHead>
+                <TableBody>
+                {products.map((product) => (
+
+                        product.isMixModel ? 
                         <>
-                            {
-                                product.modelsToHarvestMix.map((mixStrain) => {
-                                    return (
-                                        <>
-                                            Mix strain: {mixStrain.ProductName}
-                                            <br></br>
-                                            trays:   {Math.ceil(mixStrain.trays)}
-                                            <br></br>
-                                            dryracks:{Math.ceil(mixStrain.dryracks)}
-                                            <br></br>
-                                        </>    
-                                    )
-                                })
-                            }
-                        </>
+                        <StyledTableRow key={product.productName}>
+                            <StyledTableCell component="th" scope="row">
+                                <b>{product.ProductName}</b>
+                            </StyledTableCell>
+                            <StyledTableCell align="right">{product.trays}</StyledTableCell>
+                            <StyledTableCell align="right">
+                                {
+                                    product.modelsToHarvestMix.length>0
+                                    ?
+                                    <>
+                                        {
+                                            product.ProductName === "ProteinMix"
+                                            ?
+                                            product.modelsToHarvestMix.reduce((acum, curr)=> {
+                                                return acum + curr.dryracks
+                                            },0)
+                                            :
+                                            product.modelsToHarvestMix[0].dryracks
+                                        }
+                                    </>
+                                    :
+                                    null
+                            
+                                }
+                            </StyledTableCell>
+                            {/* <StyledTableCell  colSpan={2} ></StyledTableCell> */}
+                        </StyledTableRow> 
+                        {product.modelsToHarvestMix.length>0 ? 
+                            <StyledTableRow key={product.productName}>
+                                <StyledTableCell  align="center" component="th" scope="row"><b> Mix Strain </b></StyledTableCell>
+                                <StyledTableCell align="right"><b>Trays</b></StyledTableCell>
+                                <StyledTableCell align="right"><b>Dryracks</b></StyledTableCell>
+                            </StyledTableRow> 
                         :
-                        <>
-                            trays: {Math.ceil(product.trays)} 
-    
-                            <br></br>
-    
-                            dryracks: {Math.ceil(product.dryracks)} 
-    
-                            <br></br>
+                        null}
+                        {
+                            product.modelsToHarvestMix.map((mixStrain) => {
+                                return (
+                                    <>
+                                        <TableRow key={mixStrain.productName}>
+                                            <StyledTableCell align="right" component="th" scope="row">
+                                                {mixStrain.ProductName}
+                                            </StyledTableCell>
+                                            <StyledTableCell align="right">{Math.ceil(mixStrain.trays)}</StyledTableCell>
+                                            <StyledTableCell align="right">
+                                                {
+                                                    product.ProductName === "ProteinMix"
+                                                    ?
+                                                    Math.ceil(mixStrain.dryracks)
+                                                    :
+                                                    'N/A'
+                                                }
+                                            </StyledTableCell>
+                                        </TableRow> 
+                                        
+                                    </>    
+                                )
+                            })
+                        }
                         </>
-    
-                    }
-                
-                
-            </Typography>
-            )
-        }
-    )
-    return (
-    <TableContainer component={Paper}>
-      <Table sx={{}} aria-label="customized table">
-        <TableHead>
-          <TableRow>
-            <StyledTableCell width="34%"><Typography variant="subtitle1"> Product </Typography></StyledTableCell>
-            <StyledTableCell width="33%" align="right"><Typography variant="subtitle1"> Trays </Typography></StyledTableCell>
-            <StyledTableCell width="33%" align="right"><Typography variant="subtitle1"> Dryracks </Typography></StyledTableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {products.map((product) => (
 
-                product.isMixModel ? 
-                <>
-                <StyledTableRow key={product.productName}>
-                    <StyledTableCell component="th" scope="row">
-                        <b>{product.ProductName}</b>
-                    </StyledTableCell>
-                    <StyledTableCell  colSpan={2} ></StyledTableCell>
-                </StyledTableRow> 
-                {product.modelsToHarvestMix.length>0 ? 
-                    <StyledTableRow key={product.productName}>
-                        <StyledTableCell  align="center" component="th" scope="row"><b> Mix Strain </b></StyledTableCell>
-                        <StyledTableCell align="right"><b>Trays</b></StyledTableCell>
-                        <StyledTableCell align="right"><b>Dryracks</b></StyledTableCell>
-                    </StyledTableRow> 
-                :
-                null}
-                {
-                    product.modelsToHarvestMix.map((mixStrain) => {
-                        return (
-                            <>
-                                <TableRow key={mixStrain.productName}>
-                                    <StyledTableCell align="right" component="th" scope="row">
-                                        {mixStrain.ProductName}
-                                    </StyledTableCell>
-                                    <StyledTableCell align="right">{Math.ceil(mixStrain.trays)}</StyledTableCell>
-                                    <StyledTableCell align="right">{Math.ceil(mixStrain.dryracks)}</StyledTableCell>
-                                </TableRow> 
-                                
-                            </>    
-                        )
-                    })
-                }
-                </>
+                        : 
 
-                : 
+                        <StyledTableRow key={product.productName}>
+                            <StyledTableCell component="th" scope="row">
+                                {product.ProductName}
+                            </StyledTableCell>
+                            <StyledTableCell align="right">{product.trays}</StyledTableCell>
+                            <StyledTableCell align="right">
+                                {
+                                    product.RelatedMix.isForMix
+                                    ?
+                                    0
+                                    :
+                                    product.dryracks
 
-                <StyledTableRow key={product.productName}>
-                    <StyledTableCell component="th" scope="row">
-                        {product.ProductName}
-                    </StyledTableCell>
-                    <StyledTableCell align="right">{product.trays}</StyledTableCell>
-                    <StyledTableCell align="right">{product.dryracks}</StyledTableCell>
-                </StyledTableRow> 
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-    )
+                                }
+                            </StyledTableCell>
+                        </StyledTableRow> 
+                ))}
+                </TableBody>
+            </Table>
+            </TableContainer>
+        )
     }
     
     const handleHelpDialog = () => {
