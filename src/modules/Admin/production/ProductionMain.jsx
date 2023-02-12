@@ -176,7 +176,7 @@ export const ProductionMain = () => {
             
             return (
                 <div>
-                <Button aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick} sx={{color:"gray"}}>
+                <Button aria-controls="simple-menu" aria-haspopup="true" disabled={user.role==="employee"} onClick={handleClick} sx={{color:"gray"}}>
                     <MoreVertIcon color='gray'/>
                 </Button>
                     <Menu
@@ -185,6 +185,7 @@ export const ProductionMain = () => {
                         keepMounted
                         open={Boolean(anchorEl)}
                         onClose={handleClose}
+                        display={user.role === "employee" ? "none" : "flex"}
                     >
                         <MenuItem onClick={handleClose}>
                             <Button variant="contained" sx={{}}
@@ -418,7 +419,7 @@ export const ProductionMain = () => {
                                             }
                                         )
                                     }
-                                    }
+                                    
                                 </Typography>
                                 <Divider sx={{maxWidth:"100%"}} /> 
                             </React.Fragment>
@@ -462,7 +463,7 @@ export const ProductionMain = () => {
     
         return (
             <div>
-                <Button variant='contained' onClick={handleClick} disabled={loading || (user.role === "employee")} sx={{...BV_THEME.button.table,maxWidth:"48%"}}> {loading ? 'Loading...' : `${t('button_view_word', {ns:'buttons'})}`} </Button>
+                <Button variant='contained' onClick={handleClick} disabled={loading} sx={{...BV_THEME.button.table,maxWidth:"48%"}}> {loading ? 'Loading...' : `${t('button_view_word', {ns:'buttons'})}`} </Button>
             </div>
         );
     }
@@ -1081,7 +1082,7 @@ export const ProductionMain = () => {
                                               minHeight: 508
                                           }}
                                           >
-                                              <Box sx={{ display: "flex", align: "right", justifyContent: "right" }}>
+                                              <Box sx={{ display:"flex", align: "right", justifyContent: "right" }}>
                                                   <IconButton onClick={() => setShowEdit(false)} sx={{ width: "3vh", height: "3vh", align: "right" }}>
                                                       <CloseIcon />
                                                   </IconButton>

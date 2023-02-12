@@ -1,8 +1,8 @@
 import { ThemeContext } from "@emotion/react";
-import { createTheme } from "@mui/material/";
+import { createTheme, responsiveFontSizes } from "@mui/material/";
 
 const shadow = "0px 3px 1px -6px rgba(0,0,0,0.2),0px 2px 2px 0px rgba(0,0,0,0.14),0px 1px 5px 0px rgba(0,0,0,0.12)"
-export const BV_THEME = createTheme({
+let theme = createTheme({
     palette: {
         primary: {
             main: "#93cf0f",
@@ -26,7 +26,7 @@ export const BV_THEME = createTheme({
     },
 
     margin:{
-        mainHeader:{xs:"15%",sm:"10%",md:"4%"},
+        mainHeader:{xs:"10%",sm:"10%",md:"4%"},
 
     },
     typography: {
@@ -116,3 +116,6 @@ export const BV_THEME = createTheme({
 
 
 })
+
+
+export const BV_THEME = responsiveFontSizes(theme)

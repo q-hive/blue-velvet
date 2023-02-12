@@ -169,11 +169,11 @@ export const EmployeeIndex = () => {
                                                                 ...dialog,
                                                                 open:true,
                                                                 title:"Employee deleted",
-                                                                message:"The employee account and its data was deleted, what do you want to do?",
+                                                                message:"The employee account and its data was deleted",
                                                                 actions:[
                                                                     {
-                                                                        label:"Exit",
-                                                                        execute: navigate(`/${user.uid}/${user.role}/employees`)
+                                                                        label:"Ok",
+                                                                        execute: window.location.reload()
                                                                     }
                                                                 ]
                                                             })
