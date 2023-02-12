@@ -31,7 +31,6 @@ export const dateParamParser = (string) => {
 }
 
 router.get('/packs/:date',(req, res) => {
-    
     getPackagingForDay(dateParamParser(req.params.date),res.locals.organization)
     .then((result) => {
         success(req, res, 200, "Packages needed for specified date obtained succesfully (today default)", result)

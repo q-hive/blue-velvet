@@ -254,6 +254,7 @@ export const groupOrdersForDelivery = async (orders, date=undefined) => {
     const hash = {}, result = []
     await Promise.all(
         orders.map(async(order) => {
+            console.log("Groupping orders of the customer: " + order.customer)
             const customer = await getCustomerById(order.organization, order.customer) 
             
             if(!hash[order.customer.toString()]){

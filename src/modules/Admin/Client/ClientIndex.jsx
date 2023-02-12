@@ -23,7 +23,7 @@ import { useTranslation } from 'react-i18next'
 
 
 export const ClientIndex = () => {
-    const {t} = useTranslation()
+    const {t} = useTranslation(["buttons", "client_management_module"])
     //*CONTEXTS
     const {user, credential} = useAuth()
     
@@ -115,7 +115,7 @@ export const ClientIndex = () => {
                     
                     <Box sx={{display:"flex", justifyContent:"space-between", marginBottom:"3vh"}} >
                         <Button variant='contained' color='primary' startIcon={<Add/>} onClick={handleNewCustomer} sx={{minWidth:"20%"}}>
-                            {t('button_new_customer', {ns:'client_management_module'})}
+                            {t('button_new_customer', {ns:'buttons'})}
                         </Button>
                     </Box>
 

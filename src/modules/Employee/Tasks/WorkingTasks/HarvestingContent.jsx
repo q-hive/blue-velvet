@@ -136,9 +136,17 @@ export const HarvestingContent = (props) => {
                                 {
                                     product.modelsToHarvestMix.length>0
                                     ?
-                                    product.modelsToHarvestMix.reduce((acum, curr)=> {
-                                        return acum + curr.dryracks
-                                    },0)
+                                    <>
+                                        {
+                                            product.ProductName === "ProteinMix"
+                                            ?
+                                            product.modelsToHarvestMix.reduce((acum, curr)=> {
+                                                return acum + curr.dryracks
+                                            },0)
+                                            :
+                                            product.modelsToHarvestMix[0].dryracks
+                                        }
+                                    </>
                                     :
                                     null
                             
@@ -162,8 +170,16 @@ export const HarvestingContent = (props) => {
                                             <StyledTableCell align="right" component="th" scope="row">
                                                 {mixStrain.ProductName}
                                             </StyledTableCell>
-                                            <StyledTableCell align="right">N/A</StyledTableCell>
-                                            <StyledTableCell align="right">{Math.ceil(mixStrain.dryracks)}</StyledTableCell>
+                                            <StyledTableCell align="right">{Math.ceil(mixStrain.trays)}</StyledTableCell>
+                                            <StyledTableCell align="right">
+                                                {
+                                                    product.ProductName === "ProteinMix"
+                                                    ?
+                                                    Math.ceil(mixStrain.dryracks)
+                                                    :
+                                                    'N/A'
+                                                }
+                                            </StyledTableCell>
                                         </TableRow> 
                                         
                                     </>    

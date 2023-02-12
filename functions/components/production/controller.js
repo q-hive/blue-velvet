@@ -276,17 +276,19 @@ export const groupBy = (criteria, production, format, includeOrders = false, inc
                             if(alreadyExistsInModels){
                                 hashDates[RelatedMix.mixName][status].modelsToHarvestMix.forEach((model, idx) => {
                                     if(model.ProductName ===  ProductName){
+                                        model.dryracks +=+ dryracks
                                         model.seeds +=+ seeds
                                         model.trays +=+ trays
                                         model.harvest +=+ harvest
-                                        model.dryracks +=+ dryracks
                                         extractFromMixDryRacks +=+ model.dryracks;
                                     }
                                 })
                             }
                             hashDates[RelatedMix.mixName][status].modelsId.push(_id)
                             hashDates[RelatedMix.mixName][status].relatedOrders.push(RelatedOrder)
-                            hashDates[ProductName][ProductionStatus].trays +=+ trays
+                            // if(RelatedMix.mixName === "PowerMix"){
+                            //     hashDates[ProductName][ProductionStatus].trays +=+ trays
+                            // } 
                             continue
                         }
                         
@@ -452,6 +454,14 @@ export const getProductionWorkByContainerId = (req,res, criteria) => {
     })
 }
 
+export const setDryRacksByHarvest = (trays, name) => {
+    if(name === "PowerMix"){
+        return trays
+    }
+    
+    return trays * 0.5
+}
+
 //*Build model for production control based on order packages and products parameters
 export const buildProductionDataFromOrder = async (order, dbproducts, overHeadParam = 0) => {
     //*Add grams per size to order product packages
@@ -538,7 +548,7 @@ export const buildProductionDataFromOrder = async (order, dbproducts, overHeadPa
                                 harvest:                strharvest,
                                 seeds:                  seeds,
                                 trays:                  trays,
-                                dryracks:               isLargeCicle(totalProductionDays) ? trays : trays * 0.5
+                                dryracks:               isLargeCicle(totalProductionDays) ? trays : setDryRacksByHarvest(trays, prodFound.name)
                             }
         
                             return {...mprod, ...mixFound, mix:true}

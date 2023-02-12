@@ -11,7 +11,7 @@ import CameraIcon from '@mui/icons-material/AddPhotoAlternate';
 import useAuth from '../../../contextHooks/useAuthContext';
 import api from '../../../axios.js'
 import { UserDialog } from '../../../CoreComponents/UserFeedback/Dialog';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { editCustomer } from '../../../CoreComponents/requests';
 
 
@@ -36,6 +36,7 @@ export const NewCustomer = (props) => {
     
     //*Contexts
     const {user, credential} = useAuth()
+    const navigate = useNavigate()
     
     const [input, setInput] = useState({
         name:           props.edit.isEdition ? props.edit.values.customer.name :  undefined,
@@ -101,7 +102,7 @@ export const NewCustomer = (props) => {
                     setDialog({
                         ...dialog,
                         open:true,
-                        title:"Customer could not be added",
+                        title:"Customer could not be updated due to a server error",
                         actions:[ 
                             {
                                 label:"Retry",
@@ -131,7 +132,7 @@ export const NewCustomer = (props) => {
                             label:"Ok",
                             btn_color:"primary",
                             execute:() => {
-                                window.location.reload()
+                                navigate(`/${user.uid}/admin/client`)
                             }
                             }
                         ]
