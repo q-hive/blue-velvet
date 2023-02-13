@@ -524,7 +524,7 @@ export const buildProductionDataFromOrder = async (order, dbproducts, overHeadPa
                             console.log("Building production models for MIX: " + prodFound.name + " strains")
                             console.log(`Is required a total harvest for the order of: ${harvest}`)
     
-                            const strharvest = Number((harvest * (mprod.amount/100)).toFixed(2)) * (1 + mixFound.parameters.overhead)
+                            const strharvest = Number((harvest * (mprod.amount/100)).toFixed(2)) * (1 + (mixFound.parameters.overhead/100))
                             const seeds = strharvest / (mixFound.parameters.harvestRate/mixFound.parameters.seedingRate) 
                             const trays = Math.floor(seeds / mixFound.parameters.seedingRate)
                             const totalProductionDays = mixFound.parameters.day + mixFound.parameters.night
@@ -577,7 +577,7 @@ export const buildProductionDataFromOrder = async (order, dbproducts, overHeadPa
                         const estimatedStartDate = getEstimatedStartProductionDate(order.date, prodFound)
                         const harvestDate = await getEstimatedHarvestDate(estimatedStartDate, prodFound)
                         
-                        const strainHarvest = harvest * (1 + prodFound.parameters.overhead)
+                        const strainHarvest = harvest * (1 + (prodFound.parameters.overhead)/100)
                         const totalSeeds = harvest / (prodFound.parameters.harvestRate / prodFound.parameters.seedingRate)
                         const totalTrays = Math.floor(totalSeeds / prodFound.parameters.seedingRate) 
                         const totalProductionDays = prodFound.parameters.day + prodFound.parameters.night 
