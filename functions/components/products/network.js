@@ -20,6 +20,7 @@ import {
     updateManyProducts
 } from './store.js'
 import { getContainerById, updateContainerById } from '../container/store.js'
+import { updateProductionBasedOnProductUpdate } from '../production/controller.js'
 
 const router = express.Router()
 
@@ -170,6 +171,34 @@ router.patch('/', (req, res) => {
     .catch((err) => {
         error(req, res, 500, "Error updating product", err)
     })
+})
+
+router.patch('/productionParams/:id', async (req, res) => {
+    const updateConfigModel = {
+        "day":          null,
+        "night":        null,
+        "seedingRate":  null,
+        "harvestRate":  null,
+        "overhead":     null,
+    }
+    
+    //check whether the actual keys to be updated on the product config affects actual production 
+    //(overhead for now is the unique key that affects active production)
+
+    const keys_update = Object.keys(req.body)
+
+    keys_update.forEach((key) => {
+        updateConfigModel[key] = req.body[key]
+    })
+
+    try {
+        const result = await updateProductionBasedOnProductUpdate(updateConfigModel, req.params.id, res.locals.organization)
+
+        return result
+    } catch (err) {
+        console.log("Call stack trace: " + err)
+        throw new Error(err.message)
+    }
 })
 
 router.delete('/', (req, res) => {

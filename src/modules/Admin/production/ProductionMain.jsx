@@ -26,7 +26,7 @@ import api from '../../../axios'
 import { useNavigate } from 'react-router-dom'
 import useAuth from '../../../contextHooks/useAuthContext'
 import { Stack } from '@mui/system'
-import { getGrowingProducts, updateContainerConfig, updateProduct } from '../../../CoreComponents/requests'
+import { getGrowingProducts, updateContainerConfig, updateProduct, updateProductConfig } from '../../../CoreComponents/requests'
 import { containerConfigModel } from '../../../utils/models'
 import { useTranslation } from 'react-i18next'
 import { set } from 'date-fns'
@@ -360,7 +360,7 @@ export const ProductionMain = () => {
                         type="number"
                     />
 
-                    <Button variant='contained' disabled={user.role === "employee"} color='primary' onClick={handleComplete} sx={{ minWidth: "20%" }}>
+                    <Button variant='contained' disabled={user.role === "employee"} color='primary' onClick={updateOverHead} sx={{ minWidth: "20%" }}>
                         {t('accept_config',{ns:'buttons'})}
                     </Button>
                 </Paper>
@@ -721,8 +721,7 @@ export const ProductionMain = () => {
 
         
     }
-
-    const handleComplete = () => {
+    const handleComplete = async () => {
         
         /*const {errors, errorMapped} = mapErrors()
         if(errors.length>0){
@@ -782,7 +781,7 @@ export const ProductionMain = () => {
 
             mappedProduct.performamce = selectedProduct.performance
             mappedProduct._id = selectedProduct._id
-            updateProduct(user,credential,mappedProduct)
+            return updateProduct(user,credential,mappedProduct)
             .then((response) => {
                 setDialog({
                     ...dialog,
@@ -822,10 +821,64 @@ export const ProductionMain = () => {
                 })
             })
             
-            return
         
             
     }
+    
+
+    const updateOverHead = async () => {
+        if(productData.overhead != 0 && productData.overhead !== "0"){
+            try {
+                await handleComplete()
+                //*FIRST UPDATE THE PRODUCT AND WAIT RESPONSE IT IS A MUST IN ORDER TO UPDATE THE PRODUCTION DATA
+            } catch (err){
+                setDialog({
+                    ...dialog,
+                    open:true,
+                    title:"Error updating product",
+                    message:"What do you want to do?",
+                    actions:[
+                        {
+                            label:"Try again",
+                            execute: () => {
+                                handleComplete
+                            }
+                        },
+                        {
+                            label:"Cancel",
+                            execute: () => {
+                                window.location.reload()
+                            }
+                        },
+                    ]   
+                })    
+            }
+
+            try {
+                await updateProductConfig(user, credential, {
+                    "overhead": productData.overhead,
+                })
+            } catch(err){
+                setDialog({
+                    ...dialog,
+                    open:true,
+                    title:"Error updating the production",
+                    message:"Please contact the support team.",
+                    actions:[
+                        {
+                            label:"Ok",
+                            execute: () => {
+                                window.location.reload()
+                            }
+                        },
+                    ]   
+                })
+            }
+            
+        }
+    }
+    
+    
     
     useEffect(() => {
         const requests = async () => {

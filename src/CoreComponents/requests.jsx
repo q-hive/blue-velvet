@@ -349,6 +349,16 @@ export const updateProduct = (user,credential,mappedProduct) => {
     })
 }
 
+//*UPDATE THE DATA THAT ACTUALLY AFFECTS THE PRODUCTION DATA (I THINK ALL UPDATES AFFECT PRODUCTION DATA)
+export const updateProductConfig = (user, credential, productionDataUpdate, productId) => {
+    return api.api.patch(`${api.apiVersion}/products/productionParams/${productId}`, {...productionDataUpdate}, {
+        headers:{
+            authorization:credential._tokenResponse.idToken,
+            user:user,
+        }
+    })
+}
+
 export const getContainerData = async (user, credential)=> {
     const userOrg = user.organization || JSON.parse(window.localStorage.getItem("usermeta"))?.organization
     

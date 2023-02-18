@@ -1,5 +1,5 @@
 import { buildTaskFromProductionAccumulated, calculateTimeEstimation } from "../work/controller.js"
-import { getPosibleStatusesForProduction, getProductionInContainer, insertWorkDayProductionModel, productionCycleObject, updateManyProductionModels } from "./store.js"
+import { getPosibleStatusesForProduction, getProductionInContainer, insertWorkDayProductionModel, productionCycleObject, updateManyProductionModels, upsertProduction } from "./store.js"
 import nodeschedule from 'node-schedule'
 import { getAllProducts, getProductById } from "../products/store.js"
 import mongoose from "mongoose"
@@ -664,5 +664,38 @@ export const updateProductionToNextStatus = (orgId,container,productionIds) => {
         updateManyProductionModels(orgId,container,productionIds)
         .then((result) => resolve(result))
         .catch(err => reject(err))
+    })
+}
+
+export const updateProductionBasedOnProductUpdate = async (updateConfigModel, productId, orgId) => {
+    const productionKeys = Object.keys(updateConfigModel).filter((key) => key !== null)
+
+    let production
+    let products
+    try {
+        production = await getProductionByProduct(productId, orgId)
+        products = await getAllProducts(orgId)        
+        //*GET THE PRODUCTION RELATED TO THE PRODUCT
+    } catch(err) {
+        throw new Error(err.message)
+    }
+    
+    const newProductionModels = await Promise.all(production.map(async(productionModel) => {
+        //*rebuild production data from order id
+        const order = await getOrderById(orgId, productionModel.RelatedOrder)
+
+        //*PRODUCTS FROM DATABASE MUST HAS BEEN ALREADY UPDATED
+        const newProduction = await buildProductionDataFromOrder(order,products)
+
+        //*RETURN ONLY THE PRODUCTION FROM ORDER THAT IS THE SAME AS THE PRODUCTION WE ARE TRYING TO UPDATE
+        return newProduction.filter((newProd) => newProd.ProductName === productionModel.ProductID)
+    }))
+
+    upsertProduction(newProductionModels, orgId)
+    .then((result) => {
+        return result
+    })
+    .catch((err) => {
+        throw new Error(err)
     })
 }

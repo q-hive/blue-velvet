@@ -156,7 +156,7 @@ export const updateProduct = (req, res, orgId = undefined, mutableProd = undefin
         try {
             
             
-            if(req === undefined || res=== undefined){
+            if((req === undefined || res=== undefined) && mutableProd !== undefined){
                 const updateOp = await orgModel.updateOne(
                     { "_id":mongoose.Types.ObjectId(orgId) },
                     { "$set": {"containers.$[].products.$[product]": mutableProd } },
@@ -168,7 +168,6 @@ export const updateProduct = (req, res, orgId = undefined, mutableProd = undefin
             
             req.body.product._id = mongoose.Types.ObjectId(req.body.product._id)
             
-            console.log(req.body.product)
             const operation = await orgModel.updateOne(
                 { "_id":mongoose.Types.ObjectId(res.locals.organization) },
                 { "$set": {"containers.$[].products.$[product]": req.body.product } },

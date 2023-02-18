@@ -216,6 +216,7 @@ export const updateOrdersInModels = async (updatedModels, orgId, container) => {
 
 }
 
+//*THIS FUNCTION ONLY UPDATES TO THE NEXT STATUS CORRESPONDING TO THE PRODUCTION CYCLE
 export const updateManyProductionModels = (orgId,container,productionIds) => {
     return new Promise((resolve, reject) => {
         console.log("Updating production models in " + container +  " container")
@@ -408,4 +409,58 @@ export const getProductionByOrderId = (orgId, container, orderId) => {
         })
 
     })
+}
+
+export const getProductionByProduct = (productId,orgId) => {
+    return new Promise((resolve, reject) => {
+        orgModel.aggregate(
+            [
+                {
+                    "$match":{
+                        "_id":new mongoose.Types.ObjectId(orgId)
+                    }
+                },
+                {
+                    "$project":{
+                        "containers.production":true
+                    }
+                },
+            ]
+        )
+        .then((organization) => {
+            const production = []
+            
+            organization[0].containers.forEach((container) => {
+                const filteredProduction = container.production.filter((production) => new mongoose.Types.ObjectId(productId).equals(production.ProductID))
+
+                filteredProduction.forEach((prod) => production.push(prod))
+            })
+
+            resolve(production)
+        })
+        .catch(err => {
+            reject(err)
+        })
+    })
+}
+
+
+export const upsertProduction = (productionArray, orgId) => {
+    const updateAllElements = productionArray.map(async(productionModel) => {
+        const update = await orgModel.updateOne(
+            {
+                "_id": new mongoose.Types.ObjectId(orgId),
+                "$set":{
+                    "containers.$[].production.$[pr]":productionModel
+                }
+            },
+            {
+                "arrayFilters":[{"pr._id":productionModel._id}]
+            }
+        )
+
+        return update
+    })
+    
+    return Promise.all(updateAllElements)
 }
