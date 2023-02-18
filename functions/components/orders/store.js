@@ -215,14 +215,18 @@ export const getMonthlyOrdersByCustomer = (orgId, customerId) => {
     })
 }
 
-export const deleteOrdersDirect = (req, res) => {
+export const deleteOrdersDirect = async (req, res) => {
     return new Promise((resolve, reject) => {
         const values = {
             "_id":mongoose.Types.ObjectId(req.query.value)
         }
         
+        
         organizationModel.updateOne({"_id":res.locals.organization},{
             "$pull":{
+                "containers.$[].production":{
+                    "RelatedOrder":values[req.query.key]
+                },
                 "orders":{
                     [req.query.key]:values[req.query.key]
                 }

@@ -790,9 +790,12 @@ export const ProductionMain = () => {
                     //message:"What do you want to do?",
                     actions:[
                         {
-                            label:"Reload",
+                            label:"Ok",
                             execute: () => {
-                                window.location.reload()
+                                setDialog({
+                                    ...dialog,
+                                    open:false
+                                })
                             }
                         },
                     ]
@@ -827,7 +830,7 @@ export const ProductionMain = () => {
     
 
     const updateOverHead = async () => {
-        if(productData.overhead != 0 && productData.overhead !== "0"){
+        if(productData.overhead != undefined && productData.overhead !== null){
             try {
                 await handleComplete()
                 //*FIRST UPDATE THE PRODUCT AND WAIT RESPONSE IT IS A MUST IN ORDER TO UPDATE THE PRODUCTION DATA
@@ -855,9 +858,11 @@ export const ProductionMain = () => {
             }
 
             try {
+                console.log(selectedProduct)
+                
                 await updateProductConfig(user, credential, {
                     "overhead": productData.overhead,
-                })
+                },selectedProduct._id)
             } catch(err){
                 setDialog({
                     ...dialog,

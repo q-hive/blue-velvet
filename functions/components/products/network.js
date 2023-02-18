@@ -194,10 +194,9 @@ router.patch('/productionParams/:id', async (req, res) => {
     try {
         const result = await updateProductionBasedOnProductUpdate(updateConfigModel, req.params.id, res.locals.organization)
 
-        return result
+        success(req,res,200,"Successfully updated production",result)
     } catch (err) {
-        console.log("Call stack trace: " + err)
-        throw new Error(err.message)
+        error(req, res,500,"Error updating production",err, err)
     }
 })
 

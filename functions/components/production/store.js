@@ -447,18 +447,24 @@ export const getProductionByProduct = (productId,orgId) => {
 
 export const upsertProduction = (productionArray, orgId) => {
     const updateAllElements = productionArray.map(async(productionModel) => {
+        console.log(productionModel)
         const update = await orgModel.updateOne(
             {
-                "_id": new mongoose.Types.ObjectId(orgId),
+                "_id": orgId,
+            },
+            {
                 "$set":{
                     "containers.$[].production.$[pr]":productionModel
                 }
             },
             {
-                "arrayFilters":[{"pr._id":productionModel._id}]
+                arrayFilters:[{"pr._id":productionModel._id}],
+
             }
         )
 
+
+        console.log(update)
         return update
     })
     

@@ -1,5 +1,5 @@
 import { buildTaskFromProductionAccumulated, calculateTimeEstimation } from "../work/controller.js"
-import { getPosibleStatusesForProduction, getProductionInContainer, insertWorkDayProductionModel, productionCycleObject, updateManyProductionModels, upsertProduction } from "./store.js"
+import { getPosibleStatusesForProduction, getProductionByProduct, getProductionInContainer, insertWorkDayProductionModel, productionCycleObject, updateManyProductionModels, upsertProduction } from "./store.js"
 import nodeschedule from 'node-schedule'
 import { getAllProducts, getProductById } from "../products/store.js"
 import mongoose from "mongoose"
@@ -603,6 +603,7 @@ export const buildProductionDataFromOrder = async (order, dbproducts, overHeadPa
             })
         )
     } catch (err) {
+        console.log(err)
         throw new Error(err)
     }
     const productionData = order.products.flatMap((prod) => {
@@ -677,21 +678,27 @@ export const updateProductionBasedOnProductUpdate = async (updateConfigModel, pr
         products = await getAllProducts(orgId)        
         //*GET THE PRODUCTION RELATED TO THE PRODUCT
     } catch(err) {
-        throw new Error(err.message)
+        throw new Error(err)
     }
     
     const newProductionModels = await Promise.all(production.map(async(productionModel) => {
         //*rebuild production data from order id
         const order = await getOrderById(orgId, productionModel.RelatedOrder)
 
-        //*PRODUCTS FROM DATABASE MUST HAS BEEN ALREADY UPDATED
-        const newProduction = await buildProductionDataFromOrder(order,products)
+        if(order.length === 1){
+            //*PRODUCTS FROM DATABASE MUST HAS BEEN ALREADY UPDATED
+            const newProduction = await buildProductionDataFromOrder(order[0],products)
+            newProduction.forEach((newModel, idx) => newProduction[idx]._id = productionModel._id)
+            
+            //*RETURN ONLY THE PRODUCTION FROM ORDER THAT IS THE SAME AS THE PRODUCTION WE ARE TRYING TO UPDATE
+            return newProduction.filter((newProd) => newProd.ProductName === productionModel.ProductName)
+        }
 
-        //*RETURN ONLY THE PRODUCTION FROM ORDER THAT IS THE SAME AS THE PRODUCTION WE ARE TRYING TO UPDATE
-        return newProduction.filter((newProd) => newProd.ProductName === productionModel.ProductID)
+        return production
+
     }))
 
-    upsertProduction(newProductionModels, orgId)
+    upsertProduction(newProductionModels.flat(), orgId)
     .then((result) => {
         return result
     })
