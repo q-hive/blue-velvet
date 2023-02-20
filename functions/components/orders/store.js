@@ -216,13 +216,68 @@ export const getMonthlyOrdersByCustomer = (orgId, customerId) => {
 }
 
 export const deleteOrdersDirect = async (req, res) => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         const values = {
             "_id":mongoose.Types.ObjectId(req.query.value)
         }
         
+        let traysToReduce
+        try {
+            traysToReduce =  await organizationModel.aggregate([
+                {
+                  '$match': {
+                    '_id': new ObjectId('636ae6a18453ae9796473eae')
+                  }
+                }, {
+                  '$unwind': {
+                    'path': '$containers', 
+                    'preserveNullAndEmptyArrays': false
+                  }
+                }, {
+                  '$project': {
+                    'containers': {
+                      'production': true
+                    }
+                  }
+                }, {
+                  '$unwind': {
+                    'path': '$containers.production', 
+                    'preserveNullAndEmptyArrays': false
+                  }
+                }, {
+                  '$match': {
+                    '$and': [
+                      {
+                        '$or': [
+                          {
+                            'containers.production.ProductionStatus': 'growing'
+                          }, {
+                            'containers.production.ProductionStatus': 'harvestReady'
+                          }
+                        ], 
+                        'containers.production.RelatedOrder': new ObjectId('63f0b112f9ba9d5c7d916af1')
+                      }
+                    ]
+                  }
+                }, {
+                  '$group': {
+                    '_id': 'trays', 
+                    'totalTrays': {
+                      '$sum': '$containers.production.trays'
+                    }
+                  }
+                }
+            ])
+
+            traysToReduce = traysToReduce.reduce((acum,actual) => acum + actual.totalTrays,0)
+            
+            console.log(traysToReduce)
+        } catch (err) {
+            reject(err)
+        }
         
-        organizationModel.updateOne({"_id":res.locals.organization},{
+        
+        const deletionOp = await organizationModel.updateOne({"_id":res.locals.organization},{
             "$pull":{
                 "containers.$[].production":{
                     "RelatedOrder":values[req.query.key]
@@ -230,6 +285,15 @@ export const deleteOrdersDirect = async (req, res) => {
                 "orders":{
                     [req.query.key]:values[req.query.key]
                 }
+            },
+        })
+
+        console.log("Deletion op")
+        console.log(deletionOp)
+        
+        organizationModel.updateOne({"_id":res.locals.organization},{
+            "$inc":{
+                "containers.$[].available": traysToReduce
             }
         })
         .then(result => resolve(result))
