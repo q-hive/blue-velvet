@@ -6,7 +6,7 @@ const apiVersion = '/api/v1'
 
 
 const api = axios.create({
-    baseURL:hosts[0],
+    baseURL:hosts[1],
     headers:{
         "Content-Type":"application/json"
     },
