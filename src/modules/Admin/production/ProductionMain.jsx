@@ -237,6 +237,30 @@ export const ProductionMain = () => {
 
                         <Grid item xs={4}>
                             <Typography variant="body2" color="grayText">
+                                            
+                                
+                                Price: <b>{
+                                        t(
+                                            'price_size_cell_dropdown_header_production_table',
+                                            {
+                                                ns:'production_management_module', 
+                                                grams:1,
+                                                price:new Intl.NumberFormat(
+                                                    i18n.language,
+                                                    {
+                                                        style:'currency', 
+                                                        currency:currencyByLang[i18n.language]
+                                                    }
+                                                ).format(product.price[0].amount / product.price[0].packageSize)
+                                            }
+                                        )
+                                    } </b>
+                                
+                            </Typography>
+                        </Grid>
+
+                        <Grid item xs={4}>
+                            <Typography variant="body2" color="grayText">
                                 Active Orders:  <b>{product.orders.length}</b>
                             </Typography>
                         </Grid>
@@ -479,16 +503,16 @@ export const ProductionMain = () => {
             flex:1,
             renderCell:renderCellProductName
         },
-        {
-            field:"price",
-            headerClassName:"header-products-table",
-            headerAlign:"center",
-            headerName:"Prod. Price",
-            renderHeader:renderHeaderProductPrice,
-            minWidth:120,
-            flex:1,
-            renderCell:renderCellProductPrice
-        },
+        // {
+        //     field:"price",
+        //     headerClassName:"header-products-table",
+        //     headerAlign:"center",
+        //     headerName:"Prod. Price",
+        //     renderHeader:renderHeaderProductPrice,
+        //     minWidth:120,
+        //     flex:1,
+        //     renderCell:renderCellProductPrice
+        // },
         {
             field:"actions",
             headerClassName:"header-products-table",
@@ -1103,7 +1127,7 @@ export const ProductionMain = () => {
                                                       getRowId={(row) => {
                                                           return row._id
                                                       }}
-                                                      getRowHeight={() => 'auto'}
+                                                      getRowHeight={() => 50}
                                                       onStateChange={(s, e, d) => {
                                                           console.log(s)
                                                           console.log(e)

@@ -532,7 +532,7 @@ export const TaskContainer = (props) => {
                         type !== 'growing' && (
                             <>
                                 <Typography variant="h3" color="primary">{contentTitle}</Typography>
-                                <Typography>Expected time: {type === "preSoaking" ? expectedtTime + ` ${expectedtTime > 1 ? 'minutes' : 'minute'}` + ' for soaking seeds task plus ' + 6 + ' hours of soaking waiting time' : expectedtTime + ' Minutes'}</Typography>
+                                <Typography>Expected time: {type === "preSoaking" ? expectedtTime + ` ${expectedtTime > 1 ? 'minutes' : 'minute'}` + ' for soaking seeds' : expectedtTime + ' Minutes'}</Typography>
                                 {/* <Timer contxt="task"/> */}
                             </>
                         )
