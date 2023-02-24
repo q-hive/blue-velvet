@@ -67,7 +67,7 @@ export const Dashboard = () => {
         display: "flex",
         overflow: "auto",
         flexDirection: "column",
-        height: 240
+        height: 300
     }
     const rows = [
         { id: 1, name: 'Eluis', level: Math.random()},
@@ -137,50 +137,70 @@ export const Dashboard = () => {
     }
     
     function displayTaskCards (){
-        return(
-            <>
-                <Typography variant="body2">
-                    <i>
-                        <b>{t('times_display_specification', {ns:'daily_tasks_cards'})}</b>
-                    </i>
-                </Typography>
-                {
-                    employeesPerformanceRows.map((employee, index) => {
-                        return (employee.workDay) && Object.keys(employee.workDay).length>0 && (
-                            <>
-                                {
-                                    Object.keys(employee.workDay).map((task, idx) => {
-                                        let time = employee.workDay[task].achievedTime !== 0 ? transformTo("ms","minutes",employee.workDay[task].achievedTime) : `${t('not_finished_times', {ns:'tasks'})}`
-                                        
-                                        return (
-                                            <Paper key={idx} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
-                                                <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
-                                                    <Typography >
-                                                        <b>{t('task_word',{ns:'tasks', task:getKey(task)})}</b>
-                                                    </Typography>
-                                                    <Typography >
-                                                        <i>{t('expected_time_admn_dashboard',{ns:'tasks', times:transformTo("ms","minutes",employee.workDay[task].expectedTime)})} </i>
-                                                    </Typography>
-                                                    <Typography >
-                                                        <i>{t('achieved_time_admn_dashboard',{ns:'tasks', time})}</i>
-                                                    </Typography>
-                                                    <Typography >
-                                                        <i>{t('employee_name_admn_dashboard_times',{ns:'tasks', employee})} </i>
-                                                    </Typography>
-                                                </Box>  
-                                            </Paper>
-                                        )
-                                    })
+        let performance = []
 
-                                }
-                            </>
-                        ) 
-                        
-                    })
-                }
-            </>
+        employeesPerformanceRows.forEach((employee, index) => {
             
-        )    
+            if(employee.workDay && Object.keys(employee.workDay).length>0){
+                Object.keys(employee.workDay).map((task, idx) => {
+                    let time = employee.workDay[task].achievedTime !== 0 ? transformTo("ms","minutes",employee.workDay[task].achievedTime) : `${t('not_finished_times', {ns:'tasks'})}`
+                    performance.push({
+                        col1:t('employee_name_admn_dashboard_times',{ns:'tasks', employee}),
+                        col2:t('task_word',{ns:'tasks', task:getKey(task)}),
+                        col3:t('expected_time_admn_dashboard',{ns:'tasks', times:transformTo("ms","minutes",employee.workDay[task].expectedTime)}),
+                        col4:t('achieved_time_admn_dashboard',{ns:'tasks', time}),
+                        id:idx
+                    })
+                })
+            }
+
+        })
+        
+        return performance
+        // return(
+        //     <>
+        //         <Typography variant="body2">
+        //             <i>
+        //                 <b>{t('times_display_specification', {ns:'daily_tasks_cards'})}</b>
+        //             </i>
+        //         </Typography>
+        //         {
+        //             employeesPerformanceRows.map((employee, index) => {
+        //                 return (employee.workDay) && Object.keys(employee.workDay).length>0 && (
+        //                     <>
+        //                         {
+        //                             Object.keys(employee.workDay).map((task, idx) => {
+        //                                 let time = employee.workDay[task].achievedTime !== 0 ? transformTo("ms","minutes",employee.workDay[task].achievedTime) : `${t('not_finished_times', {ns:'tasks'})}`
+                                        
+        //                                 return (
+        //                                     <Paper key={idx} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
+        //                                         <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
+        //                                             <Typography >
+        //                                                 <b>{t('task_word',{ns:'tasks', task:getKey(task)})}</b>
+        //                                             </Typography>
+        //                                             <Typography >
+        //                                                 <i>{t('expected_time_admn_dashboard',{ns:'tasks', times:transformTo("ms","minutes",employee.workDay[task].expectedTime)})} </i>
+        //                                             </Typography>
+        //                                             <Typography >
+        //                                                 <i>{t('achieved_time_admn_dashboard',{ns:'tasks', time})}</i>
+        //                                             </Typography>
+        //                                             <Typography >
+        //                                                 <i>{t('employee_name_admn_dashboard_times',{ns:'tasks', employee})} </i>
+        //                                             </Typography>
+        //                                         </Box>  
+        //                                     </Paper>
+        //                                 )
+        //                             })
+
+        //                         }
+        //                     </>
+        //                 ) 
+                        
+        //             })
+        //         }
+        //     </>
+            
+        // )    
     }
 
     const getTimeEstimate = async () => {
@@ -349,17 +369,17 @@ export const Dashboard = () => {
             <Typography variant="h5" color="secondary.dark">{t('welcome_message')}</Typography>
 
 
-            <Grid container spacing={3} marginTop={3}>
+            <Grid container spacing={5} marginTop={3}>
 
                 {/* Tasks */}
-                    <Tooltip title={t('card_admin_tooltip',{ns:'daily_tasks_cards'})}>
-                        <Grid item xs={12} sm={6} lg={4}>
-                            <DailyTasksCard cycle={tasksCicleObj.cicle} time={time} adminRender={user.role}/>
-                        </Grid>
-                    </Tooltip>
-                <Grow in={true} timeout={2000} unmountOnExit>
-                    
-                    <Grid item xs={12} sm={6} lg={4}>
+                    <Grid item xs={12} sm={6} lg={6}>
+                    {/* </Grid>
+                        <Grid item xs={12} sm={6} lg={4}> */}
+                        <Tooltip title={t('card_admin_tooltip',{ns:'daily_tasks_cards'})}>
+                                <DailyTasksCard cycle={tasksCicleObj.cicle} time={time} adminRender={user.role}/>
+                            {/* <Grid item xs={12} sm={6} lg={6}>
+                            </Grid> */}
+                        </Tooltip>
                         <Paper variant="outlined" sx={{alignItems:"center",justifyContent:"space-between",paddingY:"1.5vh",paddingX:"1.5vh",marginTop:"1vh",display:"flex", flexDirection:"row"}}>
                             <Typography><b>{capitalize(t('packing_dlytask_title',{ns:'tasks'}))}</b></Typography>
                             <Button variant="contained" sx={{width:"34%"}} onClick={()=>navigate(`/${user.uid}/employee/tasks/delivery`)} color="primary" >
@@ -373,12 +393,18 @@ export const Dashboard = () => {
                             </Button>
                         </Paper>  
                     </Grid>
-                </Grow>
+                
+                    
+                    
+                {/* <Grow in={true} timeout={2000} unmountOnExit>
+                    
+                   
+                </Grow> */}
 
                 {/* Capacity */}
                 
                 <Grow in={true} timeout={2000} unmountOnExit>
-                    <Grid item xs={12} sm={6} lg={4}>
+                    <Grid item xs={12} sm={6} lg={6}>
                         <Paper elevation={4} sx={fixedHeightPaper}>
                             <Typography variant="h6" color="secondary.dark">{t('container_capacity_card',{ns:'admin'})}</Typography>
                             <Box sx={{display:"flex",flexDirection:"column", }}>
@@ -394,7 +420,7 @@ export const Dashboard = () => {
                                             </Typography>
                                             <Box sx={{display:"flex"}}>
                                                 <ImgProgressBar 
-                                                    percentage={((container.capacity - container.available)/container.capacity)*100} 
+                                                    percentage={((container.capacity - container.available)/container.capacity)} 
                                                     imageUrl={containerImg}
                                                 />
                                             </Box>
@@ -410,27 +436,61 @@ export const Dashboard = () => {
                             
                             
                         </Paper>
-                    </Grid>
-                </Grow>
-
-                {/* Employee Performance */}
-                <Grow in={true} timeout={2000} unmountOnExit>
-                    <Grid item xs={12} sm={6} lg={4}>
-                        <Paper elevation={4} sx={{...fixedHeightPaper,height:400,
+                        {/* Employee Performance */}
+                        <Paper elevation={4} sx={{...fixedHeightPaper,height:400,marginTop:3,
                             "& .header-sales-table":{
                                 backgroundColor:BV_THEME.palette.primary.main,
                                 color:"white"
                             }}}>
                             <Typography variant="h6" color="secondary.dark">{t('employee_tasks_cards_title',{ns:'admin'})}</Typography>
-                            <Button onClick={handleCleanEmployeesTasks}>{t('clear_data_employees_times',{ns:'admin'})}</Button>
-                            {displayTaskCards()}
-                            
+                            <Tooltip title="This will delete the WORKING DAY of the employee from the system. This is recommended to be clicked at the end of the day. The history tracking is not affected">
+                                <Button variant="contained" backgroundColor={BV_THEME.palette.warning.dark} onClick={handleCleanEmployeesTasks}>{t('clear_data_employees_times',{ns:'admin'})}</Button>
+                            </Tooltip>
+                            <DataGrid
+                            columns={[
+                                {
+                                    field:"col1",
+                                    headerName:"Employee",
+                                    headerAlign:"center",
+                                    align:"center",
+                                    headerClassName:"header-sales-table",
+                                    minWidth:{xs:"25%",md:130},
+                                    flex:1
+                                },
+                                {
+                                    field:"col2",
+                                    headerName:"Task",
+                                    headerAlign:"center",
+                                    align:"center",
+                                    headerClassName:"header-sales-table",
+                                    minWidth:{xs:"25%",md:130},
+                                    flex:1
+                                },
+                                {
+                                    field:"col3",
+                                    headerName:"Expected Time",
+                                    headerAlign:"center",
+                                    align:"center",
+                                    headerClassName:"header-sales-table",
+                                    minWidth:{xs:"25%",md:130},
+                                    flex:1
+                                },
+                                {
+                                    field:"col4",
+                                    headerName:"Achieved time",
+                                    headerAlign:"center",
+                                    align:"center",
+                                    headerClassName:"header-sales-table",
+                                    minWidth:{xs:"25%",md:130},
+                                    flex:1
+                                },
+                            ]}
+                            rows={displayTaskCards()}
+                            sx={{marginY:"2vh",}}>
+                            </DataGrid>
                         </Paper>
                     </Grid>
                 </Grow>
-
-            
-                
 
             {/*Grid Container End */}    
             </Grid>

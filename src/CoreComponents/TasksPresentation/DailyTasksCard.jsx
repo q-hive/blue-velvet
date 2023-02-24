@@ -15,7 +15,7 @@ const fixedHeightPaper = {
     display: "flex",
     overflow: "auto",
     flexDirection: "column",
-    height: 240
+    height: 800
 }
 
 export const DailyTasksCard = (props) => {
@@ -70,10 +70,9 @@ export const DailyTasksCard = (props) => {
             Object.keys(cycle).map((status,index)=>{
                 let task = capitalize(t(translationKeysByStatusLabel[getKey(status)],{ns:'tasks'}))
                 let times = transformTo("ms","minutes", time.times[status]?.time)
-                
                 return(
-                    <Paper key={index} display="flex" flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
-                        <Box sx={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
+                    <Paper key={index} display={status == 'growing'? 'none' : 'flex'} flexdirection="column" variant="outlined" sx={{padding:1,margin:1,}}>
+                        <Box sx={{display:status == 'growing'? 'none' : 'flex',flexDirection:"column",justifyContent:"space-evenly",alignContent:"space-evenly"}}>
                             <Typography >
                                 <b>{t('task_word',{ns:'tasks',task})}</b>
                             </Typography>

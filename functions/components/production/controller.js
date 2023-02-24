@@ -526,7 +526,7 @@ export const buildProductionDataFromOrder = async (order, dbproducts, overHeadPa
     
                             const strharvest = Number((harvest * (mprod.amount/100)).toFixed(2)) * (1 + (mixFound.parameters.overhead/100))
                             const seeds = strharvest / (mixFound.parameters.harvestRate/mixFound.parameters.seedingRate) 
-                            const trays = Math.floor(seeds / mixFound.parameters.seedingRate)
+                            const trays = Math.ceil(seeds / mixFound.parameters.seedingRate)
                             const totalProductionDays = mixFound.parameters.day + mixFound.parameters.night
                             console.log(seeds + " seeds")
                             console.log(trays + " trays")

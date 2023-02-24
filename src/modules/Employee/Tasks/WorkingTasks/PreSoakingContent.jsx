@@ -89,7 +89,7 @@ export const PreSoakingContent = (props) => {
                             workProducts.map((product,index)=>{
                                 return(
                                     <Typography key={index} variant="h5" align='center' color={BV_THEME.textColor.lightGray}>
-                                        <b>{parseFloat(product?.seeds/1000 || 0).toFixed(5)}</b> KG of <b>{product?.ProductName || ''}</b> Seeds <br/>
+                                        <b>{parseFloat(product?.seeds/1000 || 0).toFixed(2)}</b> KG of <b>{product?.ProductName || ''}</b> Seeds <br/>
                                         <br></br>
                                     </Typography>
                             )})
