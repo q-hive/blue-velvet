@@ -188,7 +188,7 @@ authRouter.post('/refresh', (req, res) => {
     }) 
 })
 
-authRouter.use('/create', isAuthenticated, isAuthorized(["admin"]), userCreationRouter)
+authRouter.use('/create', userCreationRouter)
 
 
 export default authRouter
