@@ -4,9 +4,8 @@ const hosts = ['http://localhost:9999', "https://bluevelvetdeploy.herokuapp.com"
 
 const apiVersion = '/api/v1'
 
-
 const api = axios.create({
-    baseURL:hosts[1],
+    baseURL:hosts[process.env.REACT_APP_HOST_ORIGIN] || 1,
     headers:{
         "Content-Type":"application/json"
     },
