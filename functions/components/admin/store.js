@@ -7,7 +7,7 @@ import { hashPassphrase, genPassphrase } from './helper.js'
 import { getOrganizationById, newOrganization } from '../organization/store.js'
 import { newPassphrase } from '../passphrase/store.js'
 import { newClient } from '../client/store.js'
-
+import { newClientSuperAdmin } from '../superadmin/store.js'
 
 export function deleteFromFirebase(uid) {
     return new Promise((resolve, reject) => {
@@ -159,6 +159,70 @@ export function newAdmin(data) {
             })
             .catch((error) => {
                 console.log('Error creating new organization on MongoDB:', error)
+                // * Delete account from firebase as rollback
+                adminAuth.deleteUser(userRecord.uid)
+                reject(error)
+            })
+        })
+        .catch((error) => {
+            console.log('Error creating new admin user on firebaseAtuh:', error)
+            reject(error)
+        })
+    })
+}
+
+export function newSuperAdmin(data) {
+    return new Promise((resolve, reject) => {
+        // * Create account on firebase
+        adminAuth.createUser({
+            email: data.email,
+            emailVerified: false,
+            password: data.password,
+            displayName: data.name + " " + data.lname,
+            photoURL: data.image,
+            disabled: false,
+        })
+        .then((userRecord) => {
+            
+            console.log('Successfully created new user (superadmin) on firebase:', userRecord.uid);
+            
+            // * Generate ObjectId for client document
+            let id = new ObjectId()
+            
+            // * Update customUserClaims
+            adminAuth.setCustomUserClaims(userRecord.uid, { role: "superadmin"})
+            
+            // * Generate hashed passphrase mongo record
+            let hashedPassphrase = hashPassphrase(data.passphrase !== undefined ? data.passphrase : genPassphrase(3))
+            
+            let passData = {
+                client:         id,
+                uid:            userRecord.uid,
+                passphrase:     hashedPassphrase,
+            }
+
+            newPassphrase(passData)
+            .then(pass => {
+                let clientData = {
+                    _id:          id,
+                    uid:          userRecord.uid,
+                    email:        data.email,
+                    passphrase:   pass._id,
+                    name:         data.name,
+                    lname:        data.lname,
+                    phone:        data.phone,
+                    image:        data.image,
+                }
+
+                console.log(clientData)
+
+                newClientSuperAdmin(clientData)
+                .then(client => resolve(client))
+                .catch(err => reject(err))
+
+            })
+            .catch((error) => {
+                console.log('Error creating new passphrase on MongoDB:', error)
                 // * Delete account from firebase as rollback
                 adminAuth.deleteUser(userRecord.uid)
                 reject(error)

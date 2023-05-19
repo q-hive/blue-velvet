@@ -13,7 +13,7 @@ export const newPassphrase = (data) => {
         mongoPass.save((err, doc) => {
             if (err) reject(err)
 
-            updateClient(data.clien, {
+            updateClient(data.client, {
                 $set: { passphrase: doc._id }
             })
 
