@@ -13,6 +13,7 @@ import { Divider, Drawer, } from '@mui/material'
 //Icons
 import MenuIcon from '@mui/icons-material/Menu';
 import GroupsIcon from '@mui/icons-material/Groups';
+import ApartmentIcon from '@mui/icons-material/Apartment';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import RequestPageIcon from '@mui/icons-material/RequestPage';
 import WorkspacesIcon from '@mui/icons-material/Workspaces';
@@ -87,6 +88,20 @@ const BV_Layout = (props) => {
       setAnchorElLang(null)
     }
 
+    //SuperAdmin Options Drawer buttons content (label and Icon)
+    const superAdminOptions = [
+      {
+        label:'Dashboard',
+        transKey:'dashboard_sidebar_label',
+        icon:<DashboardIcon color="primary"/>,
+      }, 
+      {
+        label:'Organizations',
+        transKey:'Organizations',
+        // HACK: Change line above to -> 'superadmin_organizations_management_sidebar_label'
+        icon:<ApartmentIcon color="primary"/>,
+      }, 
+    ];
     //Admin Options Drawer buttons content (label and Icon)
     const adminOptions = [
       {
@@ -189,7 +204,16 @@ const BV_Layout = (props) => {
                   color="grey.A100" 
                   display="block" 
               >
-                  {user.role === "employee" ?  `${t('drawer_title_employee',{ns:'layout'})}` : `${t('drawer_title_admin',{ns:'layout'})}` }
+                  {
+                    user.role === "employee"
+                      ?  `${t('drawer_title_employee',{ns:'layout'})}`
+                      : (
+                        user.role === "admin"
+                          ? `${t('drawer_title_admin',{ns:'layout'})}`
+                          : `${t('SuperAdmin Options',{ns:'layout'})}`
+                          // HACK: Change line above for this --> : `${t('drawer_title_admin',{ns:'layout'})}`
+                        ) 
+                  }
               </Typography>
             </Box>
           </Toolbar>
@@ -208,11 +232,19 @@ const BV_Layout = (props) => {
 
                 /*ElSE ? admin*/
 
-                  adminOptions.map((option) => (
-                    <Button key={option.label} sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
-                      {t(`${option.transKey}`,{ns:'layout'})}
-                    </Button>
-                  ))
+                (
+                  user.role === "admin"
+                    ? adminOptions.map((option) => (
+                        <Button key={option.label} sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
+                          {t(`${option.transKey}`,{ns:'layout'})}
+                        </Button>
+                      ))
+                    : superAdminOptions.map((option) => (
+                        <Button key={option.label} sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
+                          {t(`${option.transKey}`,{ns:'layout'})}
+                        </Button>
+                      )) 
+                )
               
             }
               

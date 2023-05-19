@@ -1,3 +1,7 @@
+//*SuperAdmin
+import { SuperAdminDashboard } from "./modules/SuperAdmin/Dashboard/SuperAdminDashboard";
+import { OrganizationIndex } from "./modules/SuperAdmin/Organization/OrganizationIndex";
+import { NewOrganization } from "./modules/SuperAdmin/Organization/NewOrganization";
 //*Admin
 // import { SecurityPhraseComponent } from "./modules/Admin/PassPhrase";
 import { Dashboard } from "./modules/Admin/Dashboard/Dashboard";
@@ -33,6 +37,24 @@ import { ProductionManagementDashboard } from "./modules/Admin/production/manage
 
 
 export const AppRoutes  = [
+    // SUPER ADMIN ROUTES
+    {
+        path:"/:uid/superadmin/dashboard",
+        component:<SuperAdminDashboard/>
+    },
+    {
+        path:"/:uid/superadmin/organizations",
+        component:<OrganizationIndex/>
+    },
+    {
+        path:"/:uid/superadmin/organizations/new",
+        component:<NewOrganization edit={false}/>
+    },
+    {
+        path:"/:uid/superadmin/organizations/editOrganization",
+        component:<NewOrganization edit={true}/>
+    },
+    // ADMIN ROUTES
     {
         path:"/:uid/admin/dashboard",
         component:<Dashboard/>
