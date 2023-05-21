@@ -31,8 +31,10 @@ authRouter.post('/login', (req, res) => {
         adminAuth.verifyIdToken(credential._tokenResponse.idToken)
         .then(claims => {
             console.log("Id token verified")
-            if (claims.role === 'admin' || claims.role === 'root') {
-                return success(req, res, 200, "Authentication succeed", { isAdmin: true, token:credential._tokenResponse.idToken, user:credential })
+            if (claims.role === 'superadmin') {
+                return success(req, res, 200, "Superadmin authentication succeed", { isAdmin: true, isSuperAdmin: true, token:credential._tokenResponse.idToken, user:credential })
+            } else if (claims.role === 'admin' || claims.role === 'root') {
+                return success(req, res, 200, "Admin authentication succeed", { isAdmin: true, token:credential._tokenResponse.idToken, user:credential })
             } else if (claims.role === 'employee') {
                 // * Obtain organization info to query for employee data
                 console.group("Auth logs")
@@ -67,6 +69,58 @@ authRouter.post('/login', (req, res) => {
             }
         })
         .catch(err => error(req, res, 500, "ID Token verification failed", err))
+    })
+    .catch(err => error(req, res, 500, "Error signing in", err))
+})
+
+authRouter.post('/login/superadmin', (req, res) => {
+    validateBodyNotEmpty(req, res)
+    isEmailValid(req, res, req.body.email)
+    
+    signInWithEmailAndPassword(auth, req.body.email, req.body.password)
+    .then(user => {
+        console.log("SuperAdmin signed id")
+        adminAuth.verifyIdToken(user._tokenResponse.idToken)
+        .then(claims => {
+            if (claims.role === 'superadmin') {
+                getPassphraseByUid(user.user.uid)
+                .then(async data => {
+                    let token
+                    try {
+                        token = await adminAuth.createCustomToken(user.user.uid)
+                        console.log(claims)
+                        
+                        if (data.passphrase == hashPassphrase(req.body.passphrase)) {
+                            return success(req, res, 200, "Successfully logged as superadmin", {                                                                                                  
+                                            user: {
+                                                id:     data._id,
+                                                uid:    user.user.uid,
+                                                email:  user.user.email,
+                                                role:   claims.role,
+                                                photo:  user.user.photoURL,
+                                            },
+                                            token: user._tokenResponse.idToken,
+                                            cToken: token
+                            })
+                        
+                        } else {
+                            return error(req, res, 403, "Forbidden: Wrong passphrase", { "error": "Wrong passphrase"})
+                        }
+                    } catch (err) {
+                        const errorJSON = {
+                            "message":  "Error trying to create custom token",
+                            "status":   500,
+                            "processError": err.message
+                        }
+                        return error(req, res, 500, "Error trying to create custom token - GENERIC ERROR", new Error(JSON.stringify(errorJSON)), err)
+                    }
+                    
+                })
+            } else {
+                return error(req, res, 403, "Forbidden: Not superadmin", { "error": "Not superadmin role"})
+            }
+        })
+        .catch(err => error(req, res, 500, "Error verifying ID Token", err)) 
     })
     .catch(err => error(req, res, 500, "Error signing in", err))
 })

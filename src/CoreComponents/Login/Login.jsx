@@ -30,6 +30,7 @@ export const Login = () => {
     const navigate = useNavigate()
     const { setUser, setCredential } = useAuth()
 
+    const [isSuperAdmin, setIsSuperAdmin] = useState(false)
     const [tabContext, setTabContext] = useState('0')
     const [loading, setLoading] = useState(false)
     const [openPassphrase, setOpenPassphrase] = useState(false)
@@ -68,6 +69,7 @@ export const Login = () => {
         .then(response => {
             if (response.data.data.isAdmin) {
                 // * Load passphrase modal
+                setIsSuperAdmin(response.data.data.isSuperAdmin);
                 setOpenPassphrase(true)                
             } else {
                 // * It's employee
@@ -132,11 +134,12 @@ export const Login = () => {
     const handleAdminSignIn = (e) => {
         e.preventDefault()
 
-        setLoading(true)
+        const userRole = isSuperAdmin ? "superadmin" : "admin";
 
-        api.api.post('/auth/login/admin', loginData)
+        setLoading(true)
+        api.api.post(`/auth/login/${userRole}`, loginData)
         .then(response => {
-            if (response.data.data.user.role == 'admin'){
+            if (response.data.data.user.role == userRole){
                 const { cToken, user } = response.data.data
                 setPersistence(getAuth(), browserSessionPersistence)
                 .then(() => {

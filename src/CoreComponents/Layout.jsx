@@ -98,7 +98,6 @@ const BV_Layout = (props) => {
       {
         label:'Organizations',
         transKey:'Organizations',
-        // HACK: Change line above to -> 'superadmin_organizations_management_sidebar_label'
         icon:<ApartmentIcon color="primary"/>,
       }, 
     ];
@@ -211,7 +210,6 @@ const BV_Layout = (props) => {
                         user.role === "admin"
                           ? `${t('drawer_title_admin',{ns:'layout'})}`
                           : `${t('SuperAdmin Options',{ns:'layout'})}`
-                          // HACK: Change line above for this --> : `${t('drawer_title_admin',{ns:'layout'})}`
                         ) 
                   }
               </Typography>
