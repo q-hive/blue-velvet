@@ -1,19 +1,21 @@
 import { initializeApp } from "@firebase/app";
-import {getAuth} from 'firebase/auth'
+import {getAuth, connectAuthEmulator} from 'firebase/auth'
 
 const config = {
-        apiKey: "AIzaSyBnWcbZ9KgNZWbyC-B9VTmQwAvMWjI4gpM",
-        authDomain: "greengrow-116bd.firebaseapp.com",
-        projectId: "greengrow-116bd",
-        storageBucket: "greengrow-116bd.appspot.com",
-        messagingSenderId: "597946461875",
-        appId: "1:597946461875:web:83cb86e46328d9671d4ac6"
+        apiKey: process.env.FIREBASE_API_KEY,
+        authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+        messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+        appId: process.env.FIREBASE_APP_ID
 }
-
 
 const firebaseApp = initializeApp(config)
 
 const auth = getAuth()
 
+if (process.env.FIREBASE_LOCAL) {
+        connectAuthEmulator(auth, "http://localhost:9099");
+}
 
 export default auth
