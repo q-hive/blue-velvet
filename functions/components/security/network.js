@@ -196,8 +196,7 @@ authRouter.post('/refresh', (req, res) => {
             if (claims.role === "superadmin") {
                 const superadmin = await (await adminAuth.getUser(claims.uid)).toJSON()
 
-                // BUG: Check superadmin token validity
-                token = await adminAuth.createCustomToken(claims.uid)
+                let token = await adminAuth.createCustomToken(claims.uid)
                 console.log(superadmin)
                 return success(res, res, 200, "User superadmin verified succesfully, re-auth done", {
                     isAdmin: true,
@@ -205,49 +204,50 @@ authRouter.post('/refresh', (req, res) => {
                     user: superadmin,
                     isSuperAdmin: true
                 })
+            } else {
+                getOrganizationById(claims.organization)
+                    .then(async org => {
+                        org = org.toObject()
+
+                        let token
+                        if (claims.role === "admin") {
+                            const admin = await (await adminAuth.getUser(claims.uid)).toJSON()
+
+                            admin.assignedContainer = org.containers[0]._id
+                            admin.organization = org._id
+                            token = await adminAuth.createCustomToken(claims.uid)
+                            console.log(admin)
+                            return success(res, res, 200, "User admin verified succesfully, re-auth done", {
+                                isAdmin: true,
+                                token: token,
+                                user: admin
+                            })
+                        }
+
+                        const employee = org.employees.find((empl) => empl.uid === claims.uid)
+                        try {
+                            if (employee) {
+                                token = await adminAuth.createCustomToken(employee.uid)
+                            }
+                        } catch (err) {
+                            console.log("Error trying to create token")
+                        }
+
+                        employee.organization = claims.organization
+                        employee.assignedContainer = org.containers[0]._id
+                        console.log(employee)
+                        return success(req, res, 200, "User employee verified succesfully, re-auth done", {
+                            isAdmin: false,
+                            token: token,
+                            user: employee
+                        })
+                    })
+                    .catch(err => {
+                        console.log("Error getting organization")
+                        console.log(err)
+                    })
             }
 
-            getOrganizationById(claims.organization)
-                .then(async org => {
-                    org = org.toObject()
-
-                    let token
-                    if (claims.role === "admin") {
-                        const admin = await (await adminAuth.getUser(claims.uid)).toJSON()
-
-                        admin.assignedContainer = org.containers[0]._id
-                        admin.organization = org._id
-                        token = await adminAuth.createCustomToken(claims.uid)
-                        console.log(admin)
-                        return success(res, res, 200, "User admin verified succesfully, re-auth done", {
-                            isAdmin: true,
-                            token: token,
-                            user: admin
-                        })
-                    }
-
-                    const employee = org.employees.find((empl) => empl.uid === claims.uid)
-                    try {
-                        if (employee) {
-                            token = await adminAuth.createCustomToken(employee.uid)
-                        }
-                    } catch (err) {
-                        console.log("Error trying to create token")
-                    }
-
-                    employee.organization = claims.organization
-                    employee.assignedContainer = org.containers[0]._id
-                    console.log(employee)
-                    return success(req, res, 200, "User employee verified succesfully, re-auth done", {
-                        isAdmin: false,
-                        token: token,
-                        user: employee
-                    })
-                })
-                .catch(err => {
-                    console.log("Error getting organization")
-                    console.log(err)
-                })
         })
         .catch(err => {
             console.log("Error verifying ID token")

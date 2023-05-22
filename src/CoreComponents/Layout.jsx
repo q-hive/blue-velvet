@@ -58,7 +58,6 @@ const BV_Layout = (props) => {
     const navigate = useNavigate()
 
     const handleRedirect = (e) => {
-      console.log(user.role)
       navigate(`/${user.uid}/${user.role}/${e.target.id}`)
       if(mobileOpen)setMobileOpen(false)
     }
@@ -290,7 +289,7 @@ const BV_Layout = (props) => {
                             <Clock color="secondary.dark"/>
                           </Box>
                         {
-                          user.role === "superadmin"
+                          user.role !== "superadmin"
                             ? <Typography color="secondary.dark" fontSize={{xs:"1.5vh",md:"2vh"}} variant="h6" flexGrow={0}>{t('layout_cont_container_location')} {containerData.city}</Typography>  
                             : null
                         }
