@@ -288,8 +288,12 @@ const BV_Layout = (props) => {
                         <Box paddingLeft={"20px"} flexDirection={"column"} sx={{display:"flex",paddingLeft:1}}>
                           <Box sx={{display:{xs:"none",sm:"flex"},paddingLeft:1}} justifyContent={"center"}>
                             <Clock color="secondary.dark"/>
-                          </Box> 
-                        <Typography color="secondary.dark" fontSize={{xs:"1.5vh",md:"2vh"}} variant="h6" flexGrow={0}>{t('layout_cont_container_location')} {containerData.city}</Typography>  
+                          </Box>
+                        {
+                          user.role === "superadmin"
+                            ? <Typography color="secondary.dark" fontSize={{xs:"1.5vh",md:"2vh"}} variant="h6" flexGrow={0}>{t('layout_cont_container_location')} {containerData.city}</Typography>  
+                            : null
+                        }
 
                         </Box>
                       
@@ -388,18 +392,19 @@ const BV_Layout = (props) => {
     )
 
     const container = window !== undefined ? () => window().document.body : undefined;
-                            
     React.useEffect(() => {
-      getContainerData(user,credential,user.assignedContainer)
-      .then((containerResponse) => {
-        setContainerData((container) => {
-          return {
-            ...container,
-            city:containerResponse[0].address.city
-          }
+      if (user.role !== 'superadmin') {
+        getContainerData(user,credential,user.assignedContainer)
+        .then((containerResponse) => {
+          setContainerData((container) => {
+            return {
+              ...container,
+              city:containerResponse[0].address.city
+            }
+          })
         })
-      })
-      .catch((err) => {console.log("Error getting containers data")})
+        .catch((err) => {console.log("Error getting containers data")})
+      }
     },[])
     
     return (

@@ -139,7 +139,7 @@ export const Login = () => {
         setLoading(true)
         api.api.post(`/auth/login/${userRole}`, loginData)
         .then(response => {
-            if (response.data.data.user.role == userRole){
+            if (response.data.data.user.role == "admin" || response.data.data.user.role == "superadmin"){
                 const { cToken, user } = response.data.data
                 setPersistence(getAuth(), browserSessionPersistence)
                 .then(() => {
