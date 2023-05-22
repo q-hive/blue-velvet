@@ -254,7 +254,6 @@ export const NewOrganization = (props) => {
         address: organization.address
       }
     };
-    console.log(mappedOrganizationData);
     setLoading(true)
 
     if (!props.edit) {
@@ -265,8 +264,6 @@ export const NewOrganization = (props) => {
   };
 
   const createOrganization = (mappedOrganizationData) => {
-    console.log(mappedOrganizationData);
-    return
     api.api.post(`/auth/create/admin`, mappedOrganizationData, {
       headers: {
         authorization: credential._tokenResponse.idToken,
@@ -312,7 +309,7 @@ export const NewOrganization = (props) => {
                 label: "Retry",
                 btn_color: "primary",
                 execute: () => {
-                  handlecreateOrganization()
+                  handleSaveOrganization()
                   setDialog({ ...dialog, open: false })
                 }
               },
@@ -358,7 +355,7 @@ export const NewOrganization = (props) => {
           console.log(res.data.data)
           OrganizationInEdition = res.data.data
           console.log("Organization in edition", OrganizationInEdition)
-          // TODO: Set object to edit
+          // FIXME: Set object to edit
         })
         .catch((err) => {
           console.log(err)
