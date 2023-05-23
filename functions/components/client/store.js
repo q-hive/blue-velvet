@@ -4,6 +4,7 @@ const { Schema } = mongoose
 
 import Client from '../../models/client.js' 
 import { organizationModel } from '../../models/organization.js'
+import adminAuth from '../../firebaseAdmin.js'
 
 const clientModel = mongoose.model('clients', Client)
 
@@ -41,4 +42,18 @@ export const newClient = (data) => {
             resolve(doc)
         })
     })
+}
+
+export const deleteClient = (id) => {
+    return new Promise((resolve, reject) => {
+        clientModel.findByIdAndRemove(id, (err, doc) => {
+            if (err) reject(err);
+            if (!doc) {
+                reject(new Error(JSON.stringify({message:"Client not exists", status:409})))
+            } else {
+                adminAuth.deleteUser(doc.uid)
+                resolve(doc);
+            }
+        });        
+    });
 }

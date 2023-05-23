@@ -2,7 +2,7 @@ import express from 'express'
 import { mongoose } from '../../mongo.js'
 
 import { success, error } from '../../network/response.js'
-import { getOrganizations, getOrganizationById, newOrganization, updateOrganization } from './store.js'
+import { getOrganizations, getOrganizationById, newOrganization, updateOrganization, deleteOrganization } from './store.js'
 import { modelsValidationError } from '../../utils/errorHandler.js'
 import { newContainer } from '../container/store.js'
 
@@ -47,7 +47,7 @@ router.get('/', (req, res) =>{
     // ? FILTERS
     let filter = {}
 
-    if(req.query !== null){
+    if(Object.entries(req.query).length !== 0){
         filter = {[`${Object.keys(req.query)[0]}`]:Object.entries(req.query)[0][1]}
     }
 
@@ -74,8 +74,8 @@ router.post('/:id', (req, res) => {
 // * DELETE
 router.delete('/:id', (req, res) => {
     deleteOrganization(req.params.id)
-    .then(orgs => {
-        return success(req, res, 200, 'Organization deleted successfully', orgs)
+    .then(org => {
+        return success(req, res, 204, 'Organization deleted successfully', org)
     })
     .catch(err => {
         return error(req, res, 400, 'Error deleting the organization info', err)

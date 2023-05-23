@@ -15,7 +15,6 @@ import { UserDialog } from "../../../CoreComponents/UserFeedback/Dialog"
 
 export const OrganizationIndex = () => {
   const { user, credential } = useAuth()
-  const { t } = useTranslation(['organization_management_module', 'buttons'])
 
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(false)
@@ -27,11 +26,15 @@ export const OrganizationIndex = () => {
 
   const renderHeaderHook = (headerName) => {
     const JSXByHname = {
-      "id": t('organization_table_header_ID', { ns: 'organization_management_module' }),
-      "Name": t('organization_table_header_Name', { ns: 'organization_management_module' }),
-      "Pending tasks": t('organization_table_header_PendingTasks', { ns: 'organization_management_module' }),
-      "Salary": t('organization_table_header_Salary', { ns: 'organization_management_module' }),
-      "Actions": t('organization_table_header_Actions', { ns: 'organization_management_module' })
+      "id": "Id",
+      "Name": "Name",
+      "Administrator": "Administrator",
+      "Containers": "Containers",
+      "Customers": "Customers",
+      "Address": "Address",
+      "Pending tasks": "Pending Tasks",
+      "Salary": "Salary",
+      "Actions": "Actions"
     }
 
     return (
@@ -41,7 +44,7 @@ export const OrganizationIndex = () => {
     )
   }
 
-  const EmployeeColumns = [
+  const OrganizationColumns = [
     {
       field: "_id",
       headerName: "id",
@@ -63,9 +66,9 @@ export const OrganizationIndex = () => {
       flex: 1
     },
     {
-      field: "tasks",
-      headerName: "Pending tasks",
-      renderHeader: () => renderHeaderHook("Pending tasks"),
+      field: "admin",
+      headerName: "Administrator",
+      renderHeader: () => renderHeaderHook("Administrator"),
       headerAlign: "center",
       align: "center",
       headerClassName: "header-sales-table",
@@ -73,9 +76,29 @@ export const OrganizationIndex = () => {
       flex: 1
     },
     {
-      field: "salary",
-      headerName: "Salary",
-      renderHeader: () => renderHeaderHook("Salary"),
+      field: "containers",
+      headerName: "Containers",
+      renderHeader: () => renderHeaderHook("Containers"),
+      headerAlign: "center",
+      align: "center",
+      headerClassName: "header-sales-table",
+      minWidth: { xs: "25%", md: 130 },
+      flex: 1
+    },
+    {
+      field: "customers",
+      headerName: "Customers",
+      renderHeader: () => renderHeaderHook("Customers"),
+      headerAlign: "center",
+      align: "center",
+      headerClassName: "header-sales-table",
+      minWidth: { xs: "25%", md: 130 },
+      flex: 1
+    },
+    {
+      field: "address",
+      headerName: "Address",
+      renderHeader: () => renderHeaderHook("Address"),
       headerAlign: "center",
       align: "center",
       headerClassName: "header-sales-table",
@@ -92,7 +115,6 @@ export const OrganizationIndex = () => {
       minWidth: { xs: "25%", md: 130 },
       flex: 1,
       renderCell: (params) => {
-        const { t } = useTranslation(['buttons', 'organization_management_module'])
         const [modal, setModal] = useState({
           open: false,
           title: "",
@@ -112,7 +134,7 @@ export const OrganizationIndex = () => {
         const navigate = useNavigate()
 
         const editCustomer = () => console.log("Edit organization")
-        const deleteEmployee = async () => {
+        const deleteOrganization = async () => {
           setLoading(true)
           const response = await api.api.delete(`${api.apiVersion}/organizations/${params.id}`, {
             headers: {
@@ -131,7 +153,7 @@ export const OrganizationIndex = () => {
             title: "Select an action",
             actions: [
               {
-                label: `${t('organization_management_action_edit', { ns: 'organization_management_module' })}`,
+                label: `Edit`,
                 btn_color: "white_btn",
                 type: "privileged",
                 execute: () => {
@@ -140,7 +162,7 @@ export const OrganizationIndex = () => {
                 }
               },
               {
-                label: t('organization_management_action_delete', { ns: 'organization_management_module' }),
+                label: "Delete",
                 type: "dangerous",
                 btn_color: "secondary",
                 execute: () => {
@@ -152,7 +174,7 @@ export const OrganizationIndex = () => {
                     ...dialog,
                     open: true,
                     title: "Are you sure you want to delete an organization?",
-                    message: "The organization and its tasks will be deleted. Production management may be affected.",
+                    message: "The organization will be deleted. Production management may be affected.",
                     actions: [
                       {
                         label: "Yes",
@@ -162,18 +184,18 @@ export const OrganizationIndex = () => {
                             ...dialog,
                             open: false,
                           })
-                          deleteEmployee()
+                          deleteOrganization()
                             .then((res) => {
                               if (res.status === 204) {
                                 setDialog({
                                   ...dialog,
                                   open: true,
                                   title: "Organization deleted",
-                                  message: "The organization account and its data was deleted",
+                                  message: "The organization, admin account and passphrase were deleted",
                                   actions: [
                                     {
                                       label: "Ok",
-                                      execute: window.location.reload()
+                                      execute:() => {window.location.reload()}
                                     }
                                   ]
                                 })
@@ -221,7 +243,7 @@ export const OrganizationIndex = () => {
               actions={dialog.actions}
               open={dialog.open}
             />
-            <Button variant="contained" onClick={handleModal} disabled={loading} sx={BV_THEME.button.table}>{t('button_view_word', { ns: 'buttons' })}</Button>
+            <Button variant="contained" onClick={handleModal} disabled={loading} sx={BV_THEME.button.table}>View</Button>
           </>
 
         )
@@ -233,7 +255,7 @@ export const OrganizationIndex = () => {
     setLoading(() => {
       return true
     })
-    api.api.get(`${api.apiVersion}/employees/`, {
+    api.api.get(`${api.apiVersion}/organizations/`, {
       headers: {
         authorization: credential._tokenResponse.idToken,
         user: user
@@ -265,16 +287,11 @@ export const OrganizationIndex = () => {
             }}
             >
 
-              <Typography variant="h4" color="secondary" textAlign={"center"} margin={BV_THEME.margin.mainHeader}>
-
-                {t('module_index_title', { ns: 'organization_management_module' })}
-              </Typography>
+              <Typography variant="h4" color="secondary" textAlign={"center"} margin={BV_THEME.margin.mainHeader}>Organizations</Typography>
 
               <Box sx={{ width: "100%", height: "100%" }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", marginBottom: "3vh" }} >
-                  <Button variant='contained' color='primary' startIcon={<Add />} onClick={handleNewOrganization} sx={{ minWidth: "20%" }}>
-                    {t('button_new_organization', { ns: 'buttons' })}
-                  </Button>
+                  <Button variant='contained' color='primary' startIcon={<Add />} onClick={handleNewOrganization} sx={{ minWidth: "20%" }}>New organization</Button>
                 </Box>
                 {
                   loading
@@ -283,7 +300,7 @@ export const OrganizationIndex = () => {
                     :
                     <>
                       <DataGrid
-                        columns={EmployeeColumns}
+                        columns={OrganizationColumns}
                         rows={rows}
                         sx={{ width: "100%", height: "80%" }}
                         getRowId={(row) => {

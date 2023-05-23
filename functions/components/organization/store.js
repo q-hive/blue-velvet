@@ -1,5 +1,7 @@
 import { mongoose } from '../../mongo.js'
 import Organization from '../../models/organization.js'
+import { deleteClient } from '../../components/client/store.js'
+import { deletePassphrase } from '../passphrase/store.js'
 
 const orgModel = mongoose.model('organization', Organization)
 
@@ -88,4 +90,30 @@ export const updateOrganization = (id, edit) => {
             resolve(doc)
         })
     })
+}
+
+export const deleteOrganization = (id) => {
+    return new Promise((resolve, reject) => {
+        orgModel.findByIdAndRemove(id, (err, org) => {
+            if (err) reject(err);
+            if (!org) {
+                reject(new Error(JSON.stringify({message:"Organization not exists", status:409})))
+            } else {
+                const ownerId = org.owner.toString();
+                deleteClient(ownerId)
+                .then(client => {
+                    deletePassphrase(ownerId)
+                        .then(passphrase => {
+                            resolve(org);
+                        })
+                        .catch(err => {
+                            return error(req, res, 400, 'Error deleting the passphrase', err)
+                        })
+                })
+                .catch(err => {
+                    return error(req, res, 400, 'Error deleting the organization info', err)
+                })
+            }
+        });        
+    });
 }
