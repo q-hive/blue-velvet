@@ -6,6 +6,7 @@ import {
 
 import CameraIcon from '@mui/icons-material/AddPhotoAlternate'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import Delete from '@mui/icons-material/Delete';
 
 //*CONTEXTS
 import useAuth from '../../../contextHooks/useAuthContext'
@@ -418,7 +419,12 @@ export const NewOrganization = (props) => {
               <Box key={index} sx={{ marginTop: "1vh", display: "flex", flexDirection: "column", alignItems: "center", width: { xs: "100%", sm: "50%", md: "50%" }}} >
                 <Accordion sx={{width: { xs: "100%", sm: "100%", md: "100%" }}}>
                   <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Typography variant="h6" mt="2vh" align="left">Container #{index + 1}</Typography>
+                    <Box sx={{ width: { xs: "100%", sm: "100%" }, display: "flex", flexDirection: "row", justifyContent: 'space-between', alignContent: 'center' }} >
+                      <Typography variant="h6">Container #{index + 1}</Typography>
+                      {organizationContainers.length > 1
+                      ? <Delete color="error" onClick={() => deleteContainer(index)} sx={{ marginTop: ".5vh" }} />
+                      : null}
+                    </Box>
                   </AccordionSummary>
                   <AccordionDetails sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                     <TextField name='name' onChange={(event) => handleOrganizationContainersChange(event, index)} value={container.name} label="Name" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
@@ -436,9 +442,6 @@ export const NewOrganization = (props) => {
                       <TextField name='latitude' onChange={(event) => handleOrganizationContainersAddressCoordsChange(event, index)} value={container.address.coords.latitude} label="Latitude" type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
                       <TextField name='longitude' onChange={(event) => handleOrganizationContainersAddressCoordsChange(event, index)} value={container.address.coords.longitude} label="Longitude" type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
                     </Box>
-                    {organizationContainers.length > 1
-                      ? <Button variant="contained" color="error" onClick={() => deleteContainer(index)} sx={{ marginTop: "2vh" }}>Delete</Button>
-                      : null}
                   </AccordionDetails>
                 </Accordion>
               </Box>
@@ -452,7 +455,12 @@ export const NewOrganization = (props) => {
               <Box key={index} sx={{ marginTop: "1vh", display: "flex", flexDirection: "column", alignItems: "center", width: { xs: "100%", sm: "50%", md: "50%" }}} >
                 <Accordion sx={{width: { xs: "100%", sm: "100%", md: "100%" }}}>
                   <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Typography variant="h6" mt="2vh" align="left">Customer #{index + 1}</Typography>
+                    <Box sx={{ width: { xs: "100%", sm: "100%" }, display: "flex", flexDirection: "row", justifyContent: 'space-between', alignContent: 'center' }} >
+                      <Typography variant="h6">Customer #{index + 1}</Typography>
+                      {organizationCustomers.length > 1
+                        ? <Delete color="error" onClick={() => deleteCustomer(index)} sx={{ marginTop: ".5vh" }} />
+                        : null}
+                    </Box>
                   </AccordionSummary>
                   <AccordionDetails sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                     <Fab color="primary" component="label" aria-label="add" sx={{ marginY: "1%", width: 100, height: 100 }} size="large" helpertext="Label">
@@ -461,9 +469,6 @@ export const NewOrganization = (props) => {
                     </Fab>
                     <TextField name='email' onChange={(event) => handleOrganizationCustomersChange(event, index)} value={customer.email} label="Email" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
                     <TextField name='name' onChange={(event) => handleOrganizationCustomersChange(event, index)} value={customer.name} label="Name" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
-                    {organizationCustomers.length > 1
-                      ? <Button variant="contained" color="error" onClick={() => deleteCustomer(index)} sx={{ marginTop: "2vh" }}>Delete</Button>
-                      : null}
                   </AccordionDetails>
                 </Accordion>
               </ Box>
