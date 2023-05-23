@@ -301,12 +301,12 @@ export const NewOrganization = (props) => {
         })
       })
       .catch((err) => {
-        console.log("error  ", err)
         if (err.response.status === 500 || err.response.status === 400) {
           setDialog({
             ...dialog,
             open: true,
             title: "Organization could not be added",
+            message: err.response.data.message,
             actions: [
               {
                 label: "Retry",
@@ -321,6 +321,7 @@ export const NewOrganization = (props) => {
                 btn_color: "secondary",
                 execute: () => {
                   setDialog({ ...dialog, open: false })
+                  setLoading(false)
                 }
               }
             ]
@@ -488,7 +489,6 @@ export const NewOrganization = (props) => {
             </Box>
 
             {/* // SAVE */}
-            {/* TODO: Poner en blanco todos los campos despues de guardar la organizacion */}
             <Button variant="contained" onClick={handleSaveOrganization} disabled={!isFormValid()} sx={{ marginTop: "2vh" }}>
               {loading ? <CircularProgress /> : "Save Organization"}
             </Button>
