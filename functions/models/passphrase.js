@@ -6,7 +6,8 @@ const Passphrase = new Schema({
     client:         { type: ObjectId, required: true, unique: true },
     uid:            { type: String,   required: true, unique: true },
     passphrase:     { type: String,   required: true               },
-    organization:   { type: ObjectId, required: true               }
+    organization:   { type: ObjectId, required: false               }
+    // FIXME: Validacion cuando sea superadmin, no sea requerido 
 },
 {
     timestamps: {
