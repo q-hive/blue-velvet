@@ -47,11 +47,14 @@ const AuthContext = ({children}) => {
             }
           })
           .then((response) => {
-            if(!response.data.data.isAdmin) {
-              response.data.data.user.role = "employee"
-            } else {
+            if (response.data.data?.isSuperAdmin) {
+              response.data.data.user.role = "superadmin"
+            } else if (response.data.data.isAdmin) {
               response.data.data.user.role = "admin"
+            } else {
+              response.data.data.user.role = "employee"
             }
+
             setUser((usr) => {
               return {...response.data.data.user}
             })

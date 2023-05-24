@@ -19,9 +19,9 @@ const Organization = new Schema({
     providers:      { type: [Provider],     required: false                    }, 
     orders:         { type: [Order],        required: false                    },
     address:        { type: Address,        required: true                     },
-    packaging:      { type: [{type: ObjectId, unique:true}],             required: false                    },
-    deliveryReady:  { type: [{type: ObjectId, unique:true}],             required: false                    },
-    invoices:       { type:[{date:Date, payed:Boolean}],              required:false                     },
+    packaging:      { type: [{type: ObjectId, unique:true}], required: false   },
+    deliveryReady:  { type: [{type: ObjectId, unique:true}], required: false   },
+    invoices:       { type:[{date:Date, payed:Boolean}],     required:false    },
     tasksHistory:   { type: [{
         executedBy:     { type: ObjectId,   required: true, unique: false      },
         expectedTime:   { type: Number,     required: true, default: false     },

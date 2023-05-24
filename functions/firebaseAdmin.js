@@ -4,13 +4,10 @@ config()
 
 import { getAuth } from 'firebase-admin/auth';
 import admin from 'firebase-admin'
-import fs from 'fs'
 
-const serviceAccount = JSON.parse(fs.readFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, 'utf8'));
+const appInitMethod = process.env.NODE_ENV === 'production' ? {credential: admin.credential.cert(process.env.GOOGLE_APPLICATION_CREDENTIALS)} : {projectId: process.env.FIREBASE_PROJECT_ID}
 
-const app = admin.initializeApp({
-    credential: admin.credential.cert(process.env.GOOGLE_APPLICATION_CREDENTIALS)
-})
+const app = admin.initializeApp(appInitMethod)
 
 const adminAuth = getAuth(app)
 

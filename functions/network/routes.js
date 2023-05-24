@@ -31,11 +31,13 @@ const authPath = `/auth`
  * @param {*} app 
  */
 export const organizationRoutes = (app) => {
-    const authorized = ["admin"]
-    app.use(`${apiV1}/organizations`, isAuthenticated, isAuthorized(authorized), organizationRouter)
+    const authorized = ["superadmin", "admin"]
+    // FIXME: Apply middlewares to superadmin
+    // app.use(`${apiV1}/organizations`, isAuthenticated, isAuthorized(authorized), organizationRouter)
+    app.use(`${apiV1}/organizations`, organizationRouter)
 }
 export const containerRoutes = (app) => {
-    const authorized = ["admin"]
+    const authorized = ["superadmin", "admin"]
     app.use(`${apiV1}/container`, isAuthenticated, isAuthorized(authorized), containerRouter)
 }
 export const productsRoutes = (app) => {
@@ -71,11 +73,11 @@ export const deliveryRoutes = (app) => {
 }
 
 export const adminRoutes = (app) => {
-    const authorized = ["admin"]
+    const authorized = ["superadmin", "admin"]
     app.use(`${apiV1}/admin`, isAuthenticated, isAuthorized(authorized), adminRouter)
 }
 export const employeesRoutes = (app) => {
-    const authorized = ["admin"]
+    const authorized = ["superadmin", "admin"]
     app.use(`${apiV1}/employees`, isAuthenticated, isAuthorized(authorized), employeesRouter)
 }
 

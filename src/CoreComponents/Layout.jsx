@@ -13,6 +13,7 @@ import { Divider, Drawer, } from '@mui/material'
 //Icons
 import MenuIcon from '@mui/icons-material/Menu';
 import GroupsIcon from '@mui/icons-material/Groups';
+import ApartmentIcon from '@mui/icons-material/Apartment';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import RequestPageIcon from '@mui/icons-material/RequestPage';
 import WorkspacesIcon from '@mui/icons-material/Workspaces';
@@ -57,7 +58,6 @@ const BV_Layout = (props) => {
     const navigate = useNavigate()
 
     const handleRedirect = (e) => {
-      console.log(user.role)
       navigate(`/${user.uid}/${user.role}/${e.target.id}`)
       if(mobileOpen)setMobileOpen(false)
     }
@@ -87,6 +87,19 @@ const BV_Layout = (props) => {
       setAnchorElLang(null)
     }
 
+    //SuperAdmin Options Drawer buttons content (label and Icon)
+    const superAdminOptions = [
+      {
+        label:'Dashboard',
+        transKey:'dashboard_sidebar_label',
+        icon:<DashboardIcon color="primary"/>,
+      }, 
+      {
+        label:'Organizations',
+        transKey:'Organizations',
+        icon:<ApartmentIcon color="primary"/>,
+      }, 
+    ];
     //Admin Options Drawer buttons content (label and Icon)
     const adminOptions = [
       {
@@ -189,7 +202,15 @@ const BV_Layout = (props) => {
                   color="grey.A100" 
                   display="block" 
               >
-                  {user.role === "employee" ?  `${t('drawer_title_employee',{ns:'layout'})}` : `${t('drawer_title_admin',{ns:'layout'})}` }
+                  {
+                    user.role === "employee"
+                      ?  `${t('drawer_title_employee',{ns:'layout'})}`
+                      : (
+                        user.role === "admin"
+                          ? `${t('drawer_title_admin',{ns:'layout'})}`
+                          : `${t('SuperAdmin Options',{ns:'layout'})}`
+                        ) 
+                  }
               </Typography>
             </Box>
           </Toolbar>
@@ -208,11 +229,19 @@ const BV_Layout = (props) => {
 
                 /*ElSE ? admin*/
 
-                  adminOptions.map((option) => (
-                    <Button key={option.label} sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
-                      {t(`${option.transKey}`,{ns:'layout'})}
-                    </Button>
-                  ))
+                (
+                  user.role === "admin"
+                    ? adminOptions.map((option) => (
+                        <Button key={option.label} sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
+                          {t(`${option.transKey}`,{ns:'layout'})}
+                        </Button>
+                      ))
+                    : superAdminOptions.map((option) => (
+                        <Button key={option.label} sx={theme.button.sidebar} id={option.label.toLocaleLowerCase()} startIcon={option.icon} onClick={handleRedirect} >
+                          {t(`${option.transKey}`,{ns:'layout'})}
+                        </Button>
+                      )) 
+                )
               
             }
               
@@ -258,8 +287,12 @@ const BV_Layout = (props) => {
                         <Box paddingLeft={"20px"} flexDirection={"column"} sx={{display:"flex",paddingLeft:1}}>
                           <Box sx={{display:{xs:"none",sm:"flex"},paddingLeft:1}} justifyContent={"center"}>
                             <Clock color="secondary.dark"/>
-                          </Box> 
-                        <Typography color="secondary.dark" fontSize={{xs:"1.5vh",md:"2vh"}} variant="h6" flexGrow={0}>{t('layout_cont_container_location')} {containerData.city}</Typography>  
+                          </Box>
+                        {
+                          user.role !== "superadmin"
+                            ? <Typography color="secondary.dark" fontSize={{xs:"1.5vh",md:"2vh"}} variant="h6" flexGrow={0}>{t('layout_cont_container_location')} {containerData.city}</Typography>  
+                            : null
+                        }
 
                         </Box>
                       
@@ -358,18 +391,19 @@ const BV_Layout = (props) => {
     )
 
     const container = window !== undefined ? () => window().document.body : undefined;
-                            
     React.useEffect(() => {
-      getContainerData(user,credential,user.assignedContainer)
-      .then((containerResponse) => {
-        setContainerData((container) => {
-          return {
-            ...container,
-            city:containerResponse[0].address.city
-          }
+      if (user.role !== 'superadmin') {
+        getContainerData(user,credential,user.assignedContainer)
+        .then((containerResponse) => {
+          setContainerData((container) => {
+            return {
+              ...container,
+              city:containerResponse[0].address.city
+            }
+          })
         })
-      })
-      .catch((err) => {console.log("Error getting containers data")})
+        .catch((err) => {console.log("Error getting containers data")})
+      }
     },[])
     
     return (

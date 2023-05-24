@@ -13,11 +13,24 @@ export const newPassphrase = (data) => {
         mongoPass.save((err, doc) => {
             if (err) reject(err)
 
-            updateClient(data.clien, {
+            updateClient(data.client, {
                 $set: { passphrase: doc._id }
             })
 
             resolve(doc)
         })
     })
+}
+
+export const deletePassphrase = (clientId) => {
+    return new Promise((resolve, reject) => {
+        passModel.findOneAndRemove({ "client": clientId }, (err, doc) => {
+            if (err) reject(err);
+            if (!doc) {
+                reject(new Error(JSON.stringify({message:"Passphrase does not exist", status:409})))
+            } else {
+                resolve(doc);
+            }
+        });        
+    });
 }
