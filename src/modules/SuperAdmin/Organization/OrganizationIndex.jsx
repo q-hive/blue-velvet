@@ -4,10 +4,8 @@ import { DataGrid } from '@mui/x-data-grid'
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BV_THEME } from '../../../theme/BV-theme'
-import { EmployeeColumns } from '../../../utils/TableStates'
 import api from '../../../axios.js'
 import useAuth from '../../../contextHooks/useAuthContext'
-import { useTranslation } from 'react-i18next'
 
 import { UserModal } from "../../../CoreComponents/UserActions/UserModal"
 import { UserDialog } from "../../../CoreComponents/UserFeedback/Dialog"
@@ -32,8 +30,6 @@ export const OrganizationIndex = () => {
       "Containers": "Containers",
       "Customers": "Customers",
       "Address": "Address",
-      "Pending tasks": "Pending Tasks",
-      "Salary": "Salary",
       "Actions": "Actions"
     }
 
@@ -47,11 +43,11 @@ export const OrganizationIndex = () => {
   const OrganizationColumns = [
     {
       field: "_id",
-      headerName: "id",
+      headerName: "Id",
       renderHeader: () => renderHeaderHook("id"),
       headerAlign: "center",
       align: "center",
-      headerClassName: "header-sales-table",
+      headerClassName: "header-organizations-table",
       minWidth: { xs: "25%", md: 130 },
       flex: 1,
     },
@@ -61,17 +57,17 @@ export const OrganizationIndex = () => {
       renderHeader: () => renderHeaderHook("Name"),
       headerAlign: "center",
       align: "center",
-      headerClassName: "header-sales-table",
+      headerClassName: "header-organizations-table",
       minWidth: { xs: "25%", md: 130 },
       flex: 1
     },
     {
-      field: "admin",
+      field: "owner",
       headerName: "Administrator",
       renderHeader: () => renderHeaderHook("Administrator"),
       headerAlign: "center",
       align: "center",
-      headerClassName: "header-sales-table",
+      headerClassName: "header-organizations-table",
       minWidth: { xs: "25%", md: 130 },
       flex: 1
     },
@@ -81,7 +77,7 @@ export const OrganizationIndex = () => {
       renderHeader: () => renderHeaderHook("Containers"),
       headerAlign: "center",
       align: "center",
-      headerClassName: "header-sales-table",
+      headerClassName: "header-organizations-table",
       minWidth: { xs: "25%", md: 130 },
       flex: 1
     },
@@ -91,7 +87,7 @@ export const OrganizationIndex = () => {
       renderHeader: () => renderHeaderHook("Customers"),
       headerAlign: "center",
       align: "center",
-      headerClassName: "header-sales-table",
+      headerClassName: "header-organizations-table",
       minWidth: { xs: "25%", md: 130 },
       flex: 1
     },
@@ -101,9 +97,27 @@ export const OrganizationIndex = () => {
       renderHeader: () => renderHeaderHook("Address"),
       headerAlign: "center",
       align: "center",
-      headerClassName: "header-sales-table",
+      headerClassName: "header-organizations-table",
       minWidth: { xs: "25%", md: 130 },
-      flex: 1
+      flex: 1,
+      renderCell: (params) => {
+        const coords = params.row.address;
+        const openInMaps = () => {
+          const mapsUrl = `https://www.google.com.mx/maps/place/${coords.latitude},${coords.longitude}`;
+          window.open(mapsUrl);
+        };
+
+        return (
+          <Button
+            variant="contained"
+            onClick={openInMaps}
+            disabled={loading}
+            sx={BV_THEME.button.table}
+          >
+            Open in Maps
+          </Button>
+        );
+      }
     },
     {
       field: "actions",
@@ -111,7 +125,7 @@ export const OrganizationIndex = () => {
       renderHeader: () => renderHeaderHook("Actions"),
       headerAlign: "center",
       align: "center",
-      headerClassName: "header-sales-table",
+      headerClassName: "header-organizations-table",
       minWidth: { xs: "25%", md: 130 },
       flex: 1,
       renderCell: (params) => {
@@ -133,7 +147,7 @@ export const OrganizationIndex = () => {
         const { user, credential } = useAuth()
         const navigate = useNavigate()
 
-        const editCustomer = () => console.log("Edit organization")
+        const editOrganization = () => console.log("Edit organization")
         const deleteOrganization = async () => {
           setLoading(true)
           const response = await api.api.delete(`${api.apiVersion}/organizations/${params.id}`, {
@@ -157,7 +171,7 @@ export const OrganizationIndex = () => {
                 btn_color: "white_btn",
                 type: "privileged",
                 execute: () => {
-                  editCustomer()
+                  editOrganization()
                   navigate(`/${user.uid}/${user.role}/organization/editOrganization/?id=${params.id}`)
                 }
               },
@@ -262,7 +276,17 @@ export const OrganizationIndex = () => {
       }
     })
       .then((res) => {
-        setRows(res.data.data)
+        const organizationData = res.data.data.map((organization) => {
+          return {
+            _id: organization._id,
+            name: organization.name,
+            owner: organization.owner,
+            containers: organization.containers.length,
+            customers: organization.customers.length,
+            address: organization.address.coords
+          };
+        });
+        setRows(organizationData)
         setLoading(() => {
           return false
         })
@@ -280,7 +304,7 @@ export const OrganizationIndex = () => {
             <Box sx={{
               width: "100%",
               height: "80vh",
-              "& .header-sales-table": {
+              "& .header-organizations-table": {
                 backgroundColor: BV_THEME.palette.primary.main,
                 color: "white"
               }
