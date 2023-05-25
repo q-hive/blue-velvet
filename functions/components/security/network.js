@@ -142,7 +142,6 @@ authRouter.post('/login/admin', (req, res) => {
                                     token = await adminAuth.createCustomToken(user.user.uid)
                                     console.log(claims)
                                     let org = await getOrganizationById(claims.organization)
-                                    org = org.toObject()
 
                                     if (data.passphrase == hashPassphrase(req.body.passphrase)) {
                                         // const userOrganization = await getOrganizationByOwner(data._id)
@@ -207,7 +206,6 @@ authRouter.post('/refresh', (req, res) => {
             } else {
                 getOrganizationById(claims.organization)
                     .then(async org => {
-                        org = org.toObject()
 
                         let token
                         if (claims.role === "admin") {

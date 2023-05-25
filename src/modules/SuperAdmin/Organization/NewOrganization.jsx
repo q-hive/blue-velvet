@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react'
 
 //*MUI COMPONENTS
 import {
-  Autocomplete, Backdrop, Box, Button, Divider, Fab, TextField, Typography, Fade, CircularProgress, Accordion, AccordionSummary, AccordionDetails } from '@mui/material'
+  Autocomplete, Backdrop, Box, Button, Divider, Fab, TextField, Typography, Fade, CircularProgress, Accordion, AccordionSummary, AccordionDetails
+} from '@mui/material'
 
 import CameraIcon from '@mui/icons-material/AddPhotoAlternate'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -207,12 +208,20 @@ export const NewOrganization = (props) => {
     });
   };
 
-
   const isFormValid = () => {
+
+    let word = admin.password;
+    let phrase = admin.passphrase;
+
+    if (props.edit) {
+      word = true
+      phrase = true
+    }
+
     return (
       admin.email &&
-      admin.password &&
-      admin.passphrase &&
+      word &&
+      phrase &&
       admin.name &&
       admin.lname &&
       organization.name &&
@@ -259,6 +268,9 @@ export const NewOrganization = (props) => {
       }
     };
     setLoading(true)
+
+    delete mappedOrganizationData.password
+    delete mappedOrganizationData.passphrase
 
     if (!props.edit) {
       return createOrganization(mappedOrganizationData)
@@ -332,7 +344,7 @@ export const NewOrganization = (props) => {
       })
   }
 
-  // FIXME: Superadmin can update a organization
+  // FIXME: Superadmin can update a organization 
   const updateOrganization = () => {
     setDialog({
       ...dialog,
@@ -359,10 +371,15 @@ export const NewOrganization = (props) => {
       })
         .then((res) => {
           OrganizationInEdition = res.data.data
-          console.log("Organization in edition", OrganizationInEdition)
-          // FIXME: Check if data is empty
+          console.log("[OrganizationInEdition]", OrganizationInEdition)
+
+          setAdmin(prevAdmin => ({
+            ...prevAdmin,
+            ...OrganizationInEdition.admin
+          }));
           
-          setOrganization({...organization,
+          setOrganization({
+            ...organization,
             name: OrganizationInEdition.name,
             address: OrganizationInEdition.address,
           });
@@ -397,7 +414,7 @@ export const NewOrganization = (props) => {
         }>
           <Box sx={{ width: "90%", display: "flex", flexDirection: { xs: "column", sm: "column" } }} alignItems="center" >
 
-            <Typography variant="h4" mb={{ xs: "5vh", md: "3vh" }}>Create an organization</Typography>
+            <Typography variant="h4" mb={{ xs: "5vh", md: "3vh" }}>{props.edit ? "Edit" : "Create"} an organization</Typography>
 
             {/* // ORGANIZATION */}
             <Typography variant="h5" mt="4vh">Organization Information</Typography>
@@ -425,21 +442,21 @@ export const NewOrganization = (props) => {
             <Typography variant="h5" mt="4vh" align="left">Container Information</Typography>
             <Divider variant="middle" sx={{ width: { xs: "98%", sm: "50%", md: "50%" }, marginY: "1vh" }} />
             {organizationContainers.map((container, index) => (
-              <Box key={index} sx={{ marginTop: "1vh", display: "flex", flexDirection: "column", alignItems: "center", width: { xs: "100%", sm: "50%", md: "50%" }}} >
-                <Accordion sx={{width: { xs: "100%", sm: "100%", md: "100%" }}}>
+              <Box key={index} sx={{ marginTop: "1vh", display: "flex", flexDirection: "column", alignItems: "center", width: { xs: "100%", sm: "50%", md: "50%" } }} >
+                <Accordion sx={{ width: { xs: "100%", sm: "100%", md: "100%" } }}>
                   <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <Box sx={{ width: { xs: "100%", sm: "100%" }, display: "flex", flexDirection: "row", justifyContent: 'space-between', alignContent: 'center' }} >
                       <Typography variant="h6">Container #{index + 1}</Typography>
                       {organizationContainers.length > 1
-                      ? <Delete color="error" onClick={() => deleteContainer(index)} sx={{ marginTop: ".5vh" }} />
-                      : null}
+                        ? <Delete color="error" onClick={() => deleteContainer(index)} sx={{ marginTop: ".5vh" }} />
+                        : null}
                     </Box>
                   </AccordionSummary>
                   <AccordionDetails sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                     <TextField name='name' onChange={(event) => handleOrganizationContainersChange(event, index)} value={container?.name} label="Name" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
                     <TextField name='capacity' type="number" onChange={(event) => handleOrganizationContainersChange(event, index)} value={container?.capacity} label="Capacity" InputProps={{ endAdornment: <Typography>/U</Typography> }} sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
                     <TextField name='street' onChange={(event) => handleOrganizationContainersAddressChange(event, index)} value={container?.address?.street} label="Street" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
-                    <Box sx={{ width: { xs: "100%", sm: "100%" }, display: "flex", flexDirection: "row", alignItems: "center"}} >
+                    <Box sx={{ width: { xs: "100%", sm: "100%" }, display: "flex", flexDirection: "row", alignItems: "center" }} >
                       <TextField name='stNumber' onChange={(event) => handleOrganizationContainersAddressChange(event, index)} value={container?.address?.stNumber} label="No." type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
                       <TextField name='zip' onChange={(event) => handleOrganizationContainersAddressChange(event, index)} value={container?.address?.zip} label="ZipCode" type="text" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
                     </Box>
@@ -447,7 +464,7 @@ export const NewOrganization = (props) => {
                     <TextField name='state' onChange={(event) => handleOrganizationContainersAddressChange(event, index)} value={container?.address?.state} label="State" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
                     <TextField name='country' onChange={(event) => handleOrganizationContainersAddressChange(event, index)} value={container?.address?.country} label="Country" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
                     <TextField name='references' onChange={(event) => handleOrganizationContainersAddressChange(event, index)} value={container?.address?.references} multiline label="References" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
-                    <Box sx={{ width: { xs: "100%", sm: "100%" }, display: "flex", flexDirection: "row", alignItems: "center"}} >
+                    <Box sx={{ width: { xs: "100%", sm: "100%" }, display: "flex", flexDirection: "row", alignItems: "center" }} >
                       <TextField name='latitude' onChange={(event) => handleOrganizationContainersAddressCoordsChange(event, index)} value={container?.address?.coords?.latitude} label="Latitude" type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
                       <TextField name='longitude' onChange={(event) => handleOrganizationContainersAddressCoordsChange(event, index)} value={container?.address?.coords?.longitude} label="Longitude" type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
                     </Box>
@@ -461,8 +478,8 @@ export const NewOrganization = (props) => {
             <Typography variant="h5" mt="4vh" align="left">Customers Information</Typography>
             <Divider variant="middle" sx={{ width: { xs: "98%", sm: "50%", md: "50%" }, marginY: "1vh" }} />
             {organizationCustomers.map((customer, index) => (
-              <Box key={index} sx={{ marginTop: "1vh", display: "flex", flexDirection: "column", alignItems: "center", width: { xs: "100%", sm: "50%", md: "50%" }}} >
-                <Accordion sx={{width: { xs: "100%", sm: "100%", md: "100%" }}}>
+              <Box key={index} sx={{ marginTop: "1vh", display: "flex", flexDirection: "column", alignItems: "center", width: { xs: "100%", sm: "50%", md: "50%" } }} >
+                <Accordion sx={{ width: { xs: "100%", sm: "100%", md: "100%" } }}>
                   <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <Box sx={{ width: { xs: "100%", sm: "100%" }, display: "flex", flexDirection: "row", justifyContent: 'space-between', alignContent: 'center' }} >
                       <Typography variant="h6">Customer #{index + 1}</Typography>
