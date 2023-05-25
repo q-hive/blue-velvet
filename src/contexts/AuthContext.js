@@ -5,8 +5,33 @@ import auth from "../firebaseInit.js";
 import { useNavigate } from "react-router-dom";
 import api from "../axios.js";
 import { useErrorHandler } from "react-error-boundary";
+import { ResetTvRounded } from "@mui/icons-material";
 
 const AuthContextProv = createContext();
+
+
+const getRefreshedToken = async () => {
+  let refreshedToken 
+
+  const refresh = async () =>{
+    await auth.currentUser.getIdToken(/* forceRefresh */ true).then(function(idToken) {
+      refreshedToken = idToken
+    }).catch(function(error) {
+      // Handle error
+      console.log("error refreshing token",error)
+    });
+
+  }
+
+  await refresh()
+  return refreshedToken
+
+}
+
+
+
+
+
 
 const AuthContext = ({ children }) => {
   const [user, setUser] = useState(undefined);
@@ -27,8 +52,10 @@ const AuthContext = ({ children }) => {
       });
   };
 
+  
+
   const refreshAuthToken = async () => {
-    try {
+    if(user){try {
       const token = await auth.currentUser.getIdToken();
       setCredential(() => ({
         _tokenResponse: { idToken: token },
@@ -56,11 +83,11 @@ const AuthContext = ({ children }) => {
       setLoading(() => false);
     } catch (error) {
       handleError(error);
-    }
+    }}
   };
 
   useEffect(() => {
-    return auth.onAuthStateChanged(async (u) => {
+    const authStateChangeHandler = async (u) => {
       setLoading(() => true);
       if (u) {
         try {
@@ -76,7 +103,24 @@ const AuthContext = ({ children }) => {
       setTimeout(() => {
         setLoading(() => false);
       }, 10000);
-    });
+    };
+
+    const idTokenChangedHandler = async () => {
+      try {
+        await refreshAuthToken();
+      } catch (err) {
+        console.log("Error while refreshing token.");
+        console.log(err);
+      }
+    };
+
+    const unregisterAuthObserver = auth.onAuthStateChanged(authStateChangeHandler);
+    const unregisterTokenObserver = auth.onIdTokenChanged(idTokenChangedHandler);
+
+    return () => {
+      unregisterAuthObserver();
+      unregisterTokenObserver();
+    };
   }, []);
 
   return (
@@ -88,4 +132,4 @@ const AuthContext = ({ children }) => {
   );
 };
 
-export { AuthContext, AuthContextProv };
+export { AuthContext, AuthContextProv, getRefreshedToken };

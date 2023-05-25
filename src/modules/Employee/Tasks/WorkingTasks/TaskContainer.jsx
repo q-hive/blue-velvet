@@ -31,6 +31,7 @@ import { PreSoakingContent1 } from './PreSoakingContent1'
 import { PreSoakingContent2 } from './PreSoakingContent2'
 import { transformTo } from '../../../../utils/times'
 import { MaintenanceContent } from '../ContainerTasks/MaintenanceContent'
+import { getRefreshedToken } from '../../../../contexts/AuthContext'
 
 export const TaskContainer = (props) => {
     //*Variables declarations
@@ -332,13 +333,15 @@ export const TaskContainer = (props) => {
                 }
             })
 
+            let refreshedToken = await getRefreshedToken()
+
             await api.api.patch(`${api.apiVersion}/work/taskHistory`, 
             {
                 ...taskHistoryModel
             },
             {
                 headers: {
-                    authorization: credential._tokenResponse.idToken,
+                    authorization: refreshedToken,
                     user: user
                 }
             })
@@ -351,7 +354,7 @@ export const TaskContainer = (props) => {
             },
             {
                 headers: {
-                    authorization: credential._tokenResponse.idToken,
+                    authorization: refreshedToken,
                     user: user
                 }
             }
