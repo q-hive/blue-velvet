@@ -332,6 +332,7 @@ export const NewOrganization = (props) => {
       })
   }
 
+  // FIXME: Superadmin can update a organization
   const updateOrganization = () => {
     setDialog({
       ...dialog,
@@ -340,7 +341,7 @@ export const NewOrganization = (props) => {
       message: "At the momment this feature is not available, we are working to cerate a better experience, please be patient.",
       actions: [{
         label: "OK",
-        execute: () => navigate(`/${user.uid}/${user.role}/organizations`)
+        execute: () => console.log("Feature unavailable [UPDATE ORGANIZATION]")
       }]
     })
   }
@@ -357,10 +358,18 @@ export const NewOrganization = (props) => {
         }
       })
         .then((res) => {
-          console.log(res.data.data)
           OrganizationInEdition = res.data.data
           console.log("Organization in edition", OrganizationInEdition)
-          // FIXME: Set object to edit
+          // FIXME: Check if data is empty
+          
+          setOrganization({...organization,
+            name: OrganizationInEdition.name,
+            address: OrganizationInEdition.address,
+          });
+
+          setOrganizationContainers(OrganizationInEdition.containers);
+          setOrganizationCustomers(OrganizationInEdition.customers);
+
         })
         .catch((err) => {
           console.log(err)
@@ -393,23 +402,23 @@ export const NewOrganization = (props) => {
             {/* // ORGANIZATION */}
             <Typography variant="h5" mt="4vh">Organization Information</Typography>
             <Divider variant="middle" sx={{ width: { xs: "98%", sm: "50%", md: "50%" }, marginY: "1vh" }} />
-            <TextField id="organizationName" name='name' onChange={handleOrganizationChange} value={organization.name} label="Name" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
+            <TextField id="organizationName" name='name' onChange={handleOrganizationChange} value={organization?.name} label="Name" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
 
             {/* // ORGANIZATION ADDRESS */}
             <Typography variant="h5" mt="4vh">Address</Typography>
             <Divider variant="middle" sx={{ width: { xs: "98%", sm: "50%", md: "50%" }, marginY: "1vh" }} />
-            <TextField id="organizationStreet" name='street' onChange={handleOrganizationAddressChange} value={organization.address.street} label="Street" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
+            <TextField id="organizationStreet" name='street' onChange={handleOrganizationAddressChange} value={organization?.address?.street} label="Street" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
             <Box sx={{ width: { xs: "98%", sm: "49%" } }} >
-              <TextField id="organizationNumber" name='stNumber' onChange={handleOrganizationAddressChange} value={organization.address.stNumber} label="No." type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
-              <TextField id="organizationZipCode" name='zip' onChange={handleOrganizationAddressChange} value={organization.address.zip} label="ZipCode" type="text" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
+              <TextField id="organizationNumber" name='stNumber' onChange={handleOrganizationAddressChange} value={organization?.address?.stNumber} label="No." type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
+              <TextField id="organizationZipCode" name='zip' onChange={handleOrganizationAddressChange} value={organization?.address?.zip} label="ZipCode" type="text" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
             </Box>
-            <TextField id="organizationCity" name='city' onChange={handleOrganizationAddressChange} value={organization.address.city} label="City" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
-            <TextField id="organizationState" name='state' onChange={handleOrganizationAddressChange} value={organization.address.state} label="State" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
-            <TextField id="organizationCountry" name='country' onChange={handleOrganizationAddressChange} value={organization.address.country} label="Country" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
-            <TextField id="organizationReferences" name='references' onChange={handleOrganizationAddressChange} value={organization.address.references} multiline label="References" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
+            <TextField id="organizationCity" name='city' onChange={handleOrganizationAddressChange} value={organization?.address?.city} label="City" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
+            <TextField id="organizationState" name='state' onChange={handleOrganizationAddressChange} value={organization?.address?.state} label="State" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
+            <TextField id="organizationCountry" name='country' onChange={handleOrganizationAddressChange} value={organization?.address?.country} label="Country" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
+            <TextField id="organizationReferences" name='references' onChange={handleOrganizationAddressChange} value={organization?.address?.references} multiline label="References" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
             <Box sx={{ width: { xs: "98%", sm: "49%" } }} >
-              <TextField id="organizatioLnatitude" name='latitude' onChange={handleOrganizationAddressCoordsChange} value={organization.address.coords.latitude} label="Latitude" type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
-              <TextField id="organizationLongitude" name='longitude' onChange={handleOrganizationAddressCoordsChange} value={organization.address.coords.longitude} label="Longitude" type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
+              <TextField id="organizatioLnatitude" name='latitude' onChange={handleOrganizationAddressCoordsChange} value={organization?.address?.coords?.latitude} label="Latitude" type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
+              <TextField id="organizationLongitude" name='longitude' onChange={handleOrganizationAddressCoordsChange} value={organization?.address?.coords?.longitude} label="Longitude" type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
             </Box>
 
             {/* // ORGANIZATION CONTAINERS */}
@@ -427,20 +436,20 @@ export const NewOrganization = (props) => {
                     </Box>
                   </AccordionSummary>
                   <AccordionDetails sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                    <TextField name='name' onChange={(event) => handleOrganizationContainersChange(event, index)} value={container.name} label="Name" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
-                    <TextField name='capacity' type="number" onChange={(event) => handleOrganizationContainersChange(event, index)} value={container.capacity} label="Capacity" InputProps={{ endAdornment: <Typography>/U</Typography> }} sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
-                    <TextField name='street' onChange={(event) => handleOrganizationContainersAddressChange(event, index)} value={container.address.street} label="Street" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
+                    <TextField name='name' onChange={(event) => handleOrganizationContainersChange(event, index)} value={container?.name} label="Name" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
+                    <TextField name='capacity' type="number" onChange={(event) => handleOrganizationContainersChange(event, index)} value={container?.capacity} label="Capacity" InputProps={{ endAdornment: <Typography>/U</Typography> }} sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
+                    <TextField name='street' onChange={(event) => handleOrganizationContainersAddressChange(event, index)} value={container?.address?.street} label="Street" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
                     <Box sx={{ width: { xs: "100%", sm: "100%" }, display: "flex", flexDirection: "row", alignItems: "center"}} >
-                      <TextField name='stNumber' onChange={(event) => handleOrganizationContainersAddressChange(event, index)} value={container.address.stNumber} label="No." type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
-                      <TextField name='zip' onChange={(event) => handleOrganizationContainersAddressChange(event, index)} value={container.address.zip} label="ZipCode" type="text" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
+                      <TextField name='stNumber' onChange={(event) => handleOrganizationContainersAddressChange(event, index)} value={container?.address?.stNumber} label="No." type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
+                      <TextField name='zip' onChange={(event) => handleOrganizationContainersAddressChange(event, index)} value={container?.address?.zip} label="ZipCode" type="text" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
                     </Box>
-                    <TextField name='city' onChange={(event) => handleOrganizationContainersAddressChange(event, index)} value={container.address.city} label="City" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
-                    <TextField name='state' onChange={(event) => handleOrganizationContainersAddressChange(event, index)} value={container.address.state} label="State" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
-                    <TextField name='country' onChange={(event) => handleOrganizationContainersAddressChange(event, index)} value={container.address.country} label="Country" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
-                    <TextField name='references' onChange={(event) => handleOrganizationContainersAddressChange(event, index)} value={container.address.references} multiline label="References" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
+                    <TextField name='city' onChange={(event) => handleOrganizationContainersAddressChange(event, index)} value={container?.address?.city} label="City" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
+                    <TextField name='state' onChange={(event) => handleOrganizationContainersAddressChange(event, index)} value={container?.address?.state} label="State" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
+                    <TextField name='country' onChange={(event) => handleOrganizationContainersAddressChange(event, index)} value={container?.address?.country} label="Country" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
+                    <TextField name='references' onChange={(event) => handleOrganizationContainersAddressChange(event, index)} value={container?.address?.references} multiline label="References" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
                     <Box sx={{ width: { xs: "100%", sm: "100%" }, display: "flex", flexDirection: "row", alignItems: "center"}} >
-                      <TextField name='latitude' onChange={(event) => handleOrganizationContainersAddressCoordsChange(event, index)} value={container.address.coords.latitude} label="Latitude" type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
-                      <TextField name='longitude' onChange={(event) => handleOrganizationContainersAddressCoordsChange(event, index)} value={container.address.coords.longitude} label="Longitude" type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
+                      <TextField name='latitude' onChange={(event) => handleOrganizationContainersAddressCoordsChange(event, index)} value={container?.address?.coords?.latitude} label="Latitude" type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
+                      <TextField name='longitude' onChange={(event) => handleOrganizationContainersAddressCoordsChange(event, index)} value={container?.address?.coords?.longitude} label="Longitude" type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
                     </Box>
                   </AccordionDetails>
                 </Accordion>
@@ -467,8 +476,8 @@ export const NewOrganization = (props) => {
                       <input type="file" accept="image/*" onChange={handleChangeLabel} hidden />
                       <CameraIcon sx={{ fontSize: "5vh" }} />
                     </Fab>
-                    <TextField name='email' onChange={(event) => handleOrganizationCustomersChange(event, index)} value={customer.email} label="Email" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
-                    <TextField name='name' onChange={(event) => handleOrganizationCustomersChange(event, index)} value={customer.name} label="Name" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
+                    <TextField name='email' onChange={(event) => handleOrganizationCustomersChange(event, index)} value={customer?.email} label="Email" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
+                    <TextField name='name' onChange={(event) => handleOrganizationCustomersChange(event, index)} value={customer?.name} label="Name" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
                   </AccordionDetails>
                 </Accordion>
               </ Box>
@@ -482,20 +491,20 @@ export const NewOrganization = (props) => {
               <input type="file" accept="image/*" onChange={handleChangeLabel} hidden />
               <CameraIcon sx={{ fontSize: "5vh" }} />
             </Fab>
-            <TextField id="email" name='email' onChange={handleAdminChange} value={admin.email} label="Email" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
+            <TextField id="email" name='email' onChange={handleAdminChange} value={admin?.email} label="Email" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
             <Box sx={{ width: { xs: "98%", sm: "49%" } }} >
-              <TextField id="name" name='name' onChange={handleAdminChange} value={admin.name} label="First Name" type="text" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
-              <TextField id="lname" name='lname' onChange={handleAdminChange} value={admin.lname} label="Last Name" type="text" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
+              <TextField id="name" name='name' onChange={handleAdminChange} value={admin?.name} label="First Name" type="text" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
+              <TextField id="lname" name='lname' onChange={handleAdminChange} value={admin?.lname} label="Last Name" type="text" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
             </Box>
-            <TextField id="phone" name='phone' onChange={handleAdminChange} value={admin.phone} label="Phone" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
+            <TextField id="phone" name='phone' onChange={handleAdminChange} value={admin?.phone} label="Phone" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
             <Box sx={{ width: { xs: "98%", sm: "49%" } }} >
-              <TextField id="password" name='password' onChange={handleAdminChange} value={admin.password} label="Set a password" type="password" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
-              <TextField id="passphrase" name='passphrase' onChange={handleAdminChange} value={admin.passphrase} label="Set a passphrase" type="password" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
+              <TextField id="password" name='password' onChange={handleAdminChange} value={admin?.password} label="Set a password" type="password" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
+              <TextField id="passphrase" name='passphrase' onChange={handleAdminChange} value={admin?.passphrase} label="Set a passphrase" type="password" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
             </Box>
 
             {/* // SAVE */}
             <Button variant="contained" onClick={handleSaveOrganization} disabled={!isFormValid()} sx={{ marginTop: "2vh" }}>
-              {loading ? <CircularProgress /> : "Save Organization"}
+              {loading ? <CircularProgress /> : (!props.edit ? "Save Organization" : "Update Organization")}
             </Button>
           </Box>
         </Box>

@@ -21,6 +21,9 @@ export const OrganizationIndex = () => {
   const handleNewOrganization = () => {
     navigate('new')
   }
+  const handleEditOrganization = (id) => {
+    navigate(`editOrganization/?id=${id}`)
+  }
 
   const renderHeaderHook = (headerName) => {
     const JSXByHname = {
@@ -147,7 +150,6 @@ export const OrganizationIndex = () => {
         const { user, credential } = useAuth()
         const navigate = useNavigate()
 
-        const editOrganization = () => console.log("Edit organization")
         const deleteOrganization = async () => {
           setLoading(true)
           const response = await api.api.delete(`${api.apiVersion}/organizations/${params.id}`, {
@@ -171,8 +173,7 @@ export const OrganizationIndex = () => {
                 btn_color: "white_btn",
                 type: "privileged",
                 execute: () => {
-                  editOrganization()
-                  navigate(`/${user.uid}/${user.role}/organization/editOrganization/?id=${params.id}`)
+                  handleEditOrganization(params.id)
                 }
               },
               {
