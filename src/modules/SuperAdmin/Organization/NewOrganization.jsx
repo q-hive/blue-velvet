@@ -26,6 +26,7 @@ export const NewOrganization = (props) => {
   const navigate = useNavigate()
 
   const [clientId, setClientId] = useState(0)
+  const [clientUid, setClientUid] = useState(0)
   const [loading, setLoading] = useState(false)
 
   const [dialog, setDialog] = useState({
@@ -276,6 +277,7 @@ export const NewOrganization = (props) => {
       delete mappedOrganizationData.password
       delete mappedOrganizationData.passphrase
       mappedOrganizationData._id = clientId;
+      mappedOrganizationData.uid = clientUid;
       return updateOrganization(mappedOrganizationData)
     }
   };
@@ -426,6 +428,7 @@ export const NewOrganization = (props) => {
           OrganizationInEdition = res.data.data
 
           setClientId(OrganizationInEdition.admin._id);
+          setClientUid(OrganizationInEdition.admin.uid);
 
           setAdmin(prevAdmin => ({
             ...prevAdmin,

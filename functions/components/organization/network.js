@@ -63,14 +63,14 @@ router.get('/', (req, res) =>{
 
 // * UPDATE
 router.put('/:id', (req, res) => {
-    let data = req.body;
+    let orgData = req.body;
     let clientData = req
-    if (Object.keys(data).indexOf("organization") !== -1 ) {
-        data = data.organization
+    if (Object.keys(orgData).indexOf("organization") !== -1 ) {
+        orgData = orgData.organization
         delete clientData.body.organization
     }
 
-    updateOrganization(req.params.id, data)
+    updateOrganization(req.params.id, orgData)
     .then(orgs => {
         updateClient(clientData, res, true)
         .then(orgs => {

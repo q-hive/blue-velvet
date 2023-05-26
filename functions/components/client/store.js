@@ -3,6 +3,7 @@ const { ObjectId } = mongoose.Types
 const { Schema } = mongoose
 
 import Client from '../../models/client.js' 
+import { updateUser } from '../admin/store.js'
 import { organizationModel } from '../../models/organization.js'
 import adminAuth from '../../firebaseAdmin.js'
 
@@ -14,7 +15,13 @@ export const updateClient = (req, res, isFromOrg=false) => {
             console.log("Updating customer with from organizatoin with ID: " + req.body._id)
             clientModel.findOneAndUpdate({ _id: req.body._id }, req.body, { new: true }).exec((err, doc) => {
                 if (err) reject(err)
-                resolve(doc)
+                updateUser(req.body)
+                    .then((user) => {
+                        resolve("Firebase user was updated", user)
+                    })
+                    .catch((err) => {
+                        reject("Error updating user from firebase", err)
+                    })
             })
         } else {
             console.log("Updating customer with ID: " + req.params.id)

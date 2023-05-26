@@ -26,6 +26,7 @@ export function newEmployee(res,data) {
         // * Create account on firebase
         adminAuth.createUser({
             email:          data.email,
+            phoneNumber: data.phone,
             emailVerified:  false,
             password:       data.password,
             displayName:    data.name + " " + data.lname,
@@ -87,6 +88,7 @@ export function newAdmin(data) {
         // * Create account on firebase
         adminAuth.createUser({
             email: data.email,
+            phoneNumber: data.phone,
             emailVerified: false,
             password: data.password,
             displayName: data.name + " " + data.lname,
@@ -235,8 +237,20 @@ export function newSuperAdmin(data) {
     })
 }
 
-export const updateUser = () => {
+export function updateUser(data) {
     return new Promise((resolve, reject) => {
-        resolve()
+        adminAuth.updateUser(data.uid,{
+            email: data.email,
+            phoneNumber: data.phone,
+            // password: data.password,
+            displayName: data.name + " " + data.lname,
+            photoURL: data.image,
+        })
+        .then((userRecord) => {
+            resolve('User updated successfully', userRecord.toJSON());
+        })
+        .catch((error) => {
+            reject('Error updating user:', error);
+        });
     })
 }
