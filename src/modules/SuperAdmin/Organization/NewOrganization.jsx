@@ -274,10 +274,10 @@ export const NewOrganization = (props) => {
     if (!props.edit) {
       return createOrganization(mappedOrganizationData)
     } else {
-      delete mappedOrganizationData.password
-      delete mappedOrganizationData.passphrase
       mappedOrganizationData._id = clientId;
       mappedOrganizationData.uid = clientUid;
+      if(!mappedOrganizationData.password) delete mappedOrganizationData.password;
+      if(!mappedOrganizationData.passphrase) delete mappedOrganizationData.passphrase;
       return updateOrganization(mappedOrganizationData)
     }
   };
@@ -572,8 +572,8 @@ export const NewOrganization = (props) => {
             </Box>
             <TextField id="phone" name='phone' onChange={handleAdminChange} value={admin?.phone} label="Phone" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
             <Box sx={{ width: { xs: "98%", sm: "49%" } }} >
-              <TextField id="password" name='password' onChange={handleAdminChange} value={admin?.password} label="Set a password" type="password" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={props.edit} />
-              <TextField id="passphrase" name='passphrase' onChange={handleAdminChange} value={admin?.passphrase} label="Set a passphrase" type="password" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={props.edit} />
+              <TextField id="password" name='password' onChange={handleAdminChange} value={admin?.password} label="Set a password" type="password" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
+              <TextField id="passphrase" name='passphrase' onChange={handleAdminChange} value={admin?.passphrase} label="Set a passphrase" type="password" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
             </Box>
 
             {/* // SAVE */}

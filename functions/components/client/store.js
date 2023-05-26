@@ -13,9 +13,11 @@ export const updateClient = (req, res, isFromOrg=false) => {
     return new Promise((resolve, reject) => {
         if (isFromOrg) {
             console.log("Updating customer with from organizatoin with ID: " + req.body._id)
-            clientModel.findOneAndUpdate({ _id: req.body._id }, req.body, { new: true }).exec((err, doc) => {
+            let clientData = req.body;
+            if (clientData.passphrase) delete clientData.passphrase;
+            clientModel.findOneAndUpdate({ _id: clientData._id }, clientData, { new: true }).exec((err, doc) => {
                 if (err) reject(err)
-                updateUser(req.body)
+                updateUser(clientData)
                     .then((user) => {
                         resolve("Firebase user was updated", user)
                     })

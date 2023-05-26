@@ -242,12 +242,12 @@ export function updateUser(data) {
         adminAuth.updateUser(data.uid,{
             email: data.email,
             phoneNumber: data.phone,
-            // password: data.password,
+            password: data.password,
             displayName: data.name + " " + data.lname,
             photoURL: data.image,
         })
         .then((userRecord) => {
-            resolve('User updated successfully', userRecord.toJSON());
+            resolve('User updated successfully', userRecord);
         })
         .catch((error) => {
             reject('Error updating user:', error);
