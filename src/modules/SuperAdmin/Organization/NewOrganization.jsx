@@ -25,6 +25,7 @@ export const NewOrganization = (props) => {
   const { user, credential } = useAuth()
   const navigate = useNavigate()
 
+  const [clientId, setClientId] = useState(0)
   const [loading, setLoading] = useState(false)
 
   const [dialog, setDialog] = useState({
@@ -269,12 +270,12 @@ export const NewOrganization = (props) => {
     };
     setLoading(true)
 
-    delete mappedOrganizationData.password
-    delete mappedOrganizationData.passphrase
-
     if (!props.edit) {
       return createOrganization(mappedOrganizationData)
     } else {
+      delete mappedOrganizationData.password
+      delete mappedOrganizationData.passphrase
+      mappedOrganizationData._id = clientId;
       return updateOrganization(mappedOrganizationData)
     }
   };
@@ -344,18 +345,70 @@ export const NewOrganization = (props) => {
       })
   }
 
-  // FIXME: Superadmin can update a organization 
-  const updateOrganization = () => {
-    setDialog({
-      ...dialog,
-      open: true,
-      title: "Feature unavailable.",
-      message: "At the momment this feature is not available, we are working to cerate a better experience, please be patient.",
-      actions: [{
-        label: "OK",
-        execute: () => console.log("Feature unavailable [UPDATE ORGANIZATION]")
-      }]
+  const updateOrganization = (mappedOrganizationData) => {
+    let id = new URLSearchParams(window.location.search).get("id")
+    api.api.put(`${api.apiVersion}/organizations/${id}`, mappedOrganizationData, {
+      headers: {
+        authorization: credential._tokenResponse.idToken,
+        user: user
+      }
     })
+      .then((res) => {
+
+        setLoading(false)
+
+        setDialog({
+          ...dialog,
+          open: true,
+          title: "Organization updated",
+          actions: [
+            {
+              label: "Edit again",
+              btn_color: "primary",
+              execute: () => {
+                window.location.reload()
+              }
+            },
+            {
+              label: "Go to Dashboard",
+              btn_color: "white_btn",
+              execute: () => {
+                navigate(`/${user.uid}/${user.role}/dashboard`)
+              }
+            }
+          ]
+
+        })
+      })
+      .catch((err) => {
+        if (err.response.status === 500 || err.response.status === 400) {
+          setDialog({
+            ...dialog,
+            open: true,
+            title: "Organization could not be updated",
+            message: err.response.data.message,
+            actions: [
+              {
+                label: "Retry",
+                btn_color: "primary",
+                execute: () => {
+                  handleSaveOrganization()
+                  setDialog({ ...dialog, open: false })
+                }
+              },
+              {
+                label: "Close",
+                btn_color: "secondary",
+                execute: () => {
+                  setDialog({ ...dialog, open: false })
+                  setLoading(false)
+                }
+              }
+            ]
+
+          })
+        }
+      })
   }
 
   let OrganizationInEdition
@@ -371,7 +424,8 @@ export const NewOrganization = (props) => {
       })
         .then((res) => {
           OrganizationInEdition = res.data.data
-          console.log("[OrganizationInEdition]", OrganizationInEdition)
+
+          setClientId(OrganizationInEdition.admin._id);
 
           setAdmin(prevAdmin => ({
             ...prevAdmin,
@@ -515,8 +569,8 @@ export const NewOrganization = (props) => {
             </Box>
             <TextField id="phone" name='phone' onChange={handleAdminChange} value={admin?.phone} label="Phone" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
             <Box sx={{ width: { xs: "98%", sm: "49%" } }} >
-              <TextField id="password" name='password' onChange={handleAdminChange} value={admin?.password} label="Set a password" type="password" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
-              <TextField id="passphrase" name='passphrase' onChange={handleAdminChange} value={admin?.passphrase} label="Set a passphrase" type="password" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
+              <TextField id="password" name='password' onChange={handleAdminChange} value={admin?.password} label="Set a password" type="password" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={props.edit} />
+              <TextField id="passphrase" name='passphrase' onChange={handleAdminChange} value={admin?.passphrase} label="Set a passphrase" type="password" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={props.edit} />
             </Box>
 
             {/* // SAVE */}

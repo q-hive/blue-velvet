@@ -3,6 +3,7 @@ import { mongoose } from '../../mongo.js'
 
 import { success, error } from '../../network/response.js'
 import { getOrganizations, getOrganizationById, newOrganization, updateOrganization, deleteOrganization } from './store.js'
+import { updateClient } from '../client/store.js'
 import { modelsValidationError } from '../../utils/errorHandler.js'
 import { newContainer } from '../container/store.js'
 
@@ -61,10 +62,23 @@ router.get('/', (req, res) =>{
 })
 
 // * UPDATE
-router.post('/:id', (req, res) => {
-    updateOrganization(req.params.id, req.body)
+router.put('/:id', (req, res) => {
+    let data = req.body;
+    let clientData = req
+    if (Object.keys(data).indexOf("organization") !== -1 ) {
+        data = data.organization
+        delete clientData.body.organization
+    }
+
+    updateOrganization(req.params.id, data)
     .then(orgs => {
-        return success(req, res, 201, 'Organization updates successfully', orgs)
+        updateClient(clientData, res, true)
+        .then(orgs => {
+            return success(req, res, 201, 'Organization and admin was updated successfully', orgs)
+        })
+        .catch(err => {
+            return error(req, res, 400, 'Error updating the admin info', err)
+        })
     })
     .catch(err => {
         return error(req, res, 400, 'Error updating the organization info', err)

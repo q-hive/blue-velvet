@@ -8,27 +8,35 @@ import adminAuth from '../../firebaseAdmin.js'
 
 const clientModel = mongoose.model('clients', Client)
 
-export const updateClient = (req, res) => {
+export const updateClient = (req, res, isFromOrg=false) => {
     return new Promise((resolve, reject) => {
-        console.log("Updating customer with ID: " + req.params.id)
-        req.body._id = req.params.id
-        organizationModel.updateOne(
-            {
-                "_id":mongoose.Types.ObjectId(res.locals.organization),
-            },
-            {
-                "$set":{
-                    "customers.$[customer]":req.body
+        if (isFromOrg) {
+            console.log("Updating customer with from organizatoin with ID: " + req.body._id)
+            clientModel.findOneAndUpdate({ _id: req.body._id }, req.body, { new: true }).exec((err, doc) => {
+                if (err) reject(err)
+                resolve(doc)
+            })
+        } else {
+            console.log("Updating customer with ID: " + req.params.id)
+            req.body._id = req.params.id
+            organizationModel.updateOne(
+                {
+                    "_id":mongoose.Types.ObjectId(res.locals.organization),
+                },
+                {
+                    "$set":{
+                        "customers.$[customer]":req.body
+                    }
+                },
+                {
+                    "arrayFilters":[
+                        { "customer._id":mongoose.Types.ObjectId(req.params.id) }
+                    ]
                 }
-            },
-            {
-                "arrayFilters":[
-                    { "customer._id":mongoose.Types.ObjectId(req.params.id) }
-                ]
-            }
-        )
-        .then(result => resolve(result))
-        .catch(err => reject(err))
+            )
+            .then(result => resolve(result))
+            .catch(err => reject(err))
+        }
     })
 }
 
