@@ -1,11 +1,11 @@
 import express from 'express'
 import { error, success } from '../../network/response.js'
-import { newEmployee, newAdminAccount } from './store.js'  
+import { newEmployee, newAdmin, newSuperAdmin } from './store.js'  
 
 const router = express.Router()
 
 router.post('/employee', (req, res) => {
-    newEmployee(req.body)
+    newEmployee(res, req.body)
     .then(result => {
         success(req, res, 201, "Employee has been created successfully", result)
     })
@@ -15,12 +15,22 @@ router.post('/employee', (req, res) => {
 })
 
 router.post('/admin', (req, res) => {
-    newAdminAccount(req.body)
+    newAdmin(req.body)
     .then(result => {
         success(req, res, 201, "Admin account has been created successfully", result)
     })
     .catch(err => {
         error(req, res, 400, "Error creating admin", err)
+    })  
+})
+
+router.post('/superadmin', (req, res) => {
+    newSuperAdmin(req.body)
+    .then(result => {
+        success(req, res, 201, "Super Admin account has been created successfully", result)
+    })
+    .catch(err => {
+        error(req, res, 400, "Error creating Super Admin", err)
     })  
 })
 

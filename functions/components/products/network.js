@@ -1,4 +1,7 @@
 import express from 'express'
+import { ObjectId } from 'mongodb'
+import { mongoose } from '../../mongo.js'
+import Product from '../../models/product.js'
 import {error, success} from '../../network/response.js'
 import { hasQueryString } from '../../utils/hasQuery.js'
 
@@ -7,32 +10,31 @@ import {isValidProductObject, relateOrdersAndTasks} from './controller.js'
 
 //*Store
 import {
-    insertNewProduct,
+    newProduct,
     getAllProducts,
     insertManyProducts,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    createNewMix,
+    getProductById,
+    updateManyProducts
 } from './store.js'
+import { getContainerById, updateContainerById } from '../container/store.js'
+import { updateProductionBasedOnProductUpdate } from '../production/controller.js'
 
 const router = express.Router()
 
 //*Returns all the products and if requested returns all their related tasks and orders
 router.get('/', (req, res) => {
-    //*TODO IF THERE IS A QUERY STRING ASKING FOR SPECIFIC RESPONSE SHIULD USE OTHER CONTROLLER INSTEAD OF getAllProducts
-    //*TODO Determine valid query strings for this route like: 
-    //* ["?tasks (this returns all the products and the tasks related to it) "]
-    //* ["?orders (this returns all the products and the orders related to it) "]
-    //* ["?orders&tasks (this returns all the products and the orders related to them)"]
-
     const validQueries = ["orders", "tasks"]
-
+    const orgId = res.locals.organization
     //*This is true if request has some of the valid queries
     if(hasQueryString(req,validQueries)){
         //* If are all the valid queries we use the relateOrdersAndTasks 
         //* controller if not, use a normal filter in store controller
         const areAll = validQueries.every(key => Object.keys(req.query).includes(key))
         if(areAll){
-            relateOrdersAndTasks()
+            relateOrdersAndTasks(orgId)
             .then(relatedProds => {
                 success(req, res, 200, "Products related with orders and tasks obtained", relatedProds)
             })
@@ -43,7 +45,7 @@ router.get('/', (req, res) => {
         return
     }
 
-    getAllProducts()
+    getAllProducts(orgId)
     .then(data => {
         success(req, res, 200, "Request succeded", data)
     })
@@ -53,16 +55,19 @@ router.get('/', (req, res) => {
 })
 
 //*separated from all route because of network performance improvement
-//*! IF THE CLIENT REQUEST ALL PRODUCTS AND ITS RELATED TASKS AND ORDERS WE DONT WANT TO RECEIVE MANY REQUESTS IF THEY NEED THIS RELATION BE DONE WITH VARIOUS PRODUCTS, INSTEAD MAKE ONE REQUEST AND ASK FOR ALL THE RELATED DATA
 //*returns a specific product and if requested all its related tasks and orders
 router.get('/:id', (req, res) => {
-    console.log(req.params)
-    success(req, res, 200, "Request succeded")
+    getProductById(res.locals.organization, req.query.container, req.params.id)
+    .then((result) => {
+        success(req, res, 200, "Products obtained succesfully", result)
+    })
+    .catch((err) => {
+        error(req, res, 500, "Error getting product", err, err)
+    })
 })
 
 router.post('/', (req, res) => {
     if(Array.isArray(req.body)){
-        
         insertManyProducts(req.body)
         .then(message => {
             success(req, res,201, message)
@@ -70,16 +75,13 @@ router.post('/', (req, res) => {
         .catch(err => {
             error(req, res, 500, "Error agregando productos a la base de datos", err)
         })
-        
         return
     }
     
-    if(isValidProductObject(req.body)){
-        //*insert to db
-        insertNewProduct(req.body)
-        //*promise message returned
-        .then(pm => {
-            success(req, res,201,pm)
+    if(Boolean(req.query.mix)){
+        createNewMix(res.locals.organization,0,req.body)
+        .then(doc => {
+            success(req, res, 201, "Product mix created succesfully", doc)
         })
         .catch(err => {
             switch(err.name){
@@ -87,7 +89,7 @@ router.post('/', (req, res) => {
                     error(req, res,500, err.message, err)    
                     break;
                 case "ValidationError":
-                    error(req, res, 400, `The following values are invalid: ${Object.keys(err.errors)}`, err)
+                    error(req, res, 400, `${err._message} in the following keys: ${Object.keys(err.errors)}`, err)
                     break;
                 default:
                     error(req, res, 500, "Internal server error", err)
@@ -96,35 +98,115 @@ router.post('/', (req, res) => {
         })
         return
     }
-    error(req, res, 400, "The data received is invalid.",new Error("Invalid data"))
+
+    newProduct(res.locals.organization,0, req.body)
+    .then(orgDoc => {
+        //*Update container with the new products
+        // const update = await updateContainer(res.locals.organization, undefined, {products:product})
+        success(req, res,201,orgDoc)
+        return
+    })
+    .catch(err => {
+        switch(err.name){
+            case "MongooseError":
+                error(req, res,500, err.message, err)    
+                break;
+            case "ValidationError":
+                error(req, res, 400, `${err._message} in the following keys: ${Object.keys(err.errors)}`, err)
+                break;
+            default:
+                error(req, res, 500, "Internal server error", err, err)
+                break;
+        }
+    })
+    
+    // const invalidDataErrorJson = {
+    //     message:"The data received is Invalid",
+    //     status: 400,
+    // }
+    // error(req, res, 400, "The data received is invalid.",new Error(JSON.stringify(invalidDataErrorJson)))
 })
 
 router.patch('/', (req, res) => {
+    let field = req.query.field
+    let value = req.query.value
     //*TODO VALIDATE IF REQU.QUERY IS RECEIVING AN ID
+    let controller = () => Promise.reject("Unconsistent request configuration")
+
+    if(Boolean(req.query.all)){
+        if(field === "performance"){
+            value = Number(req.query.value)
+        }
+
+        // if(field === "seed"){
+        //     value = {}
+        // }
+        
+        const controllerConfig = {
+            filter: {
+                "_id":res.locals.organization,
+            },
+            updateOperation: {
+                "$set": {
+                    [`containers.$[].products.$[].${req.query.field}`]:req.query.value
+                }
+            }
+        }
+        controller = () => updateManyProducts(controllerConfig)  
+    }
+    
     if(req.query.id !== undefined && req.query.id !== ""){
-        const id = req.query.id
-        const field = req.query.field
-        const value = req.body.value
         //*TODO IF THERE IS AN ORDER RELATED TO A PRODUCT. NOTIFY CLIENT THAT MUST FIRST CANCEL THE ORDER
         //*TODO TRIGGER TASKS RELATED TO A PRODUCT CANCELLATION
         //*TODO WHEN AL THIS PROCESSES ARE COMPLETED, THEN UPDATE THE PRODUCT STATE
         //*TODO If a products is updated, then the container must be updated
+        controller = () => updateProduct(req,res)
         
-        updateProduct({id, field, value})
-        .then((result) => {
-            success(req, res, 200, result)
-        })
-        .catch((err) => {
-            error(req, res, 500, "Error updating product", err)
-        })
+    }
+    
+    controller() 
+    .then((result) => {
+        success(req, res, 200, result)
+    })
+    .catch((err) => {
+        error(req, res, 500, "Error updating product", err)
+    })
+})
+
+router.patch('/productionParams/:id', async (req, res) => {
+    const updateConfigModel = {
+        "day":          null,
+        "night":        null,
+        "seedingRate":  null,
+        "harvestRate":  null,
+        "overhead":     null,
+    }
+    
+    //check whether the actual keys to be updated on the product config affects actual production 
+    //(overhead for now is the unique key that affects active production)
+
+    const keys_update = Object.keys(req.body)
+
+    keys_update.forEach((key) => {
+        updateConfigModel[key] = req.body[key]
+    })
+
+    try {
+        const result = await updateProductionBasedOnProductUpdate(updateConfigModel, req.params.id, res.locals.organization)
+
+        success(req,res,200,"Successfully updated production",result)
+    } catch (err) {
+        error(req, res,500,"Error updating production",err, err)
     }
 })
 
 router.delete('/', (req, res) => {
     if(req.query.id !== undefined && req.query.id !== ""){
-        deleteProduct(req.query.id)
-        .then(() => {
-            success(req, res, 200, "Deleted")
+        const orgId = res.locals.organization
+        const id = req.query.id
+        deleteProduct(orgId, id)
+        .then((msg) => {
+            success(req, res, 200, msg)
         })
         .catch(err => {
             error(req, res, 500, "Error deleting product", err)

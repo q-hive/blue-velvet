@@ -1,4 +1,4 @@
-import task from '../../models/task.js'
+import Task from '../../models/task.js'
 
 const hasEveryKey = (valid, current) => {
     return valid.every(key => Object.keys(current).includes(key))

@@ -1,7 +1,7 @@
-import product from '../../models/product.js'
+import Product from '../../models/product.js'
 import { getOrdersByProd } from '../orders/store.js'
 import { getTaskByProdId } from '../tasks/store.js'
-import { getAllProducts } from './store.js'
+import { getAllProducts, updateProduct } from './store.js'
 
 const hasEveryKey = (valid, current) => {
      //*Verificar que el objeto tenga todas las llaves del modelo
@@ -9,10 +9,10 @@ const hasEveryKey = (valid, current) => {
      //*iterate valid object if some key isnt included reject
      //*If a value is and object then iterate the object in valid and compare keys of nested object in current 
     //* if al keys are included, validate the data types (mongoose does it automatically)
-    console.log(valid)
-    console.log(current)
+    console.log(Object.keys(valid))
     if(Object.keys(valid).every(key => Object.keys(current).includes(key))){
         console.log("Has all keys")
+        console.log()
         for (const key of Object.keys(valid)) {
             if(typeof valid[key] === "object"){
                 console.log("Validating nested object")
@@ -28,25 +28,28 @@ const hasEveryKey = (valid, current) => {
 export const isValidProductObject = (json) => {
         let productModel 
     
-        productModel = {
-            "name":"", 
-            "price":"",
-            "parameters":{
-                "day":"",
-                "night":"",
-                "seedingRate":"",
-                "harvestRate":"" 
+        if(json.mix && json.mix.isMix === false){
+            productModel = {
+                "name":"",
+                "status": "",
+                "seed": {},
+                "provider": {},
+                "price":"",
+                "parameters":{
+                    "day":"",
+                    "night":"",
+                    "seedingRate":"",
+                    "harvestRate":"" 
+                }
             }
-        }
-
-        if(json.mix.isMix){
+        } else if(json.mix && json.mix.isMix === true){
             productModel = {
                 "name":"", 
                 "price":"",
                 "mix":{
                     "isMix":"",
                     "name":"",
-                    "products":[],
+                    "products":[]
                 }
             }
         }
@@ -54,29 +57,56 @@ export const isValidProductObject = (json) => {
         return hasEveryKey(productModel, json)
 }
 
-export const relateOrdersAndTasks = async () => {
-    //*ASK FOR PRODUCTS ARRAY
-    const products = await getAllProducts()
-    if(products.length>0) {
-        //* ITERATE ARRAY
-        const tasksByProducts = products.map(async (prod) => {
-            //* AND SEARCH IN TASKS BY PRODUCTS
-            const tasks = await getTaskByProdId(prod._id)
-            //*SEARCH IN ORDERS BY PRODUCT ID
-            const orders = await getOrdersByProd(prod._id)
-            prod.tasks = [...tasks]
-            prod.orders = [...orders]
-            return prod
-        })
-        return Promise.all(tasksByProducts)
-        .then((data) => {
-            return data
-        })
-        .catch((err) => {
-            Promise.reject(err)
-        })
+export const calculatePerformance = (product) => {
+    if(product.mix.isMix){
+        return 0
     }
+    
+    return (product.parameters.harvestRate / product.parameters.seedingRate) * (product.price[0].amount / product.price[0].packageSize)
+}
 
-    return products
-    //? ARE TASKS REALLY RELATED TO THE PRODUCTS? no
+export const relateOrdersAndTasks = (orgId) => {
+    return new Promise((resolve, reject) => {
+        //*ASK FOR PRODUCTS ARRAY
+
+        const getAndRelateData = async () => {
+            const products = await getAllProducts(orgId)
+            if(products.length>0) {
+                // products.forEach((prod) => prod.toObject())
+                //* ITERATE ARRAY
+                const mappedProd = products.map(async (prod) => {
+                    const mutableProd = prod.toObject()
+                    //*This function returns the orders, that have a different status of delivered and that includes the products we are asking for
+                    //*SEARCH IN ORDERS BY PRODUCT ID
+                    const orders = await getOrdersByProd(orgId, prod._id)
+
+                    mutableProd.orders = orders.map((order) => order._id)
+
+                    if(mutableProd.performance === undefined) {
+                        mutableProd.performance = Number(calculatePerformance(mutableProd).toFixed(2))
+                        await updateProduct(undefined, undefined, orgId, mutableProd)
+                    }
+                    
+                    return {...mutableProd}
+                })
+                const mappedData = await Promise.all(mappedProd)
+
+                return mappedData
+            }
+            resolve(products)
+        }
+
+        getAndRelateData()
+        .then((data) => {
+            resolve(data)
+        })
+        .catch(err => {
+            console.log(err)
+        })
+
+    })
+}
+
+export const isLargeCicle = (totalProductionTime) => {
+    return totalProductionTime > 7
 }

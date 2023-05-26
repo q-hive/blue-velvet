@@ -1,5 +1,4 @@
-import mongoose from '../mongo.js'
-import Location from './location.js'
+import mongoose from 'mongoose'
 
 const { Schema } = mongoose
 

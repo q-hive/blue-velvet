@@ -4,7 +4,8 @@ import React, { useState, useEffect, useRef } from 'react'
 import { 
     Autocomplete, Box, Button, 
     TextField, Typography, useTheme, 
-    Fab 
+    Fab, Fade,
+    Stepper, Step, StepLabel, StepContent, Paper, InputAdornment, 
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add';
 import CameraIcon from '@mui/icons-material/AddPhotoAlternate';
@@ -15,27 +16,33 @@ import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog'
 //*NETWORK AND API
 import api from '../../../../axios'
 import { useNavigate } from 'react-router-dom'
-import useAuth from '../../../../contextHooks/useAuthContext'
-
 //*Auth
-const amounts = ["25","30","40","50","60","70","80","90"]
+import useAuth from '../../../../contextHooks/useAuthContext'
+//*App components
+import { ProductsPrice } from '../components/ProductsPrice';
+import { borderColor } from '@mui/system';
 
-export const MixProductsForm = () => {
+export const MixProductsForm = ({editing, product}) => {
     const theme = useTheme(BV_THEME);
+    //* STEPPER
+    const [activeStep, setActiveStep] = useState(0)
     
     //*DATA STATES
     const [strains, setStrains] = useState([])
     const [mix, setMix] = useState({
-        products:[],
-        name:"",
-        label:null,
+        products: editing ? product.mix.products : [],
+        label: null,
         cost:0
     })
 
     //*RENDER STATES
-    const [actualValue, setActualValue] = useState({
-        strain:"",
-        amount:null
+    const [inputValue, setInputValue] = useState({
+        strain:         "",
+        amount:         "",
+        label:          "",
+        smallPrice:     editing ? product.price[0].amount : "",
+        mediumPrice:    editing ? product.price[1].amount : "",
+        name:           editing ? product.name : ""
     })
     const [showFinal, setShowFinal] = useState(false)
     const [canAdd, setCanAdd] = useState(true)
@@ -67,135 +74,171 @@ export const MixProductsForm = () => {
             failed:false,
             message:""
         },
+        smallPrice:{
+            failed:false,
+            message:""
+        },
+        mediumPrice:{
+            failed:false,
+            message:""
+        }
     })
 
-    const {user} = useAuth()
-    const navigate = useNavigate()
-    
-    const handleChangeStrain = (e,v,r) => {
-        //*event, value, reason
-        switch(r){
-            case "selectOption":
-                if(e.target.id.split('-')[0] === "strain"){
-                    setActualValue({
-                        ...actualValue,
-                        strain:v._id
-                    })
+    const handleDeleteProduct = (product)=>{
+        console.log("antes",mix.products)
 
-                    if(error.strain.failed){
-                        setError({
-                            ...error,
-                            strain:{
-                                failed:false
-                            }
-                        })
-                    }
-                    break
-                } 
-            case "clear":
-                setActualValue({
-                    ...actualValue,
-                    strain:""
-                })
+          let arr = mix.products.filter(prod =>{
+            if(editing)
+                return prod.strain != product.strain 
+            else
+                return prod.product.name != product.product.name
+          })
+
+          setMix({
+            ...mix,
+            products:arr
+            
+        })
+        
+        console.log("despues",mix.products)
+        console.log("tempArr",arr)
+        
+    }
+
+    const {user, credential} = useAuth()
+    const navigate = useNavigate()
+
+    const getProductName=(strain)=>{
+        console.log("id a buscar",strain)
+        let testName = JSON.parse(localStorage.getItem('products')).find((prod) => prod._id === strain)
+        console.log("testName",testName)
+        if(testName !== undefined )
+        return testName.name
+    }
+    
+    const handleInputChange = (e,v,r) => {
+        
+        let id
+        
+        if(e.target.id.includes('-')){
+            id = e.target.id.split('-')[0]
+        } else {
+            id = e.target.id
+        }
+
+        switch(id){
+            case "25":
+                id = "smallPrice"
+                console.log(v)
                 break;
+            case "80":
+                id = "mediumPrice"
+                console.log("80",v)
+                break;
+            case "name":
+
             default:
                 break;
         }
-    }
 
-    const handleChangeAmount = (e) => {
-        setActualValue({
-            ...actualValue,
-            [e.target.id]:Number(e.target.value)
-        })
+        {editing ? null:null}
 
-        if(error.amount.failed){
+
+        if(error[id].failed){
             setError({
                 ...error,
-                amount:{
-                    failed:false
+                [id]:{
+                    failed:false,
+                    message:""
                 }
             })
         }
+        setInputValue({
+            ...inputValue,
+            [id]:v
+        })
+    }
+
+    const mapErrors = (object) => {
+        const errors = []
+        
+        const valuesMapped = Object.entries(object).map((entry, idx) => {
+            if(activeStep === 0) {
+                if(entry[0] === "strain" && (entry[1] === "" || entry[1] === null || entry[1] === undefined)){
+                    errors.push(entry[0])
+                    
+                    return {
+                        [entry[0]]:{
+                            failed:true,
+                            message:"Please select a strain"
+                        }
+                    }
+                }
+                if(entry[0] === "amount" && (entry[1] === "" || entry[1] === null || entry[1] === undefined || entry[1] === 0)){
+                    errors.push(entry[0])
+                    return {
+                        [entry[0]]:{
+                            failed:true,
+                            message:"Please set an amount."
+                        }
+                    }
+                }
+                return {
+                    [entry[0]]:{
+                        failed:false,
+                        message:""
+                    }
+
+                }
+            }
+        })
+
+        let mappedErrors
+        valuesMapped.forEach(err => {
+            mappedErrors = {
+                ...mappedErrors,
+                ...err
+            }
+        })
+
+        return {errors, mappedErrors}
     }
     
     const handleAddToMixComb = () => {
-        //*Entry array = entrArr
-        // const empty = Object.entries(actualValue).map((entrArr, idx) => {
-            //*This doesnt update both error states when they are empty
-            // if(entrArr[1] === "" || entrArr[1] === null) {
-            //     console.log(error[entrArr[0]])
-            //     setError({
-            //         ...error,
-            //         [entrArr[0]]:{
-            //             failed:true,
-            //             message:"Empty values are not accepted"
-            //         }
-            //     })
-            // }
-        // })
-        
-        if(actualValue.amount === null && actualValue.strain === ""){
-            setError(
-                {
-                    ...error,
-                    strain:{
-                        failed:true,
-                        message:"Empty values are not accepted"
-                    },
-                    amount:{
-                        failed:true,
-                        message:"Empty values are not accepted"
-                    },
-                }
-            )
-            return
-        }
-        
-        if(actualValue.strain === "" && actualValue.amount !== null){
-            setError(
-                {
-                    ...error,
-                    strain:{
-                        failed:true,
-                        message:"Empty values are not accepted"
-                    }, 
-                }
-            )
-            return
-        }
-
-        if(actualValue.strain !== "" && actualValue.amount === null){
-            setError(
-                {
-                    ...error,
-                    amount:{
-                        failed:true,
-                        message:"Empty values are not accepted"
-                    }, 
-                }
-            )
-            return
-        }
-
-
-        if(actualValue.strain !== "" && actualValue !== null){
-            ref.current.value = ""
-            setMix({
-                ...mix,
-                products:[...mix.products, actualValue]
+        const {errors, mappedErrors} = mapErrors(inputValue)
+        if(errors.length >0) {
+            setError({
+                ...error,
+                ...mappedErrors
             })
-
+            return
         }
-
-    }
-
-    const handleChangeFinalData = (e) => {
+        
         setMix({
             ...mix,
-            [e.target.id]:e.target.value            
+            products:[
+                ...mix.products,
+                {
+                    product:inputValue.strain,
+                    amount:inputValue.amount
+                }
+            ]
         })
+        
+
+        setInputValue({
+            ...inputValue,
+            strain: "",
+            amount: ""
+        })
+        return
     }
+    // const handleChangeFinalData = (e) => {
+    //     setMix({
+    //         ...mix,
+    //         [e.target.id]:e.target.value            
+    //     })
+    // }
 
     const handleChangeLabel = (e) => {
         console.log(e.target.files)
@@ -220,20 +263,37 @@ export const MixProductsForm = () => {
             })
             return
         }
-        setShowFinal(true)
+        handleNext()
+        
         //*OK THE MIX HAVE THE RIGHT LENGTH, THE TOTAL OF AMOUNT IS 100% ? 
         
     }
     
     const handleSendMixData = () => {
-        console.log(mix)
+        let mappedProducts
+        if(mix.products.length>0){
+            mappedProducts = mix.products.map((prod) => {
+                return {strain:prod.product._id, amount: Number(prod.amount)}
+            })
+        } else {
+            return
+        }
+        
         const model = {
-            name:   mix.name,
-            price:   Number(mix.price), // * Cost per tray,
+            name:   inputValue.name,
+            price:   [
+                {
+                    amount:inputValue.smallPrice,
+                    packageSize: 25
+                },
+                {
+                    amount:inputValue.mediumPrice,
+                    packageSize: 80
+                },
+            ], // * Cost per tray,
             mix: {
-                isMix:true,
-                name:mix.name,
-                products:mix.products
+                isMix:      true,
+                products:   mappedProducts
             },
             status:"stopped"
         }
@@ -251,7 +311,12 @@ export const MixProductsForm = () => {
             model.label = label
         }
         
-        api.api.post(`${api.apiVersion}/products/`, model)
+        api.api.post(`${api.apiVersion}/products?mix=true`, model, {
+            headers:{
+                authorization:credential._tokenResponse.idToken,
+                user:user
+            }
+        })
         .then(response => {
             setDialog({
                 open:true,
@@ -301,7 +366,12 @@ export const MixProductsForm = () => {
     }
 
     useEffect(() => {
-        api.api.get(`${api.apiVersion}/products/`)
+        api.api.get(`${api.apiVersion}/products/`, {
+            headers:{
+                authorization:credential._tokenResponse.idToken,
+                user:user
+            }
+        })
         .then((response) => {
             setStrains(response.data.data)
         })
@@ -331,27 +401,124 @@ export const MixProductsForm = () => {
     },[])
 
     useEffect(() => {
-        if(mix.products.length >1){
+        if(mix.products.length >0){
+            console.log(mix.products)
             //*The limit sum of amounts should be 100%
             const total = mix.products.reduce((prev, curr) => {
                 let prevObj
                 if(typeof prev === "object"){
-                    prevObj = prev.amount
+                    prevObj = Number(prev.amount)
                 } else {
-                    prevObj = prev
+                    prevObj = Number(prev)
                 }
-                return curr.amount + prevObj
+                return Number(curr.amount) + prevObj
             })
-            if(total === 100){
+            console.log(total)
+            if(total >= 100){
                 //*Disable button
                 setCanAdd(false)
-            }
+            }else(
+                setCanAdd(true)
+            )
         }
     }, [mix])
 
+    //*********** STEPPER
+    const steps = [
+        {
+          label: 'Set strains in Mix',
+          description: `Please enter the strains in your Mix`,
+        },
+        {
+          label: 'Mix Name and Price',
+          description:
+            'Please provide the name of your mix and the price to use',
+        },
+    ];
+      
+    const handleNext = () => {
+        setShowFinal(true)
+        setActiveStep((prevActiveStep) => prevActiveStep + 1);
+        
+    };
     
+    const handleBack = () => {
+        setActiveStep((prevActiveStep) => prevActiveStep - 1);
+    };
+    
+    const handleReset = () => {
+        setActiveStep(0);
+    };
+    const isLastStep = (index) => {
+        return index == steps.length - 1
+
+    };
+
+
+    console.log("strains",strains)
+
+    
+
+    const getStepContent = (step,index) => {
+        return ( 
+            <>
+            <Typography sx={{display:{xs:"none", sm:"flex"}}}>{step.description}</Typography>
+            <Box sx={{ mb: 2 }}>
+                <div>
+                    <Button
+                        variant="contained"
+                        onClick={isLastStep(index) ? handleSendMixData : handleNext}
+                        sx={()=>({...BV_THEME.button.standard,mt: 1, mr: 1,})}
+                        
+                    >
+                        {isLastStep(index) ? 'Save Mix' : 'Continue'}
+                    </Button>
+                    
+                    <Button
+                        disabled={index === 0}
+                        onClick={handleBack}
+                        sx={{ mt: 1, mr: 1 }}
+                    >
+                        Back
+                    </Button>
+                </div>
+            </Box>
+            </>
+        )
+    }
+
+    const getMobileStepperButtons = (index) => {
+        return (
+            <Box sx={{width:"100%", mb: 2 ,display:{xs:"flex",sm:"none"}, justifyContent: 'space-evenly' }}>
+                
+                <Button
+                        disabled={index === 0}
+                        onClick={handleBack}
+                        sx={()=>({...BV_THEME.button.standard, color:"white_btn"})}
+                        variant="outlined"
+                    >
+                        Back
+                    </Button>
+
+
+                    <Button
+                        variant="contained"
+                        onClick={isLastStep(index) ? handleSendMixData : handleNext}
+                        sx={()=>({...BV_THEME.button.standard})}
+                        
+                    >
+                        {isLastStep(index) ? 'Save Mix' : 'Continue'}
+                    </Button>
+                    
+                    
+                
+            </Box>
+        )
+
+    }
+
   return (
-    <div style={{paddingLeft:"10vw", paddingRight:"10vw"}}>
+    <div style={{}}>
         <UserDialog
         dialog={dialog}
         setDialog={setDialog}
@@ -361,135 +528,241 @@ export const MixProductsForm = () => {
         actions={dialog.actions}
         />
         
-        <Box sx={{display:"flex", width:"100%", justifyContent:"space-between",justifyItems:"center", alignItems:"center", flexDirection:"column"}}>
-            <Box sx={
-                {
-                    display:"flex",
-                    width:"100%", 
-                    justifyContent:"center",
-                    marginTop:"5vh", 
-                    flexDirection:"column",
-                    alignItems:"center"
-                }
-            }>
-                <Autocomplete
-                        options={strains}
-                        id="strain"
-                        renderInput={(params) => {
-                            return <TextField helperText={error.strain.message} error={error.strain.failed} {...params} label="Strain"/>
-                        }}
-                        getOptionLabel={(option) => {
-                            return option.name
-                        }}
-                        onChange={handleChangeStrain}
-                        sx={theme.input.mobile.fullSize.desktop.halfSize}
-                />
-
-                <TextField
-                    id="amount"
-                    label="Amount %"
-                    ref={ref}
-                    onChange={handleChangeAmount}
-                    sx={theme.input.mobile.twoThirds.desktop.quarterSize}
-                    error={error.amount.failed}
-                    helperText={error.amount.message}
-                />
-                <Typography align='center' color={theme.textColor.lightGray}>Minimum Strains : 2</Typography>
-            </Box>
-
-
-            <Box sx={
-                {
-                    display:"flex",
-                    width:{xs:"66%", sm:"34%"}, 
-                    justifyContent:"space-evenly",
-                    marginTop:"5vh", 
-                    flexDirection:{xs:"row", sm:"column"},
-                    alignItems:"center",
-                }
-            }>
-                <Fab onClick={handleAddToMixComb} disabled={!canAdd} color="primary" aria-label="add" >
-                    <AddIcon />
-                </Fab>
-
-                <Typography margin={"4%"} color={theme.textColor.darkGray}>Mix Length : {mix.products.length}</Typography>
-
+        <Fade in={true} timeout={1000} unmountOnExit>
+        
+        <Box sx={{display:"flex", width:"100%", marginTop:"5vh",justifyContent:"center",justifyItems:"center", alignItems:"center", flexDirection:"column"}}>
+        
+        
+        
+        
+            <Box sx={{ width: "90%", display:"flex", flexDirection:{xs:"column",sm:"row"} }}>
                 
+                {/*Mobile Stepper controls */}            
+                <Box justifyContent={"space-evenly"} sx={{ width: "90%", display:{xs:"flex", sm:"none"}}}>
+                    <Stepper activeStep={activeStep} >
+                        {steps.map((step, index) => (
+                            <Step key={step.label}>
+                                <StepLabel sx={{fontSizeAdjust:"20px"}}>
+                                    {step.label}
+                                </StepLabel>
+                            </Step>
+                        ))}
+                    </Stepper>
+                </Box>
 
-            </Box>
+                {/*Desktop Stepper controls */}
+                <Box sx={{ width: "35%", display:{xs:"none", sm:"inline-block"}}}>
+                    <Stepper activeStep={activeStep} orientation="vertical">
+                        {steps.map((step, index) => (
+                            <Step key={step.label}>
+                                <StepLabel sx={{fontSizeAdjust:"20px"}}>
+                                    {step.label}
+                                </StepLabel>
+                                <StepContent>
+                                    {getStepContent(step,index)}
+                                </StepContent>
+                            </Step>
+                        ))}
+                    </Stepper>
+                    {activeStep === steps.length && (
+                        <Paper square elevation={0} sx={{ p: 3 }}>
+                            <Typography>All steps completed - you&apos;re finished</Typography>
+                            <Button onClick={handleReset} sx={{ mt: 1, mr: 1 }}>
+                                Reset
+                            </Button>
+                        </Paper>
+                        
+                    )}
+                </Box>
 
-            <Box sx={
-            {
-                display:"flex", 
-                alignItems:"center", 
-                justifyContent:"center",
-                marginTop:"5vh",
-                width:"100%"
+                {/* Forms */}  
+                <Box sx={{ width:{xs:"90%",sm:"65%"}, display:"flex", flexDirection:"column", padding:"5%", alignItems:"center" }}>
+                    {getMobileStepperButtons(activeStep)}
+                            
+                            
+                {
+                    activeStep === 0 ? (
+                        <>
+                        <Box sx={
+                                {
+                                    display:"flex",
+                                    width:"100%", 
+                                    justifyContent:"center",
+                                    marginTop:"5vh", 
+                                    flexDirection:"column",
+                                    alignItems:"center"
+                                }
+                                }
+                            >
+                            <Autocomplete
+                                options={strains}
+                                id="strain"
+                                renderInput={(params) => {
+                                    return <TextField helperText={error.strain.message} error={error.strain.failed} {...params} label="Strain"/>
+                                }}
+                                getOptionLabel={(option) => {
+                                    if(!option.name){
+                                        return ""
+                                    }
+                                    return option.name
+                                }}
+                                isOptionEqualToValue={(o,v) => {
+                                    if(v === ""){
+                                        return true
+                                    }
 
-            }
-        }>
-            <Button variant="contained" size='large' disabled={showFinal} onClick={handleSetMix}>
-                Set Mix
-            </Button>
+                                    return o.name === v.name
+                                }}
+                                onChange={(e,v,r) => handleInputChange(e, v, r)}
+                                sx={theme.input.mobile.fullSize.desktop.halfSize}
+                                value={inputValue.strain}   
+                            />
 
-        </Box>
+                            <TextField
+                                id="amount"
+                                label="Percentage"
+                                ref={ref}
+                                type="number"
+                                InputProps={{endAdornment: <InputAdornment position="end">%</InputAdornment>}}
+                                onChange={(e) => handleInputChange(e, e.target.value, "input")}
+                                sx={theme.input.mobile.twoThirds.desktop.quarterSize}
+                                error={error.amount.failed}
+                                helperText={error.amount.message}
+                                value={inputValue.amount}
+                            />
+                            <Typography align='center' color={theme.textColor.lightGray}>Minimum Strains : 2</Typography>
+                        </Box>
 
-        </Box>
 
-        {
-            showFinal
-            ?
-            <div>
-                <Box sx={
-                        {
-                            display:"flex",
-                            width:"100%", 
-                            justifyContent:"center",
-                            marginTop:"5vh", 
-                            flexDirection:"column",
-                            alignItems:"center"
+                            <Box sx={
+                                {
+                                    display:"flex",
+                                    width:{xs:"66%", sm:"34%"}, 
+                                    justifyContent:"space-evenly",
+                                    marginTop:"5vh", 
+                                    flexDirection:{xs:"row", sm:"column"},
+                                    alignItems:"center",
+                                }
+                            }>
+                                <Fab onClick={handleAddToMixComb} disabled={!canAdd} color="primary" aria-label="add" >
+                                    <AddIcon />
+                                </Fab>
+
+                                <Typography margin={"4%"} color={theme.textColor.darkGray}>Mix Length : {mix.products.length}</Typography>
+
+                                
+
+                            </Box>
+
+                            <Box sx={
+                                {
+                                display:"flex", 
+                                alignItems:"center", 
+                                justifyContent:"center",
+                                marginTop:"5vh",
+                                width:"100%"
+
+                                }
+                            }>
+                            <Button variant="contained" size='large' disabled={showFinal} onClick={handleSetMix}>
+                                Set Mix
+                            </Button>
+
+                            
+
+                        </Box>
+
+                        {/* Generate Feedback table */}
+                        {mix.products.length != 0 ? 
+                            <Box  sx={{display:"inline-block",minWidth:"15em",textAlign:"justify",alignItems:"center",marginTop:"10vh",padding:"3px"}}>
+                                <hr color="secondary"/>
+                                <Typography color="secondary" sx={{textAlign:"center",marginTop:1}}>Products in Mix</Typography>
+                                {mix.products.map((product,id)=>{
+                                    return (
+                                        <Box key={id} sx={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:3}}>
+                                            <Typography sx={{flex:1}}>
+                                                {product.amount}% {product.product?.name.toString()} {getProductName(product.strain)}
+                                            </Typography>
+                                            <Button variant="contained" onClick={()=>handleDeleteProduct(product)}>
+                                                Delete
+                                            </Button>
+                                        </Box>
+                                    )
+                                })}
+
+                            </Box>
+                            :
+                            null
                         }
-                    }>
-                        <TextField label="Mix Name" id="name" onChange={handleChangeFinalData} variant="outlined" sx={theme.input.mobile.fullSize.desktop.halfSize}>
+                        </>
+                    ) : null
+                }
+
                             
-                        </TextField>
-
-                        <TextField label="Mix Price" id="price" onChange={handleChangeFinalData} variant="outlined" sx={theme.input.mobile.fullSize.desktop.halfSize}>
                             
-                        </TextField>
+                            
 
-                </Box>
-                <Box sx={
-                    {
-                        display:"flex", 
-                        alignItems:"center", 
-                        justifyContent:"center",
-                        width:"100%",
-                        flexDirection:"column"
+                        
 
-                    }
-                }>
+                        {
+                            activeStep === 1
+                            ?
+                            ( <>
+                                <Box sx={
+                                        {
+                                            display:"flex",
+                                            width:"100%", 
+                                            justifyContent:"center",
+                                            marginTop:"5vh", 
+                                            flexDirection:"column",
+                                            alignItems:"center"
+                                        }
+                                    }>
+                                        <TextField label="Mix Name" id="name" value={inputValue.name} onChange={(e) => handleInputChange(e, e.target.value, "input")} variant="outlined" sx={theme.input.mobile.fullSize.desktop.halfSize}>
+                                            
+                                        </TextField>
 
-                        <Fab color="primary" component="label" id="label" aria-label="add" sx={{marginY:"4%"}} >
-                                <input  type="file" accept="image/*" onChange={handleChangeLabel} hidden />
-                                <CameraIcon />
-                        </Fab>
+                                        <ProductsPrice
+                                        productData={inputValue}
+                                        handleChangeProductData={handleInputChange}
+                                        editing={editing}
+                                        editValues={editing ? product.price:[]} 
+                                        error={error}
+                                        mix={true}
+                                        />    
+                                </Box>
+                                <Box sx={
+                                    {
+                                        display:"flex", 
+                                        alignItems:"center", 
+                                        justifyContent:"center",
+                                        width:"100%",
+                                        flexDirection:"column"
+
+                                    }
+                                }>
+
+                                        <Fab color="primary" component="label" id="label" aria-label="add" sx={{marginY:"4%"}} >
+                                            <input  type="file" accept="image/*" onChange={handleChangeLabel} hidden />
+                                            <CameraIcon />
+                                        </Fab>
+                                    
+                                    <Button variant="contained" onClick={handleSendMixData} size='large' >
+                                        Save product mix
+                                    </Button>
+
+                                </Box>
+                            </>):
+                            null
+                        }
+                        </Box>
+                        
+
                     
-                    <Button variant="contained" onClick={handleSendMixData} size='large' >
-                        Save product mix
-                    </Button>
-
-                </Box>
-            </div>
-            :
-            null
-        }
-        
-
-    
-        
-
-        
+                        
+                        </Box>
+        </Box>
+        </Fade>                
     </div>
     
 

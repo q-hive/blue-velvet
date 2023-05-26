@@ -1,86 +1,472 @@
-import Production from '../../models/production'
+import Organization from '../../models/organization.js'
 import { mongoose } from '../../mongo.js'
-import { dateToArray, nextDay } from '../../utils/time'
-import { getContainers } from "../container/store"
+import { dateToArray, nextDay } from '../../utils/time.js'
+import { updateContainerById } from '../container/store.js'
+import { updateOrder } from '../orders/store.js'
+import { grouPProductionForWorkDay, scheduleTask } from './controller.js'
+
+const orgModel = mongoose.model('organizations', Organization)
+
+export const productionCycleObject = {
+    "preSoaking": {
+        "next":"seeding",
+        "hasBackGroundTask":false,
+        "requireNewDoc":true,
+        "affectsCapacity":{
+            "affect":false,
+            "how":null
+        }
+    },
+    // "soaking1":{
+    //     "next":"soaking2",
+    //     "hasBackGroundTask":true,
+    //     "requireNewDoc":true,
+    //     "affectsCapacity":{
+    //         "affect":false,
+    //         "how":null
+    //     }
+    // },
+    // "soaking2":{
+    //     "next":"seeding",
+    //     "hasBackGroundTask":true,
+    //     "requireNewDoc":true,
+    //     "affectsCapacity":{
+    //         "affect":false,
+    //         "how":null
+    //     }
+    // },
+    "harvestReady":{
+        "next":"packing",
+        "hasBackGroundTask":false,
+        "requireNewDoc":true,
+        "affectsCapacity":{
+            "affect":false,
+            "how":null
+        }
+    },
+    "packing": {
+        "next":"ready",
+        "hasBackgroundTask":false,
+        "requireNewDoc":true,
+        "affectsCapacity":{
+            "affect":true,
+            "how":"inc"
+        }
+    },
+    "ready": {
+        "next":"delivered",
+        "hasBackgroundTask":false,
+        "requireNewDoc":true,
+        "affectsCapacity":{
+            "affect":false,
+            "how":null
+        }
+    },
+    "seeding":{
+        "next":"growing",
+        "hasBackGroundTask":false,
+        "requireNewDoc":true,
+        "affectsCapacity":{
+            "affect":false,
+            "how":null
+        }
+    },
+    "growing":{
+        "next":"harvestReady",
+        "hasBackGroundTask":true,
+        "requireNewDoc":true,
+        "affectsCapacity":{
+            "affect":true,
+            "how":"dec"
+        }
+    },
+}
 
 
-const prodModel = mongoose.model('production', Production)
-
-export const getProductionForOrder = async (products, organization, filter) => {
+export const getProductionInContainer = async (orgId, containerId) => {
     return new Promise((resolve, reject) => {
-        // * Will return the production line with available parameters if it's one
-        // * IF no production line is fit to host the order, a new production line must be returned
-
-        let totalTrays = products.map(prod => prod.trays).reduce((accTrays, trays) => accTrays + trays, 0)
-
-        // * Check for production lines at same day and validate if adding is possible
-        let prodLines = await getProductions({
-            start:          filter.start,
-            organization:   organization,
-            trays:          totalTrays
-        })
-
-
-        // * If no production line available, create one new
-        if (prodLines.length === 0) {
-            // * Create new production line
-            let contId = getContainerForProduction({
-                trays: totalTrays   
-            })
-
-            let prodMapped = {
-                orders:         [filter.order],
-                container:      
-                tasks:          [],
-                activeTasks:    [],
-                products: filter.products.map(prod => {
-                    return {
-                        _id: prod._id,
-                        trays: prod.trays,
-                        seedId: prod.seedId,
-                        batch: prod.batch
-                    }
-                }),
-                end: addTimeToDate(filter.started, {
-                    ms:     0,
-                    s:      2, // * Add only 2 weeks
-                    m:      0,
-                    h:      0,
-                    d:      0,
-                    w:      0,
-                    month:  0,
-                    y:      0
-
-                })
+        orgModel.findOne(
+            {
+                "_id":mongoose.Types.ObjectId(orgId), 
+                "containers._id":mongoose.Types.ObjectId(containerId)
+            },
+            {
+                "containers.production.$":true
+            }
+        )
+        .then((doc) => {
+            if(!doc){
+                resolve([])
+                return
+            }
+            
+            
+            const result = doc.containers[0]?.production
+            if(!result){
+                resolve([])
+                return
             }
 
-            let prodDoc = new prodModel(prodMapped)
+            resolve(result)
 
-            prodDoc.save((err, prod) => {
-                if (err) reject(err)
-
-                // * Check for updating
-
-                resolve([prod._id])
-            })
-        }
-        resolve(prodLines) 
+        })
+        .catch((err) => reject(err))
     })
 }
 
-export const getProductions = async (filters) => {
-    let criteria = prodModel
-    if (filters.start !== undefined && filters.start !== null) {
-        let dt = new Date(dateToArray(filters.start))
-        criteria = criteria.where({ start: { 
-            $gte:   dt, 
-            $lt:    nextDay(dt)
-        }})
-    }
-    if (filters.organization !== undefined && filters.organization !== null) 
-        criteria = criteria.where({ organization: filters.organization })
-    if (filters.trays !== undefined && filters.trays !== null) 
-        criteria = criteria.where({ available: { $gte: filters.trays } })
+export const insertWorkDayProductionModel = (orgId,container,productionModel) => {
+    return new Promise(async(resolve, reject) => {
+        try {
+            const updateOperation = await orgModel.updateOne(
+                {
+                    "_id":mongoose.Types.ObjectId(orgId),
+                    "containers._id":mongoose.Types.ObjectId(container)
+                },
+                {
+                    "$set": {"containers.$.workday":{"production":productionModel}}
+                }
+            )
+            resolve(updateOperation)
+        } catch (err) {
+            reject(err)
+        }
+    })
+}
 
-    return await criteria.find({})
+export const startBackGroundTask = (config) => {
+    scheduleTask(config)
+    return
+}
+
+export const getPosibleStatusesForProduction = () => {
+    const statuses = Object.keys(productionCycleObject)
+    return statuses
+}
+
+export const nextStatusForProduction = (productionModels) => {
+    const cycleModel = productionCycleObject
+
+    if(Array.isArray(productionModels)){
+        productionModels.forEach((production) => {
+            const productionStatus = production.ProductionStatus
+
+            const nextProductionStatus = cycleModel[productionStatus].next
+
+            production.ProductionStatus = nextProductionStatus
+        })
+    }
+
+    return productionModels
+
+}
+
+export const updateOrdersInModels = async (updatedModels, orgId, container) => {
+    let bodyQuery = {
+        "orders":{
+            "_id":{
+                "paths":[{"path":"","value":""}]
+            },
+        }
+    }
+    
+    await Promise.all(
+        updatedModels.map(async(productionModel) => {
+
+            const productionDB = await getProductionByOrderId(orgId, container, productionModel.RelatedOrder)
+            
+            const indexOfModelInDB = productionDB.findIndex((model) => model._id.equals(productionModel._id))
+            
+            productionDB[indexOfModelInDB].ProductionStatus = productionModel.ProductionStatus 
+            
+            const statusInProductionDB = productionDB.map((productionmodel) => productionmodel.ProductionStatus).filter((element) => element != undefined)
+            console.log("Production status of the order" + productionModel.RelatedOrder + " in DB woud be:  " + statusInProductionDB)
+            console.log("with the applied update")
+            
+            
+            const nonRepeatedStatus = Array.from(new Set(statusInProductionDB))
+    
+            if(nonRepeatedStatus.length >1){
+                console.log("Production models of " + productionModel.RelatedOrder + " order must all have the same status before updating order status")
+    
+                return
+            }
+    
+            bodyQuery.orders[productionModel.RelatedOrder.toString()] = {
+                "paths":[{"path":"status","value":productionModel.ProductionStatus}]
+            }
+    
+            
+            //*Status in DB must be equal (packing)i n all production models related to the order before updating status
+            await updateOrder(orgId, productionModel.RelatedOrder, bodyQuery.orders[productionModel.RelatedOrder.toString()])
+            //*Add order to DB of packaging
+
+            // if(nonRepeatedStatus[0] === "packing"){
+            //     await orgModel.updateOne({"_id":mongoose.Types.ObjectId(orgId), "$push":{"packaging": productionModel.RelatedOrder}})
+            // }
+
+            // if(nonRepeatedStatus[0] === "ready"){
+            //     await orgModel.updateOne({"_id":mongoose.Types.ObjectId(orgId), "$push":{"dliveryReady": productionModel.RelatedOrder}})
+            //     await orgModel.updateOne({"_id":mongoose.Types.ObjectId(orgId), "$pull":{"packaging": productionModel.RelatedOrder}})
+            // }
+            
+        }).filter((elem) => elem != undefined)
+    )
+    
+    
+
+}
+
+//*THIS FUNCTION ONLY UPDATES TO THE NEXT STATUS CORRESPONDING TO THE PRODUCTION CYCLE
+export const updateManyProductionModels = (orgId,container,productionIds) => {
+    return new Promise((resolve, reject) => {
+        console.log("Updating production models in " + container +  " container")
+        
+        const queryUpdateById = productionIds.map(async (id) => {
+            const productionModel = await orgModel.findOne({
+                "_id":mongoose.Types.ObjectId(orgId),
+                "containers":{
+                    "$elemMatch": {
+                        "_id":mongoose.Types.ObjectId(container),
+                        "production":{
+                            "$elemMatch":{
+                                "_id":mongoose.Types.ObjectId(id)
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "containers.$":1
+            }
+            )
+            
+            let filteredProductionModels = []
+            
+            productionModel.containers.forEach((container) => {
+                const productionModelFound = container.production.find((production) => production._id.equals(id))
+
+                filteredProductionModels.push(productionModelFound)
+            })
+
+            const modifiedModels = nextStatusForProduction(filteredProductionModels)
+            const updateOperation = modifiedModels.map(async (newmodel) => {
+                const op = await orgModel.updateOne(
+                    {
+                        "_id":mongoose.Types.ObjectId(orgId),
+                        "containers":{
+                            "$elemMatch": {
+                                "_id":mongoose.Types.ObjectId(container),
+                                "production":{
+                                    "$elemMatch":{
+                                        "_id":mongoose.Types.ObjectId(id)
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "$set":{
+                            "containers.$.production.$[prod]":newmodel
+                        }
+                    },
+                    {
+                        "arrayFilters":[{"prod._id":mongoose.Types.ObjectId(id)}]
+                    }
+                )
+
+                const productionStatus = newmodel.ProductionStatus
+
+                if(productionCycleObject[productionStatus]?.hasBackGroundTask){
+                    await scheduleTask({organization:orgId, container, production:newmodel, name:"updateForProduction"})
+                }
+
+                if(productionCycleObject[productionStatus]?.affectsCapacity.affect){
+                    let trays = newmodel.trays
+                    console.log("El container must be updated")
+                    if(productionCycleObject[productionStatus]?.affectsCapacity.how === "dec"){
+                        trays = trays
+                    }
+
+                    if(productionCycleObject[productionStatus]?.affectsCapacity.how === "inc"){
+                        trays = -trays
+                    }
+                    
+                    await updateContainerById(orgId, container, {query:"add",key:"available", value:-trays})
+                }
+
+                return op
+            })
+
+            const update = await Promise.all(updateOperation)
+            await updateOrdersInModels(modifiedModels, orgId, container)
+
+            return update
+        })
+        Promise.all(queryUpdateById)
+        .then((result) => resolve(result))
+        .catch(err => reject(err))
+    })
+}
+
+export const getProductionByStatus = (orgId, container, status) => {
+    return new Promise((resolve, reject) => {
+        console.log(orgId,container)
+        
+        orgModel.aggregate(
+            [
+                {
+                    "$match": {
+                        "_id":mongoose.Types.ObjectId(orgId),
+                    }   
+                },
+                {
+                    "$unwind":"$containers"
+                },
+                {
+                    "$match":{
+                        "containers._id":mongoose.Types.ObjectId(container)
+                    }
+                },
+                {
+                    "$match":{
+                        "containers.production.ProductionStatus":status
+                    }  
+                },
+                {
+                    "$project":{
+                        "containers":{
+                            "_id":1,
+                            "production":1
+                        }
+                    }
+                }
+            ]
+        )
+        .then((result) => {
+            console.log(result)
+
+            if(result.length === 0){
+                resolve(result)
+            }
+            
+            const grouppedProd = grouPProductionForWorkDay("status",result[0].containers.production, "hash")
+            resolve(grouppedProd)
+        })
+        .catch((err) => {
+            reject(err)
+        })
+
+    })
+}
+
+export const getProductionByOrderId = (orgId, container, orderId) => {
+    return new Promise((resolve, reject) => {
+        orgModel.aggregate(
+            [
+                {
+                    "$match": {
+                        "_id":mongoose.Types.ObjectId(orgId),
+                    }   
+                },
+                {
+                    "$unwind":"$containers"
+                },
+                {
+                    "$match":{
+                        "containers._id":mongoose.Types.ObjectId(container)
+                    }
+                },
+                {
+                    "$unwind":"$containers.production"
+                },
+                {
+                    "$match":{
+                        "containers.production.RelatedOrder":mongoose.Types.ObjectId(orderId)
+                    }  
+                },
+                {
+                    "$project":{
+                        "containers":{
+                            "_id":1,
+                            "production":1
+                        }
+                    }
+                }
+            ]
+        )
+        .then((result) => {
+            // const grouppedProd = grouPProductionForWorkDay("status",result[0].containers.production, "hash")
+
+            const grouppedProd = result.map((docPerProduction) => {
+                return docPerProduction.containers.production
+            })
+            
+            
+            resolve(grouppedProd)
+        })
+        .catch((err) => {
+            reject(err)
+        })
+
+    })
+}
+
+export const getProductionByProduct = (productId,orgId) => {
+    return new Promise((resolve, reject) => {
+        orgModel.aggregate(
+            [
+                {
+                    "$match":{
+                        "_id":new mongoose.Types.ObjectId(orgId)
+                    }
+                },
+                {
+                    "$project":{
+                        "containers.production":true
+                    }
+                },
+            ]
+        )
+        .then((organization) => {
+            const production = []
+            
+            organization[0].containers.forEach((container) => {
+                const filteredProduction = container.production.filter((production) => new mongoose.Types.ObjectId(productId).equals(production.ProductID))
+
+                filteredProduction.forEach((prod) => production.push(prod))
+            })
+
+            resolve(production)
+        })
+        .catch(err => {
+            reject(err)
+        })
+    })
+}
+
+
+export const upsertProduction = (productionArray, orgId) => {
+    const updateAllElements = productionArray.map(async(productionModel) => {
+        console.log(productionModel)
+        const update = await orgModel.updateOne(
+            {
+                "_id": orgId,
+            },
+            {
+                "$set":{
+                    "containers.$[].production.$[pr]":productionModel
+                }
+            },
+            {
+                arrayFilters:[{"pr._id":productionModel._id}],
+
+            }
+        )
+
+
+        console.log(update)
+        return update
+    })
+    
+    return Promise.all(updateAllElements)
 }

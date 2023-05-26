@@ -17,6 +17,7 @@ import { LoginInputs } from './LoginInputs'
 
 // * Auth context
 import useAuth from '../../contextHooks/useAuthContext.js'
+import {getAuth,signInWithCustomToken,setPersistence, browserSessionPersistence, signOut} from 'firebase/auth'
 
 
 // * Images
@@ -27,8 +28,9 @@ import api  from        '../../axios.js'
 export const Login = () => {
 
     const navigate = useNavigate()
-    const { setUser } = useAuth()
+    const { setUser, setCredential } = useAuth()
 
+    const [isSuperAdmin, setIsSuperAdmin] = useState(false)
     const [tabContext, setTabContext] = useState('0')
     const [loading, setLoading] = useState(false)
     const [openPassphrase, setOpenPassphrase] = useState(false)
@@ -67,19 +69,31 @@ export const Login = () => {
         .then(response => {
             if (response.data.data.isAdmin) {
                 // * Load passphrase modal
+                setIsSuperAdmin(response.data.data.isSuperAdmin);
                 setOpenPassphrase(true)                
             } else {
                 // * It's employee
-                let { role } = response.data.data.user
-                
-                if (role == 'employee' || role == 'admin') {
-                    
-                    const { token, user } = response.data
-
-                    // updateToken(token)
-                    setUser(user)   
-                    navigate(`${user.uid}/${user.role}`)
-                    
+                if (!response.data.data.isAdmin) {
+                    const { token, user } = response.data.data
+                    user.role = "employee"
+                    setPersistence(getAuth(), browserSessionPersistence)
+                    .then(() => {
+                        window.localStorage.clear()
+                        
+                        setUser({...user, token})
+                        
+                        window.localStorage.setItem('usermeta', JSON.stringify(user))
+                        
+                        return signInWithCustomToken(getAuth(), token)
+                    })
+                    .then((Ucredential) => {
+                        console.log('User with credential, setting session persistance...')
+                        setCredential(() => Ucredential)
+                        navigate(`/${user.uid}/${user.role}/dashboard`)
+                    })
+                    .catch((err) => {
+                        console.log(err)
+                    })
                     return
                 }
                 
@@ -120,28 +134,37 @@ export const Login = () => {
     const handleAdminSignIn = (e) => {
         e.preventDefault()
 
+        const userRole = isSuperAdmin ? "superadmin" : "admin";
+
         setLoading(true)
-
-        api.api.post('/auth/login/admin', loginData)
+        api.api.post(`/auth/login/${userRole}`, loginData)
         .then(response => {
-            console.log(response)
-
-            if (response.data.data.user.role == 'admin'){
-                    
-                const { token, user } = response.data.data
-                
-                // updateToken(token)
-                setUser(user)
-                navigate(`${user.uid}/${user.role}`)
+            if (response.data.data.user.role == "admin" || response.data.data.user.role == "superadmin"){
+                const { cToken, user } = response.data.data
+                setPersistence(getAuth(), browserSessionPersistence)
+                .then(() => {
+                    window.localStorage.clear()
+                    return signInWithCustomToken(getAuth(), cToken)
+                })
+                .then((Ucredential) => {
+                    setUser({...user, cToken})
+                    window.localStorage.setItem('usermeta', JSON.stringify(user))
+                    setCredential(() => Ucredential)
+                    navigate(`${user.uid}/${user.role}/dashboard`)
+                })
+                .catch((err) => {
+                    console.log(err)
+                })
                 
                 return
+            } else {
+                // * Unrecognized role
+                setAlert({
+                    open:       true,
+                    status:     "error",
+                    message:    "Unrecognized role - Access blocked"
+                })
             }
-            // * Unrecognized role
-            setAlert({
-                open:       true,
-                status:     "error",
-                message:    "Unrecognized role - Access blocked"
-            })
         })
         .catch((err) => {
             console.log(err)
@@ -155,6 +178,12 @@ export const Login = () => {
                     })
                     break;
                 default:
+                    setAlert({
+                        ...alert,
+                        status:"error",
+                        slide:true,
+                        slideMessage:"The data you entered is invalid, please verify the format."
+                    })
                     break;
             }
         })
@@ -175,7 +204,7 @@ export const Login = () => {
     }
     
   return (
-        <div style={{width:"100%",height:"100vh", display:"flex", alignItems:"center", justifyContent:"center"}}>
+        <div style={{width:"100%",height:"100vh", display:"flex", alignItems:"center", justifyContent:"center", margin:"-8px"}}>
             {
                 alert.open
                 ?   <Snackbar

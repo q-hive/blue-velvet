@@ -1,10 +1,10 @@
 //*COSTS SCHEMA (SEEDING TOOL)
-import mongoose from '../mongo.js'
+import { mongoose } from '../mongo.js'
 
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
-const Costs = Schema({
+const Costs = new Schema({
     name:       { type: String,   required: true },
     cost:       { type: Number,   required: true },
     product:    { type: ObjectId, required: true },

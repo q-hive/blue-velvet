@@ -2,4 +2,11 @@ node_modules
 sdk
 /functions/logs/access.log
 /functions/.env
+/functions/firebase-debug.log
+firebase-debug.log
+/functions/ui-debug.log
+ui-debug.log
 .env
+*.docx
+
+/docs

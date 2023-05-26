@@ -442,6 +442,58 @@
                 ]
             }
         },
+        "login/superadmin": {
+            "endpoint": "auth/login/superadmin",
+            "method":   "POST",
+            "desc":     "Login route for superadmin accounts",
+            "payload": {
+                "email":        "String",
+                "password":     "String",
+                "passphrase":   "String"
+            },
+            "response": {
+                "success": {
+                    "case": "Super Admin user successfully logged credentials and passphrase",
+                    "code": 200,
+                    "msg":  "OK",
+                    "payload": {
+                        "token": "String",                                                                                                      
+                        "user": {
+                            "_id":          "ObjectId",
+                            "uid":          "String",
+                            "email":        "String",
+                            "name":         "String",
+                            "lname":        "String",
+                            "phone":        "String",
+                            "photo":        "String",
+                            "role":         "String"
+                        }
+                    }
+                }, 
+                "fail": [
+                    {
+                        "case": "Wrong passphrase",
+                        "code": 401,
+                        "msg":  "Unauthorized",
+                        "payload": {
+                            "error":    "Object",
+                            "message":  "String",
+                            "date":     "Date"
+                        }
+                    },
+                    {
+                        "case": "Unauthorized user with role: {role}",
+                        "code": 403,
+                        "msg":  "Forbidden",
+                        "payload": {
+                            "error":    "Object",
+                            "message":  "String",
+                            "date":     "Date"
+                        }
+                    }
+                ]
+            }
+        },
         "logout": {
             "endpoint": "auth/logout",
             "method": "POST",
@@ -513,6 +565,21 @@
                     "containers":    [{
                         "name":         "String",
                         "capacitry":    "Number",
+                        "products":     [{
+                            "name":     "String",
+                            "image":    "String",
+                            "desc":     "String",
+                            "price": {
+                                "amount":       "Number",
+                                "packageSize":  "Number"
+                            },
+                            "parameters": {
+                                "day":          "Number",
+                                "night":        "Number",
+                                "seedingRate":  "Number",
+                                "harvestRate":  "Number"
+                            }
+                        }],
                         "address":      "ADDRESS_STRUCTURE"
                     }]
                 },
@@ -584,7 +651,6 @@
                     "name":         "String",
                     "lname":        "String",
                     "organization": "ObjectId",
-                    "containers":   "[ObjectId]",
                     "phone":        "String",
                     "image":        "String",
                     "salary":       "Number",

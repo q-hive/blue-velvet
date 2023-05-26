@@ -1,33 +1,27 @@
-import mongoose from '../mongo.js'
-import Task from './task.js'
+import { mongoose } from '../mongo.js'
+
+import { addTimeToDate } from '../utils/time.js';
+import { generateTasks } from '../components/tasks/store.js'
 
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
+import GlobalWorkDay from './GlobalWorkDay.js';
+
 const Production = new Schema({
-    end:            { type: Date,       required: false },
-    orders:         { type: [ObjectId], required: true  },
-    tasks:          { type: [Task],     required: true  },
-    activeTasks:    { type: [ObjectId], required: true  },
-    products: {
-        type: [{
-            _id:        { type: ObjectId, required: true },
-            name:       { type: String,   required: true },
-            amount:     { type: Number,   required: true }, // * Measured in packages
-            surplus:    { type: Number,   required: true }, // * In tray numbers
-            seed:       { type: Number,   required: true },
-        }],
-        required: true
-    }
-},
-{
-    timestamps: {
-        createdAt: "start",
-        updatedAt: "updated"
-    },
-    query: {
-        
-    }
+    ProductName:            String,
+    RelatedMix:             {isForMix: Boolean, mixName:String},
+    ProductID:              ObjectId,
+    ProductionStatus:       String,
+    RelatedOrder:           ObjectId,
+    EstimatedStartDate:     Date,
+    EstimatedHarvestDate:   Date,
+    seeds:                  Number,
+    harvest:                Number,
+    trays:                  Number,
+    dryracks:               Number,
+    ContainerId:            ObjectId,
+    
 })
 
 export default Production

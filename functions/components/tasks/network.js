@@ -1,12 +1,36 @@
-import express from 'express'
+import express, { response } from 'express'
 import { success, error } from '../../network/response.js'
 import { modelsValidationError } from '../../utils/errorHandler.js'
 import { isValidTaskObject } from './controller.js'
-import {createTask} from './store.js'
+import {createTask, insertManyTasks} from './store.js'
 
 const router = express.Router()
 
+router.post('/details', (req, res) => {
+    console.log(Array.isArray(req.body.tasksDetails))
+    
+    if(req.body && Array.isArray(req.body.tasksDetails)){
+        insertManyTasks(req.body.tasksDetails)
+        .then(message => {
+            success(req, res, 201, message)
+        })
+        .catch(err => {
+            error(req, res, 500,"Something went wrong" ,err)
+        })
+
+        return
+    }
+
+    error(req, res, 400, "Not correct format provided")
+})
+
 router.post('/', (req, res) => {
+    if(Array.isArray(req.body)){
+       //*Si es un arreglo son multiples tasks y son para asignarse
+       //*enviar arreglo a controlador de crear multiples tasks
+       
+    }
+    
     if(isValidTaskObject(req.body)){
         createTask(req.body)
         .then(() => {

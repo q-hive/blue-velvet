@@ -1,0 +1,209 @@
+<html>
+
+<head>
+    <style>
+        body{
+            font-family: Arial, Helvetica, sans-serif;
+            width:65em;
+            padding-bottom: 5%;
+        }
+
+        p{
+            font-size: 1.8vh;
+            font-weight: 500;
+        }
+        h3{
+            font-weight: 500;
+        }
+
+        
+        .right{text-align:right;align-items: right;}
+        
+        table {
+            width: 100%;
+            border-spacing: 0px;
+            border-width: 0px;
+            border-style: hidden hidden solid;
+            border-collapse: collapse;
+        }
+        tr {
+            text-align: left;
+        }
+
+        th,td {
+            border-width: 2px;
+            padding: 15px;
+            border-style: solid;
+            border-color: #2F4DA5;
+        }
+
+        thead tr th {
+            background: #93cf0f;
+            color: #FFF;
+        }
+
+
+        tfoot td{
+            background: #FFF;
+            border-style: hidden;
+        }
+
+        .endTable{
+            background: #FFF;
+            border-style: hidden hidden solid ;
+            border-collapse: separate !important;
+        }
+
+        tr:nth-child(odd) {
+            background: #CCC
+        }
+
+        tr:nth-child(even) {
+            background: #FFF
+        }
+
+        .no-content {
+            background-color: red;
+        }
+
+        .orderContainer{
+            width:95%;
+            padding:3%;
+            margin-top: 1%;
+            overflow: auto;
+            
+        }
+
+        #clientContainer {
+            justify-content: space-between;
+        }
+
+        #billingContainer{
+
+        }
+
+        #addressContainer {
+            justify-content: space-evenly;
+        }
+        
+        #tableContainer {
+            width:100%;
+            display:flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .headerColumn{
+            width:50%;
+            float:left;
+        }
+        .divider{
+            border: 10px solid #2F4DA5;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div id="logoHeader">
+            <div class="headerColumn">
+                <img src="https://github.com/q-hive/blue-velvet/blob/deploy/src/assets/images/LOGO_WHITE_BG.jpg?raw=true" 
+                    style="width:65%"/>
+
+            </div>
+            <div class="headerColumn">
+                <img src="https://github.com/q-hive/blue-velvet/blob/deploy/src/assets/images/png-Logos/BlueVelvet-Logo.png?raw=true"  
+                    style="display:block;margin-left:auto;width:65%"/>
+
+            </div>
+        </div>
+    </header>
+
+    <div id="clientContainer" class="orderContainer">
+        <div class="headerColumn">
+            <h2 id='businessName'>Blue velvet client</h2>
+            
+            <div id='addressContainer'>
+                <h3 id='businessAddress'><b>Fierro Pariente Road #333</b></h3>
+
+                <h3 id='city'><b>City/Locality:</b> Guadalajara</h3>
+
+                <h3 id='state'><b>State:</b> Jalisco</h3>
+
+                <h3 id='zipCode'><b>ZipCode:</b> 69420</h3>
+
+            </div>
+            <br/>
+            <h2 id='phone'>Phone Number: +xx (xxx)1234567</h2>
+            <h2 id='email'>E-Mail: luis@gmail.com</h2>
+        </div>
+        <div class="headerColumn">
+            <h1 id='pdfType' class="right">Invoice</h1>
+        </div>
+    </div>
+
+    <hr class="divider"/>
+
+    <div id="billingContainer"  class="orderContainer">
+        <div style="width:10%;float:left;">
+            <h2><strong>Bill to:</strong></h2>
+        </div>
+
+        <div id='addressContainer' style="width:40%;float:left;">    
+            <h2 id='clientName'>Luis Herrera</h2>
+            
+            <p id='clientAddress'><b>Prol. Jazmin 198</b></p>
+            <p id=city><b>City/Locality: </b>CDMX</p>
+            <p id=state><b>State:</b> CDMX</p>
+            <p id=zipCode><b>ZipCode:</b> 63033</p>
+        </div>
+
+        <div style="width:50%;float:left;">
+            <h3 id='invoiceNumber'><b>Invoice Number:</b> 632cacfb8ee5352d1fb3edd6</h3>
+            <h3 id='date'><b>Date:</b> Fri Sep 23 2022 13:43:46 GMT-0500 (Central Daylight Time)</h3>
+        </div>
+    </div>
+
+
+    <div id="tableContainer">
+        <table style="width:75%;">
+            <thead>
+                <tr>
+                    <th>Product name</th>
+                    <th>Product price</th>
+                    <th>Ordered Packages</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Sunflower</td>
+                    <td>Small: 2.5, Medium: 7</td>
+                    <td>Small: 2, Medium: 1</td>
+                    <td>12</td>
+                </tr>
+
+                <tr>
+                    <td>TEST 2</td>
+                    <td>Small: 1.5, Medium: 5</td>
+                    <td>Small: 1, Medium: 1</td>
+                    <td>6.5</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <!--Two empty cells (for border displaying purposes)-->
+                    <td></td>
+                    <td></td> 
+
+                    <td id="total" class="right, endTable" ><b>Total :</b></th>
+                    <td class="endTable">18.5</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+</body>
+
+</html>

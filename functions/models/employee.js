@@ -1,19 +1,30 @@
-import mongoose from '../mongo.js';
-import Address from './address.js'
+import { mongoose } from '../mongo.js';
+import Address from "./address.js"
 
 const { Schema  } = mongoose;
 const { ObjectId } = mongoose.Types
 
 const Employee = new Schema({
-    uid:            { type: String,     required: true  },
-    email:          { type: String,     required: true  },
-    name:           { type: String,     required: true  },
-    lname:          { type: String,     required: false }, 
-    phone:          { type: String,     required: true  },
-    image:          { type: String,     required: true  },
-    containers:     { type: [ObjectId], required: true  },
-    salary:         { type: Number,     required: true  },   
-    address:        { type: Address,    required: true  },
+    uid:            { type: String,     required: true              },
+    email:          { type: String,     required: true              },
+    name:           { type: String,     required: true              },
+    lname:          { type: String,     required: false             }, 
+    phone:          { type: String,     required: true              },
+    image:          { type: String,     required: true              },
+    salary:         { type: Number,     required: true              },   
+    address:        { type: Address,    required: true              },
+    workDay:        { type: {},         required: false, default:{} },
+    performance:    { type: 
+        {
+            level:              Number,
+            allocationRatio:    Number,
+            workdays:           Number,
+            packages:           Number,
+            harvested:          Number,
+            penalties:          Number,
+            seeds:              Number
+        },                              
+                                        required: false             }
 },
 {
     query: {
@@ -28,6 +39,17 @@ const Employee = new Schema({
         },
         byEmail(email) {
             return this.where({ email: new RegExp(email, "i") })
+        },
+        byUid(uid) {
+            return this.where({ uid: uid })
+        },
+        byPhone(phone) {
+            return this.where({ phone: phone })
+        },
+        bySalary(salary, compare) {
+            let comparison = {}
+            comparison[compare] = salary
+            return this.where({ salary: comparison })
         }
     }
 })
