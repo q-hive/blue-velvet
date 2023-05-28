@@ -431,14 +431,12 @@ export const createNewOrder = (orgId, order) => {
         }
 
         try{
-            let overhead = await getContainers({organization:orgId})
+            let org = await getContainers({organization:orgId})
 
-            const isValidContainerResponse = overhead !== null && overhead !== undefined && overhead.containers.length === 1
-            
+            const isValidContainerResponse = org !== null && org !== undefined && org.containers.length === 1
+            let overhead = 0
             if (isValidContainerResponse){
-                overhead = (overhead.containers[0].config.overhead)/100
-            } else {
-                overhead = 0;
+                overhead = (org.containers[0].config.overhead)/100
             }
             
             let production = await buildProductionDataFromOrder({...order, _id:id}, allProducts, overhead)
