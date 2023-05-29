@@ -68,7 +68,11 @@ export const NewOrganization = (props) => {
 
   const initialStateOrganizationContainer = {
     name: "",
-    capacity: "",
+    capacity: 0,
+    available: 0,
+    employees: [],
+    production: [],
+    products: [],
     address: {
       stNumber: "",
       street: "",
@@ -81,6 +85,10 @@ export const NewOrganization = (props) => {
         latitude: "",
         longitude: ""
       }
+    },
+    workday: {},
+    config: {
+      overhead: 0
     }
   };
 
