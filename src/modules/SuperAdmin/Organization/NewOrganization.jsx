@@ -7,6 +7,7 @@ import {
 
 import CameraIcon from '@mui/icons-material/AddPhotoAlternate'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import Delete from '@mui/icons-material/Delete';
 
 //*CONTEXTS
@@ -102,7 +103,7 @@ export const NewOrganization = (props) => {
   const [admin, setAdmin] = useState(initialStateAdmin);
   const [organization, setOrganization] = useState(initialStateOrganization);
   const [organizationContainers, setOrganizationContainers] = useState([initialStateOrganizationContainer]);
-  const [organizationCustomers, setOrganizationCustomers] = useState([initialStateOrganizationCustomer]);
+  const [organizationCustomers, setOrganizationCustomers] = useState([]);
 
   // Input handlers
   const handleAdminChange = (event) => {
@@ -504,7 +505,12 @@ export const NewOrganization = (props) => {
             </Box>
 
             {/* // ORGANIZATION CONTAINERS */}
-            <Typography variant="h5" mt="4vh" align="left">Container Information</Typography>
+            <Box sx={{ marginTop: "4vh", display: "flex", flexDirection: "row", alignItems: "center", justifyContent:"center", spacing:{ xs: 1, sm: 2 }, width: { xs: "100%", sm: "50%", md: "50%" } }} >
+              <Typography variant="h5"  align="left">Container Information</Typography>
+              <Button variant="contained" onClick={addContainer} sx={{ marginLeft: "1vh" }}>
+                <PlaylistAddIcon color="white" />
+              </Button>
+            </Box>
             <Divider variant="middle" sx={{ width: { xs: "98%", sm: "50%", md: "50%" }, marginY: "1vh" }} />
             {organizationContainers.map((container, index) => (
               <Box key={index} sx={{ marginTop: "1vh", display: "flex", flexDirection: "column", alignItems: "center", width: { xs: "100%", sm: "50%", md: "50%" } }} >
@@ -537,37 +543,43 @@ export const NewOrganization = (props) => {
                 </Accordion>
               </Box>
             ))}
-            <Button variant="contained" onClick={addContainer} sx={{ marginTop: "2vh" }}>Add Container</Button>
 
             {/* // ORGANIZATION CUSTOMERS */}
-            <Typography variant="h5" mt="4vh" align="left">Customers Information</Typography>
+            <Box sx={{ marginTop: "4vh", display: "flex", flexDirection: "row", alignItems: "center", justifyContent:"center", spacing:{ xs: 1, sm: 2 }, width: { xs: "100%", sm: "50%", md: "50%" } }} >
+              <Typography variant="h5"  align="left">Customers Information</Typography>
+              <Button variant="contained" onClick={addCustomer} sx={{ marginLeft: "1vh" }}>
+                <PlaylistAddIcon color="white" />
+              </Button>
+            </Box>
             <Divider variant="middle" sx={{ width: { xs: "98%", sm: "50%", md: "50%" }, marginY: "1vh" }} />
-            {organizationCustomers.map((customer, index) => (
-              <Box key={index} sx={{ marginTop: "1vh", display: "flex", flexDirection: "column", alignItems: "center", width: { xs: "100%", sm: "50%", md: "50%" } }} >
-                <Accordion sx={{ width: { xs: "100%", sm: "100%", md: "100%" } }}>
-                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Box sx={{ width: { xs: "100%", sm: "100%" }, display: "flex", flexDirection: "row", justifyContent: 'space-between', alignContent: 'center' }} >
-                      <Typography variant="h6">Customer #{index + 1}</Typography>
-                      {organizationCustomers.length > 1
-                        ? <Delete color="error" onClick={() => deleteCustomer(index)} sx={{ marginTop: ".5vh" }} />
-                        : null}
-                    </Box>
-                  </AccordionSummary>
-                  <AccordionDetails sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                    <Fab color="primary" component="label" aria-label="add" sx={{ marginY: "1%", width: 100, height: 100 }} size="large" helpertext="Label">
-                      <input type="file" accept="image/*" onChange={handleChangeLabel} hidden />
-                      <CameraIcon sx={{ fontSize: "5vh" }} />
-                    </Fab>
-                    <TextField name='email' onChange={(event) => handleOrganizationCustomersChange(event, index)} value={customer?.email} label="Email" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
-                    <TextField name='name' onChange={(event) => handleOrganizationCustomersChange(event, index)} value={customer?.name} label="Name" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
-                  </AccordionDetails>
-                </Accordion>
-              </ Box>
-            ))}
-            <Button variant="contained" onClick={addCustomer} sx={{ marginTop: "2vh" }}>Add Customer</Button>
+            {
+              organizationCustomers.length
+                ? (organizationCustomers.map((customer, index) => (
+                    <Box key={index} sx={{ marginTop: "1vh", display: "flex", flexDirection: "column", alignItems: "center", width: { xs: "100%", sm: "50%", md: "50%" } }} >
+                      <Accordion sx={{ width: { xs: "100%", sm: "100%", md: "100%" } }}>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                          <Box sx={{ width: { xs: "100%", sm: "100%" }, display: "flex", flexDirection: "row", justifyContent: 'space-between', alignContent: 'center' }} >
+                            <Typography variant="h6">Customer #{index + 1}</Typography>
+                            <Delete color="error" onClick={() => deleteCustomer(index)} sx={{ marginTop: ".5vh" }} />
+                          </Box>
+                        </AccordionSummary>
+                        <AccordionDetails sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                          <Fab color="primary" component="label" aria-label="add" sx={{ marginY: "1%", width: 100, height: 100 }} size="large" helpertext="Label">
+                            <input type="file" accept="image/*" onChange={handleChangeLabel} hidden />
+                            <CameraIcon sx={{ fontSize: "5vh" }} />
+                          </Fab>
+                          <TextField name='email' onChange={(event) => handleOrganizationCustomersChange(event, index)} value={customer?.email} label="Email" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
+                          <TextField name='name' onChange={(event) => handleOrganizationCustomersChange(event, index)} value={customer?.name} label="Name" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
+                        </AccordionDetails>
+                      </Accordion>
+                    </ Box>
+                  )))
+                : (<Typography variant="h6">No customers</Typography>)
+            }
+
 
             {/* // ADMIN */}
-            <Typography variant="h5" mt="4vh" align="left">New admin account Information</Typography>
+            <Typography variant="h5" mt="4vh" align="left">{props.edit ? "Edit" : "New"} admin account Information</Typography>
             <Divider variant="middle" sx={{ width: { xs: "98%", sm: "50%", md: "50%" }, marginY: "1vh" }} />
             <Fab color="primary" component="label" id="label" aria-label="add" sx={{ marginY: "4%", width: 100, height: 100 }} size="large" helpertext="Label">
               <input type="file" accept="image/*" onChange={handleChangeLabel} hidden />
