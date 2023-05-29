@@ -100,12 +100,17 @@ export const NewOrganization = (props) => {
   };
 
   // States with the initial state
+  const [phoneExt, setPhoneExt] = useState("+");
   const [admin, setAdmin] = useState(initialStateAdmin);
   const [organization, setOrganization] = useState(initialStateOrganization);
   const [organizationContainers, setOrganizationContainers] = useState([initialStateOrganizationContainer]);
   const [organizationCustomers, setOrganizationCustomers] = useState([]);
 
   // Input handlers
+  const handlePhoneExt = (event) => {
+    setPhoneExt(event.target.value);
+  };
+
   const handleAdminChange = (event) => {
     const { name, value } = event.target;
     setAdmin((prevAdmin) => ({ ...prevAdmin, [name]: value }));
@@ -233,7 +238,9 @@ export const NewOrganization = (props) => {
       admin.email &&
       word &&
       phrase &&
+      phoneExt &&
       admin.name &&
+      admin.phone &&
       admin.lname &&
       organization.name &&
       organization.address.stNumber &&
@@ -268,7 +275,7 @@ export const NewOrganization = (props) => {
       email: admin.email,
       name: admin.name,
       lname: admin.lname,
-      phone: admin.phone,
+      phone: phoneExt + admin.phone,
       password: admin.password,
       passphrase: admin.passphrase,
       organization: {
@@ -438,11 +445,14 @@ export const NewOrganization = (props) => {
 
           setClientId(OrganizationInEdition.admin._id);
           setClientUid(OrganizationInEdition.admin.uid);
-
+          
           setAdmin(prevAdmin => ({
             ...prevAdmin,
-            ...OrganizationInEdition.admin
+            ...OrganizationInEdition.admin,
+            phone: OrganizationInEdition.admin.phone.substring(3)
           }));
+
+          setPhoneExt(OrganizationInEdition.admin.phone.substring(0, 3));
           
           setOrganization({
             ...organization,
@@ -590,7 +600,10 @@ export const NewOrganization = (props) => {
               <TextField id="name" name='name' onChange={handleAdminChange} value={admin?.name} label="First Name" type="text" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
               <TextField id="lname" name='lname' onChange={handleAdminChange} value={admin?.lname} label="Last Name" type="text" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
             </Box>
-            <TextField id="phone" name='phone' onChange={handleAdminChange} value={admin?.phone} label="Phone" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
+            <Box sx={{ width: { xs: "98%", sm: "49%" }, display: "flex", flexDirection: "row", alignItems: "center", justifyContent:"center" }} >
+              <TextField id="phoneExt" name='phoneExt' onChange={handlePhoneExt} value={phoneExt} label="Ext" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.quarterSize })} />
+              <TextField id="phone" name='phone' onChange={handleAdminChange} value={admin?.phone} label="Phone" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
+            </Box>
             <Box sx={{ width: { xs: "98%", sm: "49%" } }} >
               <TextField id="password" name='password' onChange={handleAdminChange} value={admin?.password} label="Set a password" type="password" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
               <TextField id="passphrase" name='passphrase' onChange={handleAdminChange} value={admin?.passphrase} label="Set a passphrase" type="password" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
