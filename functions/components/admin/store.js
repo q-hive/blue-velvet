@@ -4,8 +4,8 @@ let { ObjectId } = mongoose.Types
 import adminAuth from '../../firebaseAdmin.js'
 
 import { hashPassphrase, genPassphrase } from './helper.js'
-import { getOrganizationById, newOrganization } from '../organization/store.js'
-import { newPassphrase } from '../passphrase/store.js'
+import { getOrganizationById, newOrganization, deleteOrganization } from '../organization/store.js'
+import { newPassphrase, deletePassphrase } from '../passphrase/store.js'
 import { newClient } from '../client/store.js'
 import { newClientSuperAdmin } from '../superadmin/store.js'
 
@@ -155,6 +155,14 @@ export function newAdmin(data) {
                     .then(client => resolve(client))
                     .catch((err) => {
                         adminAuth.deleteUser(userRecord.uid);
+                        deleteOrganization(org._id)
+                        .then(org => {
+                            deletePassphrase(clientData._id)
+                                .then(pass => resolve(pass))
+                                .catch(err => reject(err));
+                        })
+                        .catch(err => reject(err))
+
                         reject(err)
                     })
                 })
@@ -162,7 +170,9 @@ export function newAdmin(data) {
                     console.log('Error creating new passphrase on MongoDB:', error)
                     // * Delete account from firebase as rollback
                     adminAuth.deleteUser(userRecord.uid)
-                    reject(error)
+                    deleteOrganization(org._id)
+                        .then(org => resolve(org))
+                        .catch(err => reject(err))
                 })
             })
             .catch((error) => {
