@@ -70,9 +70,12 @@ export function newEmployee(res,data) {
 
                 org.save((err, doc) => {
                     if (err) reject(err)
-
                     resolve(doc)
                 })
+            })
+            .catch((err) => {
+                console.log('Delete employee account on firebaseAtuh:', err)
+                adminAuth.deleteUser(userRecord.uid)
             })
         })
         .catch(err => {
@@ -150,7 +153,10 @@ export function newAdmin(data) {
     
                     newClient(clientData)
                     .then(client => resolve(client))
-                    .catch(err => reject(err))
+                    .catch((err) => {
+                        adminAuth.deleteUser(userRecord.uid);
+                        reject(err)
+                    })
                 })
                 .catch((error) => {
                     console.log('Error creating new passphrase on MongoDB:', error)
@@ -251,7 +257,8 @@ export function updateUser(data) {
             resolve('User updated successfully', userRecord);
         })
         .catch((error) => {
-            reject('Error updating user:', error);
+            console.log('[Error updating user]');
+            reject(error);
         });
     })
 }
