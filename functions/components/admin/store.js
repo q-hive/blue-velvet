@@ -180,6 +180,7 @@ export function newSuperAdmin(data) {
             email: data.email,
             emailVerified: false,
             password: data.password,
+            phoneNumber: data.phone,
             displayName: data.name + " " + data.lname,
             photoURL: data.image,
             disabled: false,
