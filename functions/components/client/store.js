@@ -22,7 +22,7 @@ export const updateClient = (req, res, isFromOrg=false) => {
                         resolve("Firebase user was updated", user)
                     })
                     .catch((err) => {
-                        reject("Error updating user from firebase", err)
+                        reject(err)
                     })
             })
         } else {

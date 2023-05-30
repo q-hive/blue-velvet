@@ -107,6 +107,7 @@ export const NewEmployee = (props) => {
     }
 
     const createEmployee = (mappedEmployeeData) => {
+        console.log("[Creating employee ]");
         api.api.post(`/auth/create/employee`, mappedEmployeeData, {
             headers:{
                 authorization: credential._tokenResponse.idToken,
@@ -147,6 +148,7 @@ export const NewEmployee = (props) => {
                     ...dialog,
                     open:true,
                     title:"Employee could not be added",
+                    message: err.response.data.message,
                     actions:[ 
                         {
                             label:"Retry",
