@@ -15,6 +15,10 @@ import api from '../../../axios.js'
 import { BV_THEME } from '../../../theme/BV-theme'
 import { UserDialog } from '../../../CoreComponents/UserFeedback/Dialog'
 
+// *VALIDATIONS
+import { validateInput } from '../../../utils/helpers/inputValidator'
+
+
 export const NewEmployee = (props) => {
     const {user, credential} = useAuth()
     const navigate = useNavigate()
@@ -28,6 +32,7 @@ export const NewEmployee = (props) => {
         actions:[]
     })
 
+    const [phoneExt, setPhoneExt] = useState("");
     const [input, setInput] = useState({
         name:           "",
         email:          "",
@@ -44,6 +49,9 @@ export const NewEmployee = (props) => {
         country:        "",
         references:     "",
     })
+    // Error messages
+    const [errorMessages, setErrorMessages] = useState({});
+
 
     let UserInEdition
 
@@ -60,10 +68,11 @@ export const NewEmployee = (props) => {
                 console.log(res.data.data)
                 UserInEdition=res.data.data
                 console.log("user in edition",UserInEdition)
+                setPhoneExt(UserInEdition.phone.substring(0, 3));
                 setInput({...input, 
                     name:           UserInEdition.name, 
                     email:          UserInEdition.email,
-                    phone:          UserInEdition.phone,
+                    phone:          UserInEdition.phone.substring(3),
                     lname:          UserInEdition.lname,
                     password:       UserInEdition.password,
                     salary:         UserInEdition.salary,
@@ -75,23 +84,19 @@ export const NewEmployee = (props) => {
                     state:          UserInEdition.address.state,
                     country:        UserInEdition.address.country,
                     references:     UserInEdition.address.references,
-    
                 })
             })
             .catch((err) => {
                 console.log(err)
-            })
-
-            
+            })   
         }
-
-
     },[])
     
     
     const handleInput = (e,v,r) => {
-        let id
-        id =  e.target.id
+        const { id, value } = e.target;
+        const { valid, message } = validateInput(id, value);
+        setErrorMessages((prevErrors) => ({ ...prevErrors, [id]: valid ? "" : message }));
         if(r === "selectOption"){
             id = e.target.id.split('-')[0]
         }
@@ -101,6 +106,14 @@ export const NewEmployee = (props) => {
             [id]:v
         })
     }
+
+    const handlePhoneExt = (event) => {
+        const { id, value } = event.target;
+        const { valid, message } = validateInput(id, value);
+        setErrorMessages((prevErrors) => ({ ...prevErrors, [id]: valid ? "" : message }));
+        setPhoneExt(value);
+    };
+    
 
     const handleChangeLabel = () => {
         console.log("Changing label but not really")
@@ -191,7 +204,7 @@ export const NewEmployee = (props) => {
             "password":     input.password,
             "name":         input.name,
             "lname":        input.lname,
-            "phone":        input.phone,
+            "phone":        phoneExt + input.phone,
             "image":        "https://cdn-icons-png.flaticon.com/512/147/147144.png",
             "organization": user.organization,
             "salary":       input.salary,
@@ -245,8 +258,8 @@ export const NewEmployee = (props) => {
                     <Divider variant="middle" sx={{width:{xs:"98%",sm:"50%",md:"50%"}, marginY:"1vh"}}/>
 
                     <Box sx={{width:{xs:"98%",sm:"49%"}}} >
-                        <TextField id="name" value={input.name} onChange={(e) => handleInput(e,e.target.value,"input")} label="First Name" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} /*InputLabelProps={{ shrink: edition ? true:false }}*/ />
-                        <TextField id="lname" value={input.lname} onChange={(e) => handleInput(e,e.target.value,"input")} label="Last Name" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
+                        <TextField id="name" value={input.name} onChange={(e) => handleInput(e,e.target.value,"input")} label="First Name" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} /*InputLabelProps={{ shrink: edition ? true:false }}*/ error={Boolean(errorMessages.name)} helperText={errorMessages.name || ""} />
+                        <TextField id="lname" value={input.lname} onChange={(e) => handleInput(e,e.target.value,"input")} label="Last Name" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} error={Boolean(errorMessages.lname)} helperText={errorMessages.lname || ""} />
                     </Box>
                     <TextField id="salary" type="number" value={input.salary}  onChange={(e) => handleInput(e,e.target.value,"input")} label="Salary" InputProps={{endAdornment: <Typography>/HR</Typography>}} sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.thirdSize})} />
 
@@ -272,10 +285,12 @@ export const NewEmployee = (props) => {
                     </Typography>
                     <Divider variant="middle" sx={{width:{xs:"98%",sm:"50%",md:"50%"}, marginY:"1vh"}}/>
 
-                    <TextField id="email" onChange={(e) => handleInput(e,e.target.value,"input")} label="Email" value={input.email} sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
-                    <TextField id="phone" onChange={(e) => handleInput(e,e.target.value,"input")} label="Phone" value={input.phone} sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
-                    <TextField id="password" onChange={(e) => handleInput(e, e.target.value,"input")} type="password" label="Set a password" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
-
+                    <TextField id="email" onChange={(e) => handleInput(e,e.target.value,"input")} label="Email" value={input.email} sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} error={Boolean(errorMessages.email)} helperText={errorMessages.email || ""} />
+                    <Box sx={{ width: { xs: "98%", sm: "49%" }, display: "flex", flexDirection: "row", alignItems: "center", justifyContent:"center" }} >
+                        <TextField id="phoneExt" onChange={(e) => handlePhoneExt(e)} value={phoneExt} label="Ext" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.quarterSize })} error={Boolean(errorMessages.phoneExt)} helperText={errorMessages.phoneExt || ""} />
+                        <TextField id="phone" onChange={(e) => handleInput(e,e.target.value,"input")} label="Phone" value={input.phone} sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.fullSize})} error={Boolean(errorMessages.phone)} helperText={errorMessages.phone || ""} />
+                    </Box>
+                    <TextField id="password" onChange={(e) => handleInput(e, e.target.value,"input")} type="password" label="Set a password" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} error={Boolean(errorMessages.password)} helperText={errorMessages.password || ""} />
                     <Button variant="contained" onClick={handleCreateEmployee} sx={{marginTop:"2vh"}}>
                         {loading?<CircularProgress />:"Save employee"}
                     </Button>
