@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 
 //*MUI COMPONENTS
 import {
-  Autocomplete, Backdrop, Box, Button, Divider, Fab, TextField, Typography, Fade, CircularProgress, Accordion, AccordionSummary, AccordionDetails, Checkbox
+  Autocomplete, Backdrop, Box, Button, Divider, Fab, TextField, Typography, Fade, CircularProgress, Accordion, AccordionSummary, AccordionDetails, Checkbox, Tooltip
 } from '@mui/material'
 
 import CameraIcon from '@mui/icons-material/AddPhotoAlternate'
@@ -196,6 +196,8 @@ export const NewOrganization = (props) => {
 
   const handleOrganizationCustomersChange = (event, index) => {
     const { name, value } = event.target;
+    const { valid, message } = validateInput(name, value);
+    setErrorMessages((prevErrors) => ({ ...prevErrors, [`${name}Customer`]: valid ? "" : message }));
     setOrganizationCustomers((prevCustomers) => {
       const updatedCustomers = [...prevCustomers];
       updatedCustomers[index] = {
@@ -562,7 +564,6 @@ export const NewOrganization = (props) => {
                     <Box sx={{ width: { xs: "100%", sm: "100%" }, display: "flex", flexDirection: "row", justifyContent: 'space-between', alignContent: 'center' }} >
                       <Box sx={{ width: { xs: "100%", sm: "100%" }, display: "flex", flexDirection: "row", justifyContent: 'start', alignContent: 'center' }} >
                         <Typography variant="h6">Container #{index + 1}</Typography>
-                        <Checkbox icon={<DomainAddIcon color="primary" /> } checkedIcon={<DomainDisabledIcon color="error"/>} onChange={() => handleCheckBox(index)} onClick={(event) => event.stopPropagation()}/>
                       </Box>
                       {organizationContainers.length > 1
                         ? <Delete color="error" onClick={(e) => deleteContainer(index,e)} sx={{ marginTop: ".5vh" }} />
@@ -572,6 +573,9 @@ export const NewOrganization = (props) => {
                   <AccordionDetails sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                     <TextField name='name' onChange={(event) => handleOrganizationContainersChange(event, index)} value={container?.name} label="Name" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
                     <TextField name='capacity' type="number" onChange={(event) => handleOrganizationContainersChange(event, index)} value={container?.capacity} label="Capacity" InputProps={{ endAdornment: <Typography>/U</Typography> }} sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
+                    <Tooltip title={container.check ? "Click to input other address" : "Click to use organization address"} arrow>
+                      <Checkbox icon={<DomainAddIcon color="primary" /> } checkedIcon={<DomainDisabledIcon color="error"/>} onChange={() => handleCheckBox(index)} onClick={(event) => event.stopPropagation()}/>
+                    </Tooltip>
                     <TextField name='street' onChange={(event) => handleOrganizationContainersAddressChange(event, index)} value={container.check ? organization?.address?.street : container?.address?.street} label="Street" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} disabled={container.check} />
                     <Box sx={{ width: { xs: "100%", sm: "100%" }, display: "flex", flexDirection: "row", alignItems: "center" }} >
                       <TextField name='stNumber' onChange={(event) => handleOrganizationContainersAddressChange(event, index)} value={container.check ? organization?.address?.stNumber : container?.address?.stNumber} label="No." type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} disabled={container.check} />
@@ -614,8 +618,8 @@ export const NewOrganization = (props) => {
                           <input type="file" accept="image/*" onChange={handleChangeLabel} hidden />
                           <CameraIcon sx={{ fontSize: "5vh" }} />
                         </Fab>
-                        <TextField name='email' onChange={(event) => handleOrganizationCustomersChange(event, index)} value={customer?.email} label="Email" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
-                        <TextField name='name' onChange={(event) => handleOrganizationCustomersChange(event, index)} value={customer?.name} label="Name" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
+                        <TextField name='email' onChange={(event) => handleOrganizationCustomersChange(event, index)} value={customer?.email} label="Email" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} error={Boolean(errorMessages.emailCustomer)} helperText={errorMessages.emailCustomer || ""} />
+                        <TextField name='name' onChange={(event) => handleOrganizationCustomersChange(event, index)} value={customer?.name} label="Name" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} error={Boolean(errorMessages.nameCustomer)} helperText={errorMessages.nameCustomer || ""} />
                       </AccordionDetails>
                     </Accordion>
                   </ Box>
