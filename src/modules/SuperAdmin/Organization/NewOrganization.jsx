@@ -22,6 +22,9 @@ import api from '../../../axios.js'
 import { BV_THEME } from '../../../theme/BV-theme'
 import { UserDialog } from '../../../CoreComponents/UserFeedback/Dialog'
 
+// *VALIDATIONS
+import { validateInput } from '../../../utils/helpers/inputValidator'
+
 export const NewOrganization = (props) => {
 
   const { user, credential } = useAuth()
@@ -102,19 +105,26 @@ export const NewOrganization = (props) => {
   };
 
   // States with the initial state
-  const [phoneExt, setPhoneExt] = useState("+");
+  const [phoneExt, setPhoneExt] = useState("");
   const [admin, setAdmin] = useState(initialStateAdmin);
   const [organization, setOrganization] = useState(initialStateOrganization);
   const [organizationContainers, setOrganizationContainers] = useState([initialStateOrganizationContainer]);
   const [organizationCustomers, setOrganizationCustomers] = useState([]);
+  // Error messages
+  const [errorMessages, setErrorMessages] = useState({});
 
   // Input handlers
   const handlePhoneExt = (event) => {
-    setPhoneExt(event.target.value);
+    const { name, value } = event.target;
+    const { valid, message } = validateInput(name, value);
+    setErrorMessages((prevErrors) => ({ ...prevErrors, [name]: valid ? "" : message }));
+    setPhoneExt(value);
   };
 
   const handleAdminChange = (event) => {
     const { name, value } = event.target;
+    const { valid, message } = validateInput(name, value);
+    setErrorMessages((prevErrors) => ({ ...prevErrors, [name]: valid ? "" : message }));
     setAdmin((prevAdmin) => ({ ...prevAdmin, [name]: value }));
   };
 
@@ -277,7 +287,8 @@ export const NewOrganization = (props) => {
         ) &&
       organizationCustomers.every(
         (customer) => customer.email && customer.name //&& customer.image
-      )
+      ) &&
+      !Object.values(errorMessages).filter((value)=>value!=="").length 
     );
   };
 
@@ -620,20 +631,19 @@ export const NewOrganization = (props) => {
               <input type="file" accept="image/*" onChange={handleChangeLabel} hidden />
               <CameraIcon sx={{ fontSize: "5vh" }} />
             </Fab>
-            <TextField id="email" name='email' onChange={handleAdminChange} value={admin?.email} label="Email" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
+            <TextField id="email" name='email' onChange={handleAdminChange} value={admin?.email} label="Email" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} error={Boolean(errorMessages.email)} helperText={errorMessages.email || ""} />
             <Box sx={{ width: { xs: "98%", sm: "49%" } }} >
-              <TextField id="name" name='name' onChange={handleAdminChange} value={admin?.name} label="First Name" type="text" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
-              <TextField id="lname" name='lname' onChange={handleAdminChange} value={admin?.lname} label="Last Name" type="text" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
+              <TextField id="name" name='name' onChange={handleAdminChange} value={admin?.name} label="First Name" type="text" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} error={Boolean(errorMessages.name)} helperText={errorMessages.name || ""} />
+              <TextField id="lname" name='lname' onChange={handleAdminChange} value={admin?.lname} label="Last Name" type="text" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} error={Boolean(errorMessages.lname)} helperText={errorMessages.lname || ""} />
             </Box>
             <Box sx={{ width: { xs: "98%", sm: "49%" }, display: "flex", flexDirection: "row", alignItems: "center", justifyContent:"center" }} >
-              <TextField id="phoneExt" name='phoneExt' onChange={handlePhoneExt} value={phoneExt} label="Ext" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.quarterSize })} />
-              <TextField id="phone" name='phone' onChange={handleAdminChange} value={admin?.phone} label="Phone" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
+              <TextField id="phoneExt" name='phoneExt' onChange={handlePhoneExt} value={phoneExt} label="Ext" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.quarterSize })} error={Boolean(errorMessages.phoneExt)} helperText={errorMessages.phoneExt || ""} />
+              <TextField id="phone" name='phone' onChange={handleAdminChange} value={admin?.phone} label="Phone" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} error={Boolean(errorMessages.phone)} helperText={errorMessages.phone || ""} />
             </Box>
             <Box sx={{ width: { xs: "98%", sm: "49%" } }} >
-              <TextField id="password" name='password' onChange={handleAdminChange} value={admin?.password} label="Set a password" type="password" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
-              <TextField id="passphrase" name='passphrase' onChange={handleAdminChange} value={admin?.passphrase} label="Set a passphrase" type="password" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
+              <TextField id="password" name='password' onChange={handleAdminChange} value={admin?.password} label="Set a password" type="password" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} error={Boolean(errorMessages.password)} helperText={errorMessages.password || ""} />
+              <TextField id="passphrase" name='passphrase' onChange={handleAdminChange} value={admin?.passphrase} label="Set a passphrase" type="password" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} error={Boolean(errorMessages.passphrase)} helperText={errorMessages.passphrase || ""} />
             </Box>
-
             {/* // SAVE */}
             <Button variant="contained" onClick={handleSaveOrganization} disabled={!isFormValid()} sx={{ marginTop: "2vh" }}>
               {loading ? <CircularProgress /> : (!props.edit ? "Save Organization" : "Update Organization")}
