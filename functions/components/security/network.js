@@ -255,7 +255,6 @@ authRouter.post('/refresh', (req, res) => {
 })
 
 // FIXME: Apply middleware to superadmin
-// authRouter.use('/create', isAuthenticated, isAuthorized(["superadmin","admin"]), userCreationRouter)
-authRouter.use('/create', userCreationRouter)
+authRouter.use('/create', isAuthenticated, isAuthorized(["superadmin","admin"]), userCreationRouter)
 
 export default authRouter

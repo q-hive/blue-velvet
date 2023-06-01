@@ -102,7 +102,7 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined, produ
                 
                 const mappedOrders = orgOrders.map((order, orderIndex) => {
                     // const production = getOrderProdData(order, org.containers[0].products, true)
-                    const mutableOrder = order.toObject()
+                    const mutableOrder = order;
                     return mutableOrder
                 })
                 
