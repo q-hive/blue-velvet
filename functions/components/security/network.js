@@ -204,7 +204,7 @@ authRouter.post('/refresh', (req, res) => {
                     isSuperAdmin: true
                 })
             } else {
-                getOrganizationById(claims.organization)
+                getOrganizationById(claims.organization, true)
                     .then(async org => {
 
                         let token

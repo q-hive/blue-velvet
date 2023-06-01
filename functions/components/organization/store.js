@@ -99,6 +99,9 @@ export const getOrganizationById = (id, clean=false) => {
             if (result.length === 0) {
                 reject("Organization not found");
             } else {
+                if(clean){
+                    resolve(result[0]);
+                }
                 const hydratedOrg = orgModel.hydrate(result[0]);
                 if (!hydratedOrg) reject("Invalid organization data");
                 resolve(hydratedOrg);
