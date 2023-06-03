@@ -18,8 +18,13 @@ export const OrganizationIndex = () => {
   const [loading, setLoading] = useState(false)
 
   const navigate = useNavigate()
-  const handleNewOrganization = () => {
-    navigate('new')
+
+  const handleSaveOrganization = (id) => {
+    if (id) {
+      navigate(`editOrganization/?id=${id}`)
+    }else {
+      navigate('new')
+    }
   }
 
   const renderHeaderHook = (headerName) => {
@@ -143,11 +148,8 @@ export const OrganizationIndex = () => {
         })
 
         const [loading, setLoading] = useState(false)
-
         const { user, credential } = useAuth()
-        const navigate = useNavigate()
 
-        const editOrganization = () => console.log("Edit organization")
         const deleteOrganization = async () => {
           setLoading(true)
           const response = await api.api.delete(`${api.apiVersion}/organizations/${params.id}`, {
@@ -171,8 +173,7 @@ export const OrganizationIndex = () => {
                 btn_color: "white_btn",
                 type: "privileged",
                 execute: () => {
-                  editOrganization()
-                  navigate(`/${user.uid}/${user.role}/organization/editOrganization/?id=${params.id}`)
+                  handleSaveOrganization(params.id)
                 }
               },
               {
@@ -315,7 +316,7 @@ export const OrganizationIndex = () => {
 
               <Box sx={{ width: "100%", height: "100%" }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", marginBottom: "3vh" }} >
-                  <Button variant='contained' color='primary' startIcon={<Add />} onClick={handleNewOrganization} sx={{ minWidth: "20%" }}>New organization</Button>
+                  <Button variant='contained' color='primary' startIcon={<Add />} onClick={()=>handleSaveOrganization()} sx={{ minWidth: "20%" }}>New organization</Button>
                 </Box>
                 {
                   loading

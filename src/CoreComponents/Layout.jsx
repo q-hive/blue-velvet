@@ -393,7 +393,7 @@ const BV_Layout = (props) => {
     const container = window !== undefined ? () => window().document.body : undefined;
     React.useEffect(() => {
       if (user.role !== 'superadmin') {
-        getContainerData(user,credential,user.assignedContainer)
+        getContainerData(user,credential)
         .then((containerResponse) => {
           setContainerData((container) => {
             return {

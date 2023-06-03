@@ -34,3 +34,12 @@ export const deletePassphrase = (clientId) => {
         });        
     });
 }
+
+export const updatePassphraseByClient = (clientId, data) => {
+    return new Promise((resolve, reject) => {
+        passModel.findOneAndUpdate({ client: clientId }, data, { new: true }).exec((err, doc) => {
+            if (err) reject(err)
+            resolve(doc)
+        })
+    })
+}
