@@ -4,8 +4,8 @@ let { ObjectId } = mongoose.Types
 import adminAuth from '../../firebaseAdmin.js'
 
 import { hashPassphrase, genPassphrase } from './helper.js'
-import { getOrganizationById, newOrganization } from '../organization/store.js'
-import { newPassphrase } from '../passphrase/store.js'
+import { getOrganizationById, newOrganization, deleteOrganization } from '../organization/store.js'
+import { newPassphrase, deletePassphrase } from '../passphrase/store.js'
 import { newClient } from '../client/store.js'
 import { newClientSuperAdmin } from '../superadmin/store.js'
 
@@ -26,6 +26,7 @@ export function newEmployee(res,data) {
         // * Create account on firebase
         adminAuth.createUser({
             email:          data.email,
+            phoneNumber: data.phone,
             emailVerified:  false,
             password:       data.password,
             displayName:    data.name + " " + data.lname,
@@ -69,9 +70,12 @@ export function newEmployee(res,data) {
 
                 org.save((err, doc) => {
                     if (err) reject(err)
-
                     resolve(doc)
                 })
+            })
+            .catch((err) => {
+                console.log('Delete employee account on firebaseAtuh:', err)
+                adminAuth.deleteUser(userRecord.uid)
             })
         })
         .catch(err => {
@@ -87,6 +91,7 @@ export function newAdmin(data) {
         // * Create account on firebase
         adminAuth.createUser({
             email: data.email,
+            phoneNumber: data.phone,
             emailVerified: false,
             password: data.password,
             displayName: data.name + " " + data.lname,
@@ -148,13 +153,26 @@ export function newAdmin(data) {
     
                     newClient(clientData)
                     .then(client => resolve(client))
-                    .catch(err => reject(err))
+                    .catch((err) => {
+                        adminAuth.deleteUser(userRecord.uid);
+                        deleteOrganization(org._id)
+                        .then(org => {
+                            deletePassphrase(clientData._id)
+                                .then(pass => resolve(pass))
+                                .catch(err => reject(err));
+                        })
+                        .catch(err => reject(err))
+
+                        reject(err)
+                    })
                 })
                 .catch((error) => {
                     console.log('Error creating new passphrase on MongoDB:', error)
                     // * Delete account from firebase as rollback
                     adminAuth.deleteUser(userRecord.uid)
-                    reject(error)
+                    deleteOrganization(org._id)
+                        .then(org => resolve(org))
+                        .catch(err => reject(err))
                 })
             })
             .catch((error) => {
@@ -178,6 +196,7 @@ export function newSuperAdmin(data) {
             email: data.email,
             emailVerified: false,
             password: data.password,
+            phoneNumber: data.phone,
             displayName: data.name + " " + data.lname,
             photoURL: data.image,
             disabled: false,
@@ -235,8 +254,21 @@ export function newSuperAdmin(data) {
     })
 }
 
-export const updateUser = () => {
+export function updateUser(data) {
     return new Promise((resolve, reject) => {
-        resolve()
+        adminAuth.updateUser(data.uid,{
+            email: data.email,
+            phoneNumber: data.phone,
+            password: data.password,
+            displayName: data.name + " " + data.lname,
+            photoURL: data.image,
+        })
+        .then((userRecord) => {
+            resolve('User updated successfully', userRecord);
+        })
+        .catch((error) => {
+            console.log('[Error updating user]');
+            reject(error);
+        });
     })
 }

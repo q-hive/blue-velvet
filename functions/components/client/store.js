@@ -3,32 +3,49 @@ const { ObjectId } = mongoose.Types
 const { Schema } = mongoose
 
 import Client from '../../models/client.js' 
+import { updateUser } from '../admin/store.js'
 import { organizationModel } from '../../models/organization.js'
 import adminAuth from '../../firebaseAdmin.js'
 
 const clientModel = mongoose.model('clients', Client)
 
-export const updateClient = (req, res) => {
+export const updateClient = (req, res, isFromOrg=false) => {
     return new Promise((resolve, reject) => {
-        console.log("Updating customer with ID: " + req.params.id)
-        req.body._id = req.params.id
-        organizationModel.updateOne(
-            {
-                "_id":mongoose.Types.ObjectId(res.locals.organization),
-            },
-            {
-                "$set":{
-                    "customers.$[customer]":req.body
+        if (isFromOrg) {
+            console.log("Updating customer with from organizatoin with ID: " + req.body._id)
+            let clientData = req.body;
+            if (clientData.passphrase) delete clientData.passphrase;
+            clientModel.findOneAndUpdate({ _id: clientData._id }, clientData, { new: true }).exec((err, doc) => {
+                if (err) reject(err)
+                updateUser(clientData)
+                    .then((user) => {
+                        resolve("Firebase user was updated", user)
+                    })
+                    .catch((err) => {
+                        reject(err)
+                    })
+            })
+        } else {
+            console.log("Updating customer with ID: " + req.params.id)
+            req.body._id = req.params.id
+            organizationModel.updateOne(
+                {
+                    "_id":mongoose.Types.ObjectId(res.locals.organization),
+                },
+                {
+                    "$set":{
+                        "customers.$[customer]":req.body
+                    }
+                },
+                {
+                    "arrayFilters":[
+                        { "customer._id":mongoose.Types.ObjectId(req.params.id) }
+                    ]
                 }
-            },
-            {
-                "arrayFilters":[
-                    { "customer._id":mongoose.Types.ObjectId(req.params.id) }
-                ]
-            }
-        )
-        .then(result => resolve(result))
-        .catch(err => reject(err))
+            )
+            .then(result => resolve(result))
+            .catch(err => reject(err))
+        }
     })
 }
 

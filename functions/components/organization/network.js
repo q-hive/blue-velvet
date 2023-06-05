@@ -2,7 +2,10 @@ import express from 'express'
 import { mongoose } from '../../mongo.js'
 
 import { success, error } from '../../network/response.js'
+import { hashPassphrase, genPassphrase } from '../admin/helper.js'
+import { updatePassphraseByClient } from '../passphrase/store.js'
 import { getOrganizations, getOrganizationById, newOrganization, updateOrganization, deleteOrganization } from './store.js'
+import { updateClient } from '../client/store.js'
 import { modelsValidationError } from '../../utils/errorHandler.js'
 import { newContainer } from '../container/store.js'
 
@@ -61,10 +64,42 @@ router.get('/', (req, res) =>{
 })
 
 // * UPDATE
-router.post('/:id', (req, res) => {
-    updateOrganization(req.params.id, req.body)
+router.put('/:id', (req, res) => {
+    let orgData = req.body;
+    let clientData = req
+    let passphrase = 0;
+    if ( Object.keys(clientData.body).indexOf("passphrase") >= 0 ) { passphrase=clientData.body.passphrase }
+    if (Object.keys(orgData).indexOf("organization") !== -1 ) {
+        orgData = orgData.organization
+        delete clientData.body.organization
+    }
+
+    updateOrganization(req.params.id, orgData)
     .then(orgs => {
-        return success(req, res, 201, 'Organization updates successfully', orgs)
+        updateClient(clientData, res, true)
+        .then(clients => {
+            if (passphrase) {
+                let hashedPassphrase = hashPassphrase(passphrase !== undefined ? passphrase : genPassphrase(3))
+                let passData = {
+                    client:         clientData.body._id,
+                    uid:            clientData.body.uid,
+                    passphrase:     hashedPassphrase,
+                    organization:   req.params.id
+                }
+                updatePassphraseByClient(clientData.body._id, passData)
+                    .then(docs => {
+                        return success(req, res, 201, 'Organization, admin and credentials was updated successfully', docs)
+                    })
+                    .catch(err => {
+                        return error(req, res, 400, 'Error updating the passphrase', err)
+                    })
+            } else {
+                return success(req, res, 201, 'Organization and admin was updated successfully', clients)
+            }
+        })
+        .catch(err => {
+            return error(req, res, 400, 'Error updating the admin info', err)
+        })
     })
     .catch(err => {
         return error(req, res, 400, 'Error updating the organization info', err)

@@ -222,8 +222,7 @@ export const ProductionMain = () => {
                     padding:3
                 }}><Box sx={{display:"flex", justifyContent:"space-between"}}> 
                     <Typography variant="h5" color="secondary.main">
-                        {t(`product_${product.name}`,{ns:'production_management_module'})}
-                        
+                        {product.name}
                     </Typography>
                 <IconButton onClick={()=>{setSelectedProduct(null); if(showEdit){setShowEdit(false)}}} sx={{width:"3vh", height:"3vh", align:"right"}}>
                     <CloseIcon />
@@ -368,7 +367,7 @@ export const ProductionMain = () => {
                                 'product_overhead_card_title', 
                                 {
                                     ns:'production_management_module',
-                                    product:t(`product_${product.name}`,{ns:'production_management_module'})
+                                    product: product.name
                                 }
                             )
                         }
@@ -401,7 +400,7 @@ export const ProductionMain = () => {
     const renderCellProductName = (params) => {
         return (
             <>
-                {t(`product_${params.value}`,{ns:'production_management_module'})}    
+                {params.value}    
             </>
         )
     }

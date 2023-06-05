@@ -3,7 +3,7 @@ import Organization from '../../models/organization.js'
 import { deleteClient } from '../../components/client/store.js'
 import { deletePassphrase } from '../passphrase/store.js'
 
-const orgModel = mongoose.model('organization', Organization)
+const orgModel = mongoose.model('organizations', Organization)
 
 export const newOrganization = (orgData) => {
     return new Promise((resolve, reject) => {
@@ -58,14 +58,7 @@ export const getOrganizationByOwner = (ownerId) => {
 
 export const getOrganizationById = (id, clean=false) => {
     return new Promise((resolve, reject) => {
-        orgModel.find({"_id":mongoose.Types.ObjectId(id)})
-        .then((result) => {
-            resolve(result[0])
-        })
-        .catch((err) => {
-            console.log(id)
-            reject(err)
-        })
+        /* Clean option 
         // if(clean) {
         //     orgModel.find({_id:id}, {lean:true}).exec((err, doc) => {
         //         if (err) reject(err)
@@ -78,7 +71,46 @@ export const getOrganizationById = (id, clean=false) => {
         //     if (err) reject(err)
 
         //     resolve(doc)
-        // })
+        // })*/
+
+        orgModel.aggregate([
+            { $match: { _id:mongoose.Types.ObjectId(id) }},
+            { 
+                $lookup: {
+                    from: "clients",
+                    localField: "owner",
+                    foreignField: "_id",
+                    as: "admin",
+                }
+            },
+            {
+                $addFields: {
+                    admin: { $arrayElemAt: ["$admin", 0] }
+                }
+            },
+            {
+                $project: {
+                    "admin.password": 0,
+                    "admin.passphrase": 0
+                }
+            }
+        ])
+        .then((result) => {
+            if (result.length === 0) {
+                reject("Organization not found");
+            } else {
+                if(clean){
+                    resolve(result[0]);
+                }
+                const hydratedOrg = orgModel.hydrate(result[0]);
+                if (!hydratedOrg) reject("Invalid organization data");
+                resolve(hydratedOrg);
+            }
+            })
+        .catch((err) => {
+            console.log(id)
+            reject(err)
+        })
     }) 
 }
 
