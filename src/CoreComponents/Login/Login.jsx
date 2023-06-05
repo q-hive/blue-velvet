@@ -17,18 +17,18 @@ import { LoginInputs } from './LoginInputs'
 
 // * Auth context
 import useAuth from '../../contextHooks/useAuthContext.js'
+import useAuthe from '../../hooks/useAuthe'
 import {getAuth,signInWithCustomToken,setPersistence, browserSessionPersistence, signOut} from 'firebase/auth'
 
 
 // * Images
 import LoginImage from  '../../assets/images/login.jpeg'
-import api  from        '../../axios.js'
-
 
 export const Login = () => {
 
     const navigate = useNavigate()
     const { setUser, setCredential } = useAuth()
+    const { login } = useAuthe()
 
     const [isSuperAdmin, setIsSuperAdmin] = useState(false)
     const [tabContext, setTabContext] = useState('0')
@@ -65,7 +65,7 @@ export const Login = () => {
         e.preventDefault()
 
         setLoading(true)
-        api.api.post('/auth/login', loginData)
+        login(loginData)
         .then(response => {
             if (response.data.data.isAdmin) {
                 // * Load passphrase modal
@@ -137,7 +137,7 @@ export const Login = () => {
         const userRole = isSuperAdmin ? "superadmin" : "admin";
 
         setLoading(true)
-        api.api.post(`/auth/login/${userRole}`, loginData)
+        login(loginData, userRole)
         .then(response => {
             if (response.data.data.user.role == "admin" || response.data.data.user.role == "superadmin"){
                 const { cToken, user } = response.data.data
