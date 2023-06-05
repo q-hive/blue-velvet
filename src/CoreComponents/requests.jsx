@@ -312,11 +312,10 @@ export const updateEmployeeWorkDay = async (props) => {
 
 }
 export const finishWorkDayInDb = async (props) => {
-    let employee = props.employee
     let user = props.user
     let credential = props.credential
 
-    await api.api.patch(`${api.apiVersion}/work/workday/${employee}/${user.assignedContainer}?delete=true`,{},{
+    await api.api.patch(`${api.apiVersion}/work/workday/${user}/${user.assignedContainer}?delete=true`,{},{
         headers: {
             authorization:  credential._tokenResponse.idToken,
             user:           user

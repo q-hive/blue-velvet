@@ -135,6 +135,7 @@ export const NewEmployee = (props) => {
                 ...dialog,
                 open:true,
                 title:"Employee Added",
+                message: "The employee has been added successfully",
                 actions:[ 
                     {
                         label:"Add Another",
@@ -167,15 +168,14 @@ export const NewEmployee = (props) => {
                             label:"Retry",
                             btn_color:"primary",
                             execute:() => {
-                                handleCreateEmployee()
                                 setDialog({...dialog,open:false})
                             }
                         },
                         {
-                            label:"Close",
+                            label:"Try later",
                             btn_color:"secondary",
                             execute:() => {
-                                setDialog({...dialog,open:false})
+                                navigate(`/${user.uid}/${user.role}/dashboard`)
                             }
                         }
                     ]

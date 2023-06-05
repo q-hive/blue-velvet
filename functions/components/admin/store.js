@@ -43,6 +43,7 @@ export function newEmployee(res,data) {
                 organization:   res.locals.organization 
             })
 
+            console.log(res.locals.organization)
             getOrganizationById(res.locals.organization)
             .then(org => {
                 let empData = {
@@ -74,8 +75,9 @@ export function newEmployee(res,data) {
                 })
             })
             .catch((err) => {
-                console.log('Delete employee account on firebaseAtuh:', err)
+                console.log('Deleting employee account on firebaseAtuh due to an error updating the organization:', err)
                 adminAuth.deleteUser(userRecord.uid)
+                reject(err)
             })
         })
         .catch(err => {

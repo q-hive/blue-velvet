@@ -29,10 +29,6 @@ const getRefreshedToken = async () => {
 }
 
 
-
-
-
-
 const AuthContext = ({ children }) => {
   const [user, setUser] = useState(undefined);
   const [loading, setLoading] = useState(true);
@@ -52,37 +48,36 @@ const AuthContext = ({ children }) => {
       });
   };
 
-  
+  const refreshAuthToken = async (usr) => {
+    if(usr){
+      try {
+        const token = await auth.currentUser.getIdToken();
+        setCredential(() => ({
+          _tokenResponse: { idToken: token },
+        }));
 
-  const refreshAuthToken = async () => {
-    if(user){try {
-      const token = await auth.currentUser.getIdToken();
-      setCredential(() => ({
-        _tokenResponse: { idToken: token },
-      }));
+        const response = await api.api.post(
+          `/auth/refresh`,
+          {},
+          {
+            headers: {
+              authorization: token,
+            },
+          }
+        );
 
-      const response = await api.api.post(
-        `/auth/refresh`,
-        {},
-        {
-          headers: {
-            authorization: token,
-          },
+        const { data } = response.data;
+        const updatedUser = { ...data.user };
+        if (!data.isAdmin) {
+          updatedUser.role = "employee";
+        } else if(data.isSuperAdmin){
+          updatedUser.role = "superadmin";
+        } else {
+          updatedUser.role = "admin";
         }
-      );
 
-      const { data } = response.data;
-      const updatedUser = { ...data.user };
-      if (!data.isAdmin) {
-        updatedUser.role = "employee";
-      } else if(data.isSuperAdmin){
-        updatedUser.role = "superadmin";
-      } else {
-        updatedUser.role = "admin";
-      }
-
-      setUser(() => ({ ...updatedUser }));
-      setLoading(() => false);
+        setUser(() => ({ ...updatedUser }));
+        setLoading(() => false);
     } catch (error) {
       handleError(error);
     }}
@@ -93,7 +88,8 @@ const AuthContext = ({ children }) => {
       setLoading(() => true);
       if (u) {
         try {
-          await refreshAuthToken();
+          await refreshAuthToken(u);
+          setLoading(() => false);
         } catch (err) {
           console.log("Error while getting token after reloading.");
           console.log(err);
@@ -102,9 +98,9 @@ const AuthContext = ({ children }) => {
       }
 
       setLoading(() => false);
-      setTimeout(() => {
-        setLoading(() => false);
-      }, 10000);
+      // setTimeout(() => {
+      //   setLoading(() => false);
+      // }, 10000);
     };
 
     const idTokenChangedHandler = async () => {

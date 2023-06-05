@@ -149,3 +149,25 @@ export const deleteOrganization = (id) => {
         });        
     });
 }
+
+export const getOrgannizationWithAggregation = (id, pipelines) => {
+    return new Promise((resolve, reject) => {
+        orgModel.aggregate([
+            { $match: { _id:mongoose.Types.ObjectId(id) }},
+            ...pipelines
+        ])
+        .then((result) => {
+            console.log(result)
+            if (result.length === 0) {
+                resolve([]);
+            } else {
+                resolve(result);
+            }
+            }
+        )
+        .catch((err) => {
+            console.log(id)
+            reject(err)
+        })
+    })   
+}

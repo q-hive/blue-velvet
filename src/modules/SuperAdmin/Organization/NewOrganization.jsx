@@ -572,7 +572,7 @@ export const NewOrganization = (props) => {
                   </AccordionSummary>
                   <AccordionDetails sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                     <TextField name='name' onChange={(event) => handleOrganizationContainersChange(event, index)} value={container?.name} label="Name" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} />
-                    <TextField name='capacity' type="number" onChange={(event) => handleOrganizationContainersChange(event, index)} value={container?.capacity} label="Capacity" InputProps={{ endAdornment: <Typography>/U</Typography> }} sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
+                    <TextField name='capacity' type="number" onChange={(event) => handleOrganizationContainersChange(event, index)} value={container?.capacity} label="Capacity" InputProps={{ endAdornment: <Typography>/trays</Typography> }} sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
                     <Tooltip title={container.check ? "Click to input other address" : "Click to use organization address"} arrow>
                       <Checkbox icon={<DomainAddIcon color="primary" /> } checkedIcon={<DomainDisabledIcon color="error"/>} onChange={() => handleCheckBox(index)} onClick={(event) => event.stopPropagation()}/>
                     </Tooltip>

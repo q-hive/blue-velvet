@@ -52,7 +52,6 @@ export const ordersRoutes = (app) => {
 export const customerRoutes = (app) => {
     const authorized = ["admin"]
     app.use(`${apiV1}/customers`, isAuthenticated, isAuthorized(authorized), customersRouter)
-
 }
 export const taskRoutes = (app) => {
     const authorized = ["admin", "employee"]
@@ -71,7 +70,6 @@ export const deliveryRoutes = (app) => {
     const authorized = ["admin", "employee"]
     app.use(`${apiV1}/delivery`,  isAuthenticated, isAuthorized(authorized), deliveryRouter)
 }
-
 export const adminRoutes = (app) => {
     const authorized = ["superadmin", "admin"]
     app.use(`${apiV1}/admin`, isAuthenticated, isAuthorized(authorized), adminRouter)

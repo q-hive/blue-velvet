@@ -102,8 +102,8 @@ export const getAllOrders = (orgId, req, filtered=false, filter=undefined, produ
                 
                 const mappedOrders = orgOrders.map((order, orderIndex) => {
                     // const production = getOrderProdData(order, org.containers[0].products, true)
-                    const mutableOrder = order.toObject()
-                    return mutableOrder
+                    // const mutableOrdergetKey(task) = order.toObject()
+                    return order
                 })
                 
                 resolve(mappedOrders)

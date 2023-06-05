@@ -63,7 +63,8 @@ export const DailyTasksCard = (props) => {
         <Typography variant="h6" color="secondary">{t('daily_tasks_card_title',{ns:'daily_tasks_cards'})}</Typography>
         <Typography variant="body2" color="secondary">
             <i>
-                <b>{t('times_display_specification',{ns:'daily_tasks_cards'})}</b>
+                {/* <b>{t('times_display_specification',{ns:'daily_tasks_cards'})}</b> */}
+                <b>Time estimation for task completion</b>
             </i>
         </Typography>
         {
@@ -78,7 +79,8 @@ export const DailyTasksCard = (props) => {
                             </Typography>
                             <Typography >
                                 <i>
-                                    {t('expected_time_admn_dashboard',{ns:'tasks', times})}
+                                    {/* {t('expected_time_admn_dashboard',{ns:'tasks', times})} */}
+                                    Estimated time to complete: <b>{times} minutes</b>
                                 </i>
                             </Typography>
                             {

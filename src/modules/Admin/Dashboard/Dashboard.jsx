@@ -19,7 +19,7 @@ import { adminDashboardEmployees } from '../../../utils/TableStates';
 import {tasksCicleObj} from '../../../utils/models.js'
 import { getKey } from '../../../utils/getDisplayKeyByStatus';
 import { finishWorkDayInDb } from '../../../CoreComponents/requests';
-import { transformTo } from '../../../utils/times';
+import { addZero, transformTo } from '../../../utils/times';
 import { DailyTasksCard } from '../../../CoreComponents/TasksPresentation/DailyTasksCard';
 import { useTranslation } from 'react-i18next';
 import { capitalize } from '../../../utils/capitalize';
@@ -33,6 +33,7 @@ export const Dashboard = () => {
     
     const [containers, setContainers] = useState([])
     const [employeesPerformanceRows,  setEmployeesPerformanceRows] = useState([])
+    const [employeesHistoryTasks, setEmployeesHistoryTasks] = useState([])
     const [time, setTime] = useState({
         times: {
             preSoaking: {
@@ -81,7 +82,6 @@ export const Dashboard = () => {
         navigate(`/${user.uid}/admin/${e.target.id}`)
     }
 
-    const fakeContainers = [{name:"Panama Container",capacity:356,used:50},{name:"Colombia Container",capacity:356,used:150}]
 
     const getContainers = async ()=> {
         const userOrg = user.organization || JSON.parse(window.localStorage.getItem("usermeta"))?.organization
@@ -105,6 +105,22 @@ export const Dashboard = () => {
         })
 
         return employeesPerformance.data.data
+    }
+    const getTasksHistory = async () => {
+        const initialDate = new Date()
+        const finalDate = new Date(new Date().setDate(initialDate.getDate()+1))
+        
+        const startDate = `${initialDate.getFullYear()}-${addZero(initialDate.getMonth()+1)}-${addZero(initialDate.getDate())}`
+        const endDate = `${finalDate.getFullYear()}-${addZero(finalDate.getMonth()+1)}-${addZero(finalDate.getDate())}`
+        
+        const history = await api.api.get(`${api.apiVersion}/tasks/history/?date=${startDate}&endDate=${endDate}`, {
+            headers:{
+                "authorization":    credential._tokenResponse.idToken,
+                "user":             user
+            }
+        })
+
+        return history.data.data
     }
 
     const mapEmployeesData = (employees) => {
@@ -136,27 +152,52 @@ export const Dashboard = () => {
         
     }
     
-    function displayTaskCards (){
-        let performance = []
-
-        employeesPerformanceRows.forEach((employee, index) => {
-            
-            if(employee.workDay && Object.keys(employee.workDay).length>0){
-                Object.keys(employee.workDay).map((task, idx) => {
-                    let time = employee.workDay[task].achievedTime !== 0 ? transformTo("ms","minutes",employee.workDay[task].achievedTime) : `${t('not_finished_times', {ns:'tasks'})}`
-                    performance.push({
-                        col1:t('employee_name_admn_dashboard_times',{ns:'tasks', employee}),
-                        col2:t('task_word',{ns:'tasks', task:getKey(task)}),
-                        col3:t('expected_time_admn_dashboard',{ns:'tasks', times:transformTo("ms","minutes",employee.workDay[task].expectedTime)}),
-                        col4:t('achieved_time_admn_dashboard',{ns:'tasks', time}),
-                        id:idx
-                    })
-                })
-            }
-
-        })
+    function displayTaskCards (displayType){
         
-        return performance
+        function buildDailyTrackRows() {
+            let performance = []
+            
+            employeesPerformanceRows.forEach((employee, index) => {
+                if(employee.workDay && Object.keys(employee.workDay).length>0){
+                    Object.keys(employee.workDay).map((task, idx) => {
+                        let time = employee.workDay[task].achievedTime !== 0 ? transformTo("ms","minutes",employee.workDay[task].achievedTime) : `${t('not_finished_times', {ns:'tasks'})}`
+                        performance.push({
+                            col1:   employee.name,
+                            col2:t('task_word',{ns:'tasks', task:getKey(task)}),
+                            col3:t('expected_time_admn_dashboard',{ns:'tasks', times:transformTo("ms","minutes",employee.workDay[task].expectedTime)}),
+                            col4:t('achieved_time_admn_dashboard',{ns:'tasks', time}),
+                            id:idx
+                        })
+                    })  
+                }
+            })
+
+            return performance
+        }
+
+        function buildHistoryRows() {
+            let history = []
+            employeesHistoryTasks.forEach((task, index) => {
+                history.push({
+                    col1:   task.executedBy,
+                    col2:   getKey(task.taskType),
+                    col3:   transformTo("ms","minutes",task.expectedTime),
+                    col4:   transformTo("ms","minutes",task.achievedTime),
+                    id:     task._id
+                })
+            })
+
+            return history
+        }
+        
+            
+        if(displayType === "dailyTrack"){
+            return buildDailyTrackRows()
+        }
+
+        if(displayType === "history"){
+            return buildHistoryRows()
+        }
         // return(
         //     <>
         //         <Typography variant="body2">
@@ -336,9 +377,10 @@ export const Dashboard = () => {
             try {
                 const containers2 = await getContainers()
                 const employeesData = await getEmployees()
+                const tasksHistory = await getTasksHistory()
                 const time = await getTimeEstimate()
                 // const mappedEmployees = mapEmployeesData(employeesData)
-                return {containers2, employeesData, time}
+                return {containers2, employeesData, tasksHistory, time}
             } catch(err) {
                 console.log(err)
                 throw "There was an error trying to get data for dashboard"
@@ -349,6 +391,7 @@ export const Dashboard = () => {
         .then((response)=>{
             setContainers(response.containers2)
             setEmployeesPerformanceRows(response.employeesData)
+            setEmployeesHistoryTasks(response.tasksHistory)
             setTime(response.time)
         })
         .catch((err) =>{
@@ -442,10 +485,11 @@ export const Dashboard = () => {
                                 backgroundColor:BV_THEME.palette.primary.main,
                                 color:"white"
                             }}}>
-                            <Typography variant="h6" color="secondary.dark">{t('employee_tasks_cards_title',{ns:'admin'})}</Typography>
-                            <Tooltip title="This will delete the WORKING DAY of the employee from the system. This is recommended to be clicked at the end of the day. The history tracking is not affected">
+                            {/* <Typography variant="h6" color="secondary.dark">{t('employee_tasks_cards_title',{ns:'admin'})}</Typography> */}
+                            <Typography variant="h6" color="secondary.dark">Right now your employees are working on:</Typography>
+                            {/* <Tooltip title="This will delete the WORKING DAY of the employee from the system. This is recommended to be clicked at the end of the day. The history tracking is not affected">
                                 <Button variant="contained" backgroundColor={BV_THEME.palette.warning.dark} onClick={handleCleanEmployeesTasks}>{t('clear_data_employees_times',{ns:'admin'})}</Button>
-                            </Tooltip>
+                            </Tooltip> */}
                             <DataGrid
                             columns={[
                                 {
@@ -485,10 +529,64 @@ export const Dashboard = () => {
                                     flex:1
                                 },
                             ]}
-                            rows={displayTaskCards()}
+                            rows={displayTaskCards("dailyTrack")}
                             sx={{marginY:"2vh",}}>
                             </DataGrid>
                         </Paper>
+                        <Paper elevation={4} sx={{...fixedHeightPaper,height:400,marginTop:3,
+                            "& .header-sales-table":{
+                                backgroundColor:BV_THEME.palette.primary.main,
+                                color:"white"
+                        }}}>
+
+                            <Typography variant="h6" color="secondary.dark">Today your employees finished:</Typography>
+                            {/* <Tooltip title="This will delete the WORKING DAY of the employee from the system. This is recommended to be clicked at the end of the day. The history tracking is not affected">
+                                <Button variant="contained" backgroundColor={BV_THEME.palette.warning.dark} onClick={handleCleanEmployeesTasks}>{t('clear_data_employees_times',{ns:'admin'})}</Button>
+                            </Tooltip> */}
+                            <DataGrid
+                            columns={[
+                                {
+                                    field:"col1",
+                                    headerName:"Employee",
+                                    headerAlign:"center",
+                                    align:"center",
+                                    headerClassName:"header-sales-table",
+                                    minWidth:{xs:"25%",md:130},
+                                    flex:1
+                                },
+                                {
+                                    field:"col2",
+                                    headerName:"Task",
+                                    headerAlign:"center",
+                                    align:"center",
+                                    headerClassName:"header-sales-table",
+                                    minWidth:{xs:"25%",md:130},
+                                    flex:1
+                                },
+                                {
+                                    field:"col3",
+                                    headerName:"Expected Time",
+                                    headerAlign:"center",
+                                    align:"center",
+                                    headerClassName:"header-sales-table",
+                                    minWidth:{xs:"25%",md:130},
+                                    flex:1
+                                },
+                                {
+                                    field:"col4",
+                                    headerName:"Achieved time",
+                                    headerAlign:"center",
+                                    align:"center",
+                                    headerClassName:"header-sales-table",
+                                    minWidth:{xs:"25%",md:130},
+                                    flex:1
+                                },
+                            ]}
+                            rows={displayTaskCards("history")}
+                            sx={{marginY:"2vh",}}>
+                            </DataGrid> 
+                        </Paper>
+
                     </Grid>
                 </Grow>
 

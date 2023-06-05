@@ -1,7 +1,7 @@
 import express, { response } from 'express'
 import { success, error } from '../../network/response.js'
 import { modelsValidationError } from '../../utils/errorHandler.js'
-import { isValidTaskObject } from './controller.js'
+import { getOrganizationTaskHsitory, isValidTaskObject } from './controller.js'
 import {createTask, insertManyTasks} from './store.js'
 
 const router = express.Router()
@@ -52,6 +52,16 @@ router.post('/', (req, res) => {
         return
     }
     return error(req, res, 400, "Not valid request", new Error("The provided body is invalid"))
+})
+
+router.get('/history/', (req, res) => {
+    getOrganizationTaskHsitory(req, res, req.query.date, req.query.endDate)
+    .then((data) => {
+        return success(req, res, 200, "Tasks history obtained succesfully", data)
+    })
+    .catch((err) => {
+        return error(req, res, 500, "Error getting tasks history", err, err)
+    })
 })
 
 export default router

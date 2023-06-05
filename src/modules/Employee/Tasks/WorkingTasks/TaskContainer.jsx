@@ -48,8 +48,8 @@ export const TaskContainer = (props) => {
     const theme = useTheme(BV_THEME);
     
     const {user, credential} = useAuth()
-    const {WorkContext,setWorkContext,TrackWorkModel,setTrackWorkModel,employeeIsWorking, isOnTime} = useWorkingContext()
-    const {state} = useLocation();
+    const {WorkContext,setWorkContext,TrackWorkModel,setTrackWorkModel,employeeIsWorking, isOnTime, state, setState} = useWorkingContext()
+    // const {state} = useLocation();
     const navigate = useNavigate()
     
 
@@ -63,7 +63,7 @@ export const TaskContainer = (props) => {
         type=props.type
         order=props.order
         products=props.products
-        packs = props.packs
+        packs = state.packs
     }
 
     // const [isDisabled, setIsDisabled] = useState(state.workData[type].length<1)
@@ -345,8 +345,6 @@ export const TaskContainer = (props) => {
                     user: user
                 }
             })
-
-
             
             await api.api.patch(`${api.apiVersion}/work/production/${user.assignedContainer}`,
             {
