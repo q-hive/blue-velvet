@@ -4,15 +4,13 @@ import { DataGrid } from '@mui/x-data-grid'
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BV_THEME } from '../../../theme/BV-theme'
-import api from '../../../axios.js'
-import useAuth from '../../../contextHooks/useAuthContext'
-
+import useOrganizations from '../../../hooks/useOrganizations'
 import { UserModal } from "../../../CoreComponents/UserActions/UserModal"
 import { UserDialog } from "../../../CoreComponents/UserFeedback/Dialog"
 
 
 export const OrganizationIndex = () => {
-  const { user, credential } = useAuth()
+  const { getOrganizations, deleteOrganization } = useOrganizations();
 
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(false)
@@ -148,17 +146,10 @@ export const OrganizationIndex = () => {
         })
 
         const [loading, setLoading] = useState(false)
-        const { user, credential } = useAuth()
 
-        const deleteOrganization = async () => {
+        const deleteOrg = async () => {
           setLoading(true)
-          const response = await api.api.delete(`${api.apiVersion}/organizations/${params.id}`, {
-            headers: {
-              authorization: credential._tokenResponse.idToken,
-              user: user
-            }
-          })
-
+          const response = await deleteOrganization(params.id)
           return response
         }
 
@@ -199,7 +190,7 @@ export const OrganizationIndex = () => {
                             ...dialog,
                             open: false,
                           })
-                          deleteOrganization()
+                          deleteOrg()
                             .then((res) => {
                               if (res.status === 204) {
                                 setDialog({
@@ -270,12 +261,7 @@ export const OrganizationIndex = () => {
     setLoading(() => {
       return true
     })
-    api.api.get(`${api.apiVersion}/organizations/`, {
-      headers: {
-        authorization: credential._tokenResponse.idToken,
-        user: user
-      }
-    })
+    getOrganizations()
       .then((res) => {
         const organizationData = res.data.data.map((organization) => {
           return {
