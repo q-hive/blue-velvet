@@ -78,11 +78,21 @@ export const NewOrder = (props) => {
     const [loadingWithDefault, setLoadingWithDefault] = useState()
     const [options, setOptions] = useState({
         customers:  [],
+        status: [
+            {name: "preSoaking"},
+            {name: "seeding"},
+            {name: "growing"},
+            {name: "harvestReady"},
+            {name: "packing"},
+            {name: "ready"},
+            {name: "delivered"}
+        ],
         products:   []
     })
     const [input, setInput] = useState({
         customer:           props.edit.isEdition? props.edit.values.order.customer : {},
         product:            {},
+        status:             "",
         smallPackages:      undefined,
         mediumPackages:     undefined,
         size:               undefined,
@@ -100,6 +110,10 @@ export const NewOrder = (props) => {
         },
         product:{
             message:"Please correct or fill the product.",
+            active: false
+        },
+        status:{
+            message:"Please correct or fill the status.",
             active: false
         },
         date:{
@@ -171,7 +185,6 @@ export const NewOrder = (props) => {
         let id
         let value
         id = e.target.id
-        
         switch(r){
             case "input":
                 value = v
@@ -277,7 +290,7 @@ export const NewOrder = (props) => {
                 
                 products.push({
                     "name": input.product.name,
-                    "status": "production",
+                    "status": input.status.name,
                     "seedId": input.product?.seed,
                     "provider": input.product?.provider,
                     "_id": input.product._id,
@@ -287,6 +300,7 @@ export const NewOrder = (props) => {
                 setInput({
                     ...input,
                     product:        {},
+                    status:         {},
                     smallPackages:  undefined,
                     mediumPackages: undefined,
                 })
@@ -378,10 +392,9 @@ export const NewOrder = (props) => {
                 ]
             }
 
-            
             const mappedInput = {
                 "name": input.product.name,
-                "status": "production",
+                "status": input.product.name,
                 "seedId": input.product.seed,
                 "provider": input.product.provider,
                 "_id": input.product._id,
@@ -392,12 +405,10 @@ export const NewOrder = (props) => {
                 useProducts = true
             }
 
-            
-            
             mappedData = {
                 "customer": input.customer,
                 "products": useProducts ? products : [mappedInput],
-                "status":"preSoaking",
+                "status": "production",
                 "date": input.date,
                 "cyclic": input.cyclic
             }
@@ -406,6 +417,7 @@ export const NewOrder = (props) => {
         }
             
         try {
+            console.log("MAPINPUT:", mapInput());
             const response = await addOrder(mapInput())
 
             if(response.status === 201){
@@ -573,29 +585,54 @@ export const NewOrder = (props) => {
                     ?
                         <div>Must show component for DEFAULT PRODUCT FROM ROW OF DATA GRIS IN SALES MODULE</div>                    
                     :
-                    <Autocomplete
-                    id="product"
-                    options={options.products}
-                    sx={BV_THEME.input.mobile.fullSize.desktop.halfSize}
-                    renderInput={(params) => { 
-                        const {product} = error
-                        return <TextField
-                                {...params}
-                                helperText={product.active ? product.message : ""}
-                                error={product.active}
-                                label="Product"
-                            />
-                    }}
-                    getOptionLabel={(opt) => opt.name ? opt.name : ""}
-                    isOptionEqualToValue={(o,v) => {
-                        if(Object.keys(v).length === 0){
-                            return true
-                        }
-                        return o.name === v.name
-                    }}
-                    onChange={handleChangeInput}
-                    value={Object.keys(input.product) !== 0 ? input.product : undefined}
-                    />
+                    <>
+                        <Autocomplete
+                        id="product"
+                        options={options.products}
+                        sx={BV_THEME.input.mobile.fullSize.desktop.halfSize}
+                        renderInput={(params) => { 
+                            const {product} = error
+                            return <TextField
+                                    {...params}
+                                    helperText={product.active ? product.message : ""}
+                                    error={product.active}
+                                    label="Product"
+                                />
+                        }}
+                        getOptionLabel={(opt) => opt.name ? opt.name : ""}
+                        isOptionEqualToValue={(o,v) => {
+                            if(Object.keys(v).length === 0){
+                                return true
+                            }
+                            return o.name === v.name
+                        }}
+                        onChange={handleChangeInput}
+                        value={Object.keys(input.product) !== 0 ? input.product : undefined}
+                        />
+                        <Autocomplete
+                        id="status"
+                        options={options.status}
+                        sx={BV_THEME.input.mobile.fullSize.desktop.halfSize}
+                        renderInput={(params) => { 
+                            const {status} = error
+                            return <TextField
+                                    {...params}
+                                    helperText={status.active ? status.message : ""}
+                                    error={status.active}
+                                    label="Status"
+                                />
+                        }}
+                        getOptionLabel={(opt) => opt.name ? opt.name : ""}
+                        isOptionEqualToValue={(o,v) => {
+                            if(Object.keys(v).length === 0){
+                                return true
+                            }
+                            return o.name === v.name
+                        }}
+                        onChange={handleChangeInput}
+                        value={Object.keys(input.status) !== 0 ? input.status : undefined}
+                        />
+                    </>
                 }
             
 
@@ -737,10 +774,11 @@ export const NewOrder = (props) => {
                         Products in Order
                     </Typography>
                     
-                    <table style={{marginTop:"1vh",width:"100%"}}>
+                    <table style={{marginTop:"1vh",width:"100%", textAlign: "center"}}>
                         <thead>
                             <tr>
                                 <th><Typography variant="subtitle1">Name</Typography></th>
+                                <th><Typography variant="subtitle1">Status</Typography></th>
                                 <th><Typography variant="subtitle1">Small</Typography></th>
                                 <th><Typography variant="subtitle1">Medium</Typography></th>
                             </tr>
@@ -750,9 +788,12 @@ export const NewOrder = (props) => {
                     {getContextProducts().map((product,id)=>{
                         return (
                             
-                            <tr key={id}>
+                            <tr key={id} style={{textAlign: "center"}}>
                                 <td>
                                     <Typography>{product.name}</Typography>
+                                </td>
+                                <td>
+                                    <Typography sx={{mx: 2 }}>{product.status}</Typography>
                                 </td>
                                 {  
                                         product.packages.length > 1 ? 
