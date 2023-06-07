@@ -5,7 +5,7 @@ const useAuthe =  () => {
   const login = async (loginData, role='') => {
     let endpoint = "auth/login/";
     if (role) endpoint+=role;
-    return await request('POST',endpoint,{data: loginData, api:false});
+    return await request('POST',endpoint, null, {data: loginData, api:false});
   };
 
   return {
