@@ -340,9 +340,7 @@ export const TaskContainer = (props) => {
             })
 
             let refreshedToken = await getRefreshedToken()
-            // [ ]
             await updateTaskHistory({...taskHistoryModel}, {authorization: refreshedToken, user: user})
-            // [ ]
             await updateProduction(user.assignedContainer,{productionModelsIds:ids}, {authorization: refreshedToken,user: user})
         }
             

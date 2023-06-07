@@ -65,7 +65,6 @@ export const NewEmployee = (props) => {
     useEffect(()=>{
         if(props.edit){    
             let id = new URLSearchParams(window.location.search).get("id")
-            // [ ]
             getEmployee(id)
             .then((res) => {
                 console.log(res.data.data)
@@ -124,7 +123,6 @@ export const NewEmployee = (props) => {
 
     const createEmployee = (mappedEmployeeData) => {
         console.log("[Creating employee ]");
-        // [ ]
         addEmployee(mappedEmployeeData)
         .then((res) => {
             

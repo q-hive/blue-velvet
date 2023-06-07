@@ -20,7 +20,6 @@ export const Profile = () => {
     const theme = useTheme(BV_THEME);
 
     useEffect(() => {
-        // [ ]
         getEmployee(user._id)
         .then((response) => {
             let responseMapped = {performance:{level:0}} 

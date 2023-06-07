@@ -148,7 +148,6 @@ export const NewCustomer = (props) => {
             return
         }
         
-        // [ ]
         addCustomer(mappedCustomer)
         .then((response) => {
 

@@ -40,11 +40,11 @@ export function newEmployee(res,data) {
             // * Update role and organization to employee in custom claims
             adminAuth.setCustomUserClaims(userRecord.uid, { 
                 role:           "employee",
-                organization:   res.locals.organization 
+                organization:   data.organization 
             })
 
-            console.log(res.locals.organization)
-            getOrganizationById(res.locals.organization)
+            console.log("[ORG]",data.organization)
+            getOrganizationById(data.organization)
             .then(org => {
                 let empData = {
                     uid:            userRecord.uid,  

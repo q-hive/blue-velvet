@@ -165,7 +165,6 @@ export const EntryPoint = () => {
         label: "Initializing workday",
         severity: "warning",
       });
-      // [ ]
       const request = await updateUserPerformance(user._id,{ performance: [{ query: "add", workdays: 1 }] })
       return request;
     }
@@ -189,13 +188,11 @@ export const EntryPoint = () => {
   };
 
   const getOrders = async () => {
-    // [ ]
     const ordersData = await getUncompletedOrders()
       
     return ordersData.data;
   };
   const getTimeEstimate = async () => {
-    // [ ]
     const request = await getWorkTimeByContainer(user._id,user.assignedContainer)
 
     let result = {
@@ -325,13 +322,9 @@ export const EntryPoint = () => {
         deliverys: JSON.parse(window.localStorage.getItem("deliverys")),
       };
     }
-    // [ ]
     const production = await getContainerWorkDayProduction(user.assignedContainer)
-    // [ ]
     const packs = await getDeliveryPacksOrders()
-    // [ ]
     const deliverys = await getRoutesOrders()
-
 
     return {
       workData: production.data.data,

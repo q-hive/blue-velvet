@@ -42,7 +42,7 @@ let headers = {
   authorization: credential._tokenResponse.idToken,
   user: user,
 }
-const { getWorkTimeByContainer } = useWork(headers);
+const { getWorkTimeByContainer, updateWorkDay } = useWork(headers);
 const { getContainerWorkDayProduction } = useProduction(headers);
 const { getDeliveryPacksOrders, getRoutesOrders } = useDelivery(headers);
 
@@ -59,7 +59,6 @@ const {
 
   //*DATA STATES
   let { orders, workData, packs, deliverys, cycleKeys } = state;
-
 
   //*render states
   const [canSeeNextTask, setCanSeeNexttask] = useState({
@@ -139,7 +138,6 @@ const {
   const allProducts = workData;
 
     const getTimeEstimate = async () => {
-    // [ ]
     const request = await getWorkTimeByContainer(user._id, user.assignedContainer)
 
     let result = {
@@ -283,11 +281,8 @@ const {
     //   };
     // }
 
-      // [ ]
       const production = await getContainerWorkDayProduction(user.assignedContainer);
-      // [ ]
       const packs = await getDeliveryPacksOrders();
-      // [ ]
       const deliverys = await getRoutesOrders()
       const time = await getTimeEstimate();
 
@@ -358,8 +353,10 @@ const {
     let user = props.user;
     let credential = props.credential;
 
-      // [ ]
-      await updateWorkDay(user._id, user.assignedContainer, {})
+      await updateWorkDay(user._id, user.assignedContainer, {},{
+        authorization: credential._tokenResponse.idToken,
+        user: user,
+      })
       .then((result) => {
         return result.data.success;
       })

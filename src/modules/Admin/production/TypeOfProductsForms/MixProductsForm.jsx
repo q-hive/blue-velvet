@@ -317,7 +317,6 @@ export const MixProductsForm = ({editing, product}) => {
             model.label = label
         }
         
-        // [ ]
         addMixProduct(model)
         .then(response => {
             setDialog({
@@ -368,7 +367,6 @@ export const MixProductsForm = ({editing, product}) => {
     }
 
     useEffect(() => {
-        // [ ]
         getProducts()
         .then((response) => {
             setStrains(response.data.data)

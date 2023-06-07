@@ -133,7 +133,6 @@ export const NewOrder = (props) => {
     //Get invoice
     const getOrderInvoice = async (params) => {
         setLoading(true)
-        // [ ]
         const orderPDF = await getOrderInvoiceById(params._id)
         return orderPDF
     }
@@ -407,7 +406,6 @@ export const NewOrder = (props) => {
         }
             
         try {
-            // [ ]
             const response = await addOrder(mapInput())
 
             if(response.status === 201){
@@ -499,9 +497,7 @@ export const NewOrder = (props) => {
         
     useEffect(() => {
         const getData = async () => {
-            // [ ]
             const customers = await getCustomers();
-            // [ ]
             const products = await getProducts();
             return {customers:customers.data.data, products: products.data.data}
         }

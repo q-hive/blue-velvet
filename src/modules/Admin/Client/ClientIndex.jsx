@@ -53,9 +53,7 @@ export const ClientIndex = () => {
 
     useEffect(() => {
         const getAllCustomers = async () => {
-            // [ ]
             const response = await getCustomers();
-
             return response.data.data
         }
         setLoading(true)

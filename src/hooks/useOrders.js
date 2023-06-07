@@ -26,6 +26,10 @@ const useOrders =  (headers) => {
     return await request('GET',`orders/invoices/${customerId}`, headers);
   };
 
+  const updateInvoicePay = async (invoiceId, invoiceData) => {
+    return await request('PATCH',`orders/invoices/pay/${invoiceId}?payed=true`, headers, {data: invoiceData});
+  };
+
   return {
     addOrder,
     getOrders,
@@ -33,6 +37,7 @@ const useOrders =  (headers) => {
     getOrderInvoiceById,
     deleteOrder,
     getCustomerOrderInvoices,
+    updateInvoicePay,
   }
 
 };

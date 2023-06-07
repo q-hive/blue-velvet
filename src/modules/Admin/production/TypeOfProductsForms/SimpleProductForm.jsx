@@ -184,7 +184,6 @@ export const SimpleProductForm = ({editing, product}) => {
     }
 
     const saveProduct = (mappedProduct) => {
-        // [ ]
         addProduct(mappedProduct)
         .then(response => {
             setDialog({

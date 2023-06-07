@@ -103,7 +103,6 @@ export const Dashboard = () => {
     }
 
     const getEmployees = async () => {
-        // [ ]: Fix authorization
         const employeesPerformance = await getWorkDayAnalytics();
 
         return employeesPerformance.data.data
@@ -115,7 +114,6 @@ export const Dashboard = () => {
         const startDate = `${initialDate.getFullYear()}-${addZero(initialDate.getMonth()+1)}-${addZero(initialDate.getDate())}`
         const endDate = `${finalDate.getFullYear()}-${addZero(finalDate.getMonth()+1)}-${addZero(finalDate.getDate())}`
         
-        // [ ]
         const history = await getTaskHistory(startDate, endDate);
         return history.data.data
     }
@@ -242,7 +240,6 @@ export const Dashboard = () => {
     }
 
     const getTimeEstimate = async () => {
-        // [ ]
         const request = await getWorkTimeByContainer(user._id, user.assignedContainer);
         
         let result = {

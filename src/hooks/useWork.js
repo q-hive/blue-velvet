@@ -18,8 +18,8 @@ const useWork =  (headers) => {
     return await request('PATCH',`work/performance/${userId}`, headers, {data: performance});
   };
 
-  const updateWorkDay = async (userId, containerId, info) => {
-    return await request('PATCH',`work/workday/${userId}/${containerId}?delete=true`, headers, {data: info});
+  const updateWorkDay = async (userId, containerId, info, header=headers) => {
+    return await request('PATCH',`work/workday/${userId}/${containerId}?delete=true`, header, {data: info});
   };
 
   return {

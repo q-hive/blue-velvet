@@ -123,7 +123,6 @@ export const EmployeeIndex = () => {
                 const editCustomer = () => console.log("Edit customer")
                 const deleteEmployee = async () => {
                     setLoading(true)
-                    // [ ] 
                     const response = await deleteEmployeeById(params.id);
                     return response
                 }
@@ -240,7 +239,6 @@ export const EmployeeIndex = () => {
         setLoading(() => {
             return true
         })
-        // [ ]
         getEmployees()
         .then((res) => {
             setRows(res.data.data)

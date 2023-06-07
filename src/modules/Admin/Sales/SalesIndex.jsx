@@ -83,7 +83,6 @@ export const SalesIndex = () => {
     }
 
     const getOrderInvoice = async (params) => {
-        // [ ]
         const orderPDF = await getOrderInvoiceById(params.id)
         return orderPDF
     }
@@ -129,7 +128,6 @@ export const SalesIndex = () => {
         const editOrder = () => navigate(`/${user.uid}/admin/edition?type=order`, {state: {edition: {isEdition:true, order:params.row}}})
         const delOrder = async () => {
             setLoading(true)
-            // [ ]
             const deleteOperation = await deleteOrder(params.id)
             return deleteOperation
         }

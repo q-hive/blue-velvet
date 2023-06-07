@@ -95,7 +95,6 @@ export const ProductionMain = () => {
                             open:false,
                         })
                         setLoading(true)
-                        // [ ]
                         deleteProduct(params._id)
                         .then(() => {
                             console.log(params)
@@ -911,7 +910,6 @@ export const ProductionMain = () => {
     useEffect(() => {
         const requests = async () => {
             //*API SHOULD ACCEPT PARAMETERS IN ORDER TO GET THE MERGED DATA FROM ORDERS AND TASKS
-            // [ ]
             const productsRequest = await getProductsCompleteData()
             return productsRequest.data
         }
