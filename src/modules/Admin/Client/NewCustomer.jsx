@@ -9,13 +9,12 @@ import { BV_THEME } from '../../../theme/BV-theme'
 
 import CameraIcon from '@mui/icons-material/AddPhotoAlternate';
 import useAuth from '../../../contextHooks/useAuthContext';
-import api from '../../../axios.js'
 import { UserDialog } from '../../../CoreComponents/UserFeedback/Dialog';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { editCustomer } from '../../../CoreComponents/requests';
 
-
-
+// CUSTOM HOOKS
+import useCustomers from '../../../hooks/useCustomers';
 
 export const NewCustomer = (props) => {
     const useQuery = () => new URLSearchParams(useLocation().search)
@@ -36,6 +35,10 @@ export const NewCustomer = (props) => {
     
     //*Contexts
     const {user, credential} = useAuth()
+    const { addCustomer } = useCustomers({
+        authorization:  credential._tokenResponse.idToken,
+        user:           user
+    })
     const navigate = useNavigate()
     
     const [input, setInput] = useState({
@@ -145,12 +148,8 @@ export const NewCustomer = (props) => {
             return
         }
         
-        api.api.post(`${api.apiVersion}/customers/`, mappedCustomer, {
-            headers:{
-                authorization:  credential._tokenResponse.idToken,
-                user:           user
-            }
-        })
+        // [ ]
+        addCustomer(mappedCustomer)
         .then((response) => {
 
             console.log("status",response.status)

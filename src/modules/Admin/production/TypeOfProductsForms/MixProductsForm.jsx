@@ -14,13 +14,14 @@ import CameraIcon from '@mui/icons-material/AddPhotoAlternate';
 import { BV_THEME } from '../../../../theme/BV-theme'
 import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog'
 //*NETWORK AND API
-import api from '../../../../axios'
 import { useNavigate } from 'react-router-dom'
 //*Auth
 import useAuth from '../../../../contextHooks/useAuthContext'
 //*App components
 import { ProductsPrice } from '../components/ProductsPrice';
 import { borderColor } from '@mui/system';
+// CUSTOM HOOKS
+import useProducts from '../../../../hooks/useProducts';
 
 export const MixProductsForm = ({editing, product}) => {
     const theme = useTheme(BV_THEME);
@@ -106,6 +107,11 @@ export const MixProductsForm = ({editing, product}) => {
     }
 
     const {user, credential} = useAuth()
+    let headers = {
+        authorization:credential._tokenResponse.idToken,
+        user:user
+    }
+    const { addMixProduct, getProducts } = useProducts(headers)
     const navigate = useNavigate()
 
     const getProductName=(strain)=>{
@@ -311,12 +317,8 @@ export const MixProductsForm = ({editing, product}) => {
             model.label = label
         }
         
-        api.api.post(`${api.apiVersion}/products?mix=true`, model, {
-            headers:{
-                authorization:credential._tokenResponse.idToken,
-                user:user
-            }
-        })
+        // [ ]
+        addMixProduct(model)
         .then(response => {
             setDialog({
                 open:true,
@@ -366,12 +368,8 @@ export const MixProductsForm = ({editing, product}) => {
     }
 
     useEffect(() => {
-        api.api.get(`${api.apiVersion}/products/`, {
-            headers:{
-                authorization:credential._tokenResponse.idToken,
-                user:user
-            }
-        })
+        // [ ]
+        getProducts()
         .then((response) => {
             setStrains(response.data.data)
         })

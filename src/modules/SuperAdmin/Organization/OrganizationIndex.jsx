@@ -4,13 +4,19 @@ import { DataGrid } from '@mui/x-data-grid'
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BV_THEME } from '../../../theme/BV-theme'
+import useAuth from '../../../contextHooks/useAuthContext'
 import useOrganizations from '../../../hooks/useOrganizations'
 import { UserModal } from "../../../CoreComponents/UserActions/UserModal"
 import { UserDialog } from "../../../CoreComponents/UserFeedback/Dialog"
 
 
 export const OrganizationIndex = () => {
-  const { getOrganizations, deleteOrganization } = useOrganizations();
+  const {user, credential} = useAuth()
+  let headers = {
+    authorization:credential._tokenResponse.idToken,
+    user: user
+  }
+  const { getOrganizations, deleteOrganization } = useOrganizations(headers);
 
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(false)

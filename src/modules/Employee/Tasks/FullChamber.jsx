@@ -6,7 +6,6 @@ import { Alert, Box, Button, Fab, Fade, Snackbar } from "@mui/material";
 
 //*Netword and routing
 import { useLocation, useNavigate } from "react-router-dom";
-import api from "../../../axios.js";
 
 import { Carousel } from "react-responsive-carousel";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
@@ -22,8 +21,12 @@ import { UserDialog } from "../../../CoreComponents/UserFeedback/Dialog";
 import { BV_THEME } from "../../../theme/BV-theme";
 import { getWorkdayProdData } from "../../../CoreComponents/requests";
 
+import useWork from "../../../hooks/useWork.js";
+import useProduction from "../../../hooks/useProduction.js";
+import useDelivery from "../../../hooks/useDelivery.js";
+
+
 //*UNUSED
-// import api from '../../../axios.js'
 // import { Add } from '@mui/icons-material'
 //THEME
 // import {BV_THEME} from '../../../theme/BV-theme'
@@ -35,6 +38,14 @@ export const FullChamber = () => {
 //   const { state } = useLocation();
 //*CONTEXTS
 const { user, credential } = useAuth();
+let headers = {
+  authorization: credential._tokenResponse.idToken,
+  user: user,
+}
+const { getWorkTimeByContainer } = useWork(headers);
+const { getContainerWorkDayProduction } = useProduction(headers);
+const { getDeliveryPacksOrders, getRoutesOrders } = useDelivery(headers);
+
 const {
   TrackWorkModel,
   setTrackWorkModel,
@@ -128,15 +139,8 @@ const {
   const allProducts = workData;
 
     const getTimeEstimate = async () => {
-    const request = await api.api.get(
-      `${api.apiVersion}/work/time/${user._id}?containerId=${user.assignedContainer}`,
-      {
-        headers: {
-          authorization: credential._tokenResponse.idToken,
-          user: user,
-        },
-      }
-    );
+    // [ ]
+    const request = await getWorkTimeByContainer(user._id, user.assignedContainer)
 
     let result = {
       times: {
@@ -279,31 +283,13 @@ const {
     //   };
     // }
 
-    const production = await api.api.get(
-      `${api.apiVersion}/production/workday?containerId=${user.assignedContainer}`,
-      {
-        headers: {
-          authorization: credential._tokenResponse.idToken,
-          user: user,
-        },
-      }
-    );
-    const packs = await api.api.get(`${api.apiVersion}/delivery/packs/orders`, {
-      headers: {
-        authorization: credential._tokenResponse.idToken,
-        user: user,
-      },
-    });
-    const deliverys = await api.api.get(
-      `${api.apiVersion}/delivery/routes/orders`,
-      {
-        headers: {
-          authorization: credential._tokenResponse.idToken,
-          user: user,
-        },
-      }
-    );
-    const time = await getTimeEstimate();
+      // [ ]
+      const production = await getContainerWorkDayProduction(user.assignedContainer);
+      // [ ]
+      const packs = await getDeliveryPacksOrders();
+      // [ ]
+      const deliverys = await getRoutesOrders()
+      const time = await getTimeEstimate();
 
     return {
       workData: production.data.data,
@@ -372,17 +358,8 @@ const {
     let user = props.user;
     let credential = props.credential;
 
-    await api.api
-      .patch(
-        `${api.apiVersion}/work/workday/${user._id}/${user.assignedContainer}`,
-        {},
-        {
-          headers: {
-            authorization: credential._tokenResponse.idToken,
-            user: user,
-          },
-        }
-      )
+      // [ ]
+      await updateWorkDay(user._id, user.assignedContainer, {})
       .then((result) => {
         return result.data.success;
       })

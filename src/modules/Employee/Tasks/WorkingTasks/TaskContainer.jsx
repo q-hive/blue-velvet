@@ -13,7 +13,8 @@ import { BV_THEME } from '../../../../theme/BV-theme'
 import { json, useLocation, useNavigate } from 'react-router-dom'
 import useAuth from '../../../../contextHooks/useAuthContext'
 
-import api from '../../../../axios.js'
+// CUSTOM HOOKS
+import useWork from '../../../../hooks/useWork'
 
 
 ///tasks steps test
@@ -47,7 +48,12 @@ export const TaskContainer = (props) => {
     
     const theme = useTheme(BV_THEME);
     
-    const {user, credential} = useAuth()
+    const {user,credential} = useAuth()
+    let headers = {
+        authorization: credential._tokenResponse.idToken,
+        user:          user
+    }
+    const { updateProduction, updateTaskHistory } = useWork(headers)
     const {WorkContext,setWorkContext,TrackWorkModel,setTrackWorkModel,employeeIsWorking, isOnTime, state, setState} = useWorkingContext()
     // const {state} = useLocation();
     const navigate = useNavigate()
@@ -313,7 +319,7 @@ export const TaskContainer = (props) => {
         let finished = Date.now()
         let achieved =  finished - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].started
 
-        const updateProduction = async () => {
+        const updateProductionData = async () => {
             let wd = JSON.parse(window.localStorage.getItem("workData"))
 
             //*When this model is sent also updates the performance of the employee on the allocationRatio key.
@@ -334,29 +340,10 @@ export const TaskContainer = (props) => {
             })
 
             let refreshedToken = await getRefreshedToken()
-
-            await api.api.patch(`${api.apiVersion}/work/taskHistory`, 
-            {
-                ...taskHistoryModel
-            },
-            {
-                headers: {
-                    authorization: refreshedToken,
-                    user: user
-                }
-            })
-            
-            await api.api.patch(`${api.apiVersion}/work/production/${user.assignedContainer}`,
-            {
-                productionModelsIds:ids,
-            },
-            {
-                headers: {
-                    authorization: refreshedToken,
-                    user: user
-                }
-            }
-            )
+            // [ ]
+            await updateTaskHistory({...taskHistoryModel}, {authorization: refreshedToken, user: user})
+            // [ ]
+            await updateProduction(user.assignedContainer,{productionModelsIds:ids}, {authorization: refreshedToken,user: user})
         }
             
         if(type === "cleaning"){
@@ -377,7 +364,7 @@ export const TaskContainer = (props) => {
             return
         }
         
-        updateProduction()
+        updateProductionData()
         .then((result) => {
 
             // hooks

@@ -8,10 +8,14 @@ import { navigate } from '../../../utils/router'
 
 //*Contexts
 import useAuth from '../../../contextHooks/useAuthContext'
+import useOrganizations from '../../../hooks/useOrganizations'
+import useEmployees from '../../../hooks/useEmployees'
+import useTasks from '../../../hooks/useTasks'
+import useWork from '../../../hooks/useWork'
 
 //*Routing
 import { useNavigate } from "react-router-dom";
-import api from "../../../axios"
+
 //Theme
 import { BV_THEME } from '../../../theme/BV-theme';
 import { DataGrid , GridRowsProp} from '@mui/x-data-grid';
@@ -29,6 +33,15 @@ import containerImg from "../../../assets/images/production/container-blue.png"
 
 export const Dashboard = () => {
     const {user,credential} = useAuth()
+    let headers = {
+        authorization: credential._tokenResponse.idToken,
+        user:          user
+    }
+    const { getOrganization } = useOrganizations(headers)
+    const { getWorkDayAnalytics } = useEmployees(headers)
+    const { getTaskHistory } = useTasks(headers);
+    const { getWorkTimeByContainer } = useWork(headers);
+
     const {t,i18} = useTranslation(['default', 'daily_tasks_cards','admin', 'tasks', 'buttons'])
     
     const [containers, setContainers] = useState([])
@@ -85,24 +98,13 @@ export const Dashboard = () => {
 
     const getContainers = async ()=> {
         const userOrg = user.organization || JSON.parse(window.localStorage.getItem("usermeta"))?.organization
-        
-        const containersData = await api.api.get(`${api.apiVersion}/organizations?_id=${userOrg}`,{
-            headers:{
-                "authorization":    credential._tokenResponse.idToken,
-                "user":             user
-            }
-        })
-
-        return containersData.data.data[0].containers
+        const containersData = await getOrganization(userOrg);
+        return containersData.data.data.containers
     }
 
     const getEmployees = async () => {
-        const employeesPerformance = await api.api.get(`${api.apiVersion}/employees/analytics/workday`, {
-            headers:{
-                "authorization":    credential._tokenResponse.idToken,
-                "user":             user
-            }
-        })
+        // [ ]: Fix authorization
+        const employeesPerformance = await getWorkDayAnalytics();
 
         return employeesPerformance.data.data
     }
@@ -113,13 +115,8 @@ export const Dashboard = () => {
         const startDate = `${initialDate.getFullYear()}-${addZero(initialDate.getMonth()+1)}-${addZero(initialDate.getDate())}`
         const endDate = `${finalDate.getFullYear()}-${addZero(finalDate.getMonth()+1)}-${addZero(finalDate.getDate())}`
         
-        const history = await api.api.get(`${api.apiVersion}/tasks/history/?date=${startDate}&endDate=${endDate}`, {
-            headers:{
-                "authorization":    credential._tokenResponse.idToken,
-                "user":             user
-            }
-        })
-
+        // [ ]
+        const history = await getTaskHistory(startDate, endDate);
         return history.data.data
     }
 
@@ -245,12 +242,8 @@ export const Dashboard = () => {
     }
 
     const getTimeEstimate = async () => {
-        const request = await api.api.get(`${api.apiVersion}/work/time/${user._id}?containerId=${user.assignedContainer}`, {
-            headers: {
-                authorization:  credential._tokenResponse.idToken,
-                user:           user
-            }
-        })
+        // [ ]
+        const request = await getWorkTimeByContainer(user._id, user.assignedContainer);
         
         let result = {
             times: {

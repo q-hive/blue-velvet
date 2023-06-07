@@ -5,16 +5,25 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BV_THEME } from '../../../theme/BV-theme'
 import { EmployeeColumns } from '../../../utils/TableStates'
-import api from '../../../axios.js'
 import useAuth from '../../../contextHooks/useAuthContext'
 import { useTranslation } from 'react-i18next'
 
 import { UserModal } from "../../../CoreComponents/UserActions/UserModal"
 import { UserDialog } from "../../../CoreComponents/UserFeedback/Dialog"
 
+// Custom hooks
+import useEmployees from '../../../hooks/useEmployees'
+
 
 export const EmployeeIndex = () => {
+
     const {user, credential} = useAuth()
+    let headers = {
+        authorization:credential._tokenResponse.idToken,
+        user: user
+    }
+    const { getEmployees, deleteEmployeeById } = useEmployees(headers)
+
     const {t} = useTranslation(['employee_management_module', 'buttons'])
     
     const [rows, setRows] = useState([])
@@ -114,13 +123,8 @@ export const EmployeeIndex = () => {
                 const editCustomer = () => console.log("Edit customer")
                 const deleteEmployee = async () => {
                     setLoading(true)
-                    const response = await api.api.delete(`${api.apiVersion}/employees/${params.id}`, {
-                        headers: {
-                            authorization: credential._tokenResponse.idToken,
-                            user: user
-                        }
-                    })
-    
+                    // [ ] 
+                    const response = await deleteEmployeeById(params.id);
                     return response
                 }
                 
@@ -236,12 +240,8 @@ export const EmployeeIndex = () => {
         setLoading(() => {
             return true
         })
-        api.api.get(`${api.apiVersion}/employees/`, {
-            headers:{
-                authorization:credential._tokenResponse.idToken,
-                user: user
-            }
-        })
+        // [ ]
+        getEmployees()
         .then((res) => {
             setRows(res.data.data)
             setLoading(() => {

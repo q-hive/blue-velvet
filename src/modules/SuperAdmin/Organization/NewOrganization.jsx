@@ -27,8 +27,12 @@ import { validateInput } from '../../../utils/helpers/inputValidator'
 
 export const NewOrganization = (props) => {
 
-  const { user } = useAuth()
-  const { createOrganization, getOrganization, updateOrganization } = useOrganizations();
+  const {user, credential} = useAuth()
+  let headers = {
+    authorization:credential._tokenResponse.idToken,
+    user: user
+  }
+  const { createOrganization, getOrganization, updateOrganization } = useOrganizations(headers);
   const navigate = useNavigate()
 
   const [clientId, setClientId] = useState(0)

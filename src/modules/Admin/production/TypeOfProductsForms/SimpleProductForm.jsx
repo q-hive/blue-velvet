@@ -13,13 +13,16 @@ import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog.jsx'
 import { BV_THEME } from '../../../../theme/BV-theme.js'
 
 //*Network and API
-import api from '../../../../axios.js'
 import { useNavigate } from 'react-router-dom'
 import { useEffect } from 'react';
 import useAuth from '../../../../contextHooks/useAuthContext.js';
 import { ProductsPrice } from '../components/ProductsPrice.jsx';
 import { ProductsTime } from '../components/ProductsTime.jsx';
 import { updateProduct } from '../../../../CoreComponents/requests.jsx';
+
+// CUSTOM HOOKS
+import useProducts from '../../../../hooks/useProducts.js';
+
 //Stepper
 // import VerticalLinearStepper from './StepperTest.jsx';
 
@@ -28,6 +31,11 @@ export const SimpleProductForm = ({editing, product}) => {
     const theme = useTheme(BV_THEME)
     const navigate = useNavigate()
     const {user, credential} = useAuth()
+    let headers= {
+        authorization:credential._tokenResponse.idToken,
+        user:user,
+    }
+    const { addProduct } = useProducts(headers)
 
     //*DATA STATES
     const [productData, setProductData] = useState({
@@ -176,12 +184,8 @@ export const SimpleProductForm = ({editing, product}) => {
     }
 
     const saveProduct = (mappedProduct) => {
-        api.api.post(`${api.apiVersion}/products/`, mappedProduct, {
-            headers:{
-                authorization:credential._tokenResponse.idToken,
-                user:user,
-            }
-        })
+        // [ ]
+        addProduct(mappedProduct)
         .then(response => {
             setDialog({
                 ...dialog,
