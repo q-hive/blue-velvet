@@ -22,7 +22,6 @@ import { UserModal } from '../../../CoreComponents/UserActions/UserModal'
 import { productsColumns, DisplayViewButton /*productsColumnsMobile*/ } from '../../../utils/TableStates'
 
 //*network AND API
-import api from '../../../axios'
 import { useNavigate } from 'react-router-dom'
 import useAuth from '../../../contextHooks/useAuthContext'
 import { Stack } from '@mui/system'
@@ -32,11 +31,19 @@ import { useTranslation } from 'react-i18next'
 import { set } from 'date-fns'
 import { currencyByLang } from '../../../utils/currencyByLanguage'
 
+// CUSTOM HOOKS
+import useProducts from '../../../hooks/useProducts'
+
 
 export const ProductionMain = () => {
     const theme = useTheme(BV_THEME);
     //*CONTEXTS
     const {user, credential} = useAuth()
+    let headers = {
+        authorization:credential._tokenResponse.idToken,
+        user:user
+    }
+    const { deleteProduct, getProductsCompleteData } = useProducts(headers)
     const {t, i18n} = useTranslation(['production_management_module', 'buttons'])
     
     //*Render states
@@ -67,7 +74,7 @@ export const ProductionMain = () => {
     const navigate = useNavigate()
 
 
-    const deleteProduct = (params) => {
+    const delProduct = (params) => {
         console.log("Are you sure you want to delete this product?")
         setModal({
             ...modal,
@@ -88,13 +95,7 @@ export const ProductionMain = () => {
                             open:false,
                         })
                         setLoading(true)
-                        
-                        api.api.delete(`${api.apiVersion}/products/?id=${params._id}`,{
-                            headers:{
-                                authorization:credential._tokenResponse.idToken,
-                                user:user
-                            }
-                        })
+                        deleteProduct(params._id)
                         .then(() => {
                             console.log(params)
                             setSelectedProduct(null)
@@ -198,7 +199,7 @@ export const ProductionMain = () => {
                         </MenuItem>
 
                         <MenuItem onClick={handleClose}>
-                            <Button onClick={() => deleteProduct(selectedProduct)}
+                            <Button onClick={() => delProduct(selectedProduct)}
                                 color="error" disabled={loading || (user.role === "employee")}
                                 sx={{ padding: "0px", margin: "0px", maxWidth: "48%" }}>
                                 {<DeleteIcon />}
@@ -346,7 +347,7 @@ export const ProductionMain = () => {
                     <Box display="flex" justifyContent={"flex-end"}  sx={{width:"100%"}}>
                         <SimpleMenu/>
                         {/* <Button variant="contained" sx={{}} disabled={user.role !== "admin"} onClick={()=>setShowEdit(true)} color="secondary">Edit</Button>
-                        <Button onClick={()=>deleteProduct(selectedProduct)} color="error" disabled={loading || (user.role === "employee")} sx={{padding:"0px",margin:"0px",maxWidth:"48%"}}> {<DeleteIcon/>} </Button>     */}
+                        <Button onClick={()=>delProduct(selectedProduct)} color="error" disabled={loading || (user.role === "employee")} sx={{padding:"0px",margin:"0px",maxWidth:"48%"}}> {<DeleteIcon/>} </Button>     */}
 
                     </Box>
                 </Paper>
@@ -905,18 +906,11 @@ export const ProductionMain = () => {
             
         }
     }
-    
-    
-    
+
     useEffect(() => {
         const requests = async () => {
             //*API SHOULD ACCEPT PARAMETERS IN ORDER TO GET THE MERGED DATA FROM ORDERS AND TASKS
-            const productsRequest = await api.api.get(`${api.apiVersion}/products/?orders&tasks&performance`, {
-                headers:{
-                    user:user,
-                    authorization:credential._tokenResponse.idToken
-                }
-            })
+            const productsRequest = await getProductsCompleteData()
             return productsRequest.data
         }
 

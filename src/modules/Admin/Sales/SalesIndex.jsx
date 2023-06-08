@@ -14,7 +14,6 @@ import {BV_THEME} from '../../../theme/BV-theme'
 
 //*Netword and routing
 import { useNavigate } from 'react-router-dom'
-import api from '../../../axios.js'
 import useAuth from '../../../contextHooks/useAuthContext'
 
 import { UserModal } from "../../../CoreComponents/UserActions/UserModal"
@@ -24,12 +23,18 @@ import { getCustomerData, getOrdersData } from '../../../CoreComponents/requests
 import { useTranslation } from 'react-i18next'
 import { currencyByLang } from '../../../utils/currencyByLanguage'
 
-
+// CUSTOM HOOKS
+import useOrders from '../../../hooks/useOrders'
 
 
 export const SalesIndex = () => {
     const {t, i18n} = useTranslation(['sales_management_module', 'buttons'])
     const {user, credential} = useAuth()
+    let headers = {
+        authorization: credential._tokenResponse.idToken,
+        user:          user
+    }
+    const { deleteOrder, getOrderInvoiceById } = useOrders(headers)
     
     //*DATA STATES
     const [orders, setOrders] = useState({all:[], delivered:[], cancelled:[], recent:[]})
@@ -78,12 +83,7 @@ export const SalesIndex = () => {
     }
 
     const getOrderInvoice = async (params) => {
-        const orderPDF = await api.api.get(`${api.apiVersion}/files/order/invoice/${params.id}`, {
-            headers: {
-                authorization: credential._tokenResponse.idToken,
-                user:user
-            }
-        })
+        const orderPDF = await getOrderInvoiceById(params.id)
         return orderPDF
     }
 
@@ -126,15 +126,9 @@ export const SalesIndex = () => {
 
     const renderActionsCell = (params) => {
         const editOrder = () => navigate(`/${user.uid}/admin/edition?type=order`, {state: {edition: {isEdition:true, order:params.row}}})
-        const deleteOrder = async () => {
+        const delOrder = async () => {
             setLoading(true)
-            const deleteOperation = await api.api.delete(`${api.apiVersion}/orders/custom/?key=_id&&value=${params.id}`, {
-                headers: {
-                    authorization: credential._tokenResponse.idToken,
-                    user:          user
-                }
-            })
-
+            const deleteOperation = await deleteOrder(params.id)
             return deleteOperation
         }
         
@@ -183,7 +177,7 @@ export const SalesIndex = () => {
                                                 ...dialog,
                                                 open:false,
                                             })
-                                            deleteOrder()
+                                            delOrder()
                                             .then((result) => {
                                                 setLoading(false)
                                                 setDialog({

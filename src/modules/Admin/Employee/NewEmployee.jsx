@@ -9,7 +9,6 @@ import useAuth from '../../../contextHooks/useAuthContext'
 
 //*NETWORK, ROUTING AND API
 import { useNavigate } from 'react-router-dom'
-import api from '../../../axios.js'
 
 //*THEME
 import { BV_THEME } from '../../../theme/BV-theme'
@@ -18,9 +17,17 @@ import { UserDialog } from '../../../CoreComponents/UserFeedback/Dialog'
 // *VALIDATIONS
 import { validateInput } from '../../../utils/helpers/inputValidator'
 
+// *CUSTOM HOOKS
+import useEmployees from '../../../hooks/useEmployees'
 
 export const NewEmployee = (props) => {
+
     const {user, credential} = useAuth()
+    let headers = {
+        authorization:credential._tokenResponse.idToken,
+        user: user
+    }
+    const {getEmployee, addEmployee} = useEmployees(headers);
     const navigate = useNavigate()
 
     const [loading,setLoading] = useState(false)
@@ -58,12 +65,7 @@ export const NewEmployee = (props) => {
     useEffect(()=>{
         if(props.edit){    
             let id = new URLSearchParams(window.location.search).get("id")
-            api.api.get(`${api.apiVersion}/employees/${id}`, {
-                headers:{
-                    authorization:credential._tokenResponse.idToken,
-                    user: user
-                }
-            })
+            getEmployee(id)
             .then((res) => {
                 console.log(res.data.data)
                 UserInEdition=res.data.data
@@ -121,12 +123,7 @@ export const NewEmployee = (props) => {
 
     const createEmployee = (mappedEmployeeData) => {
         console.log("[Creating employee ]");
-        api.api.post(`/auth/create/employee`, mappedEmployeeData, {
-            headers:{
-                authorization: credential._tokenResponse.idToken,
-                user:          user
-            }
-        })
+        addEmployee(mappedEmployeeData)
         .then((res) => {
             
             setLoading(false)

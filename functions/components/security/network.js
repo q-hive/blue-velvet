@@ -31,6 +31,7 @@ authRouter.post('/login', (req, res) => {
             adminAuth.verifyIdToken(credential._tokenResponse.idToken)
                 .then(claims => {
                     console.log("Id token verified")
+                    console.log("[CLAIMS]",claims)
                     if (claims.role === 'superadmin') {
                         return success(req, res, 200, "Superadmin authentication succeed", { isAdmin: true, isSuperAdmin: true, token: credential._tokenResponse.idToken, user: credential })
                     } else if (claims.role === 'admin' || claims.role === 'root') {
@@ -38,7 +39,6 @@ authRouter.post('/login', (req, res) => {
                     } else if (claims.role === 'employee') {
                         // * Obtain organization info to query for employee data
                         console.group("Auth logs")
-                        console.log(claims)
                         getOrganizationById(claims.organization)
                             .then(async organization => {
                                 organization = organization.toObject()

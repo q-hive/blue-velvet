@@ -14,18 +14,20 @@ import {BV_THEME} from '../../../theme/BV-theme'
 import { useNavigate } from 'react-router-dom'
 import { DataGrid } from '@mui/x-data-grid'
 import { CustomerColumns } from '../../../utils/TableStates'
-import api from '../../../axios.js'
 import { UserDialog } from '../../../CoreComponents/UserFeedback/Dialog'
 import { useTranslation } from 'react-i18next'
 
-
-
-
+// CUSTOM HOOKS
+import useCustomers from '../../../hooks/useCustomers'
 
 export const ClientIndex = () => {
     const {t} = useTranslation(["buttons", "client_management_module"])
     //*CONTEXTS
     const {user, credential} = useAuth()
+    const { getCustomers } = useCustomers({
+        authorization:  credential._tokenResponse.idToken,
+        user:           user
+    })
     
     //*DATA STATES
     const [rows, setRows] = useState([])
@@ -50,18 +52,12 @@ export const ClientIndex = () => {
     }
 
     useEffect(() => {
-        const getCustomers = async () => {
-            const response = await api.api.get(`${api.apiVersion}/customers/`, {
-                headers: {
-                    authorization:  credential._tokenResponse.idToken,
-                    user:           user
-                }
-            })
-
+        const getAllCustomers = async () => {
+            const response = await getCustomers();
             return response.data.data
         }
         setLoading(true)
-        getCustomers()
+        getAllCustomers()
         .then((data) => {
             setLoading(false)
             setRows(data)

@@ -2,28 +2,25 @@ import React, {useEffect, useState} from 'react'
 import { Avatar, Box, Button, CircularProgress, Container, Fade, Paper, Stack, Typography, useTheme, Grid, Grow } from '@mui/material'
 import useAuth from '../../contextHooks/useAuthContext';
 import { BV_THEME } from '../../theme/BV-theme';
-import api from '../../axios.js'
+import useEmployees from '../../hooks/useEmployees';
 
 
 export const Profile = () => {
-     
+
     const employeePic = "https://cdn-icons-png.flaticon.com/512/544/544514.png"
     const chart = "https://landing.moqups.com/img/content/charts-graphs/column-charts/grouped-column-chart-for-channel-acquisition/grouped-column-chart-for-channel-acquisition-800.png"
     const {user, credential} = useAuth()
+    let headers = {
+        authorization:  credential._tokenResponse.idToken,
+        user:           user
+    }
+    const { getEmployee } = useEmployees(headers)
     const [profileData, setProfileData] = useState({level:0})
-
-    
-
 
     const theme = useTheme(BV_THEME);
 
     useEffect(() => {
-        api.api.get(`${api.apiVersion}/employees/${user._id}`, {
-            headers:{
-                authorization:  credential._tokenResponse.idToken,
-                user:           user
-            }
-        })
+        getEmployee(user._id)
         .then((response) => {
             let responseMapped = {performance:{level:0}} 
             try {

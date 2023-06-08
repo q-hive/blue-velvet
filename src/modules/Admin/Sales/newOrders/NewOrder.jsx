@@ -19,9 +19,13 @@ import {CheckBoxGroup} from "../../../../CoreComponents/CheckboxGroup"
 import useAuth from '../../../../contextHooks/useAuthContext'
 
 //*Network and API
-import api from '../../../../axios.js'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog'
+
+// CUSTOM HOOKS
+import useOrders from '../../../../hooks/useOrders'
+import useCustomers from '../../../../hooks/useCustomers'
+import useProducts from '../../../../hooks/useProducts'
 
 
 export const NewOrder = (props) => {
@@ -60,6 +64,13 @@ export const NewOrder = (props) => {
     }
     
     const {user, credential} = useAuth()
+    let headers = {
+        authorization: credential._tokenResponse.idToken,
+        user:user
+    }
+    const { getOrderInvoiceById, addOrder } = useOrders(headers)
+    const { getCustomers } = useCustomers(headers)
+    const { getProducts } = useProducts(headers)
 
     const navigate = useNavigate()
     //*Data States
@@ -122,12 +133,7 @@ export const NewOrder = (props) => {
     //Get invoice
     const getOrderInvoice = async (params) => {
         setLoading(true)
-        const orderPDF = await api.api.get(`${api.apiVersion}/files/order/invoice/${params._id}`, {
-            headers: {
-                authorization: credential._tokenResponse.idToken,
-                user:user
-            }
-        })
+        const orderPDF = await getOrderInvoiceById(params._id)
         return orderPDF
     }
 
@@ -400,12 +406,7 @@ export const NewOrder = (props) => {
         }
             
         try {
-            const response = await api.api.post(`${api.apiVersion}/orders/`, mapInput(), {
-                headers: {
-                    authorization:  credential._tokenResponse.idToken,
-                    user:           user
-                }
-            })
+            const response = await addOrder(mapInput())
 
             if(response.status === 201){
                 setOpen(true);
@@ -496,18 +497,8 @@ export const NewOrder = (props) => {
         
     useEffect(() => {
         const getData = async () => {
-            const customers = await api.api.get(`${api.apiVersion}/customers/`, {
-                headers:{
-                    "authorization":    credential._tokenResponse.idToken,
-                    "user":             user
-                }
-            })
-            const products = await api.api.get(`${api.apiVersion}/products/`, {
-                headers:{
-                    "authorization":    credential._tokenResponse.idToken,
-                    "user":             user
-                }
-            })
+            const customers = await getCustomers();
+            const products = await getProducts();
             return {customers:customers.data.data, products: products.data.data}
         }
 

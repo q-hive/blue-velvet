@@ -16,7 +16,7 @@ import useAuth from '../../../contextHooks/useAuthContext'
 
 //*NETWORK, ROUTING AND API
 import { useNavigate } from 'react-router-dom'
-import api from '../../../axios.js'
+import useOrganizations from '../../../hooks/useOrganizations';
 
 //*THEME
 import { BV_THEME } from '../../../theme/BV-theme'
@@ -27,7 +27,12 @@ import { validateInput } from '../../../utils/helpers/inputValidator'
 
 export const NewOrganization = (props) => {
 
-  const { user, credential } = useAuth()
+  const {user, credential} = useAuth()
+  let headers = {
+    authorization:credential._tokenResponse.idToken,
+    user: user
+  }
+  const { createOrganization, getOrganization, updateOrganization } = useOrganizations(headers);
   const navigate = useNavigate()
 
   const [clientId, setClientId] = useState(0)
@@ -323,23 +328,18 @@ export const NewOrganization = (props) => {
     setLoading(true)
 
     if (!props.edit) {
-      return createOrganization(mappedOrganizationData)
+      return createOrg(mappedOrganizationData)
     } else {
       mappedOrganizationData._id = clientId;
       mappedOrganizationData.uid = clientUid;
       if(!mappedOrganizationData.password) delete mappedOrganizationData.password;
       if(!mappedOrganizationData.passphrase) delete mappedOrganizationData.passphrase;
-      return updateOrganization(mappedOrganizationData)
+      return updateOrg(mappedOrganizationData)
     }
   };
 
-  const createOrganization = (mappedOrganizationData) => {
-    api.api.post(`/auth/create/admin`, mappedOrganizationData, {
-      headers: {
-        authorization: credential._tokenResponse.idToken,
-        user: user
-      }
-    })
+  const createOrg = (mappedOrganizationData) => {
+    createOrganization(mappedOrganizationData)
       .then((res) => {
 
         setLoading(false)
@@ -398,14 +398,9 @@ export const NewOrganization = (props) => {
       })
   }
 
-  const updateOrganization = (mappedOrganizationData) => {
+  const updateOrg = (mappedOrganizationData) => {
     let id = new URLSearchParams(window.location.search).get("id")
-    api.api.put(`${api.apiVersion}/organizations/${id}`, mappedOrganizationData, {
-      headers: {
-        authorization: credential._tokenResponse.idToken,
-        user: user
-      }
-    })
+    updateOrganization(id, mappedOrganizationData)
       .then((res) => {
 
         setLoading(false)
@@ -469,12 +464,7 @@ export const NewOrganization = (props) => {
   useEffect(() => {
     if (props.edit) {
       let id = new URLSearchParams(window.location.search).get("id")
-      api.api.get(`${api.apiVersion}/organizations/${id}`, {
-        headers: {
-          authorization: credential._tokenResponse.idToken,
-          user: user
-        }
-      })
+      getOrganization(id)
         .then((res) => {
           OrganizationInEdition = res.data.data
 

@@ -1,27 +1,30 @@
 import React, { useEffect, useState } from 'react'
-import api from "../axios"
-
-
-import useAuth from '../contextHooks/useAuthContext'
+import useOrganizations from '../hooks/useOrganizations'
+import useOrders from '../hooks/useOrders'
+import useCustomers from '../hooks/useCustomers'
+import useProduction from '../hooks/useProduction'
+import useDelivery from '../hooks/useDelivery'
+import useWork from '../hooks/useWork'
+import useContainers from '../hooks/useContainers'
+import useProducts from '../hooks/useProducts'
+import useTasks from '../hooks/useTasks'
 import { normalizeDate } from '../utils/times'
 
 export const getOrdersData = (props) => {
 
     
-    //const {user, credential} = useAuth()
     let user = props.user
     let credential = props.credential
     let setLoading = props.setLoading
     let setOrders = props.setOrders
+    const {getOrders} = useOrders({
+        authorization:  credential._tokenResponse.idToken,
+        user:           user
+    })
     
     setLoading(true)
     
-    api.api.get(`${api.apiVersion}/orders/`, {
-        headers: {
-            authorization:  credential._tokenResponse.idToken,
-            user:           user
-        }
-    })
+    getOrders()
     .then(async response => {
         // const cancelled = await api.api.get(`${api.apiVersion}/orders/cancelled`, {
         //     headers: {
@@ -37,12 +40,11 @@ export const getOrdersData = (props) => {
         // })
 
         const getCustomer = response.data.data.map(async (order, idx) => {
-            const customer = await api.api.get(`${api.apiVersion}/customers/${order.customer}`, {
-                headers: {
-                    authorization:  credential._tokenResponse.idToken,
-                    user:           user
-                }
+            const {getCustom} = useCustomers({
+                authorization:  credential._tokenResponse.idToken,
+                user:           user
             })
+            const customer = await getCustom(order.customer)
             
             return {...order, fullCustomer:customer.data.data}
         })
@@ -133,23 +135,20 @@ export const getOrdersData = (props) => {
     return 
 }
 
-
 export  const getCustomerData = async  (props) => {
 
-    
     let user = props.user
     let credential = props.credential
     let setLoading = props.setLoading
     // let setRows = props.setCustomers
     let dialog = props.dialog
     let setDialog = props.setDialog    
+    const {getCustomers} = useCustomers({
+        authorization:  credential._tokenResponse.idToken,
+        user:           user
+    })
     
-    await api.api.get(`${api.apiVersion}/customers/`, {
-            headers: {
-                authorization:  credential._tokenResponse.idToken,
-                user:           user
-            }
-        },setLoading(true))
+    await getCustomers()
         .then((response) => {
         setLoading(false)
         console.log(response.data.data)
@@ -180,21 +179,17 @@ export  const getCustomerData = async  (props) => {
     return
 }
 
-
-
 export const getWorkdayProdData = async (props) => {
 
     let user = props.user
     let credential = props.credential
     let setRows = props.setProdData
+    const { getContainerWorkDayProduction } = useProduction({
+        authorization:  credential._tokenResponse.idToken,
+        user:           user
+    }) 
 
-
-    await api.api.get(`${api.apiVersion}/production/workday?containerId=${user.assignedContainer}`, {
-        headers: {
-            authorization:  credential._tokenResponse.idToken,
-            user:           user
-        }
-    })
+    await getContainerWorkDayProduction(user.assignedContainer) 
     .then((response) => {
         console.log(response)
         setRows(response.data.data)
@@ -212,25 +207,16 @@ export const getWorkData = async ({user, credential})=> {
     //         deliverys: JSON.parse(window.localStorage.getItem("deliverys")),
     //     }
     // }
-    
-    const production = await api.api.get(`${api.apiVersion}/production/workday?containerId=${user.assignedContainer}`,{
-        headers:{
-            "authorization":    credential._tokenResponse.idToken,
-            "user":             user
-        }
-    })
-    const packs = await api.api.get(`${api.apiVersion}/delivery/packs/orders`,{
-        headers:{
-            "authorization":    credential._tokenResponse.idToken,
-            "user":             user
-        }
-    })
-    const deliverys = await api.api.get(`${api.apiVersion}/delivery/routes/orders`,{
-        headers:{
-            "authorization":    credential._tokenResponse.idToken,
-            "user":             user
-        }
-    })
+    let headers = {
+        authorization:    credential._tokenResponse.idToken,
+        user:             user
+    }
+    const { getContainerWorkDayProduction } = useProduction(headers)
+    const { getDeliveryPacksOrders, getRoutesOrders } = useDelivery(headers)
+
+    const production = await getContainerWorkDayProduction(user.assignedContainer)
+    const packs = await getDeliveryPacksOrders()
+    const deliverys = await getRoutesOrders()
 
     return {workData:production.data.data, packs:packs.data.data, deliverys: deliverys.data.data}
 }
@@ -239,13 +225,12 @@ export const getGrowingProducts = async (props) => {
     let user = props.user
     let credential = props.credential
     let setRows = props.setProdData
-
-    await api.api.get(`${api.apiVersion}/production/status/growing?containerId=${user.assignedContainer}`, {
-        headers: {
-            authorization:  credential._tokenResponse.idToken,
-            user:           user
-        }
+    const { getGrowingStatus } = useProduction({
+        authorization:  credential._tokenResponse.idToken,
+        user:           user
     })
+
+    await getGrowingStatus(user.assignedContainer)
     .then(result => {
         setRows(result.data.data)
     })
@@ -259,13 +244,11 @@ export const getDeliveries = async (props) => {
     let user = props.user
     let credential = props.credential
     let setRows = props.setProdData
-
-    await api.api.get(`${api.apiVersion}/delivery/routes/orders`, {
-        headers: {
-            authorization:  credential._tokenResponse.idToken,
-            user:           user
-        }
+    const { getRoutesOrders } = useDelivery({
+        authorization:  credential._tokenResponse.idToken,
+        user:           user
     })
+    await getRoutesOrders()
     .then(result => {
         setRows(result.data.data)
     })
@@ -278,13 +261,12 @@ export const getPackingProducts = async (props) => {
     let user = props.user
     let credential = props.credential
     let setRows = props.setProdData
-
-    await api.api.get(`${api.apiVersion}/delivery/packs/orders`, {
-        headers: {
-            authorization:  credential._tokenResponse.idToken,
-            user:           user
-        }
+    const { getDeliveryPacksOrders } = useDelivery({
+        authorization:  credential._tokenResponse.idToken,
+        user:           user
     })
+
+    await getDeliveryPacksOrders()
     .then(result => {
         setRows(result.data.data)
     })
@@ -296,13 +278,11 @@ export const getPackingProducts = async (props) => {
 export const updateEmployeeWorkDay = async (props) => {
     let user = props.user
     let credential = props.credential
-
-    await api.api.patch(`${api.apiVersion}/work/workday/${user._id}/${user.assignedContainer}`, {} ,{
-        headers: {
-            authorization:  credential._tokenResponse.idToken,
-            user:           user
-        }
+    const { updateWorkDay } = useWork({
+        authorization:  credential._tokenResponse.idToken,
+        user:           user
     })
+    await updateWorkDay(user._id, user.assignedContainer, {})
     .then(result => {
         return result.data.success
     })
@@ -314,13 +294,11 @@ export const updateEmployeeWorkDay = async (props) => {
 export const finishWorkDayInDb = async (props) => {
     let user = props.user
     let credential = props.credential
-
-    await api.api.patch(`${api.apiVersion}/work/workday/${user}/${user.assignedContainer}?delete=true`,{},{
-        headers: {
-            authorization:  credential._tokenResponse.idToken,
-            user:           user
-        }
+    const { updateWorkDay } = useWork({
+        authorization:  credential._tokenResponse.idToken,
+        user:           user
     })
+    await updateWorkDay(user,user.assignedContainer, {})
     .then(result => {
         return result.data.success
     })
@@ -331,81 +309,78 @@ export const finishWorkDayInDb = async (props) => {
 }
 
 export const updateContainerConfig = async (user, credential, containerConfigModel) => {
-    return await api.api.patch(`${api.apiVersion}/container/config/${user.assignedContainer}`, containerConfigModel, {
-        headers: {
-            authorization:  credential._tokenResponse.idToken,
-            user:           user
-        }
+    const { updateContainer } = useContainers({
+        authorization:  credential._tokenResponse.idToken,
+        user:           user
     })
+    return await updateContainer(user.assignedContainer, containerConfigModel)
 }
 
 export const updateProduct = (user,credential,mappedProduct) => {
-    return api.api.patch(`${api.apiVersion}/products/?id=${mappedProduct._id}`, {product:mappedProduct}, {
-        headers:{
-            authorization:credential._tokenResponse.idToken,
-            user:user,
-        }
+    const { updateProductById } = useProducts({
+        authorization:  credential._tokenResponse.idToken,
+        user:           user
     })
+    return updateProductById(mappedProduct._id, {product:mappedProduct})
 }
 
 //*UPDATE THE DATA THAT ACTUALLY AFFECTS THE PRODUCTION DATA (I THINK ALL UPDATES AFFECT PRODUCTION DATA)
 export const updateProductConfig = (user, credential, productionDataUpdate, productId) => {
-    return api.api.patch(`${api.apiVersion}/products/productionParams/${productId}`, {...productionDataUpdate}, {
-        headers:{
-            authorization:credential._tokenResponse.idToken,
-            user:user,
-        }
+    const { updateProductConfigById } = useProducts({
+        authorization:  credential._tokenResponse.idToken,
+        user:           user
     })
+    return updateProductConfigById(productId, {...productionDataUpdate})
 }
 
 export const getContainerData = async (user, credential)=> {
-    const userOrg = user.organization || JSON.parse(window.localStorage.getItem("usermeta"))?.organization
-    
-    const containersData = await api.api.get(`${api.apiVersion}/organizations?_id=${userOrg}`,{
-        headers:{
-            "authorization":    credential._tokenResponse.idToken,
-            "user":             user
-        }
+    const {getOrganization} = useOrganizations({
+        authorization:credential._tokenResponse.idToken,
+        user:user,
     })
-
-    return containersData.data.data[0].containers
+    const userOrg = user.organization || JSON.parse(window.localStorage.getItem("usermeta"))?.organization
+    const containersData = await getOrganization(userOrg)
+    return containersData.data.data.containers
 }
 
 export const stopBackgroundTask = async (user, credential,jobid) => {
-    const stopTaskResponse = await api.api.post(`${api.apiVersion}/backgroundJobs/stopJob/${jobid}`,{},{
-        headers:{
-            "authorization":    credential._tokenResponse.idToken,
-            "user":             user
-        }
+    const {stopBackgroundJob} = useTasks({
+        authorization:credential._tokenResponse.idToken,
+        user:user,
     })
+    const stopTaskResponse = await stopBackgroundJob(jobid, {})
 
     return stopTaskResponse
 }
 
 export const markInvoiceAsPayed = async (user,credential,invoiceId) => {
-    const invoiceMarkAsPayedResponse  = await api.api.patch(`${api.apiVersion}/orders/invoices/pay/${invoiceId}?payed=true`,{},{
-        headers:{
-            "authorization":    credential._tokenResponse.idToken,
-            "user":             user
-        }
+    const {updateInvoicePay} = useOrders({
+        authorization:credential._tokenResponse.idToken,
+        user:user,
     })
+    const invoiceMarkAsPayedResponse  = await updateInvoicePay(invoiceId, {})
 
     return invoiceMarkAsPayedResponse
 }
 
 
 export const getInvoicesByCustomer = async (user, credential, customerId) => {
-    const invoicesReponse  = await api.api.get(`${api.apiVersion}/orders/invoices/${customerId}`,{
-        headers:{
-            "authorization":    credential._tokenResponse.idToken,
-            "user":             user
-        }
+    const {getCustomerOrderInvoices} = useOrders({
+        authorization:credential._tokenResponse.idToken,
+        user:user,
     })
+
+    const invoicesReponse  = await getCustomerOrderInvoices(customerId)
 
     return invoicesReponse
 }
 
 export const editCustomer =async (user, credential, data) => {
+    const { updateCustomer } = useCustomers({
+        authorization:credential._tokenResponse.idToken,
+        user:user,
+    })
+
     const mappedCustomer = {
             "name":               data.name,
             "role":               data.role,
@@ -426,10 +401,5 @@ export const editCustomer =async (user, credential, data) => {
             }
         }
     
-    return api.api.patch(`${api.apiVersion}/customers/${data._id}`, mappedCustomer, {
-        headers:{
-            authorization:credential._tokenResponse.idToken,
-            user:user,
-        }
-    })
+    return updateCustomer(data._id, mappedCustomer)
 }

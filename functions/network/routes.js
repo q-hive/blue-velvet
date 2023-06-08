@@ -33,8 +33,7 @@ const authPath = `/auth`
 export const organizationRoutes = (app) => {
     const authorized = ["superadmin", "admin"]
     // FIXME: Apply middlewares to superadmin
-    // app.use(`${apiV1}/organizations`, isAuthenticated, isAuthorized(authorized), organizationRouter)
-    app.use(`${apiV1}/organizations`, organizationRouter)
+    app.use(`${apiV1}/organizations`, isAuthenticated, isAuthorized(authorized), organizationRouter)
 }
 export const containerRoutes = (app) => {
     const authorized = ["superadmin", "admin"]

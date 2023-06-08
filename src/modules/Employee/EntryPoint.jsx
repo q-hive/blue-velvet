@@ -23,7 +23,6 @@ import { BV_THEME } from "../../theme/BV-theme";
 
 //*Netword and routing
 import { useNavigate } from "react-router-dom";
-import api from "../../axios.js";
 import { formatTime } from "../../CoreComponents/Timer";
 import {
   finishWorkDayInDb,
@@ -40,6 +39,12 @@ import {
   DailyTasksCard,
 } from "../../CoreComponents/TasksPresentation/DailyTasksCard";
 import { useTranslation } from "react-i18next";
+
+// CUSTOM HOOKS
+import useWork from "../../hooks/useWork";
+import useOrders from "../../hooks/useOrders";
+import useDelivery from "../../hooks/useDelivery";
+import useProduction from "../../hooks/useProduction";
 
 //*UNUSED
 // import { Add } from '@mui/icons-material'
@@ -64,6 +69,15 @@ export const EntryPoint = () => {
 
   //*contexts
   const { user, credential } = useAuth();
+  let headers= {
+    authorization: credential._tokenResponse.idToken,
+    user: user
+  }
+  const { updateUserPerformance, getWorkTimeByContainer } = useWork(headers);
+  const { getUncompletedOrders } = useOrders(headers);
+  const { getDeliveryPacksOrders, getRoutesOrders } = useDelivery(headers);
+  const { getContainerWorkDayProduction } = useProduction(headers);
+
   const {
     TrackWorkModel,
     setTrackWorkModel,
@@ -151,17 +165,7 @@ export const EntryPoint = () => {
         label: "Initializing workday",
         severity: "warning",
       });
-
-      const request = await api.api.patch(
-        `${api.apiVersion}/work/performance/${user._id}`,
-        { performance: [{ query: "add", workdays: 1 }] },
-        {
-          headers: {
-            authorization: credential._tokenResponse.idToken,
-            user: user,
-          },
-        }
-      );
+      const request = await updateUserPerformance(user._id,{ performance: [{ query: "add", workdays: 1 }] })
       return request;
     }
 
@@ -184,28 +188,12 @@ export const EntryPoint = () => {
   };
 
   const getOrders = async () => {
-    const ordersData = await api.api.get(
-      `${api.apiVersion}/orders/uncompleted`,
-      {
-        headers: {
-          authorization: credential._tokenResponse.idToken,
-          user: user,
-        },
-      }
-    );
-
+    const ordersData = await getUncompletedOrders()
+      
     return ordersData.data;
   };
   const getTimeEstimate = async () => {
-    const request = await api.api.get(
-      `${api.apiVersion}/work/time/${user._id}?containerId=${user.assignedContainer}`,
-      {
-        headers: {
-          authorization: credential._tokenResponse.idToken,
-          user: user,
-        },
-      }
-    );
+    const request = await getWorkTimeByContainer(user._id,user.assignedContainer)
 
     let result = {
       times: {
@@ -334,31 +322,9 @@ export const EntryPoint = () => {
         deliverys: JSON.parse(window.localStorage.getItem("deliverys")),
       };
     }
-
-    const production = await api.api.get(
-      `${api.apiVersion}/production/workday?containerId=${user.assignedContainer}`,
-      {
-        headers: {
-          authorization: credential._tokenResponse.idToken,
-          user: user,
-        },
-      }
-    );
-    const packs = await api.api.get(`${api.apiVersion}/delivery/packs/orders`, {
-      headers: {
-        authorization: credential._tokenResponse.idToken,
-        user: user,
-      },
-    });
-    const deliverys = await api.api.get(
-      `${api.apiVersion}/delivery/routes/orders`,
-      {
-        headers: {
-          authorization: credential._tokenResponse.idToken,
-          user: user,
-        },
-      }
-    );
+    const production = await getContainerWorkDayProduction(user.assignedContainer)
+    const packs = await getDeliveryPacksOrders()
+    const deliverys = await getRoutesOrders()
 
     return {
       workData: production.data.data,
