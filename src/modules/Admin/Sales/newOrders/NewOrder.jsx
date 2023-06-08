@@ -6,7 +6,7 @@ import {
     Snackbar, Alert, Stack, 
     CircularProgress, Fade, 
     FormControl, FormControlLabel,
-    Checkbox, Divider, Tooltip
+    Checkbox, Divider, Tooltip, IconButton
 } from '@mui/material'
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import PersonAddDisabledIcon from '@mui/icons-material/PersonAddDisabled';
@@ -32,7 +32,7 @@ import useProducts from '../../../../hooks/useProducts'
 
 export const NewOrder = (props) => {
     const [ sameCustomerAddress, setSameCustomerAddress ]= useState(false)
-    const [deliveryAddress, setDeliveryAddress]= useState({
+    const initialDeliveryAddress = {
         street: "",
         stNumber: "",
         zip: "",
@@ -44,8 +44,8 @@ export const NewOrder = (props) => {
             latitude: "",
             longitude: ""
         }
-    })
-
+    }
+    const [deliveryAddress, setDeliveryAddress]= useState(initialDeliveryAddress)
     const [products,setProducts]= useState([])
     
     // const useQuery = () => new URLSearchParams(useLocation().search)
@@ -211,10 +211,22 @@ export const NewOrder = (props) => {
 
     const useSameCustomerAddress = () => {
         setSameCustomerAddress((prevValue) => !prevValue);
-        console.log(sameCustomerAddress);
+        setDeliveryAddress({
+            street: input.customer.address?.street || "",
+            stNumber: input.customer.address?.stNumber || "",
+            zip: input.customer.address?.zip || "",
+            city: input.customer.address?.city || "",
+            state: input.customer.address?.state || "",
+            country: input.customer.address?.country || "",
+            references: input.customer.address?.references || "",
+            coords: {
+                latitude: input.customer.address?.coords?.latitude || "",
+                longitude: input.customer.address?.coords?.longitude || ""
+            }
+        })
     };
 
-    const handleChangeInput = (e,v,r) => {
+    const handleChangeInput = async (e,v,r) => {
         let id
         let value
         id = e.target.id
@@ -255,9 +267,24 @@ export const NewOrder = (props) => {
             ...input,
             [id]:value
         })
-
+        if (id==='customer') {
+            console.log("[strlongitude]",value.address?.coords?.longitude);            
+            setSameCustomerAddress(true)
+            setDeliveryAddress({
+                street: value.address?.street || "",
+                stNumber: value.address?.stNumber || "",
+                zip: value.address?.zip || "",
+                city: value.address?.city || "",
+                state: value.address?.state || "",
+                country: value.address?.country || "",
+                references: value.address?.references || "",
+                coords: {
+                    latitude: value.address?.coords?.latitude || "",
+                    longitude: value.address?.coords?.longitude || ""
+                }
+            })
+        }
     }
-    
 
     const handleChangeDate = (date) => {
 
@@ -796,22 +823,22 @@ export const NewOrder = (props) => {
                 <Box sx={{ width: { xs: "98%", sm: "49%" }, mt:'4vh',display:'flex', justifyContent:'center',alignContent:'center',  }} >
                     <Typography variant="h6" sx={{ flexGrow: 1 }}>Delivery address</Typography>
                     <Tooltip title={sameCustomerAddress ? "Click to input other address" : "Click to use customer address"} arrow>
-                        <Checkbox icon={<PersonAddIcon color="primary" /> } checkedIcon={<PersonAddDisabledIcon color="error"/>} onChange={useSameCustomerAddress} onClick={(event) => event.stopPropagation()}/>
+                        <IconButton onClick={useSameCustomerAddress} color={sameCustomerAddress ? 'error' : 'primary'} >{sameCustomerAddress ? <PersonAddDisabledIcon /> : <PersonAddIcon />}</IconButton>
                     </Tooltip>
                 </Box>
                 <Divider variant="middle" sx={{ width: { xs: "98%", sm: "50%", md: "50%" }, marginY: "1vh" }} />
-                <TextField name='street' onChange={handleDeliveryAddress} value={deliveryAddress.street} label="Street" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
+                <TextField name='street' onChange={handleDeliveryAddress} value={deliveryAddress?.street} label="Street" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
                 <Box sx={{ width: { xs: "98%", sm: "49%" } }} >
-                    <TextField name='stNumber' onChange={handleDeliveryAddress} value={deliveryAddress.stNumber} label="No." type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
-                    <TextField name='zip' onChange={handleDeliveryAddress} value={deliveryAddress.zip} label="ZipCode" type="text" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
+                    <TextField name='stNumber' onChange={handleDeliveryAddress} value={deliveryAddress?.stNumber} label="No." type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
+                    <TextField name='zip' onChange={handleDeliveryAddress} value={deliveryAddress?.zip} label="ZipCode" type="text" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
                 </Box>
-                <TextField name='city' onChange={handleDeliveryAddress} value={deliveryAddress.city} label="City" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
-                <TextField name='state' onChange={handleDeliveryAddress} value={deliveryAddress.state} label="State" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
-                <TextField name='country' onChange={handleDeliveryAddress} value={deliveryAddress.country} label="Country" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
-                <TextField name='references' onChange={handleDeliveryAddress} value={deliveryAddress.references} multiline label="References" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
+                <TextField name='city' onChange={handleDeliveryAddress} value={deliveryAddress?.city} label="City" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
+                <TextField name='state' onChange={handleDeliveryAddress} value={deliveryAddress?.state} label="State" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
+                <TextField name='country' onChange={handleDeliveryAddress} value={deliveryAddress?.country} label="Country" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
+                <TextField name='references' onChange={handleDeliveryAddress} value={deliveryAddress?.references} multiline label="References" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
                 <Box sx={{ width: { xs: "98%", sm: "49%" } }} >
-                    <TextField name='latitude' onChange={handleDeliveryAddress} value={deliveryAddress.coords.latitude} label="Latitude" type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
-                    <TextField name='longitude' onChange={handleDeliveryAddress} value={deliveryAddress.coords.longitude} label="Longitude" type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
+                    <TextField name='latitude' onChange={handleDeliveryAddress} value={deliveryAddress?.coords?.latitude} label="Latitude" type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
+                    <TextField name='longitude' onChange={handleDeliveryAddress} value={deliveryAddress?.coords?.longitude} label="Longitude" type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
                 </Box>
 
 
