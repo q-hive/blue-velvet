@@ -6,8 +6,10 @@ import {
     Snackbar, Alert, Stack, 
     CircularProgress, Fade, 
     FormControl, FormControlLabel,
-    Checkbox 
+    Checkbox, Divider, Tooltip
 } from '@mui/material'
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import PersonAddDisabledIcon from '@mui/icons-material/PersonAddDisabled';
 import {DatePicker, LocalizationProvider} from '@mui/x-date-pickers'
 import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns'
 
@@ -29,6 +31,21 @@ import useProducts from '../../../../hooks/useProducts'
 
 
 export const NewOrder = (props) => {
+    const [ sameCustomerAddress, setSameCustomerAddress ]= useState(false)
+    const [deliveryAddress, setDeliveryAddress]= useState({
+        street: "",
+        stNumber: "",
+        zip: "",
+        city: "",
+        state: "",
+        country: "",
+        references: "",
+        coords: {
+            latitude: "",
+            longitude: ""
+        }
+    })
+
     const [products,setProducts]= useState([])
     
     // const useQuery = () => new URLSearchParams(useLocation().search)
@@ -180,7 +197,23 @@ export const NewOrder = (props) => {
         actions:[]
     })
     //
-    
+
+    const handleDeliveryAddress = (event) => {
+        const { name, value } = event.target;
+        setDeliveryAddress((prevAddress) => ({
+            ...prevAddress,
+            ...((name==='latitude' || name==='longitude')
+                ? { coords: {...prevAddress.coords, [name]: value} }
+                : { [name]: value}
+            )
+        }));
+    };
+
+    const useSameCustomerAddress = () => {
+        setSameCustomerAddress((prevValue) => !prevValue);
+        console.log(sameCustomerAddress);
+    };
+
     const handleChangeInput = (e,v,r) => {
         let id
         let value
@@ -410,7 +443,8 @@ export const NewOrder = (props) => {
                 "products": useProducts ? products : [mappedInput],
                 "status": "production",
                 "date": input.date,
-                "cyclic": input.cyclic
+                "cyclic": input.cyclic,
+                "address": deliveryAddress
             }
 
             return mappedData
@@ -741,8 +775,8 @@ export const NewOrder = (props) => {
                         value={input.date}
                         sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize,})}
                         disablePast={true}
-                        shouldDisableDate={disableNonAvailableDays}
-                        minDate={calculateMinDate()}
+                        // shouldDisableDate={disableNonAvailableDays}
+                        // minDate={calculateMinDate()}
                     />
                 </LocalizationProvider>
 
@@ -758,7 +792,30 @@ export const NewOrder = (props) => {
                     } 
                     label="Cyclic order"/>
                 </FormControl>
-                <Button id="accept" variant="contained" onClick={handleSetOrder} disabled={!canSendOrder} sx={{marginTop:"2vh", color:{...BV_THEME.palette.white_btn}}}>
+
+                <Box sx={{ width: { xs: "98%", sm: "49%" }, mt:'4vh',display:'flex', justifyContent:'center',alignContent:'center',  }} >
+                    <Typography variant="h6" sx={{ flexGrow: 1 }}>Delivery address</Typography>
+                    <Tooltip title={sameCustomerAddress ? "Click to input other address" : "Click to use customer address"} arrow>
+                        <Checkbox icon={<PersonAddIcon color="primary" /> } checkedIcon={<PersonAddDisabledIcon color="error"/>} onChange={useSameCustomerAddress} onClick={(event) => event.stopPropagation()}/>
+                    </Tooltip>
+                </Box>
+                <Divider variant="middle" sx={{ width: { xs: "98%", sm: "50%", md: "50%" }, marginY: "1vh" }} />
+                <TextField name='street' onChange={handleDeliveryAddress} value={deliveryAddress.street} label="Street" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
+                <Box sx={{ width: { xs: "98%", sm: "49%" } }} >
+                    <TextField name='stNumber' onChange={handleDeliveryAddress} value={deliveryAddress.stNumber} label="No." type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
+                    <TextField name='zip' onChange={handleDeliveryAddress} value={deliveryAddress.zip} label="ZipCode" type="text" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
+                </Box>
+                <TextField name='city' onChange={handleDeliveryAddress} value={deliveryAddress.city} label="City" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
+                <TextField name='state' onChange={handleDeliveryAddress} value={deliveryAddress.state} label="State" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
+                <TextField name='country' onChange={handleDeliveryAddress} value={deliveryAddress.country} label="Country" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
+                <TextField name='references' onChange={handleDeliveryAddress} value={deliveryAddress.references} multiline label="References" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
+                <Box sx={{ width: { xs: "98%", sm: "49%" } }} >
+                    <TextField name='latitude' onChange={handleDeliveryAddress} value={deliveryAddress.coords.latitude} label="Latitude" type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
+                    <TextField name='longitude' onChange={handleDeliveryAddress} value={deliveryAddress.coords.longitude} label="Longitude" type="number" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} disabled={sameCustomerAddress} />
+                </Box>
+
+
+                <Button id="accept" variant="contained" onClick={handleSetOrder} disabled={!canSendOrder} sx={{marginTop:"1vh", color:{...BV_THEME.palette.white_btn}}}>
                     Set Order
                 </Button>
             </>
@@ -768,7 +825,7 @@ export const NewOrder = (props) => {
 
             {/* Generate Feedback table */}
             {products.length != 0 ? 
-                <Box  sx={{display:"inline-block",minWidth:"22em",textAlign:"justify",alignItems:"center",marginTop:"10vh",padding:"3px"}}>
+                <Box  sx={{display:"inline-block",minWidth:"22em",textAlign:"justify", alignItems:"center",marginY:"5vh",padding:"3px"}}>
                     <hr color="secondary"/>
                     <Typography color="secondary" sx={{textAlign:"center",marginTop:1}}>
                         Products in Order
