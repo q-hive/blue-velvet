@@ -140,6 +140,14 @@ export const SalesIndex = () => {
                 title:"Select an action",
                 actions: [
                     {
+                        label:`View order`,
+                        btn_color:"secondary",
+                        type:"privileged",
+                        execute: () => {
+                            navigate(`/${user.uid}/admin/sales/${params.id}`, { state: { orderId: params.id } })
+                        }
+                    },
+                    {
                         label:`${t('sales_table_modal_action_update', {ns:'sales_management_module'})}`,
                         btn_color:"white_btn",
                         type:"privileged",
