@@ -339,7 +339,7 @@ const createStructure = (type, data) => {
  * 
  */
 export const createOrderInvoicePdf = (orderPDFConfig) => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         if(doesFileExist(buildPath)){
             console.log("HTML File already exists, deleting old file")
 
@@ -357,7 +357,12 @@ export const createOrderInvoicePdf = (orderPDFConfig) => {
             const html = createHTML(config)
 
             console.log("The file will be saved on the following path: " + buildPath)
-            fs.writeFileSync(buildPath, html)
+            fs.writeFile(buildPath, html, (err) => {
+                if(err){
+                    return reject(err)
+                }
+            })
+            // fs.writeFileSync(buildPath, html)
 
 
             

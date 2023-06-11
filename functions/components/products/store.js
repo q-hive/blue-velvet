@@ -145,7 +145,7 @@ export const getAllProducts = (orgId) => {
     return new Promise(async (resolve, reject) => {
         const organization = await organizationModel.findOne({
             "_id":mongoose.Types.ObjectId(orgId)
-        },{"containers.products":true})
+        },{"containers.products":true},{"lean":true})
 
         resolve(organization.containers[0].products)
     })

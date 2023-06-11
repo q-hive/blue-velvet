@@ -25,7 +25,6 @@ import useWork from "../../../hooks/useWork.js";
 import useProduction from "../../../hooks/useProduction.js";
 import useDelivery from "../../../hooks/useDelivery.js";
 
-
 //*UNUSED
 // import { Add } from '@mui/icons-material'
 //THEME
@@ -35,27 +34,27 @@ import useDelivery from "../../../hooks/useDelivery.js";
 export const FullChamber = () => {
   //*Network and router
   const navigate = useNavigate();
-//   const { state } = useLocation();
-//*CONTEXTS
-const { user, credential } = useAuth();
-let headers = {
-  authorization: credential._tokenResponse.idToken,
-  user: user,
-}
-const { getWorkTimeByContainer, updateWorkDay } = useWork(headers);
-const { getContainerWorkDayProduction } = useProduction(headers);
-const { getDeliveryPacksOrders, getRoutesOrders } = useDelivery(headers);
+  //   const { state } = useLocation();
+  //*CONTEXTS
+  const { user, credential } = useAuth();
+  let headers = {
+    authorization: credential._tokenResponse.idToken,
+    user: user,
+  };
+  const { getWorkTimeByContainer, updateWorkDay } = useWork(headers);
+  const { getContainerWorkDayProduction } = useProduction(headers);
+  const { getDeliveryPacksOrders, getRoutesOrders } = useDelivery(headers);
 
-const {
-  TrackWorkModel,
-  setTrackWorkModel,
-  WorkContext,
-  setWorkContext,
-  employeeIsWorking,
-  setEmployeeIsWorking,
-  state,
-  setState
-} = useWorkingContext();
+  const {
+    TrackWorkModel,
+    setTrackWorkModel,
+    WorkContext,
+    setWorkContext,
+    employeeIsWorking,
+    setEmployeeIsWorking,
+    state,
+    setState,
+  } = useWorkingContext();
 
   //*DATA STATES
   let { orders, workData, packs, deliverys, cycleKeys } = state;
@@ -137,8 +136,11 @@ const {
 
   const allProducts = workData;
 
-    const getTimeEstimate = async () => {
-    const request = await getWorkTimeByContainer(user._id, user.assignedContainer)
+  const getTimeEstimate = async () => {
+    const request = await getWorkTimeByContainer(
+      user._id,
+      user.assignedContainer
+    );
 
     let result = {
       times: {
@@ -281,10 +283,12 @@ const {
     //   };
     // }
 
-      const production = await getContainerWorkDayProduction(user.assignedContainer);
-      const packs = await getDeliveryPacksOrders();
-      const deliverys = await getRoutesOrders()
-      const time = await getTimeEstimate();
+    const production = await getContainerWorkDayProduction(
+      user.assignedContainer
+    );
+    const packs = await getDeliveryPacksOrders();
+    const deliverys = await getRoutesOrders();
+    const time = await getTimeEstimate();
 
     return {
       workData: production.data.data,
@@ -310,53 +314,38 @@ const {
   }
 
   const setWorkingContext = (workDataModel, packs, deliverys, time) => {
-    //*Employee started working identification
     //*Production data
     window.localStorage.setItem("workData", JSON.stringify(workDataModel));
     window.localStorage.setItem("packs", JSON.stringify(packs));
     window.localStorage.setItem("deliverys", JSON.stringify(deliverys));
     setTrackWorkModel({
-        ...TrackWorkModel,
-        expected: time
-    })
-    
+      ...TrackWorkModel,
+      expected: time,
+    });
+
     setState({
-        ...state,
-        packs:packs
-    })
-    // if (!employeeIsWorking) {
-    //   setEmployeeIsWorking(true);
+      ...state,
+      packs: packs,
+      workData: workDataModel,
+      cycleKeys: prepareProductionStatusesForRender(workDataModel),
+    });
 
-    //   setTrackWorkModel({
-    //     ...TrackWorkModel,
-    //     started: Date.now(),
-    //     expected: estimatedTime,
-    //   });
-
-    //   Object.keys(WorkContext.cicle).forEach((value, index) => {
-    //     if (!activeStatusesArray.includes(value)) {
-    //       // delete WorkContext.cicle[value]
-    //       setWorkContext({ ...WorkContext });
-    //     } else {
-    //       WorkContext.cicle[value].production = workDataModel.production;
-    //     }
-    //   });
-
-    //   WorkContext.cicle[Object.keys(WorkContext.cicle)[0]].started = Date.now();
-    //   window.localStorage.setItem("WorkContext", JSON.stringify(WorkContext));
-    // } else {
-    //   setWorkContext({ ...WorkContext, current: getFinishedTasks().length });
-    // }
+    setWorkdayProdData(workDataModel);
   };
 
   const updateEmployeeWorkDay = async (props) => {
     let user = props.user;
     let credential = props.credential;
 
-      await updateWorkDay(user._id, user.assignedContainer, {},{
+    await updateWorkDay(
+      user._id,
+      user.assignedContainer,
+      {},
+      {
         authorization: credential._tokenResponse.idToken,
         user: user,
-      })
+      }
+    )
       .then((result) => {
         return result.data.success;
       })
@@ -364,7 +353,6 @@ const {
         Promise.reject(err);
       });
   };
-
 
   const carouselChange = (index, element) => {
     getWorkData()
@@ -532,26 +520,6 @@ const {
     });
   };
 
-  /*useEffect(()=>{
-        let psTrue = workData.preSoaking?.length>0
-        let sTrue = workData.seeding?.length>0
-        let hrTrue = workData.harvestReady?.length>0
-
-        console.log("aber hdsptm",psTrue,sTrue,hrTrue)
-    
-
-    let testingKeys =[] 
-
-    psTrue?testingKeys.push("preSoaking"):null
-    sTrue?testingKeys.push("seeding"):null
-    hrTrue?testingKeys.push("harvestReady"):null
-
-    setCycleKeys(testingKeys)
-    
-
-
-    },[workdayProdData])*/
-
   useEffect(() => {
     setWorkContext(() => {
       return {
@@ -567,19 +535,6 @@ const {
     });
   }, [WorkContext.current]);
 
-  // useEffect(()=>{
-  //     getWorkdayProdData({
-  //         user:user,
-  //         credential:credential,
-  //         setProdData:setWorkdayProdData,
-  //     })
-  //     .then(() => {
-  //         console.log("Data obtained succesfully")
-  //     })
-
-  // },[])
-
-  console.log("lalala2", workdayProdData);
 
   return (
     <>

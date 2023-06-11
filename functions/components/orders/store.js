@@ -439,9 +439,8 @@ export const createNewOrder = (orgId, order) => {
                 overhead = (org.containers[0].config.overhead)/100
             } 
             
-            let production = await buildProductionDataFromOrder({...order, _id:id}, allProducts, overhead)
-
-        
+            
+            
             if(allProducts && allProducts.length >0){
                 let orderMapped = {
                     _id:            id,
@@ -453,7 +452,8 @@ export const createNewOrder = (orgId, order) => {
                     status:         "production",
                     cyclic:          order.cyclic,
                 }
-
+                
+                let production = await buildProductionDataFromOrder({...orderMapped, _id:id}, allProducts, overhead)
 
                 getOrganizationById(orgId)
                 .then(async organization => {
@@ -537,6 +537,25 @@ export const createNewOrder = (orgId, order) => {
             reject(err)
         }
     })
+}
+
+export const insertNewOrderWithProduction = async (orgId, order, production) => {
+    try {
+        await organizationModel.updateOne(
+            {
+                "_id":mongoose.Types.ObjectId(orgId)
+            },
+            {
+                "$push":{
+                    "orders":order,
+                    "containers.$[].production": {"$each": production},
+                },
+            },
+        )
+    } catch(err) {
+        console.log("Error saving order and production")
+        console.log(err)
+    }
 }
 
 export const getOrdersByProd = (orgId, id) => {
