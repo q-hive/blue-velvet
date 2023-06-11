@@ -644,7 +644,7 @@ export const NewOrder = (props) => {
                     props.edit.isEdition
 
                     ?
-                        <div>Must show component for DEFAULT PRODUCT FROM ROW OF DATA GRIS IN SALES MODULE</div>                    
+                        <div></div>                    
                     :
                     <>
                         <Autocomplete

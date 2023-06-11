@@ -475,26 +475,26 @@ export const createNewOrder = (orgId, order) => {
                     }
                     console.log("Order mapped and saved, checking if it is cyclic")
                     if(order.cyclic){
-                        const orgWithNewOrdersFiltered = await organizationModel.findOne(
-                            {
-                                "_id":mongoose.Types.ObjectId(orgId)
-                            },
-                            {
-                                "orders":{
-                                    "$filter":{
-                                        "input":"$orders",
-                                        "as":"order",
-                                        "cond":{ "$eq":["$$order._id", id] }
-                                    }
-                                }
-                            }
-                        ).exec()
+                        // const orgWithNewOrdersFiltered = await organizationModel.findOne(
+                        //     {
+                        //         "_id":mongoose.Types.ObjectId(orgId)
+                        //     },
+                        //     {
+                        //         "orders":{
+                        //             "$filter":{
+                        //                 "input":"$orders",
+                        //                 "as":"order",
+                        //                 "cond":{ "$eq":["$$order._id", id] }
+                        //             }
+                        //         }
+                        //     }
+                        // ).exec()
 
                         
                         let jobName
                         try {
-                            console.log("Order abonment required, setting up the background job")
-                            jobName = setOrderAbonment(orgId,orgWithNewOrdersFiltered.orders[0],orderMapped, allProducts, overhead)
+                            console.log("Order abonment required, once the production is finished, the order will be set again")
+                            // jobName = setOrderAbonment(orgId,orgWithNewOrdersFiltered.orders[0],orderMapped, allProducts, overhead)
                         } catch (err) {
                             reject(err)
                         }

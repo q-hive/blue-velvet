@@ -19,7 +19,7 @@ import useAuth from '../../../contextHooks/useAuthContext'
 import { UserModal } from "../../../CoreComponents/UserActions/UserModal"
 import { UserDialog } from "../../../CoreComponents/UserFeedback/Dialog"
 
-import { getCustomerData, getOrdersData } from '../../../CoreComponents/requests'
+import { getCustomerData, getOrdersData, stopBackgroundTask } from '../../../CoreComponents/requests'
 import { useTranslation } from 'react-i18next'
 import { currencyByLang } from '../../../utils/currencyByLanguage'
 
@@ -154,7 +154,8 @@ export const SalesIndex = () => {
                         execute:() => {
                             editOrder()
                             navigate
-                        }
+                        },
+                        disabled:true
                     },
                     {
                         //*THIS LABEL DOESNT HAVE TRANSLATIONS BECAUSE WE DONT HAVE ANYMORE STRINGS AVAILABLE UNDER I18NEXUS
@@ -276,7 +277,7 @@ export const SalesIndex = () => {
                                 })
                             })
                         },
-                        disabled:params.row.job === "No job"
+                        disabled:true
                     }
                 ]
             })
