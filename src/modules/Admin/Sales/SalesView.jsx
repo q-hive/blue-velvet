@@ -50,8 +50,8 @@ export const SalesView = () => {
       renderHeader: () => renderHeaderHook("Name"),
       headerAlign: "center",
       align: "center",
-      headerClassName: "header-sale-table",
-      minWidth: { xs: "2%", md: 130 },
+      headerClassName: "headerSaleTable",
+      minWidth: { xs: "25%", md: 130 },
       flex: 1
     },
     {
@@ -60,7 +60,7 @@ export const SalesView = () => {
       renderHeader: () => renderHeaderHook("Status"),
       headerAlign: "center",
       align: "center",
-      headerClassName: "header-sale-table",
+      headerClassName: "headerSaleTable",
       minWidth: { xs: "25%", md: 130 },
       flex: 1
     },
@@ -70,8 +70,8 @@ export const SalesView = () => {
       renderHeader: () => renderHeaderHook("Small"),
       headerAlign: "center",
       align: "center",
-      headerClassName: "header-sale-table",
-      minWidth: { xs: "20%", md: 130 },
+      headerClassName: "headerSaleTable",
+      minWidth: { xs: "25%", md: 130 },
       flex: 1
     },
     {
@@ -80,8 +80,8 @@ export const SalesView = () => {
       renderHeader: () => renderHeaderHook("Medium"),
       headerAlign: "center",
       align: "center",
-      headerClassName: "header-sale-table",
-      minWidth: { xs: "20%", md: 130 },
+      headerClassName: "headerSaleTable",
+      minWidth: { xs: "25%", md: 130 },
       flex: 1
     }
   ]
@@ -126,13 +126,7 @@ export const SalesView = () => {
   return (
     <>
       <Fade in={true} timeout={1000} unmountOnExit>
-        <Box sx={{
-          width: "100%", height: "100%",
-          "& .header-sale-table": {
-            backgroundColor: BV_THEME.palette.primary.main,
-            color: "white"
-          }
-        }}>
+        <Box sx={{ width: "100%", height: "100%" }}>
           <Container maxWidth="xl" sx={{ padding: "2%" }}>
 
             {/* TITLE */}
@@ -167,7 +161,13 @@ export const SalesView = () => {
                       <DataGrid
                         columns={OrderProductsColumns}
                         rows={rows}
-                        sx={{ width: "100%", height: "90%" }}
+                        sx={{
+                          width: "100%", height: "90%",
+                          "& .headerSaleTable": {
+                            backgroundColor: BV_THEME.palette.primary.main,
+                            color: "white"
+                          }
+                        }}
                         getRowId={(row) => row.id}
                       />
                     </Box>
@@ -177,56 +177,87 @@ export const SalesView = () => {
                 {/* DELIVERY ADDRESS */}
                 <Paper elevation={4} sx={{ padding: BV_THEME.spacing(2), minHeight: "20vh", marginTop: "2vh" }}>
                   <Typography variant="h6" color="secondary">DELIVERY ADDRESS</Typography>
-                  <Typography variant="body1" color="textSecondary">Street: {orderData?.address?.street || "---"}</Typography>
-                  <Typography variant="body1" color="textSecondary">St. Number: {orderData?.address?.number || "---"}</Typography>
-                  <Typography variant="body1" color="textSecondary">Zip Code: {orderData?.address?.zipcode || "---"}</Typography>
-                  <Typography variant="body1" color="textSecondary">State: {orderData?.address?.state || "---"}</Typography>
-                  <Typography variant="body1" color="textSecondary">Country: {orderData?.address?.country || "---"}</Typography>
-                  <Typography variant="body1" color="textSecondary">References: {orderData?.address?.references || "---"}</Typography>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    sx={{ marginTop: "2vh" }}
-                    onClick={() => {
-                      window.open(`https://www.google.com.mx/maps/place/${orderData?.address?.coords?.latitude},${orderData?.address?.coords?.longitude}`, "_blank");
-                    }}
-                  >
-                    View
-                  </Button>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                      <Typography variant="body1" color="textSecondary">Street: {orderData?.address?.street || "---"}</Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="body1" color="textSecondary">St. Number: {orderData?.address?.number || "---"}</Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="body1" color="textSecondary">Zip Code: {orderData?.address?.zipcode || "---"}</Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="body1" color="textSecondary">State: {orderData?.address?.state || "---"}</Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="body1" color="textSecondary">Country: {orderData?.address?.country || "---"}</Typography>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Typography variant="body1" color="textSecondary">References: {orderData?.address?.references || "---"}</Typography>
+                    </Grid>
+                  </Grid>
+                  <Grid container justifyContent="center" sx={{ marginTop: "2vh" }}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => {
+                        window.open(`https://www.google.com.mx/maps/place/${orderData?.address?.coords?.latitude},${orderData?.address?.coords?.longitude}`, "_blank");
+                      }}
+                    >
+                      View
+                    </Button>
+                  </Grid>
                 </Paper>
               </Grid>
 
               {/* RIGHT SIDE */}
               <Grid item xs={12} md={5}>
                 {/* CUSTOMER */}
-                <Paper elevation={4} sx={{ padding: 2, height: "100%", display: "flex", flexDirection: { xs: "column", md: "column" } }}>
+                <Paper elevation={4} sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
                   <Typography variant="h6" color="secondary">CUSTOMER</Typography>
-                  {/* UP */}
-                  <Box elevation={4} sx={{ display: "flex", flexDirection: { xs: "row", md: "column" }, flexWrap: "wrap" }}>
-                    {/* INFORMATION */}
-                    <Box sx={{ flex: 1, paddingX: "1vh", maxWidth: { xs: "50%", md: "100%" } }}>
-                      <Typography variant="subtitle1" color="secondary">INFORMATION</Typography>
-                      <Typography variant="body2" color="textSecondary">Name: {customer?.name || "---"}</Typography>
-                      <Typography variant="body2" color="textSecondary">Email: {customer?.email || "---"}</Typography>
-                      <Typography variant="body2" color="textSecondary">Role: {customer?.role || "---"}</Typography>
+                  <Box elevation={4} sx={{ display: "flex", flexDirection: "column", justifyContent: "space-evenly", height: "100%" }}>
+                    <Box elevation={4} sx={{ display: "flex", flexDirection: { xs: "row", md: "column" }, flexWrap: "wrap", flex: 1 }}>
+                      {/* INFORMATION */}
+                      <Box sx={{ flex: 1, paddingX: "1vh", maxWidth: { xs: "50%", md: "100%" } }}>
+                        <Typography variant="subtitle1" color="secondary" sx={{ my: "10px" }}>INFORMATION</Typography>
+                        <Typography variant="body2" color="textSecondary" sx={{ my: "10px" }}>Name: {customer?.name || "---"}</Typography>
+                        <Typography variant="body2" color="textSecondary" sx={{ my: "10px" }}>Email: {customer?.email || "---"}</Typography>
+                        <Typography variant="body2" color="textSecondary" sx={{ my: "10px" }}>Role: {customer?.role || "---"}</Typography>
+                      </Box>
+                      {/* BUSINESS INFO */}
+                      <Box sx={{ flex: 1, paddingX: "1vh", maxWidth: { xs: "50%", md: "100%" } }}>
+                        <Typography variant="subtitle1" color="secondary" sx={{ my: "10px" }}>BUSINESS INFO</Typography>
+                        <Typography variant="body2" color="textSecondary" sx={{ my: "10px" }}>Name: {customer?.businessData?.name || "---"}</Typography>
+                        <Typography variant="body2" color="textSecondary" sx={{ my: "10px" }}>Bank Account: {customer?.businessData?.bankAccount || "---"}</Typography>
+                      </Box>
                     </Box>
-                    {/* BUSINESS INFO */}
-                    <Box sx={{ flex: 1, paddingX: "1vh", maxWidth: { xs: "50%", md: "100%" } }}>
-                      <Typography variant="subtitle1" color="secondary">BUSINESS INFO</Typography>
-                      <Typography variant="body2" color="textSecondary">Name: {customer?.businessData?.name || "---"}</Typography>
-                      <Typography variant="body2" color="textSecondary">Bank Account: {customer?.businessData?.bankAccount || "---"}</Typography>
+                    {/* ADDRESS  */}
+                    <Box sx={{ paddingX: "1vh", flex: 1 }}>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12}>
+                          <Typography variant="subtitle1" color="secondary">ADDRESS</Typography>
+                        </Grid>
+                        <Grid item md={12} xs={12}>
+                          <Typography variant="body2" color="textSecondary">Street: {customer?.address?.street || '---'}</Typography>
+                        </Grid>
+                        <Grid item md={12} xs={6}>
+                          <Typography variant="body2" color="textSecondary">St. Number: {customer?.address?.stNumber || '---'}</Typography>
+                        </Grid>
+                        <Grid item md={12} xs={6}>
+                          <Typography variant="body2" color="textSecondary">Zip Code: {customer?.address?.zip || '---'}</Typography>
+                        </Grid>
+                        <Grid item md={12} xs={6}>
+                          <Typography variant="body2" color="textSecondary">State: {customer?.address?.state || '---'}</Typography>
+                        </Grid>
+                        <Grid item md={12} xs={6}>
+                          <Typography variant="body2" color="textSecondary">Country: {customer?.address?.country || '---'}</Typography>
+                        </Grid>
+                        <Grid item md={12} xs={12}>
+                          <Typography variant="body2" color="textSecondary">References: {customer?.address?.references || '---'}</Typography>
+                        </Grid>
+                      </Grid>
                     </Box>
-                  </Box>
-                  {/* DOWN */}
-                  {/* ADDRESS */}
-                  <Box sx={{ paddingX: "1vh", flexGrow: 1, maxHeight: "50vh" }}>
-                    <Typography variant="subtitle1" color="secondary">ADDRESS</Typography>
-                    <Typography variant="body2" color="textSecondary">Street: {customer?.address?.street || "---"}</Typography>
-                    <Typography variant="body2" color="textSecondary">St. Number: {customer?.address?.stNumber || "---"}</Typography>
-                    <Typography variant="body2" color="textSecondary">Zip Code: {customer?.address?.zip || "---"}</Typography>
-                    <Typography variant="body2" color="textSecondary">State: {customer?.address?.state || "---"}</Typography>
-                    <Typography variant="body2" color="textSecondary">Country: {customer?.address?.country || "---"}</Typography>
-                    <Typography variant="body2" color="textSecondary">References: {customer?.address?.references || "---"}</Typography>
                   </Box>
                 </Paper>
               </Grid>
