@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import Address from './address.js';
 const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
@@ -29,6 +30,7 @@ const Order = new Schema({
         }],
         required: true
     },
+    address:            { type: Address,  required: true  },
     // productionData: {type: [
     //     {
     //         product:    String,
