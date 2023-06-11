@@ -181,18 +181,13 @@ export const SalesView = () => {
                     <Grid item xs={12}>
                       <Typography variant="body1" color="textSecondary">Street: {orderData?.address?.street || "---"}</Typography>
                     </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body1" color="textSecondary">St. Number: {orderData?.address?.number || "---"}</Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body1" color="textSecondary">Zip Code: {orderData?.address?.zipcode || "---"}</Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body1" color="textSecondary">State: {orderData?.address?.state || "---"}</Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body1" color="textSecondary">Country: {orderData?.address?.country || "---"}</Typography>
-                    </Grid>
+                    {['stNumber', 'zip', 'state', 'country'].map((field) => (
+                      <Grid key={field} item xs={6}>
+                        <Typography variant="body1" color="textSecondary">
+                          {`${field.charAt(0).toUpperCase() + field.slice(1)}: ${orderData?.address?.[field] || '---'}`}
+                        </Typography>
+                      </Grid>
+                    ))}
                     <Grid item xs={12}>
                       <Typography variant="body1" color="textSecondary">References: {orderData?.address?.references || "---"}</Typography>
                     </Grid>
@@ -221,15 +216,20 @@ export const SalesView = () => {
                       {/* INFORMATION */}
                       <Box sx={{ flex: 1, paddingX: "1vh", maxWidth: { xs: "50%", md: "100%" } }}>
                         <Typography variant="subtitle1" color="secondary" sx={{ my: "10px" }}>INFORMATION</Typography>
-                        <Typography variant="body2" color="textSecondary" sx={{ my: "10px" }}>Name: {customer?.name || "---"}</Typography>
-                        <Typography variant="body2" color="textSecondary" sx={{ my: "10px" }}>Email: {customer?.email || "---"}</Typography>
-                        <Typography variant="body2" color="textSecondary" sx={{ my: "10px" }}>Role: {customer?.role || "---"}</Typography>
+                        {['name', 'email', 'role'].map((field) => (
+                          <Typography key={field} variant="body2" color="textSecondary" sx={{ my: "10px" }}>
+                            {`${field.charAt(0).toUpperCase() + field.slice(1)}: ${customer?.[field] || '---'}`}
+                          </Typography>
+                        ))}
                       </Box>
                       {/* BUSINESS INFO */}
                       <Box sx={{ flex: 1, paddingX: "1vh", maxWidth: { xs: "50%", md: "100%" } }}>
                         <Typography variant="subtitle1" color="secondary" sx={{ my: "10px" }}>BUSINESS INFO</Typography>
-                        <Typography variant="body2" color="textSecondary" sx={{ my: "10px" }}>Name: {customer?.businessData?.name || "---"}</Typography>
-                        <Typography variant="body2" color="textSecondary" sx={{ my: "10px" }}>Bank Account: {customer?.businessData?.bankAccount || "---"}</Typography>
+                        {['name', 'bankAccount'].map((field) => (
+                          <Typography key={field} variant="body2" color="textSecondary" sx={{ my: "10px" }}>
+                            {`${field.charAt(0).toUpperCase() + field.slice(1)}: ${customer?.businessData?.[field] || '---'}`}
+                          </Typography>
+                        ))}
                       </Box>
                     </Box>
                     {/* ADDRESS  */}
@@ -241,18 +241,13 @@ export const SalesView = () => {
                         <Grid item md={12} xs={12}>
                           <Typography variant="body2" color="textSecondary">Street: {customer?.address?.street || '---'}</Typography>
                         </Grid>
-                        <Grid item md={12} xs={6}>
-                          <Typography variant="body2" color="textSecondary">St. Number: {customer?.address?.stNumber || '---'}</Typography>
-                        </Grid>
-                        <Grid item md={12} xs={6}>
-                          <Typography variant="body2" color="textSecondary">Zip Code: {customer?.address?.zip || '---'}</Typography>
-                        </Grid>
-                        <Grid item md={12} xs={6}>
-                          <Typography variant="body2" color="textSecondary">State: {customer?.address?.state || '---'}</Typography>
-                        </Grid>
-                        <Grid item md={12} xs={6}>
-                          <Typography variant="body2" color="textSecondary">Country: {customer?.address?.country || '---'}</Typography>
-                        </Grid>
+                        {['stNumber', 'zip', 'state', 'country'].map((field) => (
+                          <Grid key={field} item md={12} xs={6}>
+                            <Typography variant="body2" color="textSecondary">
+                              {`${field.charAt(0).toUpperCase() + field.slice(1)}: ${customer?.address?.[field] || '---'}`}
+                            </Typography>
+                          </Grid>
+                        ))}
                         <Grid item md={12} xs={12}>
                           <Typography variant="body2" color="textSecondary">References: {customer?.address?.references || '---'}</Typography>
                         </Grid>
