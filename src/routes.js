@@ -8,6 +8,7 @@ import { Dashboard } from "./modules/Admin/Dashboard/Dashboard";
 import { ProductionMain } from "./modules/Admin/production/ProductionMain";
 import { NewProduct } from "./modules/Admin/production/NewProduct";
 import { SalesIndex } from "./modules/Admin/Sales/SalesIndex";
+import { SalesView } from "./modules/Admin/Sales/SalesView";
 import { NewOrder } from "./modules/Admin/Sales/newOrders/NewOrder";
 import { NewCustomer } from "./modules/Admin/Client/NewCustomer";
 import { ClientIndex } from "./modules/Admin/Client/ClientIndex";
@@ -86,6 +87,10 @@ export const AppRoutes  = [
     {
         path:"/:uid/admin/sales/",
         component:<SalesIndex/>
+    },
+    {
+        path:"/:uid/admin/sales/:orderId",
+        component:<SalesView/>
     },
     {
         path:"/:uid/admin/sales/new",
