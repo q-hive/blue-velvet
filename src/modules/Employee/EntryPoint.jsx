@@ -460,15 +460,15 @@ export const EntryPoint = () => {
               setSnackState({ open: false });
               //*Working context
               setWorkingContext(workData, packs, deliverys);
-              navigate("./../tasks/work", {
-                state: {
-                  orders: allOrders,
-                  workData: workData,
-                  packs: packs,
-                  cycleKeys: statusesArr,
-                  time: estimatedTime,
-                },
-              });
+              setState({
+                ...state,
+                orders: allOrders,
+                workData: workData,
+                packs: packs,
+                cycleKeys: statusesArr,
+                time: estimatedTime,
+              })
+              navigate("./../tasks/work");
             })
             .catch((err) => {
               console.log(err);

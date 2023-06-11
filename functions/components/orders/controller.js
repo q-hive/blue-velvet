@@ -3,7 +3,7 @@ import { getCustomerById } from "../customer/store.js";
 import { updateManyOrders } from "./store.js";
 
 import nodeschedule from 'node-schedule'
-import { buildProductionDataFromOrder } from "../production/controller.js";
+import { buildProductionDataFromOrder, getInitialStatus } from "../production/controller.js";
 import { getOrganizationById } from "../organization/store.js";
 import { organizationModel } from "../../models/organization.js";
 import mongoose from "mongoose";
@@ -88,19 +88,19 @@ export const getOrdersPrice = (order, products) => {
         //*If we found the actual product in the sorted array from DB then
         if(dbSortedProd){
             //*Iterate over the product order packages
-            prod.packages.forEach((pkg, idx) => {
+            let newPackages = prod.packages.map((pkg, idx) => {
                 switch(pkg.size){
                     //*we have 2 types of sizes and with the sorted products we can access based on index
                     case "small":
                         //*Total per product will be the number of determined package size
                         //* multiplied by amount(price) of corresponding size y productFromDB
-                        prod.packages[idx] = {...prod.packages[idx], total: dbSortedProd.price[0].amount * pkg.number}
-                        break;
+                        return {...pkg, total: dbSortedProd.price[0].amount * pkg.number}
                     case "medium":
-                        prod.packages[idx] = {...prod.packages[idx], total: dbSortedProd.price[1].amount * pkg.number}
-                        break;
+                        return {...pkg, total: dbSortedProd.price[1].amount * pkg.number}
                 }
             })
+
+            prod.packages = newPackages
 
             return prod
         }
@@ -112,8 +112,11 @@ export const getOrdersPrice = (order, products) => {
     const finalTotalPerProd = calculatedTotals.map((prodwithtotal) => {
         //*Reduce the totals per package to a total per product
         const finalTotal = prodwithtotal.packages.reduce((prev, curr, idx) => {
+            console.log("Current product to get total",curr)
             return prev + curr.total
         },0)
+
+        
 
         return {...prodwithtotal, total: finalTotal}
     })
@@ -123,6 +126,8 @@ export const getOrdersPrice = (order, products) => {
         return prev + curr.total
     }, 0)
     //*RETURN ORDER TOTAL
+    console.log("Total de la orden",orderTotal)
+    
     return orderTotal    
     } catch (err) {
         throw new Error(err)
@@ -385,12 +390,11 @@ export const buildOrderFromExistingOrder = (orderData,oldOrderObject ,allProduct
             return product._id.equals(prod._id)
         })
 
-        console.log(prod.packages)
         return {
             _id:            prod._id,
             name:           prod.name,
-            status:         prod.status,
-            seedId:         dbProduct?.seed?.seedId,
+            status:         getInitialStatus(dbProduct),
+            seedId:         prod.seedId,
             packages:       [...prod.packages],
             mix:            dbProduct.mix.isMix,
             price:          dbProduct.price
@@ -399,14 +403,14 @@ export const buildOrderFromExistingOrder = (orderData,oldOrderObject ,allProduct
     let prc = getOrdersPrice(orderData, allProducts)
     
     newOrder._id = mongoose.Types.ObjectId()
-    newOrder.cyclic = false;
-    newOrder.price = oldOrderObject.price
+    newOrder.cyclic = true;
+    newOrder.price = prc
     newOrder.products = mappedProducts
     newOrder.date = new Date(new Date().getTime() + differenceFromCreationAndDeliveryDateInValidOrder)
     newOrder.customer = orderData.customer
     newOrder.organization = orderData.organization
-    newOrder.status = orderData.status
-    newOrder.job = oldOrderObject.job
+    newOrder.status = "production"
+    newOrder.job = orderData.job
 
     return newOrder
 }

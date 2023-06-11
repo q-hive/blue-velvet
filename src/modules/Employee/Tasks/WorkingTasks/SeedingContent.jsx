@@ -25,9 +25,9 @@ const taskCard_sx = {
 
 
 export const SeedingContent = (props) => {
+    const workProducts = props.workData
 
     const {user, credential} = useAuth()
-    const [workProducts, setWorkProducts] = useState(props.workData/*.production.products*/)
     // const {TrackWorkModel} = useWorkingContext()
 
     function sumAllTrays() {

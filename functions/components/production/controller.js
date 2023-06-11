@@ -540,7 +540,7 @@ export const buildProductionDataFromOrder = async (order, dbproducts, overHeadPa
                             mixFound.productionData = {
                                 ProductName:            mixFound.name,
                                 RelatedMix:             {isForMix:true, mixName:prodFound.name},
-                                ProductionStatus:       getInitialStatus(mixFound),
+                                ProductionStatus:       prod.status,
                                 RelatedOrder:           order._id,
                                 EstimatedHarvestDate:   mixProductHarvestDate,
                                 EstimatedStartDate:     mixProductStartProductionDate,
@@ -584,7 +584,7 @@ export const buildProductionDataFromOrder = async (order, dbproducts, overHeadPa
                         
                         prod["productionData"] = [{
                             ProductName:            prodFound.name,
-                            ProductionStatus:       getInitialStatus(prodFound),
+                            ProductionStatus:       prod.status,
                             RelatedMix:             {isForMix: false},
                             RelatedOrder:           order._id,
                             ProductID:              prodFound._id,

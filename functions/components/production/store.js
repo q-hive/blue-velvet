@@ -1,9 +1,11 @@
 import Organization from '../../models/organization.js'
 import { mongoose } from '../../mongo.js'
 import { dateToArray, nextDay } from '../../utils/time.js'
-import { updateContainerById } from '../container/store.js'
-import { updateOrder } from '../orders/store.js'
-import { grouPProductionForWorkDay, scheduleTask } from './controller.js'
+import { getContainers, updateContainerById } from '../container/store.js'
+import { buildOrderFromExistingOrder } from '../orders/controller.js'
+import { getOrderById, insertNewOrderWithProduction, updateOrder } from '../orders/store.js'
+import { getAllProducts } from '../products/store.js'
+import { buildProductionDataFromOrder, grouPProductionForWorkDay, scheduleTask } from './controller.js'
 
 const orgModel = mongoose.model('organizations', Organization)
 
@@ -249,6 +251,8 @@ export const updateManyProductionModels = (orgId,container,productionIds) => {
             })
 
             const modifiedModels = nextStatusForProduction(filteredProductionModels)
+            let statuses = Array.from(new Set(modifiedModels.map((productionmodel) => productionmodel.ProductionStatus).filter((element) => element != undefined)))
+            
             const updateOperation = modifiedModels.map(async (newmodel) => {
                 const op = await orgModel.updateOne(
                     {
@@ -294,11 +298,62 @@ export const updateManyProductionModels = (orgId,container,productionIds) => {
                     await updateContainerById(orgId, container, {query:"add",key:"available", value:-trays})
                 }
 
+                if(statuses.length >1){
+                    console.log("Production models of " + newmodel.RelatedOrder + " order must all have the same status before updating order status")
+    
+                    return op 
+                }
+
+                const query = {
+                    orders:{
+                        "_id":{
+                            "paths":[{"path":"","value":""}]
+                        },
+                    }
+                }
+                query.orders[newmodel.RelatedOrder.toString()] = {
+                    "paths":[{"path":"status","value":newmodel.ProductionStatus}]
+                }
+
+                await updateOrder(orgId, newmodel.RelatedOrder, query.orders[newmodel.RelatedOrder.toString()])
+                
+                try {
+                    if (newmodel.ProductionStatus === "delivered"){
+                        console.log("Creating new order if its cyclic")
+                        const orders = await getOrderById(orgId, newmodel.RelatedOrder)
+                        if(orders[0] && orders[0].cyclic){
+                            let order = orders[0]
+                            let org = await getContainers({organization:orgId})
+    
+                            const isValidContainerResponse = org !== null && org !== undefined && org.containers.length === 1
+                            let overhead = 0;
+                            if (isValidContainerResponse){
+                                overhead = (org.containers[0].config.overhead)/100
+                            } 
+                            const allProducts = await getAllProducts(orgId)
+                            //*SET ORDERS PRODUCTS AND ORDER STATUSES TO INITIAL STATE 
+                            const newOrder = buildOrderFromExistingOrder(order,order,allProducts)
+                            console.log(newOrder.products)
+                            //*This is to avoid modifying the original order to be saved
+                            const orderToBuildProduction = JSON.parse(JSON.stringify(newOrder))
+                            const newProduction = await buildProductionDataFromOrder(orderToBuildProduction,allProducts, overhead)
+
+                           
+                            await insertNewOrderWithProduction(orgId, newOrder, newProduction)
+                            return op
+                        }
+                        console.log("No order found or its not cyclic")
+                    }
+                } catch(err) {
+                    console.log("Error creating new order from cyclic order")
+                    console.log(err)
+                }
+
                 return op
             })
 
             const update = await Promise.all(updateOperation)
-            await updateOrdersInModels(modifiedModels, orgId, container)
+            // await updateOrdersInModels(modifiedModels, orgId, container)
 
             return update
         })
