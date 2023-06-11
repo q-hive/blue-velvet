@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import moment from 'moment'
 import { useParams } from 'react-router-dom'
 //*Contexts
 import useAuth from '../../../contextHooks/useAuthContext'
@@ -9,7 +10,7 @@ import { BV_THEME } from '../../../theme/BV-theme'
 //*Netword and routing
 import { DataGrid } from '@mui/x-data-grid'
 // CUSTOM HOOKS
-import useOrganizations from '../../../hooks/useOrganizations'
+import useOrders from '../../../hooks/useOrders'
 import useCustomers from '../../../hooks/useCustomers'
 
 export const SalesView = () => {
@@ -19,26 +20,22 @@ export const SalesView = () => {
     authorization: credential._tokenResponse.idToken,
     user: user
   }
-  const { getCustomers } = useCustomers(headers)
-  const { getOrganizations } = useOrganizations(headers);
+  const { getOrders } = useOrders(headers);
+  const { getCustom } = useCustomers(headers)
 
 
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(false)
+  const [orderData, setOrderData] = useState()
+  const [customer, setCustomer] = useState()
 
   const renderHeaderHook = (headerName) => {
     const JSXByHname = {
-      "id": "Id",
-      "NameX": "NameX",
-      "Administrator": "Administrator",
-      "Containers": "Containers",
-      "Customers": "Customers",
       "Name": "Name",
       "Status": "Status",
       "Small": "Small",
       "Medium": "Medium",
     }
-
     return (
       <>
         {JSXByHname[headerName]}
@@ -46,57 +43,7 @@ export const SalesView = () => {
     )
   }
 
-  const OrganizationColumns = [
-    {
-      field: "_id",
-      headerName: "Id",
-      renderHeader: () => renderHeaderHook("id"),
-      headerAlign: "center",
-      align: "center",
-      headerClassName: "header-sale-table",
-      minWidth: { xs: "25%", md: 130 },
-      flex: 1,
-    },
-    {
-      field: "nameX",
-      headerName: "NameX",
-      renderHeader: () => renderHeaderHook("NameX"),
-      headerAlign: "center",
-      align: "center",
-      headerClassName: "header-sale-table",
-      minWidth: { xs: "25%", md: 130 },
-      flex: 1
-    },
-    {
-      field: "owner",
-      headerName: "Administrator",
-      renderHeader: () => renderHeaderHook("Administrator"),
-      headerAlign: "center",
-      align: "center",
-      headerClassName: "header-sale-table",
-      minWidth: { xs: "25%", md: 130 },
-      flex: 1
-    },
-    {
-      field: "containers",
-      headerName: "Containers",
-      renderHeader: () => renderHeaderHook("Containers"),
-      headerAlign: "center",
-      align: "center",
-      headerClassName: "header-sale-table",
-      minWidth: { xs: "25%", md: 130 },
-      flex: 1
-    },
-    {
-      field: "customers",
-      headerName: "Customers",
-      renderHeader: () => renderHeaderHook("Customers"),
-      headerAlign: "center",
-      align: "center",
-      headerClassName: "header-sale-table",
-      minWidth: { xs: "25%", md: 130 },
-      flex: 1
-    },
+  const OrderProductsColumns = [
     {
       field: "name",
       headerName: "Name",
@@ -104,7 +51,7 @@ export const SalesView = () => {
       headerAlign: "center",
       align: "center",
       headerClassName: "header-sale-table",
-      minWidth: { xs: "25%", md: 130 },
+      minWidth: { xs: "2%", md: 130 },
       flex: 1
     },
     {
@@ -124,7 +71,7 @@ export const SalesView = () => {
       headerAlign: "center",
       align: "center",
       headerClassName: "header-sale-table",
-      minWidth: { xs: "25%", md: 130 },
+      minWidth: { xs: "20%", md: 130 },
       flex: 1
     },
     {
@@ -134,7 +81,7 @@ export const SalesView = () => {
       headerAlign: "center",
       align: "center",
       headerClassName: "header-sale-table",
-      minWidth: { xs: "25%", md: 130 },
+      minWidth: { xs: "20%", md: 130 },
       flex: 1
     }
   ]
@@ -143,30 +90,37 @@ export const SalesView = () => {
     setLoading(() => {
       return true
     })
-    getOrganizations()
+    getOrders(orderId)
       .then((res) => {
-        const organizationData = res.data.data.map((organization) => {
+        const orders = res.data.data;
+        const foundOrder = orders.find((order) => order._id === orderId);
+        setOrderData(foundOrder)
+        const orderProducts = foundOrder.products.map((product) => {
           return {
-            _id: organization._id,
-            nameX: organization.name,
-            owner: organization.owner,
-            containers: organization.containers.length,
-            customers: organization.customers.length,
-            name: 0,
-            status: 0,
-            small: 0,
-            medium: 0
-
+            id: product._id,
+            name: product.name,
+            status: product.status,
+            small: product.packages[0].number,
+            medium: product.packages[0].number
           };
         });
-        setRows(organizationData)
-        setLoading(() => {
-          return false
-        })
+        setRows(orderProducts)
+
+        getCustom(foundOrder.customer)
+          .then((res) => {
+            const customer = res.data.data
+            setCustomer(customer)
+            setLoading(() => {
+              return false
+            })
+          })
+          .catch((err) => {
+            console.log(err);
+          });
       })
       .catch((err) => {
-        console.log(err)
-      })
+        console.log(err);
+      });
   }, [])
 
   return (
@@ -186,15 +140,15 @@ export const SalesView = () => {
 
             {/* STATUS */}
             <Box display="flex" justifyContent="flex-end">
-              <Typography variant="subtitle1" color="secondary">Status: {"status"}</Typography>
+              <Typography variant="subtitle1" color="secondary">Status: {orderData?.status || "---"}</Typography>
             </Box>
 
             {/* DELIVERY DATE */}
             <Paper elevation={4} sx={{ padding: BV_THEME.spacing(2), marginY: "2vh" }}>
               <Typography variant="h6" color="secondary">DELIVERY DATE</Typography>
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="body1" color="textSecondary">Created: {"creationDate"}</Typography>
-                <Typography variant="body1" color="textSecondary">Delivery: {"deliveryDate"}</Typography>
+                <Typography variant="body1" color="textSecondary">Created: {moment(orderData?.created).format('DD/MM/YYYY HH:mm:ss')}</Typography>
+                <Typography variant="body1" color="textSecondary">Delivery: {moment(orderData?.date).format('DD/MM/YYYY HH:mm:ss')}</Typography>
               </Box>
             </Paper>
 
@@ -211,10 +165,10 @@ export const SalesView = () => {
                   ) : (
                     <Box sx={{ height: "100%", width: "100%" }}>
                       <DataGrid
-                        columns={OrganizationColumns}
+                        columns={OrderProductsColumns}
                         rows={rows}
                         sx={{ width: "100%", height: "90%" }}
-                        getRowId={(row) => row._id}
+                        getRowId={(row) => row.id}
                       />
                     </Box>
                   )}
@@ -223,18 +177,18 @@ export const SalesView = () => {
                 {/* DELIVERY ADDRESS */}
                 <Paper elevation={4} sx={{ padding: BV_THEME.spacing(2), minHeight: "20vh", marginTop: "2vh" }}>
                   <Typography variant="h6" color="secondary">DELIVERY ADDRESS</Typography>
-                  <Typography variant="body1" color="textSecondary">Street: {"deliveryAddress.street"}</Typography>
-                  <Typography variant="body1" color="textSecondary">St. Number: {"deliveryAddress.number"}</Typography>
-                  <Typography variant="body1" color="textSecondary">Zip Code: {"deliveryAddress.zipcode"}</Typography>
-                  <Typography variant="body1" color="textSecondary">State: {"deliveryAddress.state"}</Typography>
-                  <Typography variant="body1" color="textSecondary">Country: {"deliveryAddress.country"}</Typography>
-                  <Typography variant="body1" color="textSecondary">References: {"deliveryAddress.references"}</Typography>
+                  <Typography variant="body1" color="textSecondary">Street: {orderData?.address?.street || "---"}</Typography>
+                  <Typography variant="body1" color="textSecondary">St. Number: {orderData?.address?.number || "---"}</Typography>
+                  <Typography variant="body1" color="textSecondary">Zip Code: {orderData?.address?.zipcode || "---"}</Typography>
+                  <Typography variant="body1" color="textSecondary">State: {orderData?.address?.state || "---"}</Typography>
+                  <Typography variant="body1" color="textSecondary">Country: {orderData?.address?.country || "---"}</Typography>
+                  <Typography variant="body1" color="textSecondary">References: {orderData?.address?.references || "---"}</Typography>
                   <Button
                     variant="contained"
                     color="primary"
                     sx={{ marginTop: "2vh" }}
                     onClick={() => {
-                      window.open("https://maps.google.com", "_blank");
+                      window.open(`https://www.google.com.mx/maps/place/${orderData?.address?.coords?.latitude},${orderData?.address?.coords?.longitude}`, "_blank");
                     }}
                   >
                     View
@@ -252,27 +206,27 @@ export const SalesView = () => {
                     {/* INFORMATION */}
                     <Box sx={{ flex: 1, paddingX: "1vh", maxWidth: { xs: "50%", md: "100%" } }}>
                       <Typography variant="subtitle1" color="secondary">INFORMATION</Typography>
-                      <Typography variant="body2" color="textSecondary">Name: {"customerData.name"}</Typography>
-                      <Typography variant="body2" color="textSecondary">Email: {"customerData.email"}</Typography>
-                      <Typography variant="body2" color="textSecondary">Role: {"customerData.role"}</Typography>
+                      <Typography variant="body2" color="textSecondary">Name: {customer?.name || "---"}</Typography>
+                      <Typography variant="body2" color="textSecondary">Email: {customer?.email || "---"}</Typography>
+                      <Typography variant="body2" color="textSecondary">Role: {customer?.role || "---"}</Typography>
                     </Box>
                     {/* BUSINESS INFO */}
                     <Box sx={{ flex: 1, paddingX: "1vh", maxWidth: { xs: "50%", md: "100%" } }}>
                       <Typography variant="subtitle1" color="secondary">BUSINESS INFO</Typography>
-                      <Typography variant="body2" color="textSecondary">Name: {"customerData.businessName"}</Typography>
-                      <Typography variant="body2" color="textSecondary">Bank Account: {"customerData.bankAccount"}</Typography>
+                      <Typography variant="body2" color="textSecondary">Name: {customer?.businessData?.name || "---"}</Typography>
+                      <Typography variant="body2" color="textSecondary">Bank Account: {customer?.businessData?.bankAccount || "---"}</Typography>
                     </Box>
                   </Box>
                   {/* DOWN */}
                   {/* ADDRESS */}
                   <Box sx={{ paddingX: "1vh", flexGrow: 1, maxHeight: "50vh" }}>
                     <Typography variant="subtitle1" color="secondary">ADDRESS</Typography>
-                    <Typography variant="body2" color="textSecondary">Street: {"customerData.address.street"}</Typography>
-                    <Typography variant="body2" color="textSecondary">St. Number: {"customerData.address.number"}</Typography>
-                    <Typography variant="body2" color="textSecondary">Zip Code: {"customerData.address.zipcode"}</Typography>
-                    <Typography variant="body2" color="textSecondary">State: {"customerData.address.state"}</Typography>
-                    <Typography variant="body2" color="textSecondary">Country: {"customerData.address.country"}</Typography>
-                    <Typography variant="body2" color="textSecondary">References: {"customerData.address.references"}</Typography>
+                    <Typography variant="body2" color="textSecondary">Street: {customer?.address?.street || "---"}</Typography>
+                    <Typography variant="body2" color="textSecondary">St. Number: {customer?.address?.stNumber || "---"}</Typography>
+                    <Typography variant="body2" color="textSecondary">Zip Code: {customer?.address?.zip || "---"}</Typography>
+                    <Typography variant="body2" color="textSecondary">State: {customer?.address?.state || "---"}</Typography>
+                    <Typography variant="body2" color="textSecondary">Country: {customer?.address?.country || "---"}</Typography>
+                    <Typography variant="body2" color="textSecondary">References: {customer?.address?.references || "---"}</Typography>
                   </Box>
                 </Paper>
               </Grid>
