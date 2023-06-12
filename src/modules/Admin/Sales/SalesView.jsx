@@ -10,6 +10,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import { BV_THEME } from '../../../theme/BV-theme'
 //*Netword and routing
 import { DataGrid } from '@mui/x-data-grid'
+// Components
+import { UserDialog } from '../../../CoreComponents/UserFeedback/Dialog'
 // CUSTOM HOOKS
 import useOrders from '../../../hooks/useOrders'
 import useCustomers from '../../../hooks/useCustomers'
@@ -30,6 +32,13 @@ export const SalesView = () => {
   const [orderData, setOrderData] = useState()
   const [customer, setCustomer] = useState()
   const [showEdit, setShowEdit] = useState(false)
+
+  const [dialog, setDialog] = useState({
+    open: false,
+    title: "",
+    message: "",
+    actions: []
+  })
 
   const renderHeaderHook = (headerName) => {
     const JSXByHname = {
@@ -103,10 +112,36 @@ export const SalesView = () => {
     setShowEdit(false)
     updateOrder(orderId, orderData)
       .then((res) => {
-        console.log(res);
+        setDialog({
+          ...dialog,
+          open: true,
+          title: res.data.message,
+          message: "Delivery address updated succesfully",
+          actions: [{
+            label: "Ok",
+            execute: () => {
+              setDialog({
+                ...dialog,
+                open: false
+              })
+            }
+          },
+          ]
+        })
       })
       .catch((err) => {
         console.log(err);
+        setDialog({
+          ...dialog,
+          open: true,
+          title: "Error updating order",
+          actions: [{
+            label: "Reload",
+            execute: () => {
+              window.location.reload()
+            }
+          }]
+        })
       })
   }
 
@@ -150,6 +185,16 @@ export const SalesView = () => {
   const deliveryAddressCard = () => {
     return (
       <>
+
+        <UserDialog
+          setDialog={setDialog}
+          dialog={dialog}
+          open={dialog.open}
+          title={dialog.title}
+          content={dialog.message}
+          actions={dialog.actions}
+        />
+
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <Typography variant="body1" color="textSecondary">Street: {orderData?.address?.street || "---"}</Typography>
