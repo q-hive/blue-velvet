@@ -4,7 +4,8 @@ import { useParams } from 'react-router-dom'
 //*Contexts
 import useAuth from '../../../contextHooks/useAuthContext'
 //*MUI Components
-import { Box, Container, Fade, LinearProgress, Typography, Grid, Paper, Button } from '@mui/material'
+import { Box, Container, Fade, LinearProgress, Typography, Grid, Paper, Button, TextField } from '@mui/material'
+import EditIcon from '@mui/icons-material/Edit';
 //THEME
 import { BV_THEME } from '../../../theme/BV-theme'
 //*Netword and routing
@@ -20,7 +21,7 @@ export const SalesView = () => {
     authorization: credential._tokenResponse.idToken,
     user: user
   }
-  const { getOrders } = useOrders(headers);
+  const { getOrders, updateOrder } = useOrders(headers);
   const { getCustom } = useCustomers(headers)
 
 
@@ -28,6 +29,7 @@ export const SalesView = () => {
   const [loading, setLoading] = useState(false)
   const [orderData, setOrderData] = useState()
   const [customer, setCustomer] = useState()
+  const [showEdit, setShowEdit] = useState(false)
 
   const renderHeaderHook = (headerName) => {
     const JSXByHname = {
@@ -86,6 +88,28 @@ export const SalesView = () => {
     }
   ]
 
+  const catchDeliveryAddress = (event) => {
+    const { name, value } = event.target;
+    setOrderData({
+      ...orderData,
+      address: {
+        ...orderData.address,
+        [name]: value
+      }
+    });
+  }
+
+  const updateDeliveryAddress = () => {
+    setShowEdit(false)
+    updateOrder(orderId, orderData)
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((err) => {
+        console.log(err);
+      })
+  }
+
   useEffect(() => {
     setLoading(() => {
       return true
@@ -122,6 +146,68 @@ export const SalesView = () => {
         console.log(err);
       });
   }, [])
+
+  const deliveryAddressCard = () => {
+    return (
+      <>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <Typography variant="body1" color="textSecondary">Street: {orderData?.address?.street || "---"}</Typography>
+          </Grid>
+          {['stNumber', 'zip', 'state', 'country'].map((field) => (
+            <Grid key={field} item xs={6}>
+              <Typography variant="body1" color="textSecondary">
+                {`${field.charAt(0).toUpperCase() + field.slice(1)}: ${orderData?.address?.[field] || '---'}`}
+              </Typography>
+            </Grid>
+          ))}
+          <Grid item xs={12}>
+            <Typography variant="body1" color="textSecondary">References: {orderData?.address?.references || "---"}</Typography>
+          </Grid>
+        </Grid>
+        <Grid container justifyContent="center" sx={{ marginTop: "2vh" }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              window.open(`https://www.google.com.mx/maps/place/${orderData?.address?.coords?.latitude},${orderData?.address?.coords?.longitude}`, "_blank");
+            }}
+          >
+            View
+          </Button>
+        </Grid>
+      </>
+    )
+  }
+
+  const updateDeliveryAddressCard = () => {
+    return (
+      <>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <TextField name='street' onChange={catchDeliveryAddress} value={orderData?.address?.street} label="Street" type="text" variant="standard" sx={{ width: "100%" }} />
+          </Grid>
+          {['stNumber', 'zip', 'state', 'country'].map((field) => (
+            <Grid key={field} item xs={6}>
+              <TextField name={field} onChange={catchDeliveryAddress} value={orderData?.address?.[field]} label={`${field.charAt(0).toUpperCase() + field.slice(1)}`} type="text" variant="standard" sx={{ width: "100%" }} />
+            </Grid>
+          ))}
+          <Grid item xs={12}>
+            <TextField name="references" onChange={catchDeliveryAddress} value={orderData?.address?.references} label="References" type="text" variant="standard" sx={{ width: "100%" }} />
+          </Grid>
+        </Grid>
+        <Grid container justifyContent="center" sx={{ marginTop: "2vh" }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={updateDeliveryAddress}
+          >
+            Save
+          </Button>
+        </Grid>
+      </>
+    )
+  }
 
   return (
     <>
@@ -176,33 +262,19 @@ export const SalesView = () => {
 
                 {/* DELIVERY ADDRESS */}
                 <Paper elevation={4} sx={{ padding: BV_THEME.spacing(2), minHeight: "20vh", marginTop: "2vh" }}>
-                  <Typography variant="h6" color="secondary">DELIVERY ADDRESS</Typography>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12}>
-                      <Typography variant="body1" color="textSecondary">Street: {orderData?.address?.street || "---"}</Typography>
-                    </Grid>
-                    {['stNumber', 'zip', 'state', 'country'].map((field) => (
-                      <Grid key={field} item xs={6}>
-                        <Typography variant="body1" color="textSecondary">
-                          {`${field.charAt(0).toUpperCase() + field.slice(1)}: ${orderData?.address?.[field] || '---'}`}
-                        </Typography>
-                      </Grid>
-                    ))}
-                    <Grid item xs={12}>
-                      <Typography variant="body1" color="textSecondary">References: {orderData?.address?.references || "---"}</Typography>
-                    </Grid>
-                  </Grid>
-                  <Grid container justifyContent="center" sx={{ marginTop: "2vh" }}>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => {
-                        window.open(`https://www.google.com.mx/maps/place/${orderData?.address?.coords?.latitude},${orderData?.address?.coords?.longitude}`, "_blank");
-                      }}
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="h6" color="secondary">DELIVERY ADDRESS</Typography>
+                    <Button variant="contained"
+                      onClick={() => setShowEdit(!showEdit)}
+                      color="secondary"
                     >
-                      View
+                      <EditIcon />
                     </Button>
-                  </Grid>
+                  </Box>
+                  {showEdit
+                    ? updateDeliveryAddressCard()
+                    : deliveryAddressCard()
+                  }
                 </Paper>
               </Grid>
 

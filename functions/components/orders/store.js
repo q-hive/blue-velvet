@@ -614,7 +614,6 @@ export const updateOrder = (org, orderId, body) => {
         .then((organization) => {
             if(organization){
                 const dbOrder = organization.orders.find((order) => order._id.equals(orderId))
-    
                 if(!dbOrder) {
                     return reject(dbOrder)
                 }
@@ -622,9 +621,15 @@ export const updateOrder = (org, orderId, body) => {
                 //**VALID STATUSES FOR ORDERS about production: ["received","production", "packed", "delivered"] */
                 //**VALID STATUSES FOR ORDERS about payment: ["unpaid","paid","pending"] */
 
-                body.paths.forEach(({path, value}, index) => {
-                    dbOrder[path] = value
-                })
+                if(body.paths){
+                    body.paths.forEach(({path, value}, index) => {
+                        dbOrder[path] = value
+                    });
+                }else{
+                    Object.entries(body).forEach(([key, value]) => {
+                        dbOrder[key] = value
+                    });
+                }
 
                 organization.save((err, doc) => {
                     if(err) reject(JSON.stringify({"message":"Error saving organization", "status": 500, "processError":err}))
@@ -635,11 +640,9 @@ export const updateOrder = (org, orderId, body) => {
             }
 
             return reject(new Error(JSON.stringify({"message":"No organization found", "status": 204})))
-            
-            
         })
         .catch((err) => {
-        
+            console.log(err);        
         })
     })
 }
