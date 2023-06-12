@@ -327,8 +327,8 @@ export const SalesView = () => {
               <Grid item xs={12} md={5}>
                 {/* CUSTOMER */}
                 <Paper elevation={4} sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
-                  <Typography variant="h6" color="secondary">CUSTOMER</Typography>
-                  <Box elevation={4} sx={{ display: "flex", flexDirection: "column", justifyContent: "space-evenly", height: "100%" }}>
+                  <Typography variant="h6" color="secondary" sx={{paddingTop: BV_THEME.spacing(2), paddingLeft: BV_THEME.spacing(2)}}>CUSTOMER</Typography>
+                  <Box elevation={4} sx={{ display: "flex", flexDirection: "column", justifyContent: "space-evenly", height: "100%", padding: BV_THEME.spacing(2) }}>
                     <Box elevation={4} sx={{ display: "flex", flexDirection: { xs: "row", md: "column" }, flexWrap: "wrap", flex: 1 }}>
                       {/* INFORMATION */}
                       <Box sx={{ flex: 1, paddingX: "1vh", maxWidth: { xs: "50%", md: "100%" } }}>
