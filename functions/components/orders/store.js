@@ -468,6 +468,7 @@ export const createNewOrder = (orgId, order) => {
                     customer:       order.customer._id,
                     price:          prc,
                     date:           order.date,
+                    address:        order.address,
                     products:       mappedAndUpdatedProducts,
                     status:         "production",
                     cyclic:          order.cyclic,
