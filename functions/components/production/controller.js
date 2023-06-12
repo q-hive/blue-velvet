@@ -6,7 +6,7 @@ import mongoose from "mongoose"
 import { getOrderById } from "../orders/store.js"
 import { buildPackagesFromOrders } from "../delivery/controller.js"
 import { isLargeCicle } from "../products/controller.js"
-import { getContainerById } from "../container/store.js"
+import { getContainerById, updateContainerById } from "../container/store.js"
 
 
 export const getTaskByStatus = async (production, orgId=undefined, container=undefined) => {
@@ -14,20 +14,18 @@ export const getTaskByStatus = async (production, orgId=undefined, container=und
     let executeAt = new Date()
     switch(production.ProductionStatus){
         case "soaking1":
-            task = updateManyProductionModels
             executeAt = new Date(Date.now() + (6*60*60*1000))
             break;
         case "soaking2":
-            task = updateManyProductionModels
             executeAt = new Date(Date.now() + (6*60*60*1000))
             break;
         case "growing":
-            task = updateManyProductionModels
             if((orgId !== undefined) && (container !== undefined)){
                 executeAt = await getEstimatedHarvestDate(new Date(), production.ProductID, orgId, container)
             }
             break;
-    }
+        }
+    task = updateManyProductionModels
     return {task, executeAt}
 }
 
@@ -36,7 +34,11 @@ export const scheduleTask = async (config) => {
 
     config.task = task
     
-    config.scheduleInDate = executeAt
+    if(process.env.NODE_ENV === "localhost"){
+        config.scheduleInDate = new Date(new Date().getTime() + (1*60*1000))
+    } else {
+        config.scheduleInDate = executeAt
+    }
     
 
     nodeschedule.scheduleJob(config.scheduleInDate, async function() {
@@ -463,7 +465,7 @@ export const setDryRacksByHarvest = (trays, name) => {
 }
 
 //*Build model for production control based on order packages and products parameters
-export const buildProductionDataFromOrder = async (order, dbproducts, overHeadParam = 0) => {
+export const buildProductionDataFromOrder = async (order, dbproducts, overHeadParam = 0, container) => {
     //*Add grams per size to order product packages
     console.log("Order received in production controller")
     try {
@@ -511,11 +513,11 @@ export const buildProductionDataFromOrder = async (order, dbproducts, overHeadPa
                     if(prodFound.mix.isMix){
                         
                         prod.mix = {isMix: true}
-                        const mixProds = prodFound.toObject().mix.products
+                        const mixProds = prodFound.mix.products
     
                         const mappedMixComposition = mixProds.map(async (mprod) => {
                             
-                            const mixFound = dbproducts.find((fprod) => fprod._id.equals(mprod.strain)).toObject()
+                            const mixFound = dbproducts.find((fprod) => fprod._id.equals(mprod.strain))
                             
                             const mixProductStartProductionDate = getEstimatedStartProductionDate(order.date, mixFound)
                             const mixProductHarvestDate = await getEstimatedHarvestDate(mixProductStartProductionDate,mixFound)
@@ -528,6 +530,7 @@ export const buildProductionDataFromOrder = async (order, dbproducts, overHeadPa
                             const seeds = strharvest / (mixFound.parameters.harvestRate/mixFound.parameters.seedingRate) 
                             const trays = Math.ceil(seeds / mixFound.parameters.seedingRate)
                             const totalProductionDays = mixFound.parameters.day + mixFound.parameters.night
+                            const mixStrainStatus = prod.mixStatuses.find((status) => status.product === mixFound.name).name
                             console.log(seeds + " seeds")
                             console.log(trays + " trays")
                             console.log(strharvest + " harvest")
@@ -537,10 +540,12 @@ export const buildProductionDataFromOrder = async (order, dbproducts, overHeadPa
                             delete mixFound.mix
                             delete mixFound.price
                             delete mprod.strain
+                            
+                            
                             mixFound.productionData = {
                                 ProductName:            mixFound.name,
                                 RelatedMix:             {isForMix:true, mixName:prodFound.name},
-                                ProductionStatus:       prod.status,
+                                ProductionStatus:       mixStrainStatus ? mixStrainStatus : getInitialStatus(mixFound),
                                 RelatedOrder:           order._id,
                                 EstimatedHarvestDate:   mixProductHarvestDate,
                                 EstimatedStartDate:     mixProductStartProductionDate,
@@ -549,6 +554,11 @@ export const buildProductionDataFromOrder = async (order, dbproducts, overHeadPa
                                 seeds:                  seeds,
                                 trays:                  trays,
                                 dryracks:               isLargeCicle(totalProductionDays) ? trays : setDryRacksByHarvest(trays, prodFound.name)
+                            }
+
+                            if(mixStrainStatus === "harvestReady" || mixStrainStatus === "growing"){
+                                console.log("El container must be updated")
+                                await updateContainerById(order.organization, container._id, {query:"add",key:"available", value:-trays})
                             }
         
                             return {...mprod, ...mixFound, mix:true}
@@ -581,10 +591,11 @@ export const buildProductionDataFromOrder = async (order, dbproducts, overHeadPa
                         const totalSeeds = harvest / (prodFound.parameters.harvestRate / prodFound.parameters.seedingRate)
                         const totalTrays = Math.floor(totalSeeds / prodFound.parameters.seedingRate) 
                         const totalProductionDays = prodFound.parameters.day + prodFound.parameters.night 
+                        const productStatus = prod.status ? prod.status : getInitialStatus(prodFound)
                         
                         prod["productionData"] = [{
                             ProductName:            prodFound.name,
-                            ProductionStatus:       prod.status,
+                            ProductionStatus:       productStatus,
                             RelatedMix:             {isForMix: false},
                             RelatedOrder:           order._id,
                             ProductID:              prodFound._id,
@@ -595,7 +606,12 @@ export const buildProductionDataFromOrder = async (order, dbproducts, overHeadPa
                             trays:                  totalTrays,
                             dryracks:               isLargeCicle(totalProductionDays) ? totalTrays : totalTrays * 0.5
                         }]
-        
+                        
+
+                        if(productStatus === "harvestReady" || productStatus === "growing"){
+                            console.log("El container must be updated")
+                            await updateContainerById(order.organization, container._id, {query:"add",key:"available", value:-totalTrays})
+                        }
                     }
                 }
                 

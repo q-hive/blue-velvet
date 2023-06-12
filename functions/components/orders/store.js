@@ -390,12 +390,12 @@ export const createNewOrder = (orgId, order) => {
         }
         
         //*Check if is a valid date compared with production times estimations.
-        try {
-            newOrderDateValidation(order, allProducts)
-        } catch (err){
-            console.log(err)
-            return reject(new Error(JSON.stringify(invalidDate)))
-        }
+        // try {
+        //     newOrderDateValidation(order, allProducts)
+        // } catch (err){
+        //     console.log(err)
+        //     return reject(new Error(JSON.stringify(invalidDate)))
+        // }
 
         //*Mapea los productos para completar el modelo de la base de datos en la propiedad products
         try {
@@ -403,15 +403,35 @@ export const createNewOrder = (orgId, order) => {
                 const dbProduct = allProducts.find((product) => {
                     return product._id.equals(prod._id)
                 })
-                return {
+                let order = {
                     _id:            prod._id,
                     name:           prod.name,
-                    status:         prod.status,
                     seedId:         dbProduct?.seed?.seedId,
                     packages:       prod.packages,
                     mix:            dbProduct.mix.isMix,
                     price:          dbProduct.price
                 }
+                
+                if(dbProduct.mix.isMix){
+                    allProducts.find((product) => {
+                        return product._id.equals(prod._id)
+                    })
+                    
+                    return {
+                        ...order,
+                        status: prod.status.name,
+                        mixStatuses: prod.mixStatuses
+                    }
+                    
+                }
+
+                if (!dbProduct.mix.isMix){
+                    return {
+                        ...order,
+                        status: prod.status,
+                    }
+                }
+                
             })
 
             mappedAndUpdatedProducts = mappedProducts;
@@ -453,7 +473,7 @@ export const createNewOrder = (orgId, order) => {
                     cyclic:          order.cyclic,
                 }
                 
-                let production = await buildProductionDataFromOrder({...orderMapped, _id:id}, allProducts, overhead)
+                let production = await buildProductionDataFromOrder({...orderMapped, _id:id}, allProducts, overhead, org.containers[0])
 
                 getOrganizationById(orgId)
                 .then(async organization => {

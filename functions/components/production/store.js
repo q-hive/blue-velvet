@@ -218,12 +218,131 @@ export const updateOrdersInModels = async (updatedModels, orgId, container) => {
 
 }
 
+export const updateProduction = async (orgId, container, id, modifiedModels, statuses) => {
+    //*CHANGED TO FOR OF LOOP TO MANAGE SCOP OF ORDERUPDATED VARIABLE (BUT ITS BLOCKING THE MAIN THREAD)
+    const updateOperation = modifiedModels.map(async (newmodel) => {
+        console.log("Updating production model")
+        console.log(newmodel)
+        const productionStatus = newmodel.ProductionStatus
+        if(statuses.length >1 && productionStatus == "ready"){
+            console.log("Production models of " + newmodel.RelatedOrder + " order must all have the same status before updating order status")
+            return
+        }
+        
+        const op = await orgModel.updateOne(
+            {
+                "_id":mongoose.Types.ObjectId(orgId),
+                "containers":{
+                    "$elemMatch": {
+                        "_id":mongoose.Types.ObjectId(container),
+                        "production":{
+                            "$elemMatch":{
+                                "_id":mongoose.Types.ObjectId(newmodel._id)
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "$set":{
+                    "containers.$.production.$[prod]":newmodel
+                }
+            },
+            {
+                "arrayFilters":[{"prod._id":mongoose.Types.ObjectId(newmodel._id)}]
+            }
+        )
+
+        
+
+        if(productionCycleObject[productionStatus]?.hasBackGroundTask){
+            console.log("The production status " + productionStatus + " has a background task")
+            await scheduleTask({organization:orgId, container, production:newmodel, name:"updateForProduction"})
+        }
+
+        if(productionCycleObject[productionStatus]?.affectsCapacity.affect){
+            let trays = newmodel.trays
+            console.log("El container must be updated")
+            if(productionCycleObject[productionStatus]?.affectsCapacity.how === "dec"){
+                trays = trays
+            }
+
+            if(productionCycleObject[productionStatus]?.affectsCapacity.how === "inc"){
+                trays = -trays
+            }
+            
+            await updateContainerById(orgId, container, {query:"add",key:"available", value:-trays})
+        }
+
+        
+        console.log("Production status of the order " + newmodel.RelatedOrder + " in DB is:  " + statuses)
+
+        if(statuses.length >1 && (productionStatus == "ready" || productionStatus == "delivered")){
+            console.log("Production models of " + newmodel.RelatedOrder + " order must all have the same status before updating order status")
+            return op
+        }
+
+        const query = {
+            orders:{
+                "_id":{
+                    "paths":[{"path":"","value":""}]
+                },
+            }
+        }
+        query.orders[newmodel.RelatedOrder.toString()] = {
+            "paths":[{"path":"status","value":newmodel.ProductionStatus}]
+        }
+
+        await updateOrder(orgId, newmodel.RelatedOrder, query.orders[newmodel.RelatedOrder.toString()])
+
+        try {
+            // if (newmodel.ProductionStatus === "delivered"){
+            //     console.log("Creating new order if its cyclic")
+            //     console.log("Order updated: " + orderUpdated)
+            //     const orders = await getOrderById(orgId, newmodel.RelatedOrder)
+            //     if(orders[0] && orders[0].cyclic && !orderUpdated){
+            //         let order = orders[0]
+            //         let org = await getContainers({organization:orgId})
+
+            //         const isValidContainerResponse = org !== null && org !== undefined && org.containers.length === 1
+            //         let overhead = 0;
+            //         if (isValidContainerResponse){
+            //             overhead = (org.containers[0].config.overhead)/100
+            //         } 
+            //         const allProducts = await getAllProducts(orgId)
+            //         //*SET ORDERS PRODUCTS AND ORDER STATUSES TO INITIAL STATE 
+            //         const newOrder = buildOrderFromExistingOrder(order,order,allProducts)
+            //         console.log(newOrder.products)
+            //         //*This is to avoid modifying the original order to be saved
+            //         const orderToBuildProduction = JSON.parse(JSON.stringify(newOrder))
+            //         const newProduction = await buildProductionDataFromOrder(orderToBuildProduction,allProducts, overhead)
+
+                    
+            //         await insertNewOrderWithProduction(orgId, newOrder, newProduction)
+            //         orderUpdated = true
+                    
+            //     }
+            //     console.log("No order found or its not cyclic")
+            // }
+        } catch(err) {
+            console.log("Error creating new order from cyclic order")
+            console.log(err)
+        }
+
+        return op
+    })
+
+    const up = await Promise.all(updateOperation)
+
+    return up
+}
 //*THIS FUNCTION ONLY UPDATES TO THE NEXT STATUS CORRESPONDING TO THE PRODUCTION CYCLE
 export const updateManyProductionModels = (orgId,container,productionIds) => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async(resolve, reject) => {
         console.log("Updating production models in " + container +  " container")
         
-        const queryUpdateById = productionIds.map(async (id) => {
+        let filteredProductionModels = []
+        const getProduction = productionIds.map(async (id) => {
             const productionModel = await orgModel.findOne({
                 "_id":mongoose.Types.ObjectId(orgId),
                 "containers":{
@@ -242,124 +361,91 @@ export const updateManyProductionModels = (orgId,container,productionIds) => {
             }
             )
             
-            let filteredProductionModels = []
-            
             productionModel.containers.forEach((container) => {
                 const productionModelFound = container.production.find((production) => production._id.equals(id))
 
+                console.log("Production model found")
+                console.log(productionModelFound)   
+                
                 filteredProductionModels.push(productionModelFound)
             })
-
-            const modifiedModels = nextStatusForProduction(filteredProductionModels)
-            let statuses = Array.from(new Set(modifiedModels.map((productionmodel) => productionmodel.ProductionStatus).filter((element) => element != undefined)))
             
-            const updateOperation = modifiedModels.map(async (newmodel) => {
-                const op = await orgModel.updateOne(
-                    {
-                        "_id":mongoose.Types.ObjectId(orgId),
-                        "containers":{
-                            "$elemMatch": {
-                                "_id":mongoose.Types.ObjectId(container),
-                                "production":{
-                                    "$elemMatch":{
-                                        "_id":mongoose.Types.ObjectId(id)
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    {
-                        "$set":{
-                            "containers.$.production.$[prod]":newmodel
-                        }
-                    },
-                    {
-                        "arrayFilters":[{"prod._id":mongoose.Types.ObjectId(id)}]
-                    }
-                )
 
-                const productionStatus = newmodel.ProductionStatus
-
-                if(productionCycleObject[productionStatus]?.hasBackGroundTask){
-                    await scheduleTask({organization:orgId, container, production:newmodel, name:"updateForProduction"})
-                }
-
-                if(productionCycleObject[productionStatus]?.affectsCapacity.affect){
-                    let trays = newmodel.trays
-                    console.log("El container must be updated")
-                    if(productionCycleObject[productionStatus]?.affectsCapacity.how === "dec"){
-                        trays = trays
-                    }
-
-                    if(productionCycleObject[productionStatus]?.affectsCapacity.how === "inc"){
-                        trays = -trays
-                    }
-                    
-                    await updateContainerById(orgId, container, {query:"add",key:"available", value:-trays})
-                }
-
-                if(statuses.length >1){
-                    console.log("Production models of " + newmodel.RelatedOrder + " order must all have the same status before updating order status")
-    
-                    return op 
-                }
-
-                const query = {
-                    orders:{
-                        "_id":{
-                            "paths":[{"path":"","value":""}]
-                        },
-                    }
-                }
-                query.orders[newmodel.RelatedOrder.toString()] = {
-                    "paths":[{"path":"status","value":newmodel.ProductionStatus}]
-                }
-
-                await updateOrder(orgId, newmodel.RelatedOrder, query.orders[newmodel.RelatedOrder.toString()])
-                
-                try {
-                    if (newmodel.ProductionStatus === "delivered"){
-                        console.log("Creating new order if its cyclic")
-                        const orders = await getOrderById(orgId, newmodel.RelatedOrder)
-                        if(orders[0] && orders[0].cyclic){
-                            let order = orders[0]
-                            let org = await getContainers({organization:orgId})
-    
-                            const isValidContainerResponse = org !== null && org !== undefined && org.containers.length === 1
-                            let overhead = 0;
-                            if (isValidContainerResponse){
-                                overhead = (org.containers[0].config.overhead)/100
-                            } 
-                            const allProducts = await getAllProducts(orgId)
-                            //*SET ORDERS PRODUCTS AND ORDER STATUSES TO INITIAL STATE 
-                            const newOrder = buildOrderFromExistingOrder(order,order,allProducts)
-                            console.log(newOrder.products)
-                            //*This is to avoid modifying the original order to be saved
-                            const orderToBuildProduction = JSON.parse(JSON.stringify(newOrder))
-                            const newProduction = await buildProductionDataFromOrder(orderToBuildProduction,allProducts, overhead)
-
-                           
-                            await insertNewOrderWithProduction(orgId, newOrder, newProduction)
-                            return op
-                        }
-                        console.log("No order found or its not cyclic")
-                    }
-                } catch(err) {
-                    console.log("Error creating new order from cyclic order")
-                    console.log(err)
-                }
-
-                return op
-            })
-
-            const update = await Promise.all(updateOperation)
-            // await updateOrdersInModels(modifiedModels, orgId, container)
-
-            return update
         })
-        Promise.all(queryUpdateById)
-        .then((result) => resolve(result))
-        .catch(err => reject(err))
+
+        await Promise.all(getProduction)
+        
+        const modifiedModels = nextStatusForProduction(filteredProductionModels)
+
+        const allProductionStatus = await orgModel.aggregate([
+            {
+                "$match":{
+                    "_id":mongoose.Types.ObjectId(orgId)
+                }
+            },
+            {
+                "$unwind":"$containers"
+            },
+            {
+                "$unwind":"$containers.production"
+            },
+            {
+                "$match":{
+                    "containers.production.RelatedOrder":{
+                        "$in":modifiedModels.map((model) => model.RelatedOrder)
+                    }
+                }
+            },
+            {
+                "$group":{
+                    "_id":"$containers.production.RelatedOrder",
+                    "productionStatus":{
+                        "$push":"$containers.production.ProductionStatus"
+                    }
+
+                }
+            }
+        ])
+
+        console.log("All production statuses")
+        console.log(allProductionStatus)
+        let allStatuses = allProductionStatus.length>0 ? Array.from(new Set(allProductionStatus[0].productionStatus)).filter((element) => element != undefined) : allProductionStatus
+        try {
+            const updateProd = await updateProduction(orgId, container, null, modifiedModels, allStatuses)
+    
+            if (modifiedModels.length>0 && allStatuses.length === 1 && allStatuses[0] === "ready"){
+                console.log("Creating new order if its cyclic")
+                const orders = await getOrderById(orgId, modifiedModels[0].RelatedOrder)
+                if(orders[0] && orders[0].cyclic){
+                    let order = orders[0]
+                    let org = await getContainers({organization:orgId})
+    
+                    const isValidContainerResponse = org !== null && org !== undefined && org.containers.length === 1
+                    let overhead = 0;
+                    if (isValidContainerResponse){
+                        overhead = (org.containers[0].config.overhead)/100
+                    } 
+                    const allProducts = await getAllProducts(orgId)
+                    //*SET ORDERS PRODUCTS AND ORDER STATUSES TO INITIAL STATE 
+                    const newOrder = buildOrderFromExistingOrder(order,order,allProducts)
+                    console.log(newOrder.products)
+                    //*This is to avoid modifying the original order to be saved
+                    const orderToBuildProduction = JSON.parse(JSON.stringify(newOrder))
+                    const newProduction = await buildProductionDataFromOrder(orderToBuildProduction,allProducts, overhead)
+    
+                    
+                    await insertNewOrderWithProduction(orgId, newOrder, newProduction)
+                    
+                }
+                console.log("No order found or its not cyclic")
+            }
+        
+            resolve(updateProd)
+        } catch (err){
+            reject(err)
+        }
+
+        
     })
 }
 

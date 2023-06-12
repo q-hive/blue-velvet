@@ -75,7 +75,7 @@ export const relateOrdersAndTasks = (orgId) => {
                 // products.forEach((prod) => prod.toObject())
                 //* ITERATE ARRAY
                 const mappedProd = products.map(async (prod) => {
-                    const mutableProd = prod.toObject()
+                    const mutableProd = prod
                     //*This function returns the orders, that have a different status of delivered and that includes the products we are asking for
                     //*SEARCH IN ORDERS BY PRODUCT ID
                     const orders = await getOrdersByProd(orgId, prod._id)

@@ -390,10 +390,26 @@ export const buildOrderFromExistingOrder = (orderData,oldOrderObject ,allProduct
             return product._id.equals(prod._id)
         })
 
+
+        let mixStatuses = null
+        if(dbProduct.mix.isMix){
+            mixStatuses = dbProduct.mix.products.map((mixProd) => {
+                const prod = allProducts.find((product) => {
+                    return product._id.equals(mixProd.strain)
+                })
+
+                return {
+                    "product":prod.name,
+                    "status":getInitialStatus(prod)
+                }
+            })
+        }
+
         return {
             _id:            prod._id,
             name:           prod.name,
-            status:         getInitialStatus(dbProduct),
+            status:         dbProduct.mix.isMix ? null : getInitialStatus(dbProduct),
+            mixStatuses:    mixStatuses,
             seedId:         prod.seedId,
             packages:       [...prod.packages],
             mix:            dbProduct.mix.isMix,
