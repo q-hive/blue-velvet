@@ -46,23 +46,7 @@ export const NewOrder = (props) => {
         }
     }
     const [deliveryAddress, setDeliveryAddress]= useState(initialDeliveryAddress)
-    const [products,setProducts]= useState([])
-    
-    // const useQuery = () => new URLSearchParams(useLocation().search)
-    // const query = useQuery()
-
-    // const paramVerb = () => {
-    //     if(Boolean(query.get('type'))){
-    //         return "Update"
-    //     }
-
-    //     return "Save"
-    // }
-
-    // const isEdition = props.edit.isEdition
-    // const prevOrderID = props.edit.values.order
-    console.log("props",props)
-    
+    const [products,setProducts]= useState([])    
 
     //*Auth context
     const getContextProducts = () => {
@@ -348,14 +332,29 @@ export const NewOrder = (props) => {
                     ]
                 }
                 
-                products.push({
-                    "name": input.product.name,
-                    "status": input.status.name,
-                    "seedId": input.product?.seed,
-                    "provider": input.product?.provider,
-                    "_id": input.product._id,
-                    "packages": packages
-                })
+                if(!input.product.mix.isMix){
+                    products.push({
+                        "name": input.product.name,
+                        "status": input.status.name,
+                        "seedId": input.product?.seed,
+                        "provider": input.product?.provider,
+                        "_id": input.product._id,
+                        "packages": packages
+                    })
+                }
+
+                if(input.product.mix.isMix){
+                    products.push({
+                        "name": input.product.name,
+                        "status": input.status.name,
+                        "mixStatuses": input.status.mix,
+                        "seedId": input.product?.seed,
+                        "provider": input.product?.provider,
+                        "_id": input.product._id,
+                        "packages": packages
+                    })
+                }
+                
 
                 setInput({
                     ...input,
@@ -567,6 +566,49 @@ export const NewOrder = (props) => {
     
         return
     }
+
+    const handleSelectProduct = (e,v,r) => {
+        if(r === "selectOption"){
+            const product = options.products.find(product => product._id ===  v._id)
+            setInput({
+                ...input,
+                product: product
+            })
+        }
+        
+    }
+
+    const handleChangeMixStatus = (e,v,r, product) => {
+        if(input.status.mix && input.status.mix.length > 0){
+            setInput({
+                ...input,
+                status:{
+                    ...input.status,
+                    name:"mixed",
+                    "mix":[
+                        ...input.status.mix,
+                        {
+                            "name":v.name,
+                            "product":product.name
+                        }
+                    ]
+                }
+            })
+        } else {
+            setInput({
+                ...input,
+                status:{
+                    name:"mixed",
+                    "mix":[
+                        {
+                            "name":v.name,
+                            "product":product.name
+                        }
+                    ]
+                }
+            })
+        }
+    }
         
     useEffect(() => {
         const getData = async () => {
@@ -640,82 +682,98 @@ export const NewOrder = (props) => {
             productsInput
             ?
             <>
+               <Autocomplete
+                id="product"
+                options={options.products}
+                sx={BV_THEME.input.mobile.fullSize.desktop.halfSize}
+                renderInput={(params) => { 
+                    const {product} = error
+                    return <TextField
+                            {...params}
+                            helperText={product.active ? product.message : ""}
+                            error={product.active}
+                            label="Product"
+                        />
+                }}
+                getOptionLabel={(opt) => opt.name ? opt.name : ""}
+                isOptionEqualToValue={(o,v) => {
+                    if(Object.keys(v).length === 0){
+                        return true
+                    }
+                    return o.name === v.name
+                }}
+                onChange={handleSelectProduct}
+                value={Object.keys(input.product) !== 0 ? input.product : undefined}
+                />
+            
                 {
-                    props.edit.isEdition
-
+                    
+                    Object.keys(input.product).length>0 && input.product.mix.isMix
                     ?
-                        <div></div>                    
+                    <Box sx={{width:"100%", display:"flex", flexDirection:"column", alignItems:"center"}}>
+                        <Typography variant="h5" color="secondary" marginY={3}>Mix products states</Typography>
+                        <Box sx={{width:"100%", display:"flex", flexDirection:"row", alignItems:"center", justifyContent:"space-around"}}>
+                            {
+                                input.product.mix.products.map((product) => {
+                                    let tempProd = options.products.find((prod)=>prod._id === product.strain)
+                                    return (
+                                        <Box sx={{width:"100%", display:"flex", flexDirection:"column", alignItems:"center"}}>
+                                            <Typography variant="h6" color="secondary" marginY={3}>{tempProd.name}</Typography>
+                                            <Autocomplete
+                                            id="status"
+                                            options={options.status}
+                                            sx={BV_THEME.input.mobile.fullSize.desktop.halfSize}
+                                            renderInput={(params) => { 
+                                                const {status} = error
+                                                return <TextField
+                                                        {...params}
+                                                        helperText={status.active ? status.message : ""}
+                                                        error={status.active}
+                                                        label="Status"
+                                                    />
+                                            }}
+                                            getOptionLabel={(opt) => opt.name ? opt.name : ""}
+                                            isOptionEqualToValue={(o,v) => {
+                                                if(Object.keys(v).length === 0){
+                                                    return true
+                                                }
+                                                return o.name === v.name
+                                            }}
+                                            onChange={(e,v,r) => handleChangeMixStatus(e,v,r,tempProd)}
+                                            />
+                                        </Box>
+                                    )
+                                })
+                            }
+                        </Box>
+                    </Box>
                     :
-                    <>
-                        <Autocomplete
-                        id="product"
-                        options={options.products}
-                        sx={BV_THEME.input.mobile.fullSize.desktop.halfSize}
-                        renderInput={(params) => { 
-                            const {product} = error
-                            return <TextField
-                                    {...params}
-                                    helperText={product.active ? product.message : ""}
-                                    error={product.active}
-                                    label="Product"
-                                />
-                        }}
-                        getOptionLabel={(opt) => opt.name ? opt.name : ""}
-                        isOptionEqualToValue={(o,v) => {
-                            if(Object.keys(v).length === 0){
-                                return true
-                            }
-                            return o.name === v.name
-                        }}
-                        onChange={handleChangeInput}
-                        value={Object.keys(input.product) !== 0 ? input.product : undefined}
-                        />
-                        <Autocomplete
-                        id="status"
-                        options={options.status}
-                        sx={BV_THEME.input.mobile.fullSize.desktop.halfSize}
-                        renderInput={(params) => { 
-                            const {status} = error
-                            return <TextField
-                                    {...params}
-                                    helperText={status.active ? status.message : ""}
-                                    error={status.active}
-                                    label="Status"
-                                />
-                        }}
-                        getOptionLabel={(opt) => opt.name ? opt.name : ""}
-                        isOptionEqualToValue={(o,v) => {
-                            if(Object.keys(v).length === 0){
-                                return true
-                            }
-                            return o.name === v.name
-                        }}
-                        onChange={handleChangeInput}
-                        value={Object.keys(input.status) !== 0 ? input.status : undefined}
-                        />
-                    </>
+                    <Autocomplete
+                    id="status"
+                    options={options.status}
+                    sx={BV_THEME.input.mobile.fullSize.desktop.halfSize}
+                    renderInput={(params) => { 
+                        const {status} = error
+                        return <TextField
+                                {...params}
+                                helperText={status.active ? status.message : ""}
+                                error={status.active}
+                                label="Status"
+                            />
+                    }}
+                    getOptionLabel={(opt) => opt.name ? opt.name : ""}
+                    isOptionEqualToValue={(o,v) => {
+                        if(Object.keys(v).length === 0){
+                            return true
+                        }
+                        return o.name === v.name
+                    }}
+                    onChange={handleChangeInput}
+                    value={Object.keys(input.status) !== 0 ? input.status : undefined}
+                    />
+
                 }
             
-
-                {/* <TextField
-                    id="packages"
-                    type="number"
-                    label="Number of packages"
-                    sx={BV_THEME.input.mobile.fullSize.desktop.halfSize}
-                    onChange={(e) => handleChangeInput(e, e.target.value, "input")}
-                    helperText={error.packages.active ? error.packages.message : ""}
-                    error={error.packages.active}
-                    value={input.packages ? input.packages : ""}
-                />
-
-                 <Typography variant="h6" mb="2vh" mt="4vh">Select size</Typography>
-                
-                 //*TODO MANAGE ERROR FOR CHECKBOXGROUP 
-                
-                <Button id="packages" onClick={handleAddToOrder}>
-                    Add packages
-                </Button> */}
-
                 <Typography variant="h5" color="secondary" marginY={3}>No. of Packages</Typography>
                 
                 <Box>
@@ -771,7 +829,6 @@ export const NewOrder = (props) => {
                 <Autocomplete
                     id="customer"
                     options={options.customers}
-                    defaultValue={props.edit.isEdition ? props.edit.values.order.customer : ""}
                     sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})}
                     renderInput={(params) => { 
                         const {customer} = error
@@ -784,6 +841,7 @@ export const NewOrder = (props) => {
                             }}
                     onChange={handleChangeInput}
                     getOptionLabel={(opt) => opt.name? opt.name : ""}
+                    value={input.customer ? input.customer : undefined}
                 />
 
                 <Typography variant="h6" mb="1vh" mt="4vh">Delivery date</Typography>
