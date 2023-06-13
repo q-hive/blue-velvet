@@ -966,7 +966,7 @@ export const NewOrder = (props) => {
                                             </>
                                 }
                                 <td>
-                                    <Button variant="contained" onClick={()=>handleDeleteProduct(product)}>
+                                    <Button variant="contained" color='error' onClick={()=>handleDeleteProduct(product)}>
                                         Delete
                                     </Button>
                                 </td>
