@@ -172,11 +172,13 @@ export const SalesView = () => {
 
         const [loading, setLoading] = useState(false)
 
-        const deleteOrderproduct = async () => {
+        const deleteOrderproduct = (id) => {
           setLoading(true)
-          // const response = await deleteOrganization(params.id)
-          // return response
-          console.log(params);
+          const newProducts = orderData?.products.filter(product => product._id !== id);
+          setOrderData({
+            ...orderData,
+            products: newProducts
+          })
         }
 
         const handleModal = () => {
@@ -216,26 +218,7 @@ export const SalesView = () => {
                             ...dialog,
                             open: false,
                           })
-                          deleteOrderproduct()
-                            .then((res) => {
-                              if (res.status === 204) {
-                                setDialog({
-                                  ...dialog,
-                                  open: true,
-                                  title: "Product deleted successfully",
-                                  message: "The product of the order were deleted",
-                                  actions: [
-                                    {
-                                      label: "Ok",
-                                      execute: () => { window.location.reload() }
-                                    }
-                                  ]
-                                })
-                              }
-                            })
-                            .catch(err => {
-                              console.log("Error deleting product")
-                            })
+                          deleteOrderproduct(params.id)
                         }
                       },
                       {
@@ -407,8 +390,7 @@ export const SalesView = () => {
       })
   }
 
-  const handleEditMode = () => {
-    setShowEdit(!showEdit)
+  const handleEditMode = async () => {
     const getData = async () => {
       const customers = await getCustomers();
       const products = await getProducts();
@@ -424,8 +406,9 @@ export const SalesView = () => {
             customers: data.customers
           })
         })
-        console.log(data);
-        console.log(orderData);
+        console.log("{DATA}", data);
+        console.log("{ORDER DATA}", orderData);
+        console.log("{OPTIONS}", options);
       })
       .catch(err => {
         console.log(err)
@@ -442,6 +425,7 @@ export const SalesView = () => {
     setLoading(() => {
       return true
     })
+    handleEditMode()
     getOrders(orderId)
       .then((res) => {
         const orders = res.data.data;
@@ -562,7 +546,10 @@ export const SalesView = () => {
                   : null
                 }
                 <Button variant="contained"
-                  onClick={handleEditMode}
+                  onClick={() => {
+                    setShowEdit(!showEdit);
+                    handleEditMode()
+                  }}
                   color="secondary"
                 >
                   <EditIcon />
@@ -797,8 +784,8 @@ export const SalesView = () => {
 
             </Grid>
           </Container>
-        </Box>
-      </Fade>
+        </Box >
+      </Fade >
     </>
   );
 
