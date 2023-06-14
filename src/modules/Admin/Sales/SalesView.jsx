@@ -107,6 +107,7 @@ export const SalesView = () => {
   }
 
   const [isActionsColumnVisible, setActionsColumnVisible] = useState(false);
+  const [isProductOnEdition, setIsProductOnEdition] = useState(false);
 
   const OrderProductsColumns = [
     {
@@ -176,11 +177,10 @@ export const SalesView = () => {
 
         const deleteOrderproduct = (id) => {
           setLoading(true)
-          const newProducts = orderData?.products.filter(product => product._id !== id);
-          setOrderData({
-            ...orderData,
-            products: newProducts
-          })
+          const updatedProducts = orderData?.products.filter(product => product._id !== id);
+          const updatedOrderData = {...orderData, products: updatedProducts}
+          setOrderData(updatedOrderData)
+          handleUpdateOrder(updatedOrderData, "Product deleted from order successfully", false)
         }
 
         const handleModal = () => {
@@ -194,6 +194,10 @@ export const SalesView = () => {
                 btn_color: "white_btn",
                 type: "privileged",
                 execute: () => {
+                  setModal({
+                    ...modal,
+                    open: false,
+                  })
                   handleUpdateProduct(params.row)
                 }
               },
@@ -334,7 +338,6 @@ export const SalesView = () => {
         customer: value._id
       });
     }
-    console.log(input);
   }
 
   const catchChangeDate = (date) => {
@@ -354,17 +357,24 @@ export const SalesView = () => {
   }
 
   const handleUpdateProduct = (params) => {
-    console.log("HANDLE UPDATE PRODUCT", params);
+    setIsProductOnEdition(true);
+    setInput({
+      ...input,
+      product: { name: params.name },
+      status: { name: params.status },
+      smallPackages: params.small,
+      mediumPackages: params.medium
+    })
   }
 
-  const handleUpdateOrder = () => {
-    console.log(orderData);
-    updateOrder(orderId, orderData)
+  const handleUpdateOrder = (newOrderData = orderData, msg="", reload=false) => {
+    updateOrder(orderId, newOrderData)
       .then((res) => {
         setDialog({
           ...dialog,
           open: true,
           title: res.data.message,
+          message: msg,
           actions: [{
             label: "Ok",
             execute: () => {
@@ -372,7 +382,9 @@ export const SalesView = () => {
                 ...dialog,
                 open: false
               });
-              window.location.reload();
+              if (reload) {
+                window.location.reload();
+              }
             }
           }]
         })
@@ -416,34 +428,62 @@ export const SalesView = () => {
   }
 
   const handleSaveProduct = () => {
-    let packages;
-    if (input.smallPackages && input.mediumPackages) {
-      packages = [
-        {
-          "number": input.smallPackages,
-          "size": "small"
-        },
-        {
-          "number": input.mediumPackages,
-          "size": "medium"
-        }
-      ]
-    } else {
-      packages = [
-        {
-          "number": input.smallPackages || input.mediumPackages,
-          "size": input.smallPackages ? "small" : input.mediumPackages ? "medium" : "small"
-        }
-      ]
-    }
+    let updatedOrderData;
 
-    let newProduct = {
-      "name": input.product.name,
-      "status": input.status.name,
-      "seedId": input.product?.seed,
-      "provider": input.product?.provider,
-      "_id": input.product._id,
-      "packages": packages
+    if (isProductOnEdition) {
+      updatedOrderData = {
+        ...orderData,
+        products: orderData.products.map((product) => {
+          if (product.name === input.product.name) {
+            return {
+              ...product,
+              status: input.status.name,
+              packages: [
+                { ...product.packages[0], number: input.smallPackages },
+                { ...product.packages[1], number: input.mediumPackages }
+              ]
+            };
+          }
+          return product;
+        })
+      };
+      setIsProductOnEdition(false);
+    } else {
+      let packages;
+      if (input.smallPackages && input.mediumPackages) {
+        packages = [
+          {
+            "number": input.smallPackages,
+            "size": "small"
+          },
+          {
+            "number": input.mediumPackages,
+            "size": "medium"
+          }
+        ]
+      } else {
+        packages = [
+          {
+            "number": input.smallPackages || input.mediumPackages,
+            "size": input.smallPackages ? "small" : input.mediumPackages ? "medium" : "small"
+          }
+        ]
+      }
+      let newProduct = {
+        "name": input.product.name,
+        "status": input.status.name,
+        "seedId": input.product?.seed,
+        "provider": input.product?.provider,
+        "_id": input.product._id,
+        "packages": packages
+      }
+      updatedOrderData = {
+        ...orderData,
+        products: [
+          ...orderData.products,
+          newProduct
+        ]
+      }
     }
 
     setInput({
@@ -454,39 +494,8 @@ export const SalesView = () => {
       mediumPackages: 0,
     })
 
-    const updatedOrderData = {
-      ...orderData,
-      products: [
-        ...orderData.products,
-        newProduct
-      ]
-    }
-
-    console.log("UPDATED ORDER DATA", updatedOrderData);
     setOrderData(updatedOrderData)
-
-    updateOrder(orderId, updatedOrderData)
-      .then((res) => {
-        console.log(res);
-        setDialog({
-          ...dialog,
-          open: true,
-          title: res.data.message,
-          message: "Product added successfully",
-          actions: [{
-            label: "Ok",
-            execute: () => {
-              setDialog({
-                ...dialog,
-                open: false
-              });
-            }
-          }]
-        })
-      })
-      .catch((err) => {
-        console.log(err);
-      })
+    handleUpdateOrder(updatedOrderData, isProductOnEdition ? "Product updated successfully" : "Product added successfully", false)
   }
 
   useEffect(() => {
@@ -498,7 +507,6 @@ export const SalesView = () => {
       .then((res) => {
         const orders = res.data.data;
         const foundOrder = orders.find((order) => order._id === orderId);
-        console.log("ORDER DATA: ",foundOrder)
         setOrderData(foundOrder)
         const orderProducts = foundOrder.products.map((product) => {
           return {
@@ -506,7 +514,7 @@ export const SalesView = () => {
             name: product.name,
             status: product.status,
             small: product.packages[0].number,
-            medium: product.packages[0].number
+            medium: product.packages[1].number
           };
         });
         setRows(orderProducts)
@@ -609,7 +617,7 @@ export const SalesView = () => {
                   ? <Button
                     variant="contained"
                     color="primary"
-                    onClick={handleUpdateOrder}
+                    onClick={()=>{handleUpdateOrder(orderData,"",true)}}
                   >
                     Save
                   </Button>
@@ -687,7 +695,7 @@ export const SalesView = () => {
                 {/* EDIT PRODUCTS */}
                 {showEdit
                   ? <Paper elevation={4} sx={{ padding: BV_THEME.spacing(2), marginY: "2vh" }}>
-                    <Typography variant="h6" color="secondary">New/Edit PRODUCTS</Typography>
+                    <Typography variant="h6" color="secondary">{isProductOnEdition ? "EDIT" : "NEW"} PRODUCTS</Typography>
                     <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
 
                       <Autocomplete
@@ -712,6 +720,7 @@ export const SalesView = () => {
                         }}
                         onChange={catchSelectProduct}
                         value={Object.keys(input.product) !== 0 ? input.product : undefined}
+                        disabled={isProductOnEdition}
                       />
 
                       <Autocomplete
@@ -765,7 +774,7 @@ export const SalesView = () => {
                       </Box>
 
                       <Button id="add" sx={{ marginTop: "2vh" }} onClick={handleSaveProduct}>
-                        Add product
+                        {isProductOnEdition ? "Edit" : "Add"} product
                       </Button>
                     </Box>
                   </Paper>
@@ -858,8 +867,4 @@ export const SalesView = () => {
       </Fade >
     </>
   );
-
-
-
-
 }
