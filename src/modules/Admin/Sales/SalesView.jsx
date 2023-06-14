@@ -106,6 +106,8 @@ export const SalesView = () => {
     )
   }
 
+  const [isActionsColumnVisible, setActionsColumnVisible] = useState(false);
+
   const OrderProductsColumns = [
     {
       field: "name",
@@ -260,7 +262,8 @@ export const SalesView = () => {
             <Button variant="contained" onClick={handleModal} disabled={loading} sx={BV_THEME.button.table}>View</Button>
           </>
         )
-      }
+      },
+      hide: !isActionsColumnVisible
     }
   ]
 
@@ -390,7 +393,7 @@ export const SalesView = () => {
       })
   }
 
-  const handleEditMode = async () => {
+  const handleEditMode = () => {
     const getData = async () => {
       const customers = await getCustomers();
       const products = await getProducts();
@@ -523,7 +526,8 @@ export const SalesView = () => {
       .catch((err) => {
         console.log(err);
       });
-  }, [dialog])
+    setActionsColumnVisible(showEdit);
+  }, [dialog, showEdit])
 
   const deliveryAddressCard = () => {
     return (
