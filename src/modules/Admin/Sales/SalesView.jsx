@@ -406,9 +406,6 @@ export const SalesView = () => {
             customers: data.customers
           })
         })
-        console.log("{DATA}", data);
-        console.log("{ORDER DATA}", orderData);
-        console.log("{OPTIONS}", options);
       })
       .catch(err => {
         console.log(err)
@@ -416,9 +413,77 @@ export const SalesView = () => {
   }
 
   const handleSaveProduct = () => {
-    console.log("ADDING PRODUCT");
-    console.log("INPUT", product);
-    console.log("Order Data", orderData);
+    let packages;
+    if (input.smallPackages && input.mediumPackages) {
+      packages = [
+        {
+          "number": input.smallPackages,
+          "size": "small"
+        },
+        {
+          "number": input.mediumPackages,
+          "size": "medium"
+        }
+      ]
+    } else {
+      packages = [
+        {
+          "number": input.smallPackages || input.mediumPackages,
+          "size": input.smallPackages ? "small" : input.mediumPackages ? "medium" : "small"
+        }
+      ]
+    }
+
+    let newProduct = {
+      "name": input.product.name,
+      "status": input.status.name,
+      "seedId": input.product?.seed,
+      "provider": input.product?.provider,
+      "_id": input.product._id,
+      "packages": packages
+    }
+
+    setInput({
+      ...input,
+      product: {},
+      status: {},
+      smallPackages: 0,
+      mediumPackages: 0,
+    })
+
+    const updatedOrderData = {
+      ...orderData,
+      products: [
+        ...orderData.products,
+        newProduct
+      ]
+    }
+
+    console.log("UPDATED ORDER DATA", updatedOrderData);
+    setOrderData(updatedOrderData)
+
+    updateOrder(orderId, updatedOrderData)
+      .then((res) => {
+        console.log(res);
+        setDialog({
+          ...dialog,
+          open: true,
+          title: res.data.message,
+          message: "Product added successfully",
+          actions: [{
+            label: "Ok",
+            execute: () => {
+              setDialog({
+                ...dialog,
+                open: false
+              });
+            }
+          }]
+        })
+      })
+      .catch((err) => {
+        console.log(err);
+      })
   }
 
   useEffect(() => {
@@ -430,6 +495,7 @@ export const SalesView = () => {
       .then((res) => {
         const orders = res.data.data;
         const foundOrder = orders.find((order) => order._id === orderId);
+        console.log("ORDER DATA: ",foundOrder)
         setOrderData(foundOrder)
         const orderProducts = foundOrder.products.map((product) => {
           return {
@@ -457,7 +523,7 @@ export const SalesView = () => {
       .catch((err) => {
         console.log(err);
       });
-  }, [])
+  }, [dialog])
 
   const deliveryAddressCard = () => {
     return (
