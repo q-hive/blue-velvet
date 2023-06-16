@@ -387,7 +387,7 @@ export const editCustomer =async (user, credential, data) => {
             "email":              data.email,
             "image":              "N/A",
             "address":            {
-                "stNumber":   data.address.number,   
+                "stNumber":   data.address.stNumber,   
                 "street":     data.address.street,
                 "zip":        data.address.zip,
                 "city":       data.address.city,

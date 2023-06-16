@@ -19,6 +19,7 @@ export const createNewCustomer = (orgId, data) => {
             let customerMapped = {
                 name:   data.name,
                 email:  data.email,
+                role:   data.role,
                 image:  "",
                 address: data.address,
                 businessData: data.businessData
