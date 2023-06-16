@@ -964,7 +964,7 @@ export const CustomerColumns = [
                             }
                         },
                         {
-                            label:`${t('actions_modal_monthInvoice', {ns:'client_management_module'})}`,
+                            label:`${t('actions_modal_delete', {ns:'client_management_module'})}`,
                             type:"dangerous",
                             btn_color:"warning",
                             execute:() => {
