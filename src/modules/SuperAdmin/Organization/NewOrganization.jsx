@@ -27,9 +27,9 @@ import { validateInput } from '../../../utils/helpers/inputValidator'
 
 export const NewOrganization = (props) => {
 
-  const { user, credential } = useAuth()
+  const {user, credential} = useAuth()
   let headers = {
-    authorization: credential._tokenResponse.idToken,
+    authorization:credential._tokenResponse.idToken,
     user: user
   }
   const { createOrganization, getOrganization, updateOrganization } = useOrganizations(headers);
@@ -76,7 +76,7 @@ export const NewOrganization = (props) => {
   };
 
   const initialStateOrganizationContainer = {
-    check: false,
+    check:false,
     name: "",
     capacity: 0,
     available: 0,
