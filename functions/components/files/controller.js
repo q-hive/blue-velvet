@@ -171,6 +171,7 @@ export const createCustomerBillingStructure = (data) => {
 */
 export const createHTML = (config) => {
     return `
+        <!DOCTYPE html>
         <html>
             <head>
                 <style>
@@ -419,6 +420,11 @@ export const createConfigObjectFromOrder = async (order) => {
     return {
         header: {
             style: `
+            * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
             body {
                 font-family: Arial, Helvetica, sans-serif;
                 max-width: 60em;
@@ -681,6 +687,11 @@ export const createConfigObjectFromManyOrders = (shapedOrgData) => {
     return {
         header: {
             style: `
+            * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
             body {
                 font-family: Arial, Helvetica, sans-serif;
                 max-width: 60em;
