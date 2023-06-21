@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
+import { Buffer } from 'buffer';
 
 //*MUI COMPONENTS
 import {
-  Autocomplete, Backdrop, Box, Button, Divider, Fab, TextField, Typography, Fade, CircularProgress, Accordion, AccordionSummary, AccordionDetails, Checkbox, Tooltip
+  Autocomplete, Avatar, Backdrop, Box, Button, Divider, Fab, TextField, Typography, Fade, CircularProgress, Accordion, AccordionSummary, AccordionDetails, Checkbox, Tooltip
 } from '@mui/material'
 
 import CameraIcon from '@mui/icons-material/AddPhotoAlternate'
@@ -38,6 +39,7 @@ export const NewOrganization = (props) => {
   const [clientId, setClientId] = useState(0)
   const [clientUid, setClientUid] = useState(0)
   const [loading, setLoading] = useState(false)
+  const [logoPrev, setLogoPrev] = useState({isReady: false, data: null})
 
   const [dialog, setDialog] = useState({
     open: false,
@@ -58,6 +60,7 @@ export const NewOrganization = (props) => {
   };
 
   const initialStateOrganization = {
+    image: null,
     name: "",
     containers: [],
     customers: [],
@@ -134,11 +137,38 @@ export const NewOrganization = (props) => {
   };
 
   const handleOrganizationChange = (event) => {
-    const { name, value } = event.target;
-    setOrganization((prevOrganization) => ({
-      ...prevOrganization,
-      [name]: value
-    }));
+    const { name, value, files } = event.target;
+  
+    if (name === 'image' && files?.[0]) {
+      const file = files[0];
+      const reader = new FileReader();
+  
+      reader.onload = (e) => {
+        const buffer = Buffer.from(e.target.result);
+
+        setOrganization((prevOrganization) => ({
+          ...prevOrganization,
+          image: {
+            data: buffer,
+            contentType: file.type
+          }
+        }));
+        const imageSrc = URL.createObjectURL(
+            new Blob([new Uint8Array(buffer)], { type: file.type })
+        );
+        setLogoPrev({
+            isReady: true,
+            data: imageSrc
+        })
+  
+      };
+        reader.readAsArrayBuffer(file);
+    } else {
+      setOrganization((prevOrganization) => ({
+        ...prevOrganization,
+        [name]: value
+      }));
+    }
   };
 
   const handleOrganizationAddressChange = (event) => {
@@ -309,6 +339,7 @@ export const NewOrganization = (props) => {
       password: admin.password,
       passphrase: admin.passphrase,
       organization: {
+        image: organization.image,
         name: organization.name,
         address: organization.address,
         containers: organizationContainers
@@ -468,6 +499,20 @@ export const NewOrganization = (props) => {
         .then((res) => {
           OrganizationInEdition = res.data.data
 
+          let imageSrc = OrganizationInEdition.image;
+          if (OrganizationInEdition.image?.data) {
+            const imgContentType = OrganizationInEdition?.image?.data?.contentType;
+            const imgData = OrganizationInEdition?.image?.data?.data;
+            imageSrc = URL.createObjectURL(
+              new Blob([new Uint8Array(imgData)], { type: imgContentType })
+            );
+  
+            setLogoPrev({
+              isReady: true,
+              data: imageSrc,
+            });
+          }
+
           setClientId(OrganizationInEdition.admin._id);
           setClientUid(OrganizationInEdition.admin.uid);
           
@@ -481,6 +526,7 @@ export const NewOrganization = (props) => {
           
           setOrganization({
             ...organization,
+            image: imageSrc,
             name: OrganizationInEdition.name,
             address: OrganizationInEdition.address,
           });
@@ -520,6 +566,20 @@ export const NewOrganization = (props) => {
             {/* // ORGANIZATION */}
             <Typography variant="h5" mt="4vh">Organization Information</Typography>
             <Divider variant="middle" sx={{ width: { xs: "98%", sm: "50%", md: "50%" }, marginY: "1vh" }} />
+            <Fab color="primary" component="label" aria-label="add" sx={{ marginY: "1%", width: 100, height: 100 }} size="large" helpertext="Logo" >
+                <input type="file" accept="image/*" name='image' onChange={handleOrganizationChange} hidden />
+                {logoPrev.isReady
+                    ? <Avatar
+                        alt="Container logo"
+                        src={logoPrev.data ?? organization.image}
+                        sx={{boxShadow:BV_THEME.shadows[9], 
+                            width: "100%", 
+                            height: "100%", 
+                        }}
+                    />
+                    : <CameraIcon sx={{ fontSize: "5vh" }} />
+                }
+            </Fab>
             <TextField id="organizationName" name='name' onChange={handleOrganizationChange} value={organization?.name} label="Name" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.halfSize })} />
 
             {/* // ORGANIZATION ADDRESS */}
