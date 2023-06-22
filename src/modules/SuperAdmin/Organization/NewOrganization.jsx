@@ -363,18 +363,6 @@ export const NewOrganization = (props) => {
     });
   };
 
-  const deleteOrgImage = (imageName) => {
-    return new Promise((resolve, reject) => {
-      deleteImage(imageName)
-        .then((res) => {
-          resolve(res);
-        })
-        .catch((err) => {
-          reject(err);
-        });
-    });
-  };
-
   const createOrg = async (mappedOrganizationData) => {
     let imageName = mappedOrganizationData.organization.name.split(' ').join('-');
     if (typeof(mappedOrganizationData.organization.image) === "object"){
@@ -441,7 +429,7 @@ export const NewOrganization = (props) => {
       .catch((err) => {
         if (err.response.status === 500 || err.response.status === 400) {
           try {
-            deleteOrgImage(imageName)
+            deleteImage(imageName)
           } catch (error) {
             console.log(error);
           }

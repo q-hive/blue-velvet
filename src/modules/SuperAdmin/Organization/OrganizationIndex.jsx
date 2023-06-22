@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { BV_THEME } from '../../../theme/BV-theme'
 import useAuth from '../../../contextHooks/useAuthContext'
 import useOrganizations from '../../../hooks/useOrganizations'
+import { deleteImage } from '../../../firebaseInit'
 import { UserModal } from "../../../CoreComponents/UserActions/UserModal"
 import { UserDialog } from "../../../CoreComponents/UserFeedback/Dialog"
 
@@ -155,6 +156,11 @@ export const OrganizationIndex = () => {
 
         const deleteOrg = async () => {
           setLoading(true)
+          try {
+            deleteImage(params.row.name.split(' ').join('-'))
+          } catch (error) {
+            console.log(error);
+          }
           const response = await deleteOrganization(params.id)
           return response
         }
