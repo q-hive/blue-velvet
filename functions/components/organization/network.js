@@ -1,5 +1,4 @@
 import express from 'express'
-import multer from 'multer'
 import { mongoose } from '../../mongo.js'
 
 import { success, error } from '../../network/response.js'
@@ -11,8 +10,6 @@ import { modelsValidationError } from '../../utils/errorHandler.js'
 import { newContainer } from '../container/store.js'
 
 var router = new express.Router()
-const storage = multer.memoryStorage()
-const upload = multer({ storage: storage })
 
 // * CREATE
 router.post('/new', (req, res) => {
@@ -68,7 +65,7 @@ router.get('/', (req, res) =>{
 })
 
 // * UPDATE
-router.put('/:id', upload.single('image'), (req, res) => {
+router.put('/:id', (req, res) => {
     let orgData = req.body;
     let clientData = req
     let passphrase = 0;

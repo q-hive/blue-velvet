@@ -11,10 +11,7 @@ const { Schema } = mongoose;
 const { ObjectId } = mongoose.Types
 
 const Organization = new Schema({
-    image: { type: {
-                data: { type: Buffer, required: false },
-                contentType: { type: String, required: false }
-    }},
+    image:          { type: String,         required: false                     },
     name:           { type: String,         required: true,  unique: false       },
     owner:          { type: ObjectId,       required: true,  unique: true        },
     employees:      { type: [Employee],     required: false                      },

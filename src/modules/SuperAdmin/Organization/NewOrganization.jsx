@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Buffer } from 'buffer';
+import { uploadImage, deleteImage } from '../../../firebaseInit.js';
 
 //*MUI COMPONENTS
 import {
@@ -60,7 +60,7 @@ export const NewOrganization = (props) => {
   };
 
   const initialStateOrganization = {
-    image: null,
+    image: "",
     name: "",
     containers: [],
     customers: [],
@@ -141,28 +141,10 @@ export const NewOrganization = (props) => {
   
     if (name === 'image' && files?.[0]) {
       const file = files[0];
-      const reader = new FileReader();
-  
-      reader.onload = (e) => {
-        const buffer = Buffer.from(e.target.result);
-
-        setOrganization((prevOrganization) => ({
-          ...prevOrganization,
-          image: {
-            data: buffer,
-            contentType: file.type
-          }
-        }));
-        const imageSrc = URL.createObjectURL(
-            new Blob([new Uint8Array(buffer)], { type: file.type })
-        );
-        setLogoPrev({
-            isReady: true,
-            data: imageSrc
-        })
-  
-      };
-        reader.readAsArrayBuffer(file);
+      setOrganization((prevOrganization) => ({
+        ...prevOrganization,
+        image: file
+      }));      
     } else {
       setOrganization((prevOrganization) => ({
         ...prevOrganization,
@@ -369,7 +351,66 @@ export const NewOrganization = (props) => {
     }
   };
 
-  const createOrg = (mappedOrganizationData) => {
+  const addOrgImage = (imageFile, imageName) => {
+    return new Promise((resolve, reject) => {
+      uploadImage(imageFile, imageName)
+        .then((imageURL) => {
+          resolve(imageURL);
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  };
+
+  const deleteOrgImage = (imageName) => {
+    return new Promise((resolve, reject) => {
+      deleteImage(imageName)
+        .then((res) => {
+          resolve(res);
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  };
+
+  const createOrg = async (mappedOrganizationData) => {
+    let imageName = mappedOrganizationData.organization.name.split(' ').join('-');
+    if (typeof(mappedOrganizationData.organization.image) === "object"){
+      try {
+        const imageSrc = await addOrgImage(
+          mappedOrganizationData.organization.image,
+          imageName
+        )        
+        mappedOrganizationData.organization.image = imageSrc;
+      } catch (err) {
+        setDialog({
+          ...dialog,
+          open: true,
+          title: "Organization image could not be added",
+          actions: [
+              {
+              label: "Retry",
+              btn_color: "primary",
+              execute: () => {
+                  handleSaveOrganization()
+                  setDialog({ ...dialog, open: false })
+              }
+              },
+              {
+              label: "Close",
+              btn_color: "secondary",
+              execute: () => {
+                  setDialog({ ...dialog, open: false })
+                  setLoading(false)
+              }
+              }
+          ]
+        })
+      }
+    }
+
     createOrganization(mappedOrganizationData)
       .then((res) => {
 
@@ -395,11 +436,15 @@ export const NewOrganization = (props) => {
               }
             }
           ]
-
         })
       })
       .catch((err) => {
         if (err.response.status === 500 || err.response.status === 400) {
+          try {
+            deleteOrgImage(imageName)
+          } catch (error) {
+            console.log(error);
+          }
           setDialog({
             ...dialog,
             open: true,
@@ -429,14 +474,51 @@ export const NewOrganization = (props) => {
       })
   }
 
-  const updateOrg = (mappedOrganizationData) => {
+  const updateOrg = async (mappedOrganizationData) => {
     let id;
     if (props?.admin){
       id = user.organization
     } else{
       id = new URLSearchParams(window.location.search).get("id")
     }
-    updateOrganization(id, mappedOrganizationData)
+
+    let newOrgData = JSON.parse(JSON.stringify(mappedOrganizationData));
+    let imageName = mappedOrganizationData.organization.name.split(' ').join('-');
+    if (typeof(newOrgData.organization.image) === "object"){
+      try {
+        const imageSrc = await addOrgImage(
+          mappedOrganizationData.organization.image,
+          imageName
+        )        
+        newOrgData.organization.image = imageSrc;
+      } catch (err) {
+        setDialog({
+          ...dialog,
+          open: true,
+          title: "Organization image could not be added",
+          actions: [
+              {
+              label: "Retry",
+              btn_color: "primary",
+              execute: () => {
+                  handleSaveOrganization()
+                  setDialog({ ...dialog, open: false })
+              }
+              },
+              {
+              label: "Close",
+              btn_color: "secondary",
+              execute: () => {
+                  setDialog({ ...dialog, open: false })
+                  setLoading(false)
+              }
+              }
+          ]
+        })
+      }
+    }
+
+    updateOrganization(id, newOrgData)
       .then((res) => {
 
         setLoading(false)
