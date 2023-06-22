@@ -2,207 +2,185 @@
         <html>
             <head>
                 <style>
-                     
-            body{
+                    
+            body {
                 font-family: Arial, Helvetica, sans-serif;
-                width:65em;
-                padding-bottom: 5%;
+                max-width: 60em;
+                margin: 0 auto;
+                background-color: #F5F5F5;
             }
-
-            p{
-                font-size: 1.8vh;
-                font-weight: 500;
+    
+            header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 2em 0;
+                border-bottom: 2px solid #2F4DA5;
             }
-            h3{
-                font-weight: 500;
+    
+            header img {
+                width: 30%;
             }
-            html {
-                -webkit-print-color-adjust: exact;
+    
+            .order-container {
+                width: 90%;
+                margin: 2em auto;
             }
-            .right{text-align:right;align-items: right;}
-            
+    
+            .invoice-section {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 2em;
+            }
+    
+            .invoice-details {
+                width: 50%;
+            }
+    
+            .order-details {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 2em;
+            }
+    
+            .customer-details {
+                width: 50%;
+            }
+    
+            h1, h2, h3, p {
+                margin: 0;
+            }
+    
+            h1 {
+                font-size: 2.5em;
+                text-align: right;
+                color: #2F4DA5;
+            }
+    
+            h2 {
+                font-size: 2em;
+                color: #2F4DA5;
+                margin-bottom: 0.5em;
+            }
+    
+            h3 {
+                font-size: 1.5em;
+                color: #666;
+            }
+    
             table {
                 width: 100%;
-                border-spacing: 0px;
-                border-width: 0px;
-                border-style: hidden hidden solid;
                 border-collapse: collapse;
+                margin-top: 2em;
             }
-            tr {
-                text-align: left;
+    
+            th, td {
+                padding: 1em;
+                text-align: center;
+                border-bottom: 1px solid #CCC;
             }
-
-            th,td {
-                border-width: 2px;
-                padding: 15px;
-                border-style: solid;
-                border-color: #2F4DA5;
-            }
-
-            thead tr th {
-                background: #93cf0f;
+    
+            th {
+                background: #2F4DA5;
                 color: #FFF;
             }
-
-
-            tfoot td{
-                background: #FFF;
-                border-style: hidden;
-            }
-
-            .endTable{
-                background: #FFF;
-                border-style: hidden hidden solid ;
-                border-collapse: separate !important;
-            }
-
+    
             tr:nth-child(odd) {
-                background: #CCC
+                background: #EFEFEF;
             }
-
+    
             tr:nth-child(even) {
-                background: #FFF
+                background: #F5F5F5;
             }
-
-            .no-content {
-                background-color: red;
+    
+            .total-txt, .total-price {
+                font-weight: bold;
+                font-size: 1.2em;
+                color: #2F4DA5;
+                text-align: right;
             }
-
-            .orderContainer{
-                width:95%;
-                padding:3%;
-                margin-top: 1%;
-                overflow: auto;
-                
-            }
-
-            #clientContainer {
-                justify-content: space-between;
-            }
-
-            #billingContainer{
-
-            }
-
-            #addressContainer {
-                justify-content: space-evenly;
-            }
-            
-            #tableContainer {
-                width:100%;
-                display:flex;
-                justify-content: center;
-                align-items: center;
-            }
-
-            .headerColumn{
-                width:50%;
-                float:left;
-            }
-            .divider{
-                border: 10px solid #2F4DA5;
-                border-radius: 5px;
+    
+            .total-price {
+                text-align: center;
             }
             
                 </style>
             </head>
 
             <body>
-                
-        <header>
-            <div id="logoHeader">
+                <header>
+                    <img src="https://github.com/q-hive/blue-velvet/blob/deploy/src/assets/images/png-Logos/softwareLogo.png?raw=true" alt="Software logo">
+                    <img src="https://github.com/q-hive/blue-velvet/blob/deploy/src/assets/images/png-Logos/blue-velvet.png?raw=true" alt="Container logo">
+                </header>
 
-                <div class="headerColumn">
-                    <img src="https://github.com/q-hive/blue-velvet/blob/deploy/src/assets/images/png-Logos/softwareLogo.png?raw=true" style="width:65%">
-                </div>
+                <div class="order-container">
+                    
+        <div class="invoice-section">
+            <div class="invoice-details">
                 
-                <div class="headerColumn">
-                    <img src="https://github.com/q-hive/blue-velvet/blob/deploy/src/assets/images/png-Logos/blue-velvet.png?raw=true" style="display:block;margin-left:auto;width:65%"/>
-                </div>
-            
-            </div>
-        </header>
+        <h2>Green Walmart 2</h2>
+        <h3>Fruits container</h3>
+        <p>admin@gmail.com</p>
+        <p>+523124865130</p>
+        <p>Villa, Colima, 28898</p>
     
-        <div id="clientContainer" class="orderContainer">
-            
-            <div class="headerColumn">
-                
-            <h2 id="businessName">Container Admin Org-TEST</h2>
-            
-            <div id="addressContainer">
-                
-                <h3 id='city'>MX</h3>
-            
-                <h3 id='state'>Jalisco</h3>
-            
-                <h3 id='cp'>69420</h3>
-            
             </div>
-        
-            <br/>
-            <h2 id="phone">Phone Number: +523111228981</h2>
-            <h2 id="email">E-Mail: adminproductiontest@gmail.com</h2>
-        
-            </div>
-            <div class="headerColumn">
+            <div class="invoice-details">
                 
-            <h1 id='pdfType' class="right">Invoice</h1>
-        
-            </div>
-
-        
-        </div>
-
-        <hr class="divider"/>
+        <h1>Invoice</h1>
     
-                
-        <div id="billingContainer" class="orderContainer">
-            <div style="width:10%; float:left;">
-                <h2><strong>Bill to:</strong></h2>
-            </div>
-
-            <div id='addressContainer' style="width:40%;float:left;">
-                <h2 id="clientName">Burger King</h2>
-                
-                        <p id=city><strong>city: </strong>burgerkingcity</p>
-                    
-                        <p id=state><strong>state: </strong>ohio</p>
-                    
-                        <p id=cp><strong>cp: </strong>8987</p>
-                    
-            </div>
-            
-            <div style="width:50%;float:left;">
-                <h3 id="invoiceNumber"><b>Invoice Number: <b/> 63e538c0efc39351468abb5e</h3>
-                <h3 id="date"><b>Date:</b> Tue Feb 21 2023 12:17:31 GMT-0600 (Central Standard Time)</h3>
             </div>
         </div>
-     
-        <div id="tableContainer">
-            <table style="width:75%;">
-                <thead>
-                    <tr>
-                        <th>Product name</th><th>Product price</th><th>Quantity</th><th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
+        <hr>
+    
                     
+            
+        <div class="order-details">
+            <div class="customer-details">
+                <h2>Bill to: Pepe Grillo</h2>
+                <p>customer2@gmail</p>
+                
+        <p>Streeeeeet,11111,123456</p>
+        <p>Cityyyyy,Stateeeeee,Countryyyy</p>
+        <p>References: Referenceeeeeeee</p>
+    
+            </div>
+            
+            <div class="customer-details">
+                <h3>Invoice Number: 648e9e53f44749f997d8d444</h3>
+                <h3>Date: Wed, Jun 21, 2023 1:03 AM</h3>
+            </div>
+        </div>
+    
+            
+        <table>
+            <thead>
+                <tr>
+                    <th rowspan="2">Product name</th><th colspan="2">Product price</th><th colspan="2">Quantity</th><th rowspan="2">Total</th>
+                </tr>
+                <tr>
+                    
+                            <th>Small</th>
+                            <th>Medium</th>
+                        
+                            <th>Small</th>
+                            <th>Medium</th>
+                        
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Rose</td><td>5</td><td>10</td><td>1</td><td>2</td><td>25</td></tr>
+                
         <tr>
-            <td>PowerMix</td><td>medium: 4.5</td><td>medium: 50</td><td>225</td>
+            <td colspan="5" class="total-txt">Total:</td>
+            <td class="total-price">25</td>
         </tr>
+            </tbody>
+        </table>
     
-                </tbody>
-                <tfoot>
-                    <td></td>
-                    <td></td>
-                    
-                    <th id="total" class="right, endTable"><b>Total :</b><th/><td class="endTable">225</td>
-                </tfoot>
-
-            </table>
-            
-        </div>
-    
+        
+                </div>
             </body>
         </html>
     

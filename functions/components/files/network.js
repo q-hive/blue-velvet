@@ -59,6 +59,7 @@ router.get('/order/invoice/:_id', async (req, res) => {
         })
         .catch((err) => {
             console.log(err)
+            error(req, res, 500, "Error downloading order invoice", err, err)
         })
         return
     }
