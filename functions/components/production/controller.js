@@ -307,8 +307,8 @@ export const groupBy = (criteria, production, format, includeOrders = false, inc
                             hashDates[ProductName][ProductionStatus].modelsId.push(_id)
                             hashDates[ProductName][ProductionStatus].relatedOrders.push(RelatedOrder)
                             hashDates[ProductName][ProductionStatus].dryracks = hashDates[ProductName][ProductionStatus].dryracks;
+                            console.log(`${ProductName} single strain dry racks: ${hashDates[ProductName][ProductionStatus].dryracks}`)
                         }
-                        console.log(`${ProductName} single strain dry racks: ${hashDates[ProductName][ProductionStatus].dryracks}`)
                         
 
                         orders.push(RelatedOrder)
