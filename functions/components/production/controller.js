@@ -294,6 +294,10 @@ export const groupBy = (criteria, production, format, includeOrders = false, inc
                             continue
                         }
                         
+                        console.log(ProductName)
+                        console.log(ProductionStatus)
+                        console.log(hashDates[ProductName][ProductionStatus])
+                        console.log(hashDates)  
                         hashDates[ProductName][ProductionStatus].RelatedMix = RelatedMix;
                         hashDates[ProductName][ProductionStatus].seeds +=+ seeds
                         hashDates[ProductName][ProductionStatus].trays +=+ trays
