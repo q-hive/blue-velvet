@@ -42,19 +42,19 @@ export const NewCustomer = (props) => {
     const navigate = useNavigate()
     
     const [input, setInput] = useState({
-        name:           props.edit.isEdition ? props.edit.values.customer.name :  undefined,
-        email:          props.edit.isEdition ? props.edit.values.customer.email :  undefined,
-        image:          props.edit.isEdition ? props.edit.values.customer.image :  undefined,
-        role:           undefined,
-        street:         props.edit.isEdition ? props.edit.values.customer.address.street :  undefined,
-        number:         props.edit.isEdition ? props.edit.values.customer.address.stNumber :  undefined,
-        ZipCode:        props.edit.isEdition ? props.edit.values.customer.address.zip :  undefined,
-        city:           props.edit.isEdition ? props.edit.values.customer.address.city :  undefined,
-        state:          props.edit.isEdition ? props.edit.values.customer.address.state :  undefined,
-        country:        props.edit.isEdition ? props.edit.values.customer.address.country :  undefined,
-        references:     props.edit.isEdition ? props.edit.values.customer.address.references :  undefined,
-        businessName:   props.edit.isEdition ? props.edit.values.customer.businessData.name :  undefined,
-        bnkAcc:         props.edit.isEdition ? props.edit.values.customer.businessData.bankAccount :  undefined
+        name:           props.edit.isEdition ? props.edit.values?.customer?.name :  undefined,
+        email:          props.edit.isEdition ? props.edit.values?.customer?.email :  undefined,
+        image:          props.edit.isEdition ? props.edit.values?.customer?.image :  undefined,
+        role:           props.edit.isEdition ? props.edit.values?.customer?.role :  undefined,
+        street:         props.edit.isEdition ? props.edit.values?.customer?.address?.street :  undefined,
+        stNumber:       props.edit.isEdition ? props.edit.values?.customer?.address?.stNumber :  undefined,
+        ZipCode:        props.edit.isEdition ? props.edit.values?.customer?.address?.zip :  undefined,
+        city:           props.edit.isEdition ? props.edit.values?.customer?.address?.city :  undefined,
+        state:          props.edit.isEdition ? props.edit.values?.customer?.address?.state :  undefined,
+        country:        props.edit.isEdition ? props.edit.values?.customer?.address?.country :  undefined,
+        references:     props.edit.isEdition ? props.edit.values?.customer?.address?.references :  undefined,
+        businessName:   props.edit.isEdition ? props.edit.values?.customer?.businessData?.name :  undefined,
+        bnkAcc:         props.edit.isEdition ? props.edit.values?.customer?.businessData?.bankAccount :  undefined
     })
     
     const [options, setOptions] = useState({
@@ -82,7 +82,7 @@ export const NewCustomer = (props) => {
             "email":              input.email,
             "image":              "N/A",
             "address":            {
-                "stNumber":   input.number,   
+                "stNumber":   input.stNumber,   
                 "street":     input.street,
                 "zip":        input.ZipCode,
                 "city":       input.city,
@@ -194,7 +194,20 @@ export const NewCustomer = (props) => {
             }
         })
         .catch(err => {
-            console.log(err)
+            console.log(err);
+            setDialog({
+                ...dialog,
+                open:true,
+                title:"Error creating customer",
+                message: `${err.response.data.message}, try again`,
+                actions:[ {
+                    label:"Ok",
+                    btn_color:"primary",
+                    execute:() => {
+                        window.location.reload()
+                    }}
+                ]
+            })
         })
     }
 
@@ -416,7 +429,8 @@ export const NewCustomer = (props) => {
                                             label="Role"
                                         />
                                 }}
-                            />
+                                value={isEdition ? prevValues.role : undefined}
+                                />
 
                         </Box>
                     </>
@@ -436,7 +450,7 @@ export const NewCustomer = (props) => {
 
                             <TextField defaultValue={isEdition ? prevValues?.address?.street : undefined} onChange={(e) => handleInput(e,e.target.value,"input")} id="street" label="Street" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
                             <Box display="flex" flexDirection="row" width={{xs:"99%",sm:"49%"}}>
-                                <TextField defaultValue={isEdition ? prevValues?.address?.stNumber : undefined} onChange={(e) => handleInput(e,e.target.value,"input")} id="number" label="No." type="number" sx={()=>({...BV_THEME.input.mobile.halfSize.desktop.halfSize})} />
+                                <TextField defaultValue={isEdition ? prevValues?.address?.stNumber : undefined} onChange={(e) => handleInput(e,e.target.value,"input")} id="stNumber" label="No." type="number" sx={()=>({...BV_THEME.input.mobile.halfSize.desktop.halfSize})} />
                                 <TextField defaultValue={isEdition ? prevValues?.address?.zip : undefined} onChange={(e) => handleInput(e,e.target.value,"input")} id="ZipCode" label="ZipCode" type="text" sx={()=>({...BV_THEME.input.mobile.halfSize.desktop.halfSize})} />
                             </Box>
                             <TextField defaultValue={isEdition ? prevValues?.address?.city : undefined} onChange={(e) => handleInput(e,e.target.value,"input")} id="city" label="City" sx={()=>({...BV_THEME.input.mobile.fullSize.desktop.halfSize})} />
