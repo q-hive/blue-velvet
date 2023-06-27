@@ -20,6 +20,7 @@ import { buildProductionDataFromOrder } from '../production/controller.js'
 import { getOrdersPrice, newOrderDateValidation, setOrderAbonment } from './controller.js'
 import { getProductionInContainer } from '../production/store.js'
 import { getContainerById, getContainers } from '../container/store.js'
+import { cs } from 'date-fns/locale'
 
 const orgModel = organizationModel;
 
@@ -476,6 +477,14 @@ export const createNewOrder = (orgId, order) => {
                 
                 let production = await buildProductionDataFromOrder({...orderMapped, _id:id}, allProducts, overhead, org.containers[0])
 
+                try {
+                    await scheduleProduction(order, production, org.containers[0])
+                } catch(err){
+                    console.log(err)
+                    return reject(err)
+                }
+                
+
                 getOrganizationById(orgId)
                 .then(async organization => {
                     if(!organization){
@@ -484,9 +493,9 @@ export const createNewOrder = (orgId, order) => {
                     
                     organization.orders.push(orderMapped)
 
-                    production.forEach((productionModel) => {
-                        organization.containers[0].production.push(productionModel)
-                    })
+                    // production.forEach((productionModel) => {
+                    //     organization.containers[0].production.push(productionModel)
+                    // })
 
                     try {
                         await organization.save()

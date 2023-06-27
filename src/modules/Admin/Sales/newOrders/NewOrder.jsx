@@ -38,6 +38,7 @@ import { UserDialog } from "../../../../CoreComponents/UserFeedback/Dialog";
 import useOrders from "../../../../hooks/useOrders";
 import useCustomers from "../../../../hooks/useCustomers";
 import useProducts from "../../../../hooks/useProducts";
+import DateRangePicker from "../../../../CoreComponents/Dates/DateRangePicker";
 
 export const NewOrder = (props) => {
   const [sameCustomerAddress, setSameCustomerAddress] = useState(false);
@@ -139,53 +140,63 @@ export const NewOrder = (props) => {
     date: undefined,
     cyclic: false,
   });
-
-  //*Render states
-  const [productsInput, setProductsInput] = useState(true);
-  const [canSendOrder, setCanSendOrder] = useState(false);
-  const [error, setError] = useState({
-    customer: {
-      message: "Please correct or fill the customer",
-      active: false,
-    },
-    product: {
-      message: "Please correct or fill the product.",
-      active: false,
-    },
-    status: {
-      message: "Please correct or fill the status.",
+    const [startDate,setStartDate] = useState(new Date())
+    const [endDate, setEndDate] = useState(new Date())
+    
+    //*Render states
+    const [productsInput, setProductsInput] = useState(true);
+    const [canSendOrder, setCanSendOrder] = useState(false);
+    const [error, setError] = useState({
+        customer: {
+            message: "Please correct or fill the customer",
+            active: false,
+        },
+        product: {
+            message: "Please correct or fill the product.",
+            active: false,
+        },
+        status: {
+            message: "Please correct or fill the status.",
       active: false,
     },
     date: {
-      message: "Please correct or fill the date.",
-      active: false,
+        message: "Please correct or fill the date.",
+        active: false,
     },
     size: {
-      message: "Please correct or fill the size.",
-      active: false,
+        message: "Please correct or fill the size.",
+        active: false,
     },
     smallPackages: {
-      message: "Please correct or fill the number of packages.",
-      active: false,
+        message: "Please correct or fill the number of packages.",
+        active: false,
     },
     mediumPackages: {
-      message: "Please correct or fill the number of packages.",
-      active: false,
+        message: "Please correct or fill the number of packages.",
+        active: false,
     },
-  });
-  //Snackbar
-  const [open, setOpen] = useState(false);
+});
+//Snackbar
+const [open, setOpen] = useState(false);
 
-  const handleClose = (event, reason) => {
+const handleEndDateChange = (newValue) => {
+    setEndDate(newValue)
+}
+
+const handleStartDateChange = (newValue) => {   
+    setStartDate(newValue)
+}  
+
+const handleClose = (event, reason) => {
     if (reason === "clickaway") {
-      return;
+        return;
     }
 
     setOpen(false);
-  };
+};
 
-  //Get invoice
-  const getOrderInvoice = async (params) => {
+//Get invoice
+const getOrderInvoice = async (params) => {
     setLoading(true);
     const orderPDF = await getOrderInvoiceById(params._id);
     return orderPDF;
@@ -1070,6 +1081,17 @@ export const NewOrder = (props) => {
                     label="Cyclic order"
                   />
                 </FormControl>
+
+                    {
+                        input.cyclic && (
+                            <DateRangePicker
+                                startDate={startDate}
+                                endDate={endDate}
+                                onStartDateChange={handleStartDateChange}
+                                onEndDateChange={handleEndDateChange}
+                            />
+                        )
+                    }
 
                 <Box
                   sx={{
