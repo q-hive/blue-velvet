@@ -298,16 +298,18 @@ export const groupBy = (criteria, production, format, includeOrders = false, inc
                         console.log(ProductionStatus)
                         console.log(hashDates[ProductName][ProductionStatus])
                         console.log(hashDates)  
-                        hashDates[ProductName][ProductionStatus].RelatedMix = RelatedMix;
-                        hashDates[ProductName][ProductionStatus].seeds +=+ seeds
-                        hashDates[ProductName][ProductionStatus].trays +=+ trays
-                        hashDates[ProductName][ProductionStatus].harvest +=+ harvest
-                        hashDates[ProductName][ProductionStatus].dryracks +=+ dryracks
-                        hashDates[ProductName][ProductionStatus].modelsId.push(_id)
-                        hashDates[ProductName][ProductionStatus].relatedOrders.push(RelatedOrder)
-
-                        hashDates[ProductName][ProductionStatus].dryracks = hashDates[ProductName][ProductionStatus].dryracks;
+                        if(hashDates[ProductName][ProductionStatus]) {
+                            hashDates[ProductName][ProductionStatus].RelatedMix = RelatedMix;
+                            hashDates[ProductName][ProductionStatus].seeds +=+ seeds
+                            hashDates[ProductName][ProductionStatus].trays +=+ trays
+                            hashDates[ProductName][ProductionStatus].harvest +=+ harvest
+                            hashDates[ProductName][ProductionStatus].dryracks +=+ dryracks
+                            hashDates[ProductName][ProductionStatus].modelsId.push(_id)
+                            hashDates[ProductName][ProductionStatus].relatedOrders.push(RelatedOrder)
+                            hashDates[ProductName][ProductionStatus].dryracks = hashDates[ProductName][ProductionStatus].dryracks;
+                        }
                         console.log(`${ProductName} single strain dry racks: ${hashDates[ProductName][ProductionStatus].dryracks}`)
+                        
 
                         orders.push(RelatedOrder)
                     }
