@@ -377,7 +377,6 @@ export const SalesView = () => {
   }
 
   const handleUpdateOrder = (newOrderData, newProductionData, msg = "", reload = false, action = "") => {
-    console.log({newProductionData});
   
     const updateData = () => {
       updateOrder(orderId, newOrderData)
@@ -448,6 +447,7 @@ export const SalesView = () => {
         updateProductionModel(addOrderProduction);
         break;
       default:
+        updateData();
         break;
     }
   };
@@ -685,13 +685,16 @@ export const SalesView = () => {
 
             {/* STATUS */}
             <Box display="flex" justifyContent="space-between">
-              <Typography variant="subtitle1" color="secondary">Status: {orderData?.status || "---"}</Typography>
+              <Box display="flex" flexDirection="column">
+                <Typography variant="subtitle1" color="secondary">Status: {orderData?.status || "---"}</Typography>
+                <Typography variant="subtitle1" color="secondary">Price: ${orderData?.price || "---"}</Typography>
+              </Box>
               <Box>
                 {showEdit &&
                   <Button
                     variant="contained"
                     color="primary"
-                    onClick={()=>{handleUpdateOrder(orderData,productionData,"",true)}} // BUG: Fix only order update
+                    onClick={()=>{handleUpdateOrder(orderData, null, "Order data updated succesfully", true)}}
                   >
                     Save
                   </Button>

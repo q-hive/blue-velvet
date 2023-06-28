@@ -608,7 +608,20 @@ export const getOrdersByProd = (orgId, id) => {
     })
 }
 
-export const updateOrder = (org, orderId, body) => {
+export const updateOrder = async (org, orderId, body) => {
+    let allProducts, price
+
+    try{
+        allProducts = await getAllProducts(org)
+        price = await getOrdersPrice(body, allProducts)
+    }catch(err){
+        console.log(err)
+        return reject(new Error(err.message === 'getAllProducts'
+            ? 'Error getting all products'
+            : 'Error getting order price'
+        ));
+    }
+
     return new Promise((resolve, reject) => {
         orgModel.findById(org).exec()
         .then((organization) => {
@@ -627,7 +640,7 @@ export const updateOrder = (org, orderId, body) => {
                     });
                 }else{
                     Object.entries(body).forEach(([key, value]) => {
-                        dbOrder[key] = value
+                        dbOrder[key] = (key === 'price') ? price : value;
                     });
                 }
 
