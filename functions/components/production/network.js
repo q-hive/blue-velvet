@@ -1,6 +1,6 @@
 import express from "express"
 import { error, success } from "../../network/response.js"
-import { getProductionWorkByContainerId, saveProductionForWorkDay } from "./controller.js"
+import { getProductionWorkByContainerId, saveProductionForWorkDay, getAllProductionByOrderId, createProductionProduct, updateProductionProduct, deleteProductionProduct } from "./controller.js"
 import { getProductionByStatus } from "./store.js"
 
 const router = express.Router()
@@ -46,6 +46,47 @@ router.post('/workday/:containerId', (req, res) => {
     .catch((err) => {
         error(req, res, 500, "Error saving production for Workday", err, err)
     })
+})
+
+router.get('/:container/:orderId', (req, res) => {
+    getAllProductionByOrderId(res.locals.organization,req.params.container, req.params.orderId)
+    .then((result) => {
+        success(req, res, 200, "Order production getting succesfully", result)
+    })
+    .catch(err => {
+        error(req, res, 500, "Error getting the order production", err, err)
+    })
+})
+
+router.post('/:container/', (req, res) => {
+    createProductionProduct(res.locals.organization,req.params.container, req.body)
+        .then((result) => {
+            success(req, res, 201, "Product of production model created succesfully", result)
+        })
+        .catch(err => {
+            error(req, res, 500, "Error creating the product of production model", err, err)
+        })
+})
+
+router.patch('/:container/', (req, res) => {
+    updateProductionProduct(res.locals.organization,req.params.container, req.body)
+        .then((result) => {
+            success(req, res, 201, "Product of production model updated succesfully", result)
+        })
+        .catch(err => {
+            error(req, res, 500, "Error updating the product of production model", err, err)
+        })
+})
+
+
+router.delete('/:container/', (req, res) => {
+    deleteProductionProduct(res.locals.organization,req.params.container, req.body)
+        .then((result) => {
+            success(req, res, 204, "Product of production model deleted succesfully", result)
+        })
+        .catch(err => {
+            error(req, res, 500, "Error deleting the product of production model", err, err)
+        })
 })
 
 export default router

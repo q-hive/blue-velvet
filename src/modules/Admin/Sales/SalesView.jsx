@@ -19,6 +19,7 @@ import { UserModal } from '../../../CoreComponents/UserActions/UserModal'
 import useOrders from '../../../hooks/useOrders'
 import useCustomers from '../../../hooks/useCustomers'
 import useProducts from '../../../hooks/useProducts'
+import useProduction from '../../../hooks/useProduction'
 
 export const SalesView = () => {
   const { orderId } = useParams();
@@ -30,14 +31,16 @@ export const SalesView = () => {
   const { getOrders, updateOrder } = useOrders(headers);
   const { getCustom, getCustomers } = useCustomers(headers)
   const { getProducts } = useProducts(headers)
-
+  const { getOrderProduction, addOrderProduction, updateOrderProduction, deleteOrderProduction } = useProduction(headers)
 
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(false)
+  const [productionData, setProductionData] = useState()
   const [orderData, setOrderData] = useState()
   const [customer, setCustomer] = useState()
   const [showEdit, setShowEdit] = useState(false)
   const [input, setInput] = useState({
+    id: 0,
     product: {},
     status: {},
     smallPackages: 0,
@@ -177,10 +180,14 @@ export const SalesView = () => {
 
         const deleteOrderproduct = (id) => {
           setLoading(true)
-          const updatedProducts = orderData?.products.filter(product => product._id !== id);
-          const updatedOrderData = {...orderData, products: updatedProducts}
+
+          const updatedOrderProducts = orderData?.products.filter(product => product._id !== id);
+          const updatedOrderData = {...orderData, products: updatedOrderProducts}
           setOrderData(updatedOrderData)
-          handleUpdateOrder(updatedOrderData, "Product deleted from order successfully", false)
+          
+          const deleteProductionData = productionData.filter(product => product.ProductID === id);
+
+          handleUpdateOrder(updatedOrderData, deleteProductionData, "Product deleted from order successfully", false, "delete")
         }
 
         const handleModal = () => {
@@ -288,12 +295,13 @@ export const SalesView = () => {
       const product = options.products.find(product => product._id === v._id)
       setInput({
         ...input,
+        id: product._id,
         product: product
       })
     }
   }
 
-  const catchSelectStatus = async (e, v, r) => {
+  const catchSelectValues = async (e, v, r) => {
     let id
     let value
     id = e.target.id
@@ -360,6 +368,7 @@ export const SalesView = () => {
     setIsProductOnEdition(true);
     setInput({
       ...input,
+      id: params.id,
       product: { name: params.name },
       status: { name: params.status },
       smallPackages: params.small,
@@ -367,44 +376,82 @@ export const SalesView = () => {
     })
   }
 
-  const handleUpdateOrder = (newOrderData = orderData, msg="", reload=false) => {
-    updateOrder(orderId, newOrderData)
-      .then((res) => {
-        setDialog({
-          ...dialog,
-          open: true,
-          title: res.data.message,
-          message: msg,
-          actions: [{
-            label: "Ok",
-            execute: () => {
-              setDialog({
-                ...dialog,
-                open: false
-              });
-              if (reload) {
+  const handleUpdateOrder = (newOrderData, newProductionData, msg = "", reload = false, action = "") => {
+    console.log({newProductionData});
+  
+    const updateData = () => {
+      updateOrder(orderId, newOrderData)
+        .then((res) => {
+          setDialog({
+            ...dialog,
+            open: true,
+            title: res.data.message,
+            message: msg,
+            actions: [{
+              label: "Ok",
+              execute: () => {
+                setDialog({
+                  ...dialog,
+                  open: false
+                });
+                if (reload) {
+                  window.location.reload();
+                }
+              }
+            }]
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+          setDialog({
+            ...dialog,
+            open: true,
+            title: "Error updating order, try later",
+            actions: [{
+              label: "Reload",
+              execute: () => {
                 window.location.reload();
               }
-            }
-          }]
+            }]
+          });
+        });
+    };
+  
+    const updateProductionModel = (updateFunction) => {
+      updateFunction(user.assignedContainer, newProductionData)
+        .then((res) => {
+          updateData();
         })
-      })
-      .catch((err) => {
-        console.log(err);
-        setDialog({
-          ...dialog,
-          open: true,
-          title: "Error updating order",
-          actions: [{
-            label: "Reload",
-            execute: () => {
-              window.location.reload()
-            }
-          }]
-        })
-      })
-  }
-
+        .catch((err) => {
+          setDialog({
+            ...dialog,
+            open: true,
+            title: "Error updating production model, try later",
+            actions: [{
+              label: "Reload",
+              execute: () => {
+                window.location.reload();
+              }
+            }]
+          });
+        });
+    };
+  
+    switch (action) {
+      case "delete":
+        updateProductionModel(deleteOrderProduction);
+        break;
+      case "update":
+        updateProductionModel(updateOrderProduction);
+        break;
+      case "add":
+        updateProductionModel(addOrderProduction);
+        break;
+      default:
+        break;
+    }
+  };
+  
   const handleEditMode = () => {
     const getData = async () => {
       const customers = await getCustomers();
@@ -429,14 +476,18 @@ export const SalesView = () => {
 
   const handleSaveProduct = () => {
     let updatedOrderData;
+    let productionDataToSave;
+    let action;
 
     if (isProductOnEdition) {
+      action = "update"
       updatedOrderData = {
         ...orderData,
         products: orderData.products.map((product) => {
           if (product.name === input.product.name) {
             return {
               ...product,
+              id: input.id,
               status: input.status.name,
               packages: [
                 { ...product.packages[0], number: input.smallPackages },
@@ -447,8 +498,13 @@ export const SalesView = () => {
           return product;
         })
       };
+
+      productionDataToSave = productionData.find((production)=> production.ProductID === input.id);
+      productionDataToSave.ProductionStatus = input.status.name;
+
       setIsProductOnEdition(false);
     } else {
+      action = "add"
       let packages;
       if (input.smallPackages && input.mediumPackages) {
         packages = [
@@ -484,10 +540,18 @@ export const SalesView = () => {
           newProduct
         ]
       }
+
+    productionDataToSave = {
+        prod: newProduct,
+        orderId: orderId,
+        dbproducts: options.products,
+        overHeadParam: input.product.parameters.overhead,
     }
+  }
 
     setInput({
       ...input,
+      id: 0,
       product: {},
       status: {},
       smallPackages: 0,
@@ -495,13 +559,23 @@ export const SalesView = () => {
     })
 
     setOrderData(updatedOrderData)
-    handleUpdateOrder(updatedOrderData, isProductOnEdition ? "Product updated successfully" : "Product added successfully", false)
+
+    handleUpdateOrder(updatedOrderData, productionDataToSave, isProductOnEdition ? "Product updated successfully" : "Product added successfully", false, action)
   }
 
   useEffect(() => {
     setLoading(() => {
       return true
     })
+
+    getOrderProduction(user.assignedContainer, orderId)
+      .then((res)=>{
+          setProductionData(res.data.data)
+      })
+      .catch((err)=>{
+          console.log(err);
+      })
+
     handleEditMode()
     getOrders(orderId)
       .then((res) => {
@@ -512,7 +586,7 @@ export const SalesView = () => {
           return {
             id: product._id,
             name: product.name,
-            status: product.status,
+            status: product?.status ?? "mixed",
             small: product.packages[0].number,
             medium: product.packages[1].number
           };
@@ -613,15 +687,14 @@ export const SalesView = () => {
             <Box display="flex" justifyContent="space-between">
               <Typography variant="subtitle1" color="secondary">Status: {orderData?.status || "---"}</Typography>
               <Box>
-                {showEdit
-                  ? <Button
+                {showEdit &&
+                  <Button
                     variant="contained"
                     color="primary"
-                    onClick={()=>{handleUpdateOrder(orderData,"",true)}}
+                    onClick={()=>{handleUpdateOrder(orderData,productionData,"",true)}} // BUG: Fix only order update
                   >
                     Save
                   </Button>
-                  : null
                 }
                 <Button variant="contained"
                   onClick={() => {
@@ -743,7 +816,7 @@ export const SalesView = () => {
                           }
                           return o.name === v.name
                         }}
-                        onChange={catchSelectStatus}
+                        onChange={catchSelectValues}
                         value={Object.keys(input.status) !== 0 ? input.status : undefined}
                       />
 
@@ -755,7 +828,7 @@ export const SalesView = () => {
                           label="Small"
                           placeholder="Quantity"
                           sx={BV_THEME.input.mobile.thirdSize.desktop.halfSize}
-                          onChange={(e) => catchSelectStatus(e, e.target.value, "input")}
+                          onChange={(e) => catchSelectValues(e, e.target.value, "input")}
                           helperText={error.smallPackages.active ? error.smallPackages.message : ""}
                           error={error.smallPackages.active}
                           value={input.smallPackages ? input.smallPackages : ""}
@@ -766,7 +839,7 @@ export const SalesView = () => {
                           label="Medium"
                           placeholder="Quantity"
                           sx={BV_THEME.input.mobile.thirdSize.desktop.halfSize}
-                          onChange={(e) => catchSelectStatus(e, e.target.value, "input")}
+                          onChange={(e) => catchSelectValues(e, e.target.value, "input")}
                           helperText={error.mediumPackages.active ? error.mediumPackages.message : ""}
                           error={error.mediumPackages.active}
                           value={input.mediumPackages ? input.mediumPackages : ""}
@@ -810,7 +883,7 @@ export const SalesView = () => {
                           error={customer.active}
                         />
                       }}
-                      onChange={catchSelectStatus}
+                      onChange={catchSelectValues}
                       getOptionLabel={(opt) => opt.name ? opt.name : ""}
                       value={options.customers.find((obj) => obj._id === orderData.customer)}
                     />
