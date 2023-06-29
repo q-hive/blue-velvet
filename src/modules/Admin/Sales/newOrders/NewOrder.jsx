@@ -102,8 +102,8 @@ export const NewOrder = (props) => {
     });
 
     //*Render states
-    const [productsInput, setProductsInput] = useState(true)
-    const [canSendOrder, setCanSendOrder] = useState(false)
+    const [productsInput, setProductsInput] = useState(false)
+    const [canSelectOrderProducts, setCanSelectOrderProducts] = useState(false)
     const [error, setError] = useState({
         customer:{
             message: "Please correct or fill the customer",
@@ -211,18 +211,17 @@ export const NewOrder = (props) => {
     };
 
     const handleChangeInput = async (e,v,r) => {
-        let id
+        let id = e.target.id
         let value
-        id = e.target.id
         switch(r){
             case "input":
                 value = v
                 switch(id){
                     case "smallPackages":
-                        value = Number(v)
-                        break;
                     case "mediumPackages":
                         value = Number(v)
+                        break;
+                    default:
                         break;
                 }
                 break;
@@ -233,6 +232,8 @@ export const NewOrder = (props) => {
             default:
                 break;
         }
+
+        if ( value < 0 ) return;
         
         if(error[id] && error[id].active){
             setError({
@@ -252,7 +253,6 @@ export const NewOrder = (props) => {
             [id]:value
         })
         if (id==='customer') {
-            console.log("[strlongitude]",value.address?.coords?.longitude);            
             setSameCustomerAddress(true)
             setDeliveryAddress({
                 street: value.address?.street || "",
@@ -309,6 +309,30 @@ export const NewOrder = (props) => {
     }
 
     const handleAddToOrder = (e) => {
+
+        const validPackages = (packages) => {
+            const allPackagesZero = packages.every((pkg) => pkg.number === 0 || pkg.number === undefined);
+            if (allPackagesZero) {
+                setDialog({
+                    ...dialog,
+                    open:true,
+                    title:"Invalid number of packages",
+                    message: "At least one package must have a quantity greater than zero",
+                    actions:[ 
+                        {
+                            label:"Close",
+                            btn_color:"secondary",
+                            execute:() => {
+                                setDialog({...dialog,open:false})
+                            }
+                        }
+                    ]
+                })
+              return false;
+            }
+            return true;
+        };
+
         let packages
         if(e){
             if(e.target.id === "add"){
@@ -331,30 +355,44 @@ export const NewOrder = (props) => {
                         }
                     ]
                 }
-                
-                if(!input.product.mix.isMix){
-                    products.push({
-                        "name": input.product.name,
-                        "status": input.status.name,
-                        "seedId": input.product?.seed,
-                        "provider": input.product?.provider,
-                        "_id": input.product._id,
-                        "packages": packages
-                    })
+
+                if (!validPackages(packages)) return;
+
+                let newProduct = {
+                    "name": input.product.name,
+                    "status": input.status.name,
+                    "seedId": input.product?.seed,
+                    "provider": input.product?.provider,
+                    "_id": input.product._id,
+                    "packages": packages
                 }
 
-                if(input.product.mix.isMix){
-                    products.push({
-                        "name": input.product.name,
-                        "status": input.status.name,
-                        "mixStatuses": input.status.mix,
-                        "seedId": input.product?.seed,
-                        "provider": input.product?.provider,
-                        "_id": input.product._id,
-                        "packages": packages
-                    })
+                const emptyData = !Object.values(newProduct).every((value) => value !== undefined);
+                
+                if (emptyData) {
+                  setDialog({
+                    ...dialog,
+                    open:true,
+                    title:"Incomplete data",
+                    message: "Please provide all necessary product information",
+                    actions:[ 
+                        {
+                            label:"Close",
+                            btn_color:"secondary",
+                            execute:() => {
+                                setDialog({...dialog,open:false})
+                            }
+                        }
+                    ]
+                })
+                  return;
+                }
+
+                if(input.product?.mix?.isMix){
+                    newProduct.mixStatuses = input.status.mix
                 }
                 
+                products.push(newProduct);
 
                 setInput({
                     ...input,
@@ -366,6 +404,7 @@ export const NewOrder = (props) => {
             }
         }
     }
+
     const handleDeleteProduct = (product)=>{
         console.log("antes",products)
 
@@ -420,9 +459,9 @@ export const NewOrder = (props) => {
             }
             */
         }
-        if(e.target.id === "test") {
+        if(e.target.id === "stepForward") {
             if( products !== 0){
-                setProductsInput(false)
+                setProductsInput(true)
             }
             return 
         }
@@ -641,18 +680,30 @@ export const NewOrder = (props) => {
             return Boolean(input.customer) && Boolean(input.date)   
         }
 
+        const validateDeliveryAddress = () => {
+            return (
+                Boolean(deliveryAddress.street) &&
+                Boolean(deliveryAddress.stNumber) &&
+                Boolean(deliveryAddress.zip) &&
+                Boolean(deliveryAddress.city) &&
+                Boolean(deliveryAddress.state) &&
+                Boolean(deliveryAddress.country)
+            )
+        }
+
         
         const validProduct = Object.keys(input.product) !== 0
         const validPackages = validatePackages()
         const validDate = validateCustomerAndDate()
+        const validAddress = validateDeliveryAddress()
         
-        if(/* validProduct && validPackages && */ validDate ){
-            setCanSendOrder(() => {
-                return true
-            })
+        if(/* validProduct && validPackages && */ validDate && validAddress){
+            setCanSelectOrderProducts(true)
+        }else{
+            setCanSelectOrderProducts(false)
         }
     
-    }, [input.product, input.smallPackages,input.mediumPackages, input.size, input.customer,input.date])
+    }, [input.product, input.smallPackages,input.mediumPackages, input.size, input.customer,input.date, deliveryAddress])
 
   return (
     <>
@@ -785,6 +836,7 @@ export const NewOrder = (props) => {
                         placeholder="Quantity"
                         sx={BV_THEME.input.mobile.thirdSize.desktop.quarterSize}
                         onChange={(e) => handleChangeInput(e, e.target.value, "input")}
+                        inputProps={{min: "0", step: "1", pattern: "\\d+" }}
                         helperText={error.smallPackages.active ? error.smallPackages.message : ""}
                         error={error.smallPackages.active}
                         value={input.smallPackages ? input.smallPackages : ""}
@@ -796,6 +848,7 @@ export const NewOrder = (props) => {
                         placeholder="Quantity"
                         sx={BV_THEME.input.mobile.thirdSize.desktop.quarterSize}
                         onChange={(e) => handleChangeInput(e, e.target.value, "input")}
+                        inputProps={{min: "0", step: "1", pattern: "\\d+" }}
                         helperText={error.mediumPackages.active ? error.mediumPackages.message : ""}
                         error={error.mediumPackages.active}
                         value={input.mediumPackages ? input.mediumPackages : ""}
@@ -817,8 +870,8 @@ export const NewOrder = (props) => {
                     Add product
                 </Button>
 
-                <Button variant="contained" id="test" onClick={handleSetOrder} disabled={products.length<1} sx={{marginTop:"2vh", color:{...BV_THEME.palette.white_btn}}}>
-                    Select customer and Delivery Date
+                <Button variant="contained" id="accept" onClick={handleSetOrder} disabled={products.length<1} sx={{marginTop:"2vh", color:{...BV_THEME.palette.white_btn}}}>
+                    Set Order
                 </Button>
             
             </>
@@ -900,8 +953,8 @@ export const NewOrder = (props) => {
                 </Box>
 
 
-                <Button id="accept" variant="contained" onClick={handleSetOrder} disabled={!canSendOrder} sx={{marginTop:"1vh", color:{...BV_THEME.palette.white_btn}}}>
-                    Set Order
+                <Button id="stepForward" variant="contained" onClick={handleSetOrder} disabled={!canSelectOrderProducts} sx={{marginTop:"1vh", color:{...BV_THEME.palette.white_btn}}}>
+                    Select order products
                 </Button>
             </>
             }
