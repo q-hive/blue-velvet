@@ -511,7 +511,7 @@ try {
     if (!product.mix.isMix) {
 
         if (!['seeding', 'preSoaking'].includes(production.status)) {
-            updateProduction(orgId, production, scheduledDate);
+            updateProduction(orgId, production);
             return;
           }
         
