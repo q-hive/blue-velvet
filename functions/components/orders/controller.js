@@ -509,16 +509,23 @@ try {
     }
     
     if (!product.mix.isMix) {
-    const deliveryDate = new Date(order.date);
-    deliveryDate.setDate(deliveryDate.getDate() - (product.parameters.day + product.parameters.night));
-    deliveryDate.setHours(4);
-    deliveryDate.setMinutes(0);
-    deliveryDate.setSeconds(0);
 
-    console.log("Scheduling production for " + deliveryDate + " for order " + order._id + " and product " + product.name + ".")
-    const job = nodeschedule.scheduleJob(deliveryDate, async () => {
-        await updateProduction(orgId, production);
-    });
+        if (['seeding', 'preSoaking'].includes(production.status)) {
+            updateProduction(orgId, production, scheduledDate);
+            return;
+          }
+        
+        
+        const deliveryDate = new Date(order.date);
+        deliveryDate.setDate(deliveryDate.getDate() - (product.parameters.day + product.parameters.night));
+        deliveryDate.setHours(4);
+        deliveryDate.setMinutes(0);
+        deliveryDate.setSeconds(0);
+
+        console.log("Scheduling production for " + deliveryDate + " for order " + order._id + " and product " + product.name + ".")
+        const job = nodeschedule.scheduleJob(deliveryDate, async () => {
+            await updateProduction(orgId, production);
+        });
     }
 } catch (error) {
     console.error(`Error scheduling production for ID ${production._id}: ${error.message}`);
