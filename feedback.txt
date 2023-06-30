@@ -1,0 +1,16 @@
+Good interface
+
+Not practical to use
+
+Finish task doesnt work after a while
+
+Finish button cutting mats
+
+Packing button is not logging the finish of the task 
+
+Unpractical to finish the tasks for usage of water
+
+Token expiration refresh after 3 hours
+
+Notify admin for problems or tickets on the greenbox
+
