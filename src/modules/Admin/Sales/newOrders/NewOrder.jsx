@@ -134,9 +134,9 @@ export const NewOrder = (props) => {
     customer: props.edit.isEdition ? props.edit.values.order.customer : {},
     product: {},
     status: "",
-    smallPackages: undefined,
+    smallPackages: 0,
     size: undefined,
-    mediumPackages: undefined,
+    mediumPackages: 0,
     date: undefined,
     cyclic: false,
   });
@@ -357,29 +357,16 @@ const getOrderInvoice = async (params) => {
     let packages;
     if (e) {
       if (e.target.id === "add") {
-        if (input.smallPackages && input.mediumPackages) {
-          packages = [
+        packages = [
             {
-              number: input.smallPackages,
-              size: "small",
+                number: input.smallPackages,
+                size: "small",
             },
             {
-              number: input.mediumPackages,
-              size: "medium",
+                number: input.mediumPackages,
+                size: "medium",
             },
-          ];
-        } else {
-          packages = [
-            {
-              number: input.smallPackages || input.mediumPackages,
-              size: input.smallPackages
-                ? "small"
-                : input.mediumPackages
-                ? "medium"
-                : "small",
-            },
-          ];
-        }
+        ];
 
         if (!input.product.mix.isMix) {
           products.push({
@@ -408,8 +395,8 @@ const getOrderInvoice = async (params) => {
           ...input,
           product: {},
           status: {},
-          smallPackages: undefined,
-          mediumPackages: undefined,
+          smallPackages: 0,
+          mediumPackages: 0,
         });
       }
     }

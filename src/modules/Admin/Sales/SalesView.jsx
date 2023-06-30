@@ -475,125 +475,77 @@ export const SalesView = () => {
   }
 
   const handleSaveProduct = () => {
-    let updatedOrderData;
+    const { product, status, smallPackages, mediumPackages } = input;
+  
+    let updatedOrderData = { ...orderData };
     let productionDataToSave;
     let action;
-
+    let packages;
+  
     if (isProductOnEdition) {
-      action = "update"
-      updatedOrderData = {
-        ...orderData,
-        products: orderData.products.map((product) => {
-          console.log(product)
-          if (product.name === input.product.name) {
-            let packages;
-            if(product.packages.length > 1 && input.mediumPackages > 0  && input.smallPackages > 0){
-              packages = [
-                { ...product.packages[0], number: input.smallPackages },
-                { ...product.packages[1], number: input.mediumPackages }
-              ]
-            } else if (product.packages.length > 1 && input.mediumPackages > 0) {
-              packages = [
-                { ...product.packages[1], number: input.smallPackages },
-              ]
-            } else if (product.packages.length > 1 && input.smallPackages > 0) {
-              packages = [
-                { ...product.packages[0], number: input.smallPackages },
-              ]
-            } else if(product.packages.length === 1) {
-              packages = [
-                { ...product.packages[0], number: input.smallPackages || input.mediumPackages },
-              ]
-            } else if(product.packages.length === 1 && input.smallPackages > 0 && input.mediumPackages > 0) {
-              packages = [
-                { ...product.packages[0], number: input.smallPackages },
-                { "size":"medium", number: input.mediumPackages, "grams":80}
-              ]
-            } else {
-              packages = [
-                { ...product.packages[0], number: input.smallPackages || input.mediumPackages },
-              ]
-            }
-
-
-
-            
-            return {
-              ...product,
-              id: input.id,
-              status: input.status.name,
-              packages:packages
-            };
-          }
-
-          console.log(product)
-          return product;
-        })
-      };
-
-      productionDataToSave = productionData.find((production)=> production.ProductID === input.id);
-      productionDataToSave.ProductionStatus = input.status.name;
-
+      action = "update";
+      updatedOrderData.products = orderData.products.map((product) => {
+        if (product.name === input.product.name) {
+          packages = [
+            { size: "small", number: smallPackages },
+            { size: "medium", number: mediumPackages }
+          ];
+  
+          return { ...product, id: input.id, status: status.name, packages };
+        }
+        return product;
+      });
+  
+      productionDataToSave = productionData.find(
+        (production) => production.ProductID === input.id
+      );
+      productionDataToSave.ProductionStatus = status.name;
+  
       setIsProductOnEdition(false);
     } else {
-      action = "add"
-      let packages;
-      if (input.smallPackages && input.mediumPackages) {
-        packages = [
-          {
-            "number": input.smallPackages,
-            "size": "small"
-          },
-          {
-            "number": input.mediumPackages,
-            "size": "medium"
-          }
-        ]
-      } else {
-        packages = [
-          {
-            "number": input.smallPackages || input.mediumPackages,
-            "size": input.smallPackages ? "small" : input.mediumPackages ? "medium" : "small"
-          }
-        ]
-      }
-      let newProduct = {
-        "name": input.product.name,
-        "status": input.status.name,
-        "seedId": input.product?.seed,
-        "provider": input.product?.provider,
-        "_id": input.product._id,
-        "packages": packages
-      }
-      updatedOrderData = {
-        ...orderData,
-        products: [
-          ...orderData.products,
-          newProduct
-        ]
-      }
-
-    productionDataToSave = {
+      action = "add";
+      packages = [
+        { size: "small", number: smallPackages },
+        { size: "medium", number: mediumPackages }
+      ];
+  
+      const newProduct = {
+        name: product.name,
+        status: status.name,
+        seedId: product?.seed,
+        provider: product?.provider,
+        _id: product._id,
+        packages
+      };
+  
+      updatedOrderData.products.push(newProduct);
+  
+      productionDataToSave = {
         prod: newProduct,
-        orderId: orderId,
+        orderId,
         dbproducts: options.products,
-        overHeadParam: input.product.parameters.overhead,
+        overHeadParam: product.parameters.overhead
+      };
     }
-  }
-
+  
     setInput({
-      ...input,
       id: 0,
       product: {},
       status: {},
       smallPackages: 0,
-      mediumPackages: 0,
-    })
-
-    setOrderData(updatedOrderData)
-
-    handleUpdateOrder(updatedOrderData, productionDataToSave, isProductOnEdition ? "Product updated successfully" : "Product added successfully", false, action)
-  }
+      mediumPackages: 0
+    });
+  
+    setOrderData(updatedOrderData);
+  
+    handleUpdateOrder(
+      updatedOrderData,
+      productionDataToSave,
+      isProductOnEdition ? "Product updated successfully" : "Product added successfully",
+      false,
+      action
+    );
+  };
 
   useEffect(() => {
     setLoading(() => {
