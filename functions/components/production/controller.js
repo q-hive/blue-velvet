@@ -1,5 +1,17 @@
 import { buildTaskFromProductionAccumulated, calculateTimeEstimation } from "../work/controller.js"
-import { getPosibleStatusesForProduction, getProductionByProduct, getProductionInContainer, insertWorkDayProductionModel, productionCycleObject, updateManyProductionModels, upsertProduction } from "./store.js"
+import {
+    getPosibleStatusesForProduction,
+    getProductionByProduct,
+    getProductionInContainer,
+    insertWorkDayProductionModel,
+    productionCycleObject,
+    updateManyProductionModels,
+    getProductionByOrderId,
+    upsertProduction,
+    createSingleProductionModelProduct,
+    updateSingleProductionModelProduct,
+    deleteSingleProductionModelProduct
+} from "./store.js"
 import nodeschedule from 'node-schedule'
 import { getAllProducts, getProductById } from "../products/store.js"
 import mongoose from "mongoose"
@@ -294,16 +306,22 @@ export const groupBy = (criteria, production, format, includeOrders = false, inc
                             continue
                         }
                         
-                        hashDates[ProductName][ProductionStatus].RelatedMix = RelatedMix;
-                        hashDates[ProductName][ProductionStatus].seeds +=+ seeds
-                        hashDates[ProductName][ProductionStatus].trays +=+ trays
-                        hashDates[ProductName][ProductionStatus].harvest +=+ harvest
-                        hashDates[ProductName][ProductionStatus].dryracks +=+ dryracks
-                        hashDates[ProductName][ProductionStatus].modelsId.push(_id)
-                        hashDates[ProductName][ProductionStatus].relatedOrders.push(RelatedOrder)
-
-                        hashDates[ProductName][ProductionStatus].dryracks = hashDates[ProductName][ProductionStatus].dryracks;
-                        console.log(`${ProductName} single strain dry racks: ${hashDates[ProductName][ProductionStatus].dryracks}`)
+                        console.log(ProductName)
+                        console.log(ProductionStatus)
+                        console.log(hashDates[ProductName][ProductionStatus])
+                        console.log(hashDates)  
+                        if(hashDates[ProductName][ProductionStatus]) {
+                            hashDates[ProductName][ProductionStatus].RelatedMix = RelatedMix;
+                            hashDates[ProductName][ProductionStatus].seeds +=+ seeds
+                            hashDates[ProductName][ProductionStatus].trays +=+ trays
+                            hashDates[ProductName][ProductionStatus].harvest +=+ harvest
+                            hashDates[ProductName][ProductionStatus].dryracks +=+ dryracks
+                            hashDates[ProductName][ProductionStatus].modelsId.push(_id)
+                            hashDates[ProductName][ProductionStatus].relatedOrders.push(RelatedOrder)
+                            hashDates[ProductName][ProductionStatus].dryracks = hashDates[ProductName][ProductionStatus].dryracks;
+                            console.log(`${ProductName} single strain dry racks: ${hashDates[ProductName][ProductionStatus].dryracks}`)
+                        }
+                        
 
                         orders.push(RelatedOrder)
                     }
@@ -403,6 +421,67 @@ export const getProductionTotal = (req, res) => {
     })
 }
 
+export const getAllProductionByOrderId = (orgId, containerId, orderId) => {
+    return new Promise((resolve, reject) => {
+        getProductionByOrderId(orgId, containerId, orderId)
+            .then((production) => {
+                resolve(production);
+            })
+            .catch((err) => {
+                reject(err);
+            });
+    });
+};
+
+export const createProductionProduct = async (orgId, containerId, productionData) => {
+    const order = await getOrderById(orgId, productionData.orderId)
+    const container = await getContainerById(orgId, containerId)
+
+    const newProductionData = await buildProductionProductData(
+        productionData.prod,
+        order[0],
+        productionData.dbproducts,
+        productionData.overHeadParam,
+        container.containers[0]
+    )
+
+    return new Promise((resolve, reject) => {
+
+        createSingleProductionModelProduct(orgId, containerId, newProductionData.productionData[0])
+          .then((production) => {
+                resolve(production);
+            })
+            .catch((err) => {
+                reject(err);
+            });
+    });
+};
+
+export const updateProductionProduct = (orgId, containerId, productionData) => {
+    return new Promise((resolve, reject) => {
+        updateSingleProductionModelProduct(orgId, containerId, productionData)
+          .then((production) => {
+                resolve(production);
+            })
+            .catch((err) => {
+                reject(err);
+            });
+    });
+};
+
+export const deleteProductionProduct = (orgId, containerId, productionData) => {
+    return new Promise((resolve, reject) => {
+        console.log(productionData)
+        deleteSingleProductionModelProduct(orgId, containerId, productionData[0]._id)
+          .then((production) => {
+                resolve(production);
+            })
+            .catch((err) => {
+                reject(err);
+            });
+    });
+};
+
 export const getProductionWorkByContainerId = (req,res, criteria) => {
     return new Promise(async (resolve, reject) => {
         let requiredProductionFormat = "array"
@@ -464,158 +543,161 @@ export const setDryRacksByHarvest = (trays, name) => {
     return trays * 0.5
 }
 
+export const buildProductionProductData = async (prod, order, dbproducts, overHeadParam, container) => {
+        const prodFound = dbproducts.find((fprod) => fprod._id == prod._id)
+        prod.packages.forEach((pkg, idx) => {
+            switch(pkg.size){
+                case "small":
+                    prod.packages[idx] = {
+                        ...prod.packages[idx],
+                        number:pkg.number, 
+                        grams: prodFound.price[0].packageSize * pkg.number,
+                    }
+                    break;
+                case "medium":
+                    prod.packages[idx] = {
+                        ...prod.packages[idx], 
+                        number:pkg.number,
+                        grams: prodFound.price[1].packageSize * pkg.number
+                    }
+                    break;
+                case "large":
+                    prod.packages[idx] = {
+                        ...prod.packages[idx], 
+                        number:pkg.number,
+                        grams: 1000 * pkg.number
+                    }
+                    break;
+                default:
+                    break;
+            }
+        })
+        
+        //*Total grams will define number of trays based on seedingRate
+        let harvest = prod.packages.reduce((prev, curr) => {
+            return prev + curr.grams
+        },0)
+
+        //*Add overhead config from global overhead
+        harvest = harvest * (1 + overHeadParam)
+
+        if(prodFound){
+            if(prodFound.mix.isMix){
+                
+                prod.mix = {isMix: true}
+                const mixProds = prodFound.mix.products
+
+                const mappedMixComposition = mixProds.map(async (mprod) => {
+                    
+                    const mixFound = dbproducts.find((fprod) => fprod._id.equals(mprod.strain))
+                    
+                    const mixProductStartProductionDate = getEstimatedStartProductionDate(order.date, mixFound)
+                    const mixProductHarvestDate = await getEstimatedHarvestDate(mixProductStartProductionDate,mixFound)
+
+                    console.group()
+                    console.log("Building production models for MIX: " + prodFound.name + " strains")
+                    console.log(`Is required a total harvest for the order of: ${harvest}`)
+
+                    const strharvest = Number((harvest * (mprod.amount/100)).toFixed(2)) * (1 + (mixFound.parameters.overhead/100))
+                    const seeds = strharvest / (mixFound.parameters.harvestRate/mixFound.parameters.seedingRate) 
+                    const trays = Math.ceil(seeds / mixFound.parameters.seedingRate)
+                    const totalProductionDays = mixFound.parameters.day + mixFound.parameters.night
+                    const mixStrainStatus = prod.mixStatuses.find((status) => status.product === mixFound.name).name
+                    console.log(seeds + " seeds")
+                    console.log(trays + " trays")
+                    console.log(strharvest + " harvest")
+                    console.groupEnd()
+                    
+                    
+                    delete mixFound.mix
+                    delete mixFound.price
+                    delete mprod.strain
+                    
+                    
+                    mixFound.productionData = {
+                        ProductName:            mixFound.name,
+                        RelatedMix:             {isForMix:true, mixName:prodFound.name},
+                        ProductionStatus:       mixStrainStatus ? mixStrainStatus : getInitialStatus(mixFound),
+                        RelatedOrder:           order._id,
+                        EstimatedHarvestDate:   mixProductHarvestDate,
+                        EstimatedStartDate:     mixProductStartProductionDate,
+                        ProductID:              mixFound._id,
+                        harvest:                strharvest,
+                        seeds:                  seeds,
+                        trays:                  trays,
+                        dryracks:               isLargeCicle(totalProductionDays) ? trays : setDryRacksByHarvest(trays, prodFound.name)
+                    }
+
+                    if(mixStrainStatus === "harvestReady" || mixStrainStatus === "growing"){
+                        console.log("El container must be updated")
+                        await updateContainerById(order.organization, container._id, {query:"add",key:"available", value:-trays})
+                    }
+
+                    return {...mprod, ...mixFound, mix:true}
+                })
+
+                await Promise.all(mappedMixComposition)
+                .then((mappedMIx) => {
+                    prod.products = mappedMIx
+                    prod.productionData = mappedMIx.map((productOfMix) => {
+                        return productOfMix.productionData
+                    })
+                })
+                .catch(err =>  {
+                    Promise.reject("Error mapping mix products to add production data")
+                    console.log(err)
+                })
+
+
+                
+            } else {
+                prod.mix = {isMix: false}
+                //* Get seedingRate (in grams) per tray
+                prod["seedingRate"] = prodFound.parameters.seedingRate
+                //* Get harvestRate (in grams) per tray
+                prod["harvestRate"] = prodFound.parameters.harvestRate
+                const estimatedStartDate = getEstimatedStartProductionDate(order.date, prodFound)
+                const harvestDate = await getEstimatedHarvestDate(estimatedStartDate, prodFound)
+                
+                const strainHarvest = harvest * (1 + (prodFound.parameters.overhead)/100)
+                const totalSeeds = harvest / (prodFound.parameters.harvestRate / prodFound.parameters.seedingRate)
+                const totalTrays = Math.floor(totalSeeds / prodFound.parameters.seedingRate) 
+                const totalProductionDays = prodFound.parameters.day + prodFound.parameters.night 
+                const productStatus = prod.status ? prod.status : getInitialStatus(prodFound)
+                
+                prod["productionData"] = [{
+                    ProductName:            prodFound.name,
+                    ProductionStatus:       productStatus,
+                    RelatedMix:             {isForMix: false},
+                    RelatedOrder:           order._id,
+                    ProductID:              prodFound._id,
+                    EstimatedStartDate:     estimatedStartDate,
+                    EstimatedHarvestDate:   harvestDate,
+                    harvest:                strainHarvest,
+                    seeds:                  totalSeeds,
+                    trays:                  totalTrays,
+                    dryracks:               isLargeCicle(totalProductionDays) ? totalTrays : totalTrays * 0.5
+                }]
+                
+
+                if(productStatus === "harvestReady" || productStatus === "growing"){
+                    console.log("El container must be updated")
+                    await updateContainerById(order.organization, container._id, {query:"add",key:"available", value:-totalTrays})
+                }
+            }
+        }
+        
+        return prod
+}
+
 //*Build model for production control based on order packages and products parameters
 export const buildProductionDataFromOrder = async (order, dbproducts, overHeadParam = 0, container) => {
     //*Add grams per size to order product packages
     console.log("Order received in production controller")
     try {
         await Promise.all(
-            order.products.map(async(prod, pidx) => {
-                //*Find the product in database
-                const prodFound = dbproducts.find((fprod) => fprod._id.equals(prod._id))
-                prod.packages.forEach((pkg, idx) => {
-                    switch(pkg.size){
-                        case "small":
-                            prod.packages[idx] = {
-                                ...prod.packages[idx],
-                                number:pkg.number, 
-                                grams: prodFound.price[0].packageSize * pkg.number,
-                            }
-                            break;
-                        case "medium":
-                            prod.packages[idx] = {
-                                ...prod.packages[idx], 
-                                number:pkg.number,
-                                grams: prodFound.price[1].packageSize * pkg.number
-                            }
-                            break;
-                        case "large":
-                            prod.packages[idx] = {
-                                ...prod.packages[idx], 
-                                number:pkg.number,
-                                grams: 1000 * pkg.number
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-                })
-                
-                //*Total grams will define number of trays based on seedingRate
-                let harvest = prod.packages.reduce((prev, curr) => {
-                    return prev + curr.grams
-                },0)
-    
-                //*Add overhead config from global overhead
-                harvest = harvest * (1 + overHeadParam)
-        
-                if(prodFound){
-                    if(prodFound.mix.isMix){
-                        
-                        prod.mix = {isMix: true}
-                        const mixProds = prodFound.mix.products
-    
-                        const mappedMixComposition = mixProds.map(async (mprod) => {
-                            
-                            const mixFound = dbproducts.find((fprod) => fprod._id.equals(mprod.strain))
-                            
-                            const mixProductStartProductionDate = getEstimatedStartProductionDate(order.date, mixFound)
-                            const mixProductHarvestDate = await getEstimatedHarvestDate(mixProductStartProductionDate,mixFound)
-    
-                            console.group()
-                            console.log("Building production models for MIX: " + prodFound.name + " strains")
-                            console.log(`Is required a total harvest for the order of: ${harvest}`)
-    
-                            const strharvest = Number((harvest * (mprod.amount/100)).toFixed(2)) * (1 + (mixFound.parameters.overhead/100))
-                            const seeds = strharvest / (mixFound.parameters.harvestRate/mixFound.parameters.seedingRate) 
-                            const trays = Math.ceil(seeds / mixFound.parameters.seedingRate)
-                            const totalProductionDays = mixFound.parameters.day + mixFound.parameters.night
-                            const mixStrainStatus = prod.mixStatuses.find((status) => status.product === mixFound.name).name
-                            console.log(seeds + " seeds")
-                            console.log(trays + " trays")
-                            console.log(strharvest + " harvest")
-                            console.groupEnd()
-                            
-                            
-                            delete mixFound.mix
-                            delete mixFound.price
-                            delete mprod.strain
-                            
-                            
-                            mixFound.productionData = {
-                                ProductName:            mixFound.name,
-                                RelatedMix:             {isForMix:true, mixName:prodFound.name},
-                                ProductionStatus:       mixStrainStatus ? mixStrainStatus : getInitialStatus(mixFound),
-                                RelatedOrder:           order._id,
-                                EstimatedHarvestDate:   mixProductHarvestDate,
-                                EstimatedStartDate:     mixProductStartProductionDate,
-                                ProductID:              mixFound._id,
-                                harvest:                strharvest,
-                                seeds:                  seeds,
-                                trays:                  trays,
-                                dryracks:               isLargeCicle(totalProductionDays) ? trays : setDryRacksByHarvest(trays, prodFound.name)
-                            }
-
-                            if(mixStrainStatus === "harvestReady" || mixStrainStatus === "growing"){
-                                console.log("El container must be updated")
-                                await updateContainerById(order.organization, container._id, {query:"add",key:"available", value:-trays})
-                            }
-        
-                            return {...mprod, ...mixFound, mix:true}
-                        })
-        
-                        await Promise.all(mappedMixComposition)
-                        .then((mappedMIx) => {
-                            prod.products = mappedMIx
-                            prod.productionData = mappedMIx.map((productOfMix) => {
-                                return productOfMix.productionData
-                            })
-                        })
-                        .catch(err =>  {
-                            Promise.reject("Error mapping mix products to add production data")
-                            console.log(err)
-                        })
-        
-    
-                        
-                    } else {
-                        prod.mix = {isMix: false}
-                        //* Get seedingRate (in grams) per tray
-                        prod["seedingRate"] = prodFound.parameters.seedingRate
-                        //* Get harvestRate (in grams) per tray
-                        prod["harvestRate"] = prodFound.parameters.harvestRate
-                        const estimatedStartDate = getEstimatedStartProductionDate(order.date, prodFound)
-                        const harvestDate = await getEstimatedHarvestDate(estimatedStartDate, prodFound)
-                        
-                        const strainHarvest = harvest * (1 + (prodFound.parameters.overhead)/100)
-                        const totalSeeds = harvest / (prodFound.parameters.harvestRate / prodFound.parameters.seedingRate)
-                        const totalTrays = Math.floor(totalSeeds / prodFound.parameters.seedingRate) 
-                        const totalProductionDays = prodFound.parameters.day + prodFound.parameters.night 
-                        const productStatus = prod.status ? prod.status : getInitialStatus(prodFound)
-                        
-                        prod["productionData"] = [{
-                            ProductName:            prodFound.name,
-                            ProductionStatus:       productStatus,
-                            RelatedMix:             {isForMix: false},
-                            RelatedOrder:           order._id,
-                            ProductID:              prodFound._id,
-                            EstimatedStartDate:     estimatedStartDate,
-                            EstimatedHarvestDate:   harvestDate,
-                            harvest:                strainHarvest,
-                            seeds:                  totalSeeds,
-                            trays:                  totalTrays,
-                            dryracks:               isLargeCicle(totalProductionDays) ? totalTrays : totalTrays * 0.5
-                        }]
-                        
-
-                        if(productStatus === "harvestReady" || productStatus === "growing"){
-                            console.log("El container must be updated")
-                            await updateContainerById(order.organization, container._id, {query:"add",key:"available", value:-totalTrays})
-                        }
-                    }
-                }
-                
-                return prod
+            order.products.map((prod, pidx) => {
+                buildProductionProductData(prod, order, dbproducts, overHeadParam, container)
             })
         )
     } catch (err) {

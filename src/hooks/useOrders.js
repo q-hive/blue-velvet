@@ -6,6 +6,10 @@ const useOrders =  (headers) => {
     return await request('POST',`orders/`, headers, {data: orderData});
   };
 
+  const updateOrder = async (orderId, orderData) => {
+    return await request('PATCH',`orders/one/${orderId}`, headers, {data: orderData});
+  };
+
   const getOrders = async () => {
     return await request('GET',`orders/`, headers);
   };
@@ -32,6 +36,7 @@ const useOrders =  (headers) => {
 
   return {
     addOrder,
+    updateOrder,
     getOrders,
     getUncompletedOrders,
     getOrderInvoiceById,
