@@ -27,7 +27,14 @@ export const buildPDFFromHTML = (htmlPath) => {
                     }
                 })
             }
-            const pdf = await page.pdf({path: pdfBuildPath, format:'A4'})
+
+            const pdf = await page.pdf({
+                path: pdfBuildPath,
+                format: 'A4',
+                margin: {
+                    top: '5mm', right: '10mm', bottom: '5mm', left: '10mm'
+                }
+            })
 
             await browser.close();
             resolve(pdf)

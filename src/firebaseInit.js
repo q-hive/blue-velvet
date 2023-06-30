@@ -1,5 +1,6 @@
 import { initializeApp } from "@firebase/app";
 import {getAuth, connectAuthEmulator} from 'firebase/auth'
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject, connectStorageEmulator} from 'firebase/storage'
 
 const config = {
         apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -14,9 +15,24 @@ const config = {
 const firebaseApp = initializeApp(config)
 
 const auth = getAuth(firebaseApp)
+const storage = getStorage(firebaseApp)
 
-if (process.env.REACT_APP_FIREBASE_LOCAL) {
-        connectAuthEmulator(auth, "http://localhost:9099");
+const uploadImage = async (image, name="test") => {
+    const storageRef = ref(storage, `logos/${name}`)
+    await uploadBytes(storageRef, image)
+    const imageURL = await getDownloadURL(storageRef)
+    return imageURL
 }
 
-export default auth
+const deleteImage = async (name="test") => {
+    const desertRef  = ref(storage, `logos/${name}`)
+    const res = await deleteObject(desertRef)
+    return res
+}
+
+if (process.env.REACT_APP_FIREBASE_LOCAL) {
+    connectAuthEmulator(auth, "http://localhost:9099");
+    connectStorageEmulator(storage, "127.0.0.1", 9199);
+}
+
+export { auth, storage, uploadImage, deleteImage }

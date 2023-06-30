@@ -170,7 +170,9 @@ const BV_Layout = (props) => {
     const userSettings = [
       {
         label:  'Profile',
-        action: () => navigate(`/${user.uid}/${user.role}/profile`) 
+        action: () => {
+            navigate(`/${user.uid}/${user.role}/profile`)
+        } 
       },
       {
         label:  'Logout',
@@ -359,7 +361,7 @@ const BV_Layout = (props) => {
                           open={Boolean(anchorElUser)}
                           onClose={handleCloseUserMenu}
                         >
-                          {user.role === "employee" ? 
+                          {user.role !== "superadmin" ? 
                           
                           userSettings.map((setting, idx) => (
                             <MenuItem key={idx} onClick={setting.action}>
