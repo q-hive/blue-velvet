@@ -468,6 +468,7 @@ export const createNewOrder = (orgId, order) => {
                     customer:       order.customer._id,
                     price:          prc,
                     date:           order.date,
+                    address:        order.address,
                     products:       mappedAndUpdatedProducts,
                     status:         "production",
                     cyclic:          order.cyclic,
@@ -607,13 +608,25 @@ export const getOrdersByProd = (orgId, id) => {
     })
 }
 
-export const updateOrder = (org, orderId, body) => {
+export const updateOrder = async (org, orderId, body) => {
+    let allProducts, price
+
+    try{
+        allProducts = await getAllProducts(org)
+        price = await getOrdersPrice(body, allProducts)
+    }catch(err){
+        console.log(err)
+        return reject(new Error(err.message === 'getAllProducts'
+            ? 'Error getting all products'
+            : 'Error getting order price'
+        ));
+    }
+
     return new Promise((resolve, reject) => {
         orgModel.findById(org).exec()
         .then((organization) => {
             if(organization){
                 const dbOrder = organization.orders.find((order) => order._id.equals(orderId))
-    
                 if(!dbOrder) {
                     return reject(dbOrder)
                 }
@@ -621,9 +634,15 @@ export const updateOrder = (org, orderId, body) => {
                 //**VALID STATUSES FOR ORDERS about production: ["received","production", "packed", "delivered"] */
                 //**VALID STATUSES FOR ORDERS about payment: ["unpaid","paid","pending"] */
 
-                body.paths.forEach(({path, value}, index) => {
-                    dbOrder[path] = value
-                })
+                if(body.paths){
+                    body.paths.forEach(({path, value}, index) => {
+                        dbOrder[path] = value
+                    });
+                }else{
+                    Object.entries(body).forEach(([key, value]) => {
+                        dbOrder[key] = (key === 'price') ? price : value;
+                    });
+                }
 
                 organization.save((err, doc) => {
                     if(err) reject(JSON.stringify({"message":"Error saving organization", "status": 500, "processError":err}))
@@ -634,11 +653,9 @@ export const updateOrder = (org, orderId, body) => {
             }
 
             return reject(new Error(JSON.stringify({"message":"No organization found", "status": 204})))
-            
-            
         })
         .catch((err) => {
-        
+            console.log(err);        
         })
     })
 }
