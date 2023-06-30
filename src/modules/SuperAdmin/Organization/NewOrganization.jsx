@@ -143,20 +143,27 @@ export const NewOrganization = (props) => {
     };
 
     const handleOrganizationChange = (event) => {
-        const file = event.target.files[0]
-        if (file) {
-            const reader = new FileReader()
-            reader.onloadend = () => {
-                setLogoPreview(reader.result)
+        const { name, value, type, files } = event.target;
+    
+        if (type === "file") {
+            const file = files[0]
+            setOrganization((prevOrganization) => ({
+                ...prevOrganization,
+                [name]: file, // File type
+            }));
+            if (file) {
+                const reader = new FileReader()
+                reader.onloadend = () => {
+                    setLogoPreview(reader.result) // Base 64
+                }
+                reader.readAsDataURL(file)
             }
-            reader.readAsDataURL(file)
+        } else if (type === "text") {
+            setOrganization((prevOrganization) => ({
+                ...prevOrganization,
+                [name]: value,
+            }));
         }
-        const { name, value } = event.target;
-
-        setOrganization((prevOrganization) => ({
-            ...prevOrganization,
-            [name]: value,
-        }));
     };
 
     const handleOrganizationAddressChange = (event) => {
@@ -288,7 +295,7 @@ export const NewOrganization = (props) => {
 
     const handleSaveOrganization = () => {
       const mappedOrganizationData = {
-        image: logoPreview,
+        image: admin.image,
         email: admin.email,
         name: admin.name,
         lname: admin.lname,
@@ -312,8 +319,7 @@ export const NewOrganization = (props) => {
                         .filter(organizationContainer => organizationContainer !== null),
         }
       };
-      console.log("🚀 ~ file: NewOrganization.jsx:315 ~ handleSaveOrganization ~ mappedOrganizationData:", mappedOrganizationData)
-      return
+
       setLoading(true)
   
       if (!props.edit) {
@@ -454,12 +460,12 @@ export const NewOrganization = (props) => {
             mappedOrganizationData.organization.image,
             imageName
           )        
-          newOrgData.organization.image = imageSrc;
+          newOrgData.organization.image = imageSrc; // Image URL
         } catch (err) {
           setDialog({
             ...dialog,
             open: true,
-            title: "Organization image could not be added",
+            title: "Organization image could not be updated",
             actions: [
                 {
                 label: "Retry",
@@ -568,12 +574,12 @@ export const NewOrganization = (props) => {
             
             setOrganization({
               ...organization,
-              image: OrganizationInEdition.image,
+              image: OrganizationInEdition.image, // Firebase URL
               name: OrganizationInEdition.name,
               address: OrganizationInEdition.address,
             });
   
-            setLogoPreview(OrganizationInEdition.image)
+            setLogoPreview(OrganizationInEdition.image) // Firebase URL
   
             setOrganizationContainers(OrganizationInEdition.containers);
           })
