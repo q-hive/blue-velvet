@@ -55,13 +55,6 @@ export const NewOrganization = (props) => {
     actions: []
   })
 
-  // Initial States
-  const initialStateOrganizationCustomer = {
-    email: "",
-    name: "",
-    image: "https://cdn-icons-png.flaticon.com/512/147/147144.png"
-  };
-
   // States with the initial state
     const initialStateAdmin = {
         image: "https://cdn-icons-png.flaticon.com/512/147/147144.png",
@@ -160,8 +153,6 @@ export const NewOrganization = (props) => {
         }
         const { name, value } = event.target;
 
-        
-        
         setOrganization((prevOrganization) => ({
             ...prevOrganization,
             [name]: value,
@@ -321,6 +312,8 @@ export const NewOrganization = (props) => {
                         .filter(organizationContainer => organizationContainer !== null),
         }
       };
+      console.log("🚀 ~ file: NewOrganization.jsx:315 ~ handleSaveOrganization ~ mappedOrganizationData:", mappedOrganizationData)
+      return
       setLoading(true)
   
       if (!props.edit) {
@@ -583,8 +576,6 @@ export const NewOrganization = (props) => {
             setLogoPreview(OrganizationInEdition.image)
   
             setOrganizationContainers(OrganizationInEdition.containers);
-            // setOrganizationCustomers(OrganizationInEdition.customers);
-  
           })
           .catch((err) => {
             console.log(err)
@@ -716,46 +707,6 @@ export const NewOrganization = (props) => {
                   </Accordion>
                 </Box>
               ))}
-  
-              {/* // ORGANIZATION CUSTOMERS */}
-              {
-                !props?.admin 
-                  && (
-                    <>
-                      <Box sx={{ marginTop: "4vh", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", spacing: { xs: 1, sm: 2 }, width: { xs: "100%", sm: "50%", md: "50%" } }} >
-                        <Typography variant="h5" align="left">Customers Information</Typography>
-                        <Button variant="contained" onClick={addCustomer} sx={{ marginLeft: "1vh" }}>
-                          <PlaylistAddIcon color="white" />
-                        </Button>
-                      </Box>
-                      <Divider variant="middle" sx={{ width: { xs: "98%", sm: "50%", md: "50%" }, marginY: "1vh" }} />
-                      {
-                        organizationCustomers.length
-                          ? (organizationCustomers.map((customer, index) => (
-                            <Box key={index} sx={{ marginTop: "1vh", display: "flex", flexDirection: "column", alignItems: "center", width: { xs: "100%", sm: "50%", md: "50%" } }} >
-                              <Accordion sx={{ width: { xs: "100%", sm: "100%", md: "100%" } }}>
-                                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                  <Box sx={{ width: { xs: "100%", sm: "100%" }, display: "flex", flexDirection: "row", justifyContent: 'space-between', alignContent: 'center' }} >
-                                    <Typography variant="h6">Customer #{index + 1}</Typography>
-                                    <Delete color="error" onClick={(e) => deleteCustomer(index, e)} sx={{ marginTop: ".5vh" }} />
-                                  </Box>
-                                </AccordionSummary>
-                                <AccordionDetails sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                                  <Fab color="primary" component="label" aria-label="add" sx={{ marginY: "1%", width: 100, height: 100 }} size="large" helpertext="Label">
-                                    <input type="file" accept="image/*" onChange={handleChangeLabel} hidden />
-                                    <CameraIcon sx={{ fontSize: "5vh" }} />
-                                  </Fab>
-                                  <TextField name='email' onChange={(event) => handleOrganizationCustomersChange(event, index)} value={customer?.email} label="Email" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} error={Boolean(errorMessages.emailCustomer)} helperText={errorMessages.emailCustomer || ""} />
-                                  <TextField name='name' onChange={(event) => handleOrganizationCustomersChange(event, index)} value={customer?.name} label="Name" sx={() => ({ ...BV_THEME.input.mobile.fullSize.desktop.fullSize })} error={Boolean(errorMessages.nameCustomer)} helperText={errorMessages.nameCustomer || ""} />
-                                </AccordionDetails>
-                              </Accordion>
-                            </ Box>
-                          )))
-                          : (<Typography variant="h6">No customers</Typography>)
-                      }
-                    </>
-                  )
-              }
   
               {/* // ADMIN */}
               <Typography variant="h5" mt="4vh" align="left">{props.edit ? "Edit" : "New"} admin account Information</Typography>
