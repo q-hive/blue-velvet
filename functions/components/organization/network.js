@@ -10,6 +10,7 @@ import { modelsValidationError } from '../../utils/errorHandler.js'
 import { newContainer } from '../container/store.js'
 
 var router = new express.Router()
+
 // * CREATE
 router.post('/new', (req, res) => {
     newOrganization(req.body)

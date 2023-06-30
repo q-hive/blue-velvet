@@ -484,17 +484,49 @@ export const SalesView = () => {
       updatedOrderData = {
         ...orderData,
         products: orderData.products.map((product) => {
+          console.log(product)
           if (product.name === input.product.name) {
+            let packages;
+            if(product.packages.length > 1 && input.mediumPackages > 0  && input.smallPackages > 0){
+              packages = [
+                { ...product.packages[0], number: input.smallPackages },
+                { ...product.packages[1], number: input.mediumPackages }
+              ]
+            } else if (product.packages.length > 1 && input.mediumPackages > 0) {
+              packages = [
+                { ...product.packages[1], number: input.smallPackages },
+              ]
+            } else if (product.packages.length > 1 && input.smallPackages > 0) {
+              packages = [
+                { ...product.packages[0], number: input.smallPackages },
+              ]
+            } else if(product.packages.length === 1) {
+              packages = [
+                { ...product.packages[0], number: input.smallPackages || input.mediumPackages },
+              ]
+            } else if(product.packages.length === 1 && input.smallPackages > 0 && input.mediumPackages > 0) {
+              packages = [
+                { ...product.packages[0], number: input.smallPackages },
+                { "size":"medium", number: input.mediumPackages, "grams":80}
+              ]
+            } else {
+              packages = [
+                { ...product.packages[0], number: input.smallPackages || input.mediumPackages },
+              ]
+            }
+
+
+
+            
             return {
               ...product,
               id: input.id,
               status: input.status.name,
-              packages: [
-                { ...product.packages[0], number: input.smallPackages },
-                { ...product.packages[1], number: input.mediumPackages }
-              ]
+              packages:packages
             };
           }
+
+          console.log(product)
           return product;
         })
       };
@@ -587,8 +619,8 @@ export const SalesView = () => {
             id: product._id,
             name: product.name,
             status: product?.status ?? "mixed",
-            small: product.packages[0].number,
-            medium: product.packages[1].number
+            small: product.packages[0]?.number || 0,
+            medium: product.packages[1]?.number || 0
           };
         });
         setRows(orderProducts)

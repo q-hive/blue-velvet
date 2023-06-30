@@ -89,6 +89,13 @@ export const createTable = (config) => {
     `
 }
 
+export const createInvoiceImages = (data) => {
+    return `
+        <img src="${softwareLogoPath}" alt="Software logo">
+        <img src="${data.textLines?.image}" alt="Container logo">
+    `
+}
+
 /**
  * @description creates the Header structure for the HTML of the order for PDF styling
  * @param {Object} data receives an object with the following structure
@@ -181,8 +188,7 @@ export const createHTML = (config) => {
 
             <body>
                 <header>
-                    <img src="${softwareLogoPath}" alt="Software logo">
-                    <img src="${blvtLogoPath}" alt="Container logo">
+                    ${config.header.image}
                 </header>
 
                 <div class="order-container">
@@ -209,6 +215,7 @@ export const doesFileExist = (filePath) => {
 
 const createOrderPDFStruct = (data) => {
     //*SETS THE HTML STRUCTURE FOR THE INVOICE HEADER
+    const image = createInvoiceImages(data.header)
     const header = createInvoiceHeader(data.header)
 
     //*SETS THE HTML STRUCTURE FOR THE CUSTOMER DATA
@@ -233,6 +240,7 @@ const createOrderPDFStruct = (data) => {
     return {
         header: {
             style: data.header.style,
+            image: image,
             content: header
         },
         body: `
@@ -529,6 +537,7 @@ export const createConfigObjectFromOrder = async (order) => {
             `,
             textLines: {
                 pdfType: "Invoice",
+                image: organization.image,
                 businessName: organization.name,
                 containerName: organization.containers[0].name,
                 addressContainer: {

@@ -4,7 +4,7 @@ import React from 'react'
 import BV_Layout from './Layout'
 import { CircularProgress} from '@mui/material'
 import useAuth from '../contextHooks/useAuthContext'
-import auth from '../firebaseInit'
+import { auth } from '../firebaseInit.js'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Logo from "../assets/images/png-Logos/GreenBox-Logo.png"
