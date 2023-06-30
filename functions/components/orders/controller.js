@@ -510,7 +510,7 @@ try {
     
     if (!product.mix.isMix) {
 
-        if (!['seeding', 'preSoaking'].includes(production.status)) {
+        if (!['seeding', 'preSoaking'].includes(production.ProductionStatus)) {
             updateProduction(orgId, production);
             return;
           }
