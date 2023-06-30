@@ -61,6 +61,10 @@ export const AppRoutes  = [
         component:<Dashboard/>
     },
     {
+        path:"/:uid/admin/profile",
+        component:<NewOrganization edit={true} admin={true} />
+    },
+    {
         path:"/:uid/admin/production",
         component:<ProductionMain/>
     },

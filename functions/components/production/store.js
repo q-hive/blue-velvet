@@ -526,24 +526,14 @@ export const getProductionByOrderId = (orgId, container, orderId) => {
                     }  
                 },
                 {
-                    "$project":{
-                        "containers":{
-                            "_id":1,
-                            "production":1
-                        }
+                    "$replaceRoot": {
+                        "newRoot": "$containers.production"
                     }
                 }
             ]
         )
         .then((result) => {
-            // const grouppedProd = grouPProductionForWorkDay("status",result[0].containers.production, "hash")
-
-            const grouppedProd = result.map((docPerProduction) => {
-                return docPerProduction.containers.production
-            })
-            
-            
-            resolve(grouppedProd)
+            resolve(result)
         })
         .catch((err) => {
             reject(err)
@@ -610,4 +600,88 @@ export const upsertProduction = (productionArray, orgId) => {
     })
     
     return Promise.all(updateAllElements)
+}
+
+export const createSingleProductionModelProduct = (orgId, containerId, productionData) => {
+    return new Promise((resolve, reject) => {
+        orgModel.findOneAndUpdate(
+            { _id: orgId, "containers._id": containerId },
+            {
+                $push: {
+                    "containers.$.production": productionData,
+                },
+            },
+            { new: true }
+        )
+        .exec()
+        .then((org) => {
+            if (org) {
+                resolve(org);
+            } else {
+                reject(new Error(JSON.stringify({ message: "Organization or container not found", status: 404 })));
+            }
+        })
+        .catch((err) => {
+            reject(new Error(JSON.stringify({ message: "Error updating production", status: 500, processError: err })));
+        });
+    });
+};
+
+export const updateSingleProductionModelProduct = (orgId, containerId, productionData) => {
+    return new Promise((resolve, reject) => {
+        orgModel.findOneAndUpdate(
+        {
+            _id: orgId,
+            "containers._id": containerId,
+            "containers.production._id": productionData._id
+        },
+        {
+            $set: {
+            "containers.$[container].production.$[production]": productionData
+            }
+        },
+        {
+            arrayFilters: [
+            { "container._id": containerId },
+            { "production._id": productionData._id }
+            ],
+            new: true
+        }
+        )
+        .exec()
+        .then((org) => {
+            if (org) {
+            resolve(org);
+            } else {
+            reject(new Error(JSON.stringify({ message: "Organization, container, or production not found", status: 404 })));
+            }
+        })
+        .catch((err) => {
+            reject(new Error(JSON.stringify({ message: "Error updating production", status: 500, processError: err })));
+        });
+    });
+};
+  
+export const deleteSingleProductionModelProduct = (orgId, containerId, productionId) => {
+    return new Promise((resolve, reject) => {
+        orgModel.findOneAndUpdate(
+            { _id: orgId, "containers._id": containerId },
+            {
+                $pull: {
+                    "containers.$.production": { _id: productionId }
+                },
+            },
+            { new: true }
+        ).exec()
+            .then((org) => {
+                if (org) {
+                    resolve(org);
+                    } else {
+                        reject(new Error(JSON.stringify({ message: "Organization, container, or production model(s) not found", status: 404 })));
+                    }
+                })
+            .catch((err) => {
+                reject(new Error(JSON.stringify({ message: "Error deleting product of production", status: 500, processError: err })));
+            });
+    });    
 }

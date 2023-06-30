@@ -14,6 +14,7 @@ export const newOrganization = (orgData) => {
         })
 
         let orgMapped = {
+            image:      orgData.image,
             name:       orgData.name,
             owner:      orgData.owner,
             employees:  [],

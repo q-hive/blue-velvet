@@ -1,7 +1,6 @@
 import React, { createContext, useEffect, useState } from "react";
-import "../firebaseInit.js";
 import { signOut } from "firebase/auth";
-import auth from "../firebaseInit.js";
+import { auth } from "../firebaseInit.js";
 import { useNavigate } from "react-router-dom";
 import api from "../axios.js";
 import { useErrorHandler } from "react-error-boundary";
