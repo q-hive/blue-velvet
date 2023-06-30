@@ -538,7 +538,6 @@ try {
     { "_id": mongoose.Types.ObjectId(orgId) },
     {
         "$push":{
-        "orders": newOrder,
         "containers.$[].production": {"$each": [production]},
         },
     },
