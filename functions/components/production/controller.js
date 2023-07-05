@@ -586,7 +586,6 @@ export const buildProductionProductData = async (prod, order, dbproducts, overHe
                 
                 prod.mix = {isMix: true}
                 const mixProds = prodFound.mix.products
-
                 const mappedMixComposition = mixProds.map(async (mprod) => {
                     
                     const mixFound = dbproducts.find((fprod) => fprod._id.equals(mprod.strain))
@@ -609,7 +608,7 @@ export const buildProductionProductData = async (prod, order, dbproducts, overHe
                     console.groupEnd()
                     
                     
-                    delete mixFound.mix
+                    // delete mixFound.mix
                     delete mixFound.price
                     delete mprod.strain
                     
@@ -642,6 +641,8 @@ export const buildProductionProductData = async (prod, order, dbproducts, overHe
                     prod.productionData = mappedMIx.map((productOfMix) => {
                         return productOfMix.productionData
                     })
+
+                    console.log(prod.productionData)
                 })
                 .catch(err =>  {
                     Promise.reject("Error mapping mix products to add production data")
@@ -696,8 +697,8 @@ export const buildProductionDataFromOrder = async (order, dbproducts, overHeadPa
     console.log("Order received in production controller")
     try {
         await Promise.all(
-            order.products.map((prod, pidx) => {
-                buildProductionProductData(prod, order, dbproducts, overHeadParam, container)
+            order.products.map(async (prod, pidx) => {
+                await buildProductionProductData(prod, order, dbproducts, overHeadParam, container)
             })
         )
     } catch (err) {

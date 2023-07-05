@@ -134,89 +134,73 @@ export const NewOrder = (props) => {
     customer: props.edit.isEdition ? props.edit.values.order.customer : {},
     product: {},
     status: "",
-    smallPackages: undefined,
+    smallPackages: 0,
     size: undefined,
-    mediumPackages: undefined,
+    mediumPackages: 0,
     date: undefined,
     cyclic: false,
   });
-    const [startDate,setStartDate] = useState(new Date())
-    const [endDate, setEndDate] = useState(new Date())
-    
-    //*Render states
-    const [productsInput, setProductsInput] = useState(true);
-    const [canSendOrder, setCanSendOrder] = useState(false);
-    const [error, setError] = useState({
-        customer: {
-            message: "Please correct or fill the customer",
-            active: false,
-        },
-        product: {
-            message: "Please correct or fill the product.",
-            active: false,
-        },
-        status: {
-            message: "Please correct or fill the status.",
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
+
+  //*Render states
+  const [productsInput, setProductsInput] = useState(true);
+  const [canSendOrder, setCanSendOrder] = useState(false);
+  const [error, setError] = useState({
+    customer: {
+      message: "Please correct or fill the customer",
+      active: false,
+    },
+    product: {
+      message: "Please correct or fill the product.",
+      active: false,
+    },
+    status: {
+      message: "Please correct or fill the status.",
       active: false,
     },
     date: {
-        message: "Please correct or fill the date.",
-        active: false,
+      message: "Please correct or fill the date.",
+      active: false,
     },
     size: {
-        message: "Please correct or fill the size.",
-        active: false,
+      message: "Please correct or fill the size.",
+      active: false,
     },
     smallPackages: {
-        message: "Please correct or fill the number of packages.",
-        active: false,
+      message: "Please correct or fill the number of packages.",
+      active: false,
     },
     mediumPackages: {
-        message: "Please correct or fill the number of packages.",
-        active: false,
+      message: "Please correct or fill the number of packages.",
+      active: false,
     },
-});
-//Snackbar
-const [open, setOpen] = useState(false);
+  });
+  //Snackbar
+  const [open, setOpen] = useState(false);
 
-const handleEndDateChange = (newValue) => {
-    setEndDate(newValue)
-}
+  const handleEndDateChange = (newValue) => {
+    setEndDate(newValue);
+  };
 
-const handleStartDateChange = (newValue) => {   
-    setStartDate(newValue)
-}  
+  const handleStartDateChange = (newValue) => {
+    setStartDate(newValue);
+  };
 
-const handleClose = (event, reason) => {
+  const handleClose = (event, reason) => {
     if (reason === "clickaway") {
-        return;
+      return;
     }
 
     setOpen(false);
-};
+  };
 
-//Get invoice
-const getOrderInvoice = async (params) => {
+  //Get invoice
+  const getOrderInvoice = async (params) => {
     setLoading(true);
     const orderPDF = await getOrderInvoiceById(params._id);
     return orderPDF;
   };
-
-  // const getPrevValues = async ()=> {
-  //     const ordersData = await api.api.get(`${api.apiVersion}/orders/?id=${prevOrderID}`,{
-  //         headers:{
-  //             "authorization":    credential._tokenResponse.idToken,
-  //             "user":             user
-  //         }
-  //     })
-
-  //     return ordersData.data
-  // }
-
-  // const pV = getPrevValues()
-
-  // console.log("prevValues",pV)
-  //
 
   //Dialog
   const [dialog, setDialog] = useState({
@@ -261,13 +245,8 @@ const getOrderInvoice = async (params) => {
     switch (r) {
       case "input":
         value = v;
-        switch (id) {
-          case "smallPackages":
-            value = Number(v);
-            break;
-          case "mediumPackages":
-            value = Number(v);
-            break;
+        if (id === "smallPackages" || id === "mediumPackages") {
+          value = Number(v);
         }
         break;
       case "selectOption":
@@ -290,10 +269,11 @@ const getOrderInvoice = async (params) => {
 
     // const newRgexp =  /^*packages/
 
-    setInput({
-      ...input,
+    setInput((prevInput) => ({
+      ...prevInput,
       [id]: value,
-    });
+      status: prevInput.status,
+    }));
     if (id === "customer") {
       console.log("[strlongitude]", value.address?.coords?.longitude);
       setSameCustomerAddress(true);
@@ -357,29 +337,16 @@ const getOrderInvoice = async (params) => {
     let packages;
     if (e) {
       if (e.target.id === "add") {
-        if (input.smallPackages && input.mediumPackages) {
-          packages = [
-            {
-              number: input.smallPackages,
-              size: "small",
-            },
-            {
-              number: input.mediumPackages,
-              size: "medium",
-            },
-          ];
-        } else {
-          packages = [
-            {
-              number: input.smallPackages || input.mediumPackages,
-              size: input.smallPackages
-                ? "small"
-                : input.mediumPackages
-                ? "medium"
-                : "small",
-            },
-          ];
-        }
+        packages = [
+          {
+            number: input.smallPackages,
+            size: "small",
+          },
+          {
+            number: input.mediumPackages,
+            size: "medium",
+          },
+        ];
 
         if (!input.product.mix.isMix) {
           products.push({
@@ -408,8 +375,8 @@ const getOrderInvoice = async (params) => {
           ...input,
           product: {},
           status: {},
-          smallPackages: undefined,
-          mediumPackages: undefined,
+          smallPackages: 0,
+          mediumPackages: 0,
         });
       }
     }
@@ -628,42 +595,35 @@ const getOrderInvoice = async (params) => {
   const handleChangeMixStatus = (e, v, r, product) => {
     let idx;
 
-    if(!input.status.mix){
-        setInput({
-            ...input,
-            status: {
-              name: "mixed",
-              mix: [
-                {
-                  name: v.name,
-                  product: product.name,
-                  value: v,
-                },
-              ],
+    if (!input.status.mix) {
+      setInput({
+        ...input,
+        status: {
+          name: "mixed",
+          mix: [
+            {
+              name: v.name,
+              product: product.name,
+              value: v,
             },
-          });
+          ],
+        },
+      });
+      return;
     }
 
-    if (
-      input.status.mix &&
-      input.status.mix.length == input.product.mix.products.length
-      && input.status.mix.find((elem) => elem.product == product.name)
-    ) {
-      idx = input.status?.mix.findIndex((elem) => elem.product == product.name);
+    idx = input.status?.mix?.findIndex((elem) => elem.product == product.name);
 
+    if (idx !== -1) {
       setInput((ipt) => {
         const { status } = ipt;
         const { mix } = status;
         const mixUpdated = [...mix];
 
-        if (idx >= 0 && idx < mix.length) {
-          mixUpdated[idx] = {
-            ...mix[idx],
-            value: v,
-          };
-
-          console.log("MIX UPDATED:", mixUpdated);
-        }
+        mixUpdated[idx] = {
+          ...mix[idx],
+          value: v,
+        };
         return {
           ...ipt,
           status: {
@@ -673,31 +633,73 @@ const getOrderInvoice = async (params) => {
           },
         };
       });
-    }
-
-    if (
-      input.status.mix &&
-      input.status.mix.length < input.product.mix.products.length
-      && input.status.mix.find((elem) => elem.product == product.name)
-    ) {
-
-        setInput({
-            ...input,
-            status: {
-              name: "mixed",
-              mix: [
-                ...input.status.mix,
-                {
-                  name: v.name,
-                  product: product.name,
-                  value: v,
-                },
-              ],
+    } else {
+      setInput({
+        ...input,
+        status: {
+          name: "mixed",
+          mix: [
+            ...input.status.mix,
+            {
+              name: v.name,
+              product: product.name,
+              value: v,
             },
-          });
-        
+          ],
+        },
+      });
     }
 
+    // if (
+    //   input.status.mix &&
+    //   input.status.mix.length == input.product.mix.products.length &&
+    //   input.status.mix.find((elem) => elem.product == product.name)
+    // ) {
+
+    //   setInput((ipt) => {
+    //     const { status } = ipt;
+    //     const { mix } = status;
+    //     const mixUpdated = [...mix];
+
+    //     if (idx >= 0 && idx < mix.length) {
+    //       mixUpdated[idx] = {
+    //         ...mix[idx],
+    //         value: v,
+    //       };
+
+    //       console.log("MIX UPDATED:", mixUpdated);
+    //     }
+    //     return {
+    //       ...ipt,
+    //       status: {
+    //         ...status,
+    //         name: "mixed",
+    //         mix: mixUpdated,
+    //       },
+    //     };
+    //   });
+    // }
+
+    // if (
+    //   input.status.mix &&
+    //   input.status.mix.length < input.product.mix.products.length &&
+    //   input.status.mix.find((elem) => elem.product == product.name)
+    // ) {
+    //   setInput({
+    //     ...input,
+    //     status: {
+    //       name: "mixed",
+    //       mix: [
+    //         ...input.status.mix,
+    //         {
+    //           name: v.name,
+    //           product: product.name,
+    //           value: v,
+    //         },
+    //       ],
+    //     },
+    //   });
+    // }
   };
 
   const StatusComponent = (props) => {
@@ -907,29 +909,6 @@ const getOrderInvoice = async (params) => {
                               {tempProd.name}
                             </Typography>
                             <StatusComponent product={tempProd} />
-
-                            {/* <Autocomplete
-                                            id="status"
-                                            options={tempOptions}
-                                            sx={BV_THEME.input.mobile.fullSize.desktop.halfSize}
-                                            renderInput={(params) => { 
-                                                const {status} = error
-                                                return <TextField
-                                                        {...params}
-                                                        helperText={status.active ? status.message : ""}
-                                                        error={status.active}
-                                                        label="Status"
-                                                    />
-                                            }}
-                                            getOptionLabel={(opt) => opt.name ? opt.name : ""}
-                                            isOptionEqualToValue={(o,v) => {
-                                                if(Object.keys(v).length === 0){
-                                                    return true
-                                                }
-                                                return o.name === v.name
-                                            }}
-                                            onChange={(e,v,r) => handleChangeMixStatus(e,v,r,tempProd)}
-                                            /> */}
                           </Box>
                         );
                       })}
@@ -1082,16 +1061,14 @@ const getOrderInvoice = async (params) => {
                   />
                 </FormControl>
 
-                    {
-                        input.cyclic && (
-                            <DateRangePicker
-                                startDate={startDate}
-                                endDate={endDate}
-                                onStartDateChange={handleStartDateChange}
-                                onEndDateChange={handleEndDateChange}
-                            />
-                        )
-                    }
+                {input.cyclic && (
+                  <DateRangePicker
+                    startDate={startDate}
+                    endDate={endDate}
+                    onStartDateChange={handleStartDateChange}
+                    onEndDateChange={handleEndDateChange}
+                  />
+                )}
 
                 <Box
                   sx={{
