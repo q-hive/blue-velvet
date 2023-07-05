@@ -478,7 +478,9 @@ export const buildOrderFromExistingOrder = (
 };
 
 export const scheduleProduction = (orgId, productions, order, products) => {
-    if (!orgId || !productions || !order || !products) {
+    console.log("Scheduling production...");
+    console.log(productions)
+    if (!orgId || !productions || !productions.length>0 || !order || !products) {
       throw new Error("Missing necessary data for scheduling production.");
     }
   
@@ -496,6 +498,9 @@ try {
     return;
     }
 
+    console.log("Product found.")
+    console.log(product)
+
     // Convert order date to Date object for comparison
     const orderDate = new Date(order.date);
 
@@ -509,7 +514,6 @@ try {
     }
     
     if (!product.mix.isMix) {
-
         if (!['seeding', 'preSoaking'].includes(production.ProductionStatus)) {
             updateProduction(orgId, production);
             return;
@@ -529,6 +533,7 @@ try {
     }
 } catch (error) {
     console.error(`Error scheduling production for ID ${production._id}: ${error.message}`);
+    throw "Error scheduling production.";
 }
 };
   

@@ -474,7 +474,7 @@ export const createNewOrder = (orgId, order) => {
                     cyclic:          order.cyclic,
                 }
                 
-                let production = await buildProductionDataFromOrder({...orderMapped, _id:id}, allProducts, overhead, org.containers[0])
+                let production = await buildProductionDataFromOrder({...orderMapped}, allProducts, overhead, org.containers[0])
 
                 try {
                     scheduleProduction(orgId, production,orderMapped,allProducts)
