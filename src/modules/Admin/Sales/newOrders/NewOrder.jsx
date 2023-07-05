@@ -381,6 +381,7 @@ const getOrderInvoice = async (params) => {
           ];
         }
 
+        console.log("🚀🚀 [INPUT]:", input)
         if (!input.product.mix.isMix) {
           products.push({
             name: input.product.name,
@@ -397,8 +398,6 @@ const getOrderInvoice = async (params) => {
             name: input.product.name,
             status: input.status.name,
             mixStatuses: input.status.mix,
-            seedId: input.product?.seed,
-            provider: input.product?.provider,
             _id: input.product._id,
             packages: packages,
           });
@@ -618,6 +617,7 @@ const getOrderInvoice = async (params) => {
   const handleSelectProduct = (e, v, r) => {
     if (r === "selectOption") {
       const product = options.products.find((product) => product._id === v._id);
+        console.log("🚀 ~ [PRODUCT]:", product)
       setInput({
         ...input,
         product: product,
@@ -626,84 +626,58 @@ const getOrderInvoice = async (params) => {
   };
 
   const handleChangeMixStatus = (e, v, r, product) => {
-    let idx;
-
-    if(!input.status.mix){
-        setInput({
-            ...input,
-            status: {
-              name: "mixed",
-              mix: [
-                {
-                  name: v.name,
-                  product: product.name,
-                  value: v,
-                },
-              ],
-            },
-          });
-    }
-
-    if (
-      input.status.mix &&
-      input.status.mix.length == input.product.mix.products.length
-      && input.status.mix.find((elem) => elem.product == product.name)
-    ) {
-      idx = input.status?.mix.findIndex((elem) => elem.product == product.name);
-
-      setInput((ipt) => {
-        const { status } = ipt;
-        const { mix } = status;
-        const mixUpdated = [...mix];
-
-        if (idx >= 0 && idx < mix.length) {
-          mixUpdated[idx] = {
-            ...mix[idx],
-            value: v,
-          };
-
-          console.log("MIX UPDATED:", mixUpdated);
-        }
+    setInput((prevInput) => {
+      const mixProduct = {
+        name: v.name,
+        product: product.name,
+        value: v,
+      };
+  
+      if (!prevInput.status.mix) {
         return {
-          ...ipt,
+          ...prevInput,
           status: {
-            ...status,
+            name: "mixed",
+            mix: [mixProduct],
+          },
+        };
+      }
+  
+      const { mix } = prevInput.status;
+      const mixUpdated = [...mix];
+      const existingProductIndex = mix.findIndex((elem) => elem.product === product.name);
+  
+      if (existingProductIndex >= 0) {
+        mixUpdated[existingProductIndex] = mixProduct;
+      } else {
+        mixUpdated.push(mixProduct);
+      }
+
+      if (mixUpdated.length === prevInput.product.mix.products.length) {
+        return {
+          ...prevInput,
+          status: {
+            ...prevInput.status,
             name: "mixed",
             mix: mixUpdated,
           },
         };
-      });
-    }
-
-    if (
-      input.status.mix &&
-      input.status.mix.length < input.product.mix.products.length
-      && input.status.mix.find((elem) => elem.product == product.name)
-    ) {
-
-        setInput({
-            ...input,
-            status: {
-              name: "mixed",
-              mix: [
-                ...input.status.mix,
-                {
-                  name: v.name,
-                  product: product.name,
-                  value: v,
-                },
-              ],
-            },
-          });
-        
-    }
-
+      }
+  
+      return {
+        ...prevInput,
+        status: {
+          ...prevInput.status,
+          name: "mixed",
+          mix: mixUpdated,
+        },
+      };
+    });
   };
 
   const StatusComponent = (props) => {
     let prod = props.product ? props.product : input.product;
     let tempOpts = options.status.filter((status) => status.selectable);
-    console.log(input.status?.mix);
     let valueForMix =
       input.status?.mix &&
       input.status?.mix.find((elem) => elem.product == prod.name)
@@ -892,6 +866,7 @@ const getOrderInvoice = async (params) => {
 
                         return (
                           <Box
+                            key={tempProd.name}
                             sx={{
                               width: "100%",
                               display: "flex",
@@ -907,29 +882,6 @@ const getOrderInvoice = async (params) => {
                               {tempProd.name}
                             </Typography>
                             <StatusComponent product={tempProd} />
-
-                            {/* <Autocomplete
-                                            id="status"
-                                            options={tempOptions}
-                                            sx={BV_THEME.input.mobile.fullSize.desktop.halfSize}
-                                            renderInput={(params) => { 
-                                                const {status} = error
-                                                return <TextField
-                                                        {...params}
-                                                        helperText={status.active ? status.message : ""}
-                                                        error={status.active}
-                                                        label="Status"
-                                                    />
-                                            }}
-                                            getOptionLabel={(opt) => opt.name ? opt.name : ""}
-                                            isOptionEqualToValue={(o,v) => {
-                                                if(Object.keys(v).length === 0){
-                                                    return true
-                                                }
-                                                return o.name === v.name
-                                            }}
-                                            onChange={(e,v,r) => handleChangeMixStatus(e,v,r,tempProd)}
-                                            /> */}
                           </Box>
                         );
                       })}

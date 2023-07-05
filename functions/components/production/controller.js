@@ -544,7 +544,7 @@ export const setDryRacksByHarvest = (trays, name) => {
 }
 
 export const buildProductionProductData = async (prod, order, dbproducts, overHeadParam, container) => {
-        const prodFound = dbproducts.find((fprod) => fprod._id == prod._id)
+    const prodFound = dbproducts.find((fprod) => fprod._id == prod._id)
         prod.packages.forEach((pkg, idx) => {
             switch(pkg.size){
                 case "small":
@@ -602,7 +602,8 @@ export const buildProductionProductData = async (prod, order, dbproducts, overHe
                     const seeds = strharvest / (mixFound.parameters.harvestRate/mixFound.parameters.seedingRate) 
                     const trays = Math.ceil(seeds / mixFound.parameters.seedingRate)
                     const totalProductionDays = mixFound.parameters.day + mixFound.parameters.night
-                    const mixStrainStatus = prod.mixStatuses.find((status) => status.product === mixFound.name).name
+                    const mixStrainStatus = prod.mixStatuses.find((status) => status.product === mixFound.name)?.name || getInitialStatus(mixFound);
+
                     console.log(seeds + " seeds")
                     console.log(trays + " trays")
                     console.log(strharvest + " harvest")
@@ -617,7 +618,7 @@ export const buildProductionProductData = async (prod, order, dbproducts, overHe
                     mixFound.productionData = {
                         ProductName:            mixFound.name,
                         RelatedMix:             {isForMix:true, mixName:prodFound.name},
-                        ProductionStatus:       mixStrainStatus ? mixStrainStatus : getInitialStatus(mixFound),
+                        ProductionStatus:       mixStrainStatus,
                         RelatedOrder:           order._id,
                         EstimatedHarvestDate:   mixProductHarvestDate,
                         EstimatedStartDate:     mixProductStartProductionDate,
@@ -638,6 +639,7 @@ export const buildProductionProductData = async (prod, order, dbproducts, overHe
 
                 await Promise.all(mappedMixComposition)
                 .then((mappedMIx) => {
+                    console.log("🚀 mappedMIx", mappedMIx);
                     prod.products = mappedMIx
                     prod.productionData = mappedMIx.map((productOfMix) => {
                         return productOfMix.productionData
@@ -707,6 +709,8 @@ export const buildProductionDataFromOrder = async (order, dbproducts, overHeadPa
     const productionData = order.products.flatMap((prod) => {
         return prod.productionData
     })
+
+    console.log("🚀🚀🚀🚀 productionData:", productionData)
 
     return productionData
 }
