@@ -267,12 +267,11 @@ export const NewOrder = (props) => {
       });
     }
 
-    // const newRgexp =  /^*packages/
 
     setInput((prevInput) => ({
       ...prevInput,
       [id]: value,
-      status: prevInput.status,
+      status: (prevInput.status.mix && id === "status") ? prevInput.status : (id === "status") ? value : prevInput.status,
     }));
     if (id === "customer") {
       console.log("[strlongitude]", value.address?.coords?.longitude);
@@ -374,7 +373,7 @@ export const NewOrder = (props) => {
         setInput({
           ...input,
           product: {},
-          status: {},
+          status: "",
           smallPackages: 0,
           mediumPackages: 0,
         });
@@ -649,63 +648,11 @@ export const NewOrder = (props) => {
         },
       });
     }
-
-    // if (
-    //   input.status.mix &&
-    //   input.status.mix.length == input.product.mix.products.length &&
-    //   input.status.mix.find((elem) => elem.product == product.name)
-    // ) {
-
-    //   setInput((ipt) => {
-    //     const { status } = ipt;
-    //     const { mix } = status;
-    //     const mixUpdated = [...mix];
-
-    //     if (idx >= 0 && idx < mix.length) {
-    //       mixUpdated[idx] = {
-    //         ...mix[idx],
-    //         value: v,
-    //       };
-
-    //       console.log("MIX UPDATED:", mixUpdated);
-    //     }
-    //     return {
-    //       ...ipt,
-    //       status: {
-    //         ...status,
-    //         name: "mixed",
-    //         mix: mixUpdated,
-    //       },
-    //     };
-    //   });
-    // }
-
-    // if (
-    //   input.status.mix &&
-    //   input.status.mix.length < input.product.mix.products.length &&
-    //   input.status.mix.find((elem) => elem.product == product.name)
-    // ) {
-    //   setInput({
-    //     ...input,
-    //     status: {
-    //       name: "mixed",
-    //       mix: [
-    //         ...input.status.mix,
-    //         {
-    //           name: v.name,
-    //           product: product.name,
-    //           value: v,
-    //         },
-    //       ],
-    //     },
-    //   });
-    // }
   };
 
   const StatusComponent = (props) => {
     let prod = props.product ? props.product : input.product;
     let tempOpts = options.status.filter((status) => status.selectable);
-    console.log(input.status?.mix);
     let valueForMix =
       input.status?.mix &&
       input.status?.mix.find((elem) => elem.product == prod.name)
