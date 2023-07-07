@@ -617,7 +617,16 @@ export const updateOrder = async (org, orderId, body) => {
 
     try{
         allProducts = await getAllProducts(org)
-        price = await getOrdersPrice(body, allProducts)
+
+        const order = await getOrderById(org, orderId)
+
+        if(order && order.length === 1 && order[0]){
+            price = await getOrdersPrice(order, allProducts)
+        } else {
+            throw new Error('Error getting order price')
+        }
+        
+        
     }catch(err){
         console.log(err)
         return reject(new Error(err.message === 'getAllProducts'
