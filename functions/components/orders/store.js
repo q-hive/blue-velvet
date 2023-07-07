@@ -619,7 +619,7 @@ export const updateOrder = async (org, orderId, body) => {
         allProducts = await getAllProducts(org)
 
         const orders = await getOrderById(org, orderId)
-        console.log(organizationWithOtrders)
+        console.log(orders)
         if(orders && orders.length === 1 && orders[0]){
             price = await getOrdersPrice(orders[0], allProducts)
         } else {
