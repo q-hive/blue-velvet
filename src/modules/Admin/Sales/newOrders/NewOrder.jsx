@@ -477,10 +477,25 @@ export const NewOrder = (props) => {
         useProducts = true;
       }
 
+      // [x]: Poner el status de la orden dependiendo de los status de los productos
+      const getOrderStatus = (orderProducts) => {
+        let allStatus = []
+        orderProducts.map((product)=>{
+          allStatus.push(product.status)
+        })
+
+        const uniqueStatus = new Set(allStatus);
+        if (uniqueStatus.size === 1) {
+          return [...uniqueStatus][0]
+        } else if (uniqueStatus.size > 1) {
+          return "production"
+        }
+      }
+
       mappedData = {
         customer: input.customer,
         products: useProducts ? products : [mappedInput],
-        status: "production",
+        status: getOrderStatus(useProducts ? products : [mappedInput]),
         date: input.date,
         cyclic: input.cyclic,
         address: deliveryAddress,
