@@ -776,9 +776,9 @@ export const saveProductionForWorkDay = async (orgId, containerId, production) =
     }
 }
 
-export const updateProductionToNextStatus = (orgId,container,productionIds) => {
+export const updateProductionToNextStatus = (orgId,container,productionModelsIds, actualStatus, ordersIds) => {
     return new Promise((resolve, reject) => {
-        updateManyProductionModels(orgId,container,productionIds)
+        updateManyProductionModels(orgId,container,productionModelsIds, actualStatus, ordersIds)
         .then((result) => resolve(result))
         .catch(err => reject(err))
     })

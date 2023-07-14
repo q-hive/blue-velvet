@@ -6,8 +6,8 @@ const useWork =  (headers) => {
     return await request('PATCH',`work/taskHistory`, header, {data: taskHistoryModel });
   };
 
-  const updateProduction = async (containerId, productionModelsIds, header=headers) => {
-    return await request('PATCH',`work/production/${containerId}`, header, {data: productionModelsIds });
+  const updateProduction = async (containerId, productionModelsIds, actualStatus, ordersIds, header=headers) => {
+    return await request('PATCH',`work/production/${containerId}`, header, {data: {productionModelsIds, actualStatus, ordersIds} });
   };
 
   const getWorkTimeByContainer = async (userId, containerId) => {

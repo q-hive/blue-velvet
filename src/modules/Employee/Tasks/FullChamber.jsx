@@ -427,7 +427,7 @@ export const FullChamber = () => {
     setWorkContext((wrkContext) => {
       if (
         WorkContext.cicle[cycleKeys[index]].started === undefined &&
-        index == WorkContext.current
+        index == WorkContext.currentRender
       ) {
         return {
           ...wrkContext,
@@ -497,12 +497,12 @@ export const FullChamber = () => {
             let finished = new Date();
             let elapsed = finished - started;
             let thisBreak = {
-              task: cycleKeys[WorkContext.current],
+              task: cycleKeys[WorkContext.currentRender],
               started: started,
               finished: finished,
               elapsed: elapsed,
             };
-            WorkContext.cicle[cycleKeys[WorkContext.current]].breaks.push(
+            WorkContext.cicle[cycleKeys[WorkContext.currentRender]].breaks.push(
               thisBreak
             );
             setWorkContext({ ...WorkContext });
@@ -510,7 +510,7 @@ export const FullChamber = () => {
             setTrackWorkModel({ ...TrackWorkModel });
             console.log(
               "current task breaks",
-              WorkContext.cicle[cycleKeys[WorkContext.current]].breaks
+              WorkContext.cicle[cycleKeys[WorkContext.currentRender]].breaks
             );
             console.log("trackwork model breaks ", TrackWorkModel.breaks);
             setDialog({ ...dialog, open: false });
@@ -526,14 +526,14 @@ export const FullChamber = () => {
         ...WorkContext,
         cicle: {
           ...WorkContext.cicle,
-          [cycleKeys[WorkContext.current]]: {
-            ...WorkContext.cicle[cycleKeys[WorkContext.current]],
+          [cycleKeys[WorkContext.currentRender]]: {
+            ...WorkContext.cicle[cycleKeys[WorkContext.currentRender]],
             stopped: Date.now(),
           },
         },
       };
     });
-  }, [WorkContext.current]);
+  }, [WorkContext.currentRender]);
 
 
   return (
@@ -547,7 +547,7 @@ export const FullChamber = () => {
         renderArrowNext={arrowNext}
         renderArrowPrev={arrowPrev}
         renderIndicator={false}
-        selectedItem={employeeIsWorking ? WorkContext.current : 0}
+        selectedItem={employeeIsWorking ? WorkContext.currentRender : 0}
         onChange={carouselChange}
         transitionTime={1000}
       >

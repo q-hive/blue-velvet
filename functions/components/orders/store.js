@@ -612,66 +612,59 @@ export const getOrdersByProd = (orgId, id) => {
     })
 }
 
-export const updateOrder = async (org, orderId, body) => {
-    let allProducts, price
+// [x]: Permite actualizar la orden normalmente y los productos segun el status finalizado 
+export const updateOrder = async (org, orderId, body, productId = undefined) => {
+    let allProducts, price;
 
     try{
-        allProducts = await getAllProducts(org)
-
-        const orders = await getOrderById(org, orderId)
-        console.log(orders)
+        allProducts = await getAllProducts(org);
+        const orders = await getOrderById(org, orderId);
+        
         if(orders && orders.length === 1 && orders[0]){
-            price = await getOrdersPrice(orders[0], allProducts)
+            price = await getOrdersPrice(orders[0], allProducts);
         } else {
-            throw new Error('Error getting order price')
+            throw new Error('Error getting order price');
         }
-        
-        
-    }catch(err){
-        console.log(err)
-        return reject(new Error(err.message === 'getAllProducts'
+    } catch(err) {
+        console.log(err);
+        throw new Error(err.message === 'getAllProducts'
             ? 'Error getting all products'
             : 'Error getting order price'
-        ));
+        );
     }
 
-    return new Promise((resolve, reject) => {
-        orgModel.findById(org).exec()
-        .then((organization) => {
-            if(organization){
-                const dbOrder = organization.orders.find((order) => order._id.equals(orderId))
-                if(!dbOrder) {
-                    return reject(dbOrder)
-                }
+    let updateFields = {};
+    
+    if(body.paths){
+        body.paths.forEach(({path, value}) => {
+            updateFields[`orders.$.${path}`] = value;
+            if(productId) updateFields[`orders.$.products.$[prod].${path}`] = value;
+        });
+    } else {
+        Object.entries(body).forEach(([key, value]) => {
+            updateFields[`orders.$.${key}`] = (key === 'price') ? price : value;
+        });
+    }
 
-                //**VALID STATUSES FOR ORDERS about production: ["received","production", "packed", "delivered"] */
-                //**VALID STATUSES FOR ORDERS about payment: ["unpaid","paid","pending"] */
+    let additionalOptions = {};
+    if(productId){
+        additionalOptions.arrayFilters = [{ 'prod._id': productId }];
+    }
 
-                if(body.paths){
-                    body.paths.forEach(({path, value}, index) => {
-                        dbOrder[path] = value
-                    });
-                }else{
-                    Object.entries(body).forEach(([key, value]) => {
-                        dbOrder[key] = (key === 'price') ? price : value;
-                    });
-                }
-
-                organization.save((err, doc) => {
-                    if(err) reject(JSON.stringify({"message":"Error saving organization", "status": 500, "processError":err}))
-
-                    resolve(dbOrder)
-                })
-                return
-            }
-
-            return reject(new Error(JSON.stringify({"message":"No organization found", "status": 204})))
-        })
-        .catch((err) => {
-            console.log(err);        
-        })
-    })
-}
+    return await orgModel.findOneAndUpdate(
+        { _id: org, "orders._id": orderId },
+        { $set: updateFields },
+        {
+            new: true,
+            runValidators: true,
+            ...additionalOptions,
+        }
+    ).exec()
+    .catch(err => {
+        console.error(err);
+        throw new Error("Error updating order");
+    });
+};
 
 export const updateManyOrders = (filter, update) => {
     return new Promise(async(resolve, reject) => {

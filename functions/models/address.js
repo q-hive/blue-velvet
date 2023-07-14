@@ -11,8 +11,8 @@ const Address = new Schema({
     country:    { type: String,   required: true  },
     references: { type: String,   required: false },
     coords:     { type: {
-        latitude:  { type: Number, required: true },
-        longitude: { type: Number, required: true }
+        latitude:  { type: Number, required: false },
+        longitude: { type: Number, required: false }
     }, required: false }
 },
 {

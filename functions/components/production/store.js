@@ -145,14 +145,14 @@ export const getPosibleStatusesForProduction = () => {
     return statuses
 }
 
-export const nextStatusForProduction = (productionModels) => {
+// [x]: Actualiza la produccion al siguiente status del que se selecciono a terimnar
+export const nextStatusForProduction = (productionModels, actualStatus) => {
     const cycleModel = productionCycleObject
 
     if(Array.isArray(productionModels)){
         productionModels.forEach((production) => {
-            const productionStatus = production.ProductionStatus
 
-            const nextProductionStatus = cycleModel[productionStatus].next
+            const nextProductionStatus = cycleModel[actualStatus].next 
 
             production.ProductionStatus = nextProductionStatus
         })
@@ -184,15 +184,6 @@ export const updateOrdersInModels = async (updatedModels, orgId, container) => {
             console.log("Production status of the order" + productionModel.RelatedOrder + " in DB woud be:  " + statusInProductionDB)
             console.log("with the applied update")
             
-            
-            const nonRepeatedStatus = Array.from(new Set(statusInProductionDB))
-    
-            if(nonRepeatedStatus.length >1){
-                console.log("Production models of " + productionModel.RelatedOrder + " order must all have the same status before updating order status")
-    
-                return
-            }
-    
             bodyQuery.orders[productionModel.RelatedOrder.toString()] = {
                 "paths":[{"path":"status","value":productionModel.ProductionStatus}]
             }
@@ -224,10 +215,7 @@ export const updateProduction = async (orgId, container, id, modifiedModels, sta
         console.log("Updating production model")
         console.log(newmodel)
         const productionStatus = newmodel.ProductionStatus
-        if(statuses.length >1 && productionStatus == "ready"){
-            console.log("Production models of " + newmodel.RelatedOrder + " order must all have the same status before updating order status")
-            return
-        }
+        console.log("Production model updating to ->", productionStatus)
         
         const op = await orgModel.updateOne(
             {
@@ -253,8 +241,6 @@ export const updateProduction = async (orgId, container, id, modifiedModels, sta
             }
         )
 
-        
-
         if(productionCycleObject[productionStatus]?.hasBackGroundTask){
             console.log("The production status " + productionStatus + " has a background task")
             await scheduleTask({organization:orgId, container, production:newmodel, name:"updateForProduction"})
@@ -277,10 +263,6 @@ export const updateProduction = async (orgId, container, id, modifiedModels, sta
         
         console.log("Production status of the order " + newmodel.RelatedOrder + " in DB is:  " + statuses)
 
-        if(statuses.length >1 && (productionStatus == "ready" || productionStatus == "delivered")){
-            console.log("Production models of " + newmodel.RelatedOrder + " order must all have the same status before updating order status")
-            return op
-        }
 
         const query = {
             orders:{
@@ -293,7 +275,7 @@ export const updateProduction = async (orgId, container, id, modifiedModels, sta
             "paths":[{"path":"status","value":newmodel.ProductionStatus}]
         }
 
-        await updateOrder(orgId, newmodel.RelatedOrder, query.orders[newmodel.RelatedOrder.toString()])
+        await updateOrder(orgId, newmodel.RelatedOrder, query.orders[newmodel.RelatedOrder.toString()], newmodel.ProductID)
 
         try {
             // if (newmodel.ProductionStatus === "delivered"){
@@ -336,13 +318,20 @@ export const updateProduction = async (orgId, container, id, modifiedModels, sta
 
     return up
 }
-//*THIS FUNCTION ONLY UPDATES TO THE NEXT STATUS CORRESPONDING TO THE PRODUCTION CYCLE
-export const updateManyProductionModels = (orgId,container,productionIds) => {
+//*THIS FUNCTION ONLY UPDATES TO THE NEXT STATUS CORRESPONDING TO THE PRODUCTION CYCLE ACCORDING THE ACTUAL STATUS OF TASK FINISHED
+export const updateManyProductionModels = (orgId, container, productionModelsIds, actualStatus, ordersIds) => {
     return new Promise(async(resolve, reject) => {
         console.log("Updating production models in " + container +  " container")
+        console.log("***************");
+        console.log("orgId --> ",orgId);
+        console.log("container --> ",container);
+        console.log("productionModelsIds --> ",productionModelsIds);
+        console.log("actualStatus --> ",actualStatus);
+        console.log("ordersIds --> ",ordersIds);
+        console.log("***************");
         
         let filteredProductionModels = []
-        const getProduction = productionIds.map(async (id) => {
+        const getProduction = productionModelsIds.map(async (id) => {
             const productionModel = await orgModel.findOne({
                 "_id":mongoose.Types.ObjectId(orgId),
                 "containers":{
@@ -365,17 +354,15 @@ export const updateManyProductionModels = (orgId,container,productionIds) => {
                 const productionModelFound = container.production.find((production) => production._id.equals(id))
 
                 console.log("Production model found")
-                console.log(productionModelFound)   
-                
                 filteredProductionModels.push(productionModelFound)
             })
-            
-
         })
 
         await Promise.all(getProduction)
+        console.log("[filteredProductionModels]",filteredProductionModels);
         
-        const modifiedModels = nextStatusForProduction(filteredProductionModels)
+        const modifiedModels = nextStatusForProduction(filteredProductionModels, actualStatus)
+        console.log("[modifiedModels]",modifiedModels);
 
         const allProductionStatus = await orgModel.aggregate([
             {
