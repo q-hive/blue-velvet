@@ -271,7 +271,7 @@ export const groupBy = (criteria, production, format, includeOrders = false, inc
             })
 
             products.forEach((product) => {
-                const productInProduction = filteredProduction.filter((productionModel) => productionModel.ProductID.equals(product._id))
+                const productInProduction = filteredProduction.filter((productionModel) => productionModel.ProductID.toString() == product._id.toString())
 
                 if(productInProduction.length > 0){
                     for(const {EstimatedHarvestDate,EstimatedStartDate,ProductName,RelatedMix,ProductID, ProductionStatus,_id,start, updated, RelatedOrder, seeds, trays,dryracks, harvest} of productInProduction){
@@ -306,10 +306,6 @@ export const groupBy = (criteria, production, format, includeOrders = false, inc
                             continue
                         }
                         
-                        console.log(ProductName)
-                        console.log(ProductionStatus)
-                        console.log(hashDates[ProductName][ProductionStatus])
-                        console.log(hashDates)  
                         if(hashDates[ProductName][ProductionStatus]) {
                             hashDates[ProductName][ProductionStatus].RelatedMix = RelatedMix;
                             hashDates[ProductName][ProductionStatus].seeds +=+ seeds
@@ -483,6 +479,7 @@ export const deleteProductionProduct = (orgId, containerId, productionData) => {
 };
 
 export const getProductionWorkByContainerId = (req,res, criteria) => {
+    // [x]: Poner todo en workData, poner produccion en cada status
     return new Promise(async (resolve, reject) => {
         let requiredProductionFormat = "array"
         if(req.path === "/workday"){
@@ -494,7 +491,27 @@ export const getProductionWorkByContainerId = (req,res, criteria) => {
 
             const productionInContainer = await getProductionInContainer(res.locals.organization, req.query.containerId)
 
-            const productionGroupped = grouPProductionForWorkDay("status", productionInContainer, requiredProductionFormat, false, true, products)
+            // [x]: Crea un modelos de produccion para cada status posible 
+            const productionStatuses = getPosibleStatusesForProduction()
+            let productionInAllStatuses = []
+
+            productionInContainer.forEach(productionModel => {
+                // [x]: Si tiene status delivered ya no deberia de estar en el workday
+                if (productionModel.ProductionStatus === "delivered") return;
+                
+                const dbProduct = products.find(dbProd => dbProd._id.toString() === productionModel.ProductID.toString())
+                const isLongCycle = dbProduct && (dbProduct.parameters.day + dbProduct.parameters.night) > 10;
+
+                productionStatuses.forEach(status => {
+                    // [x]: Validacion para productos que requieran PreSoaking
+                    if (!isLongCycle && status === 'preSoaking') return;
+                    let newProductionModel = JSON.parse(JSON.stringify(productionModel));
+                    newProductionModel.ProductionStatus = status;
+                    productionInAllStatuses.push(newProductionModel);
+                });
+            });
+
+            const productionGroupped = grouPProductionForWorkDay("status", productionInAllStatuses, requiredProductionFormat, false, true, products)
 
             resolve(productionGroupped)
             return
