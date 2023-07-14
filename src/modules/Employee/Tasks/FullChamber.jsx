@@ -57,7 +57,7 @@ export const FullChamber = () => {
   } = useWorkingContext();
 
   //*DATA STATES
-  let { orders, workData, packs, deliverys, cycleKeys } = state;
+  let { orders, workData, packs, deliverys, cycleKeys, disabledSteps } = state;
 
   //*render states
   const [canSeeNextTask, setCanSeeNexttask] = useState({
@@ -572,6 +572,8 @@ export const FullChamber = () => {
                   products: workdayProdData[status],
                   packs: packs,
                   deliverys: deliverys,
+                  isDisabledStep: disabledSteps.includes(status),
+                  orders: orders,
                 })}
               </Box>
             </Fade>

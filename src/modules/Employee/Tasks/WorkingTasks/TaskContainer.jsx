@@ -63,13 +63,14 @@ export const TaskContainer = (props) => {
     //* STEPPER
     const [activeStep, setActiveStep] = useState(0)
     
-    let type, order, products, packs
+    let type, orders, products, packs, isDisabledStep
     
     if(props != null){
         type=props.type
-        order=props.order
+        orders=props.orders
         products=props.products
         packs = state.packs
+        isDisabledStep = props.isDisabledStep
     }
 
     // const [isDisabled, setIsDisabled] = useState(state.workData[type].length<1)
@@ -414,7 +415,7 @@ export const TaskContainer = (props) => {
                         variant="contained"
                         onClick={isLastStep(index) ? handleCompleteTask : handleNext}
                         sx={()=>({...BV_THEME.button.standard,mt: 1, mr: 1,})}
-                        disabled={(!isOnTime && isLastStep(index)) || (isLastStep(index) && isFinished) && type === "growing"}
+                        disabled={isDisabledStep || (!isOnTime && isLastStep(index)) || (isLastStep(index) && isFinished) && type === "growing"}
                         
                     >
                         {isLastStep(index) ? 'Finish Task' :'Continue'}
@@ -451,7 +452,7 @@ export const TaskContainer = (props) => {
                         variant="contained"
                         onClick={isLastStep(index) ? handleCompleteTask : handleNext}
                         sx={()=>({...BV_THEME.button.standard})}
-                        disabled={(!isOnTime && isLastStep(index)) || (isLastStep(index) && isFinished) }
+                        disabled={isDisabledStep || (!isOnTime && isLastStep(index)) || (isLastStep(index) && isFinished) }
                         
                     >
                         {isLastStep(index) ? 'Finish Task' : 'Continue'}

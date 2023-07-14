@@ -334,6 +334,32 @@ export const EntryPoint = () => {
   };
 
   const setWorkingContext = (workDataModel, packs, deliverys) => {
+
+    // [x]: Obtener datos de workData y mandar cuales estan vacios para deshabilitar botones
+    const findStatusWithData = (workDataModel) => {
+      return Object.keys(workDataModel).filter((key) => {
+        const dataArray = workDataModel[key];
+        return dataArray.some(obj => (
+          (obj.dryracks !== 0 &&
+          obj.harvest !== 0 &&
+          obj.modelsId.length &&
+          obj.relatedOrders.length &&
+          obj.seeds !== 0 &&
+          obj.trays !== 0) ||
+          obj.modelsToHarvestMix.length
+        ));
+      }) || null;
+    }
+    
+    const allSteps = Object.keys(workDataModel);
+    const statusesWithData = findStatusWithData(workDataModel);
+    const statusesWithoutData = allSteps.filter((step) => !statusesWithData.includes(step));
+
+    // [x]: Mandar todos los status para desactivar sin hacer demas logica
+    if (statusesWithoutData.length === allSteps.length) {
+      return statusesWithoutData
+    }
+
     //*Employee started working identification
     if (!employeeIsWorking) {
       setEmployeeIsWorking(true);
@@ -358,11 +384,13 @@ export const EntryPoint = () => {
         }
       });
 
-      WorkContext.cicle[Object.keys(WorkContext.cicle)[0]].started = Date.now();
+      // [x]: Pone todos los status en started
+      Object.keys(WorkContext.cicle).map((status) => WorkContext.cicle[status].started=Date.now());
       window.localStorage.setItem("WorkContext", JSON.stringify(WorkContext));
     } else {
-      setWorkContext({ ...WorkContext, current: getFinishedTasks().length });
+      setWorkContext({ ...WorkContext, currentRender: getFinishedTasks().length });
     }
+    return statusesWithoutData
   };
 
   function getActiveProductsStatuses(workDataModel) {
@@ -459,7 +487,8 @@ export const EntryPoint = () => {
 
               setSnackState({ open: false });
               //*Working context
-              setWorkingContext(workData, packs, deliverys);
+              const disabledSteps = setWorkingContext(workData, packs, deliverys);
+
               setState({
                 ...state,
                 orders: allOrders,
@@ -467,6 +496,7 @@ export const EntryPoint = () => {
                 packs: packs,
                 cycleKeys: statusesArr,
                 time: estimatedTime,
+                disabledSteps: disabledSteps
               })
               navigate("./../tasks/work");
             })
@@ -508,9 +538,7 @@ export const EntryPoint = () => {
         });
 
       return;
-    }
-
-    if (!employeeIsWorking) {
+    } else {
       getWorkData()
         .then(({ workData, packs, deliverys }) => {
           let statusesArr = prepareProductionStatusesForRender(workData); //getActiveProductsStatuses(workData)
@@ -540,7 +568,7 @@ export const EntryPoint = () => {
 
               setSnackState({ open: false });
               //*Working context
-              setWorkingContext(workData, packs, deliverys);
+              const disabledSteps = setWorkingContext(workData, packs, deliverys);
 
               setState({
                 ...state,
@@ -549,6 +577,7 @@ export const EntryPoint = () => {
                 packs: packs,
                 cycleKeys: statusesArr,
                 time: estimatedTime,
+                disabledSteps: disabledSteps
               })
               navigate("./../tasks/work", {
                 state: {
@@ -557,6 +586,7 @@ export const EntryPoint = () => {
                   packs: packs,
                   cycleKeys: statusesArr,
                   time: estimatedTime,
+                  disabledSteps: disabledSteps
                 },
               });
             })
