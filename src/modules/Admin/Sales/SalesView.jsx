@@ -379,6 +379,8 @@ export const SalesView = () => {
   const handleUpdateOrder = (newOrderData, newProductionData, msg = "", reload = false, action = "") => {
   
     const updateData = () => {
+      // [ ]: Implementar logica para que se actualice la orden con el status de los productos (buscar en NewOrder.jsx)
+      console.log(newOrderData);
       updateOrder(orderId, newOrderData)
         .then((res) => {
           setDialog({
@@ -512,7 +514,7 @@ export const SalesView = () => {
       const newProduct = {
         name: product.name,
         status: status.name,
-        seedId: product?.seed,
+        seedId: product?.seed.seedId,
         provider: product?.provider,
         _id: product._id,
         packages

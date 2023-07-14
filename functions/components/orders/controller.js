@@ -489,7 +489,7 @@ export const scheduleProduction = (orgId, productions, order, products) => {
     }
   };
   
-const scheduleIndividualProduction = (orgId, production, order, products) => {
+const scheduleIndividualProduction = async (orgId, production, order, products) => {
 try {
     const product = products.find((prod) => prod._id.equals(production.ProductID));
 
@@ -505,27 +505,44 @@ try {
     const orderDate = new Date(order.date);
 
     const today = new Date();
+
+    const isToday = (date) =>{
+      return (
+        date.getFullYear() === today.getFullYear() && 
+        date.getMonth() === today.getMonth() && 
+        date.getDate() === today.getDate()
+      )
+    }
       
-    if (orderDate.getFullYear() === today.getFullYear() && 
-        orderDate.getMonth() === today.getMonth() && 
-        orderDate.getDate() === today.getDate()) {
+    if (isToday(orderDate)) {
       // If the order date is today, set the status of the production to "harvestReady"
       production.status = "harvestReady";
     }
     
     if (!product.mix.isMix) {
         if (!['seeding', 'preSoaking'].includes(production.ProductionStatus)) {
-            updateProduction(orgId, production);
+          try {
+            await updateProduction(orgId, production);
             return;
+          } catch (error) {
+            console.log(error);
+            throw "Error creating production.";
+          }
           }
         
         
         const deliveryDate = new Date(order.date);
-        deliveryDate.setDate(deliveryDate.getDate() - (product.parameters.day + product.parameters.night));
-        deliveryDate.setHours(4);
-        deliveryDate.setMinutes(0);
-        deliveryDate.setSeconds(0);
-
+        const startProductionData = deliveryDate.setDate(deliveryDate.getDate() - (product.parameters.day + product.parameters.night));
+        if (isToday(deliveryDate)) {
+          try {
+            await updateProduction(orgId, production);
+            return;
+          } catch (error) {
+            console.log(error);
+            throw "Error creating production.";
+          }
+        }
+        
         console.log("Scheduling production for " + deliveryDate + " for order " + order._id + " and product " + product.name + ".")
         const job = nodeschedule.scheduleJob(deliveryDate, async () => {
             await updateProduction(orgId, production);
