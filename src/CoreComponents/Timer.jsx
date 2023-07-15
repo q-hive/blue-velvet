@@ -23,18 +23,19 @@ export const Timer = ({contxt}) => {
     if(context === "task"){
 
       const actualTask = Object.keys(WorkContext.cicle)[WorkContext.currentRender]
-      const workingOnThisTask = WorkContext.current === WorkContext.currentRender
+      const workingOnThisTask = WorkContext.currentRender === WorkContext.currentRender
+      
 
-
-      if(WorkContext.current > WorkContext.currentRender ){
+      if(WorkContext.cicle[actualTask].achieved ){
         currentContextTime=WorkContext.cicle[actualTask].achieved
       }
 
       if(workingOnThisTask){
-        currentContextTime= Date.now() - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].started
+        currentContextTime= Date.now() - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.currentRender]].started
       }
     }
 
+    console.log("🚀 ", currentContextTime)
     return currentContextTime
   }
   
@@ -44,19 +45,14 @@ export const Timer = ({contxt}) => {
   
     
   const updateTime = () => {
-    if(!currentTaskFinished && WorkContext.current === WorkContext.currentRender || contxt == "global" )
-      setTime(time+1000)
-    
-    if(WorkContext.current < WorkContext.currentRender && contxt != "global" )
-      setTime(0)
-
+    setTime(time+1000)
   }
   
   useMemo(() => {
     setTime(0)
     let currTime = getCurrentContextTime(contxt)
     setTime(currTime)
-  }, [WorkContext.currentRender, WorkContext.current])
+  }, [WorkContext.currentRender])
 
 
   
