@@ -316,22 +316,13 @@ export const SalesIndex = () => {
             flex:1
         },
         {
-            field:"date1",
-            headerName:"Tuesday",
+            field:"deliveryDate",
+            headerName:"Delivery date",
             headerClassName:"header-sales-table",
             headerAlign:"center",
             align:"center",
             minWidth:{xs:"25%",md:100},
-            flex:1
-        },
-        {
-            field:"date2",
-            headerName:"Friday",
-            headerClassName:"header-sales-table",
-            headerAlign:"center",
-            align:"center",
-            minWidth:{xs:"25%",md:100},
-            flex:1
+            flex:2
         },
         {
             field:"cyclic",

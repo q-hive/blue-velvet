@@ -8,7 +8,7 @@ import useWork from '../hooks/useWork'
 import useContainers from '../hooks/useContainers'
 import useProducts from '../hooks/useProducts'
 import useTasks from '../hooks/useTasks'
-import { normalizeDate } from '../utils/times'
+import { formattedDate } from '../utils/times'
 
 export const getOrdersData = (props) => {
 
@@ -53,20 +53,7 @@ export const getOrdersData = (props) => {
         .then((newResponse) => {
             newResponse.forEach((order, idx) => {
                 const orderDate = new Date(order.date)
-                
-                switch(orderDate.getDay()){
-                    case 2:
-                        newResponse[idx].date1 = normalizeDate(orderDate) 
-                        newResponse[idx].date2 = null 
-                        
-                    break;
-                    case 5:
-                        newResponse[idx].date2 = normalizeDate(orderDate)
-                        newResponse[idx].date1 = null
-                    break;
-                    default:
-                        break;
-                }
+                newResponse[idx].deliveryDate = formattedDate(orderDate) 
             })
             
             props.setTotalIncome(sumPrices())
@@ -101,8 +88,7 @@ export const getOrdersData = (props) => {
             const mappedRows = newResponse.map((order) => {
                 return {
                     "customer": order.fullCustomer.name,
-                    "date1":    order.date1,
-                    "date2":    order.date2,
+                    "deliveryDate":    order.deliveryDate,
                     "cyclic":   order.cyclic,
                     "income":   order.price,
                     "status":   order.status,
