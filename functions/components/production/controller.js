@@ -496,13 +496,18 @@ export const getProductionWorkByContainerId = (req,res, criteria) => {
                 const dbProduct = products.find(dbProd => dbProd._id.toString() === productionModel.ProductID.toString())
                 const isLongCycle = dbProduct && (dbProduct.parameters.day + dbProduct.parameters.night) > 10;
 
-                productionStatuses.forEach(status => {
-                    // [x]: Validacion para productos que requieran PreSoaking
-                    if (!isLongCycle && status === 'preSoaking') return;
-                    let newProductionModel = JSON.parse(JSON.stringify(productionModel));
-                    newProductionModel.ProductionStatus = status;
-                    productionInAllStatuses.push(newProductionModel);
-                });
+                if (productionModel.ProductionStatus === "seeding" || productionModel.ProductionStatus === "preSoaking"){
+                    productionInAllStatuses.push(productionModel)
+                } else {
+                    productionStatuses.forEach(status => {
+                        // [x]: Validacion para productos que requieran PreSoaking
+                        if (!isLongCycle && status === 'preSoaking') return;
+                        if ( status === 'seeding' || status === 'preSoaking' ) return;
+                        let newProductionModel = JSON.parse(JSON.stringify(productionModel));
+                        newProductionModel.ProductionStatus = status;
+                        productionInAllStatuses.push(newProductionModel);
+                    });
+                }
             });
 
             const productionGroupped = grouPProductionForWorkDay("status", productionInAllStatuses, requiredProductionFormat, false, true, products)

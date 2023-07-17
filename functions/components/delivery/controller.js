@@ -130,7 +130,7 @@ const getPendingOrders = async (orgId, buildFn) => {
     const filteredOrders = await getFilteredOrders(orgId, undefined, false, null)
 
     if (filteredOrders.length) {
-        const pendingOrders = filteredOrders.filter((dbOrder) => dbOrder.status !== "delivered")
+        const pendingOrders = filteredOrders.filter((dbOrder) => dbOrder.status !== "delivered" && dbOrder.status !== "seeding" && dbOrder.status !== "preSoaking");
         return pendingOrders.length ? await buildFn(pendingOrders) : []
     }
 

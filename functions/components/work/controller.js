@@ -126,13 +126,18 @@ export const calculateTimeEstimation = async (totalProduction, isGroupped = fals
                     
             const productFind = dbProducts.find(dbProd => dbProd._id.toString() === productionModel.ProductID.toString())
             const isLongCycle = productFind && (productFind.parameters.day + productFind.parameters.night) > 10;
-    
-            productionStatuses.forEach(status => {
-                if (!isLongCycle && status === 'preSoaking') return;
-                let newProductionModel = JSON.parse(JSON.stringify(productionModel));
-                newProductionModel.ProductionStatus = status;
-                productionInAllStatuses.push(newProductionModel);
-            });
+            
+            if (productionModel.ProductionStatus === "seeding" || productionModel.ProductionStatus === "preSoaking"){
+                productionInAllStatuses.push(productionModel)
+            } else {
+                productionStatuses.forEach(status => {
+                    if (!isLongCycle && status === 'preSoaking') return;
+                    if (status === 'seeding' || status === 'preSoaking') return;
+                    let newProductionModel = JSON.parse(JSON.stringify(productionModel));
+                    newProductionModel.ProductionStatus = status;
+                    productionInAllStatuses.push(newProductionModel);
+                });
+            }
     
         })
 

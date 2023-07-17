@@ -260,7 +260,10 @@ export const groupOrdersForPackaging = (orders, date = undefined) => {
   const hash = {},
     result = [];
   orders.forEach((order) => {
+    // [x]: Quitar todos los productos que esten en produccion pasiva (preSoaking, seeding, growing)
+    const passiveProduction = ['preSoaking', 'seeding', 'growing']
     order.products.forEach((product) => {
+      if (passiveProduction.includes(product.status)) return
       if (!hash[product.name]) {
         hash[product.name] = {
           packages: {
@@ -283,6 +286,10 @@ export const groupOrdersForPackaging = (orders, date = undefined) => {
 export const groupOrdersForDelivery = async (orders, date = undefined) => {
   const mappedProducts = (products) => {
     const map = products.map((product) => {
+      // [x]: Quitar todos los productos que esten en produccion pasiva (preSoaking, seeding, growing)
+      const passiveProduction = ['preSoaking', 'seeding', 'growing']
+      if (passiveProduction.includes(product.status)) return
+
       const packagesHash = {};
       for (const { size, number, grams, _id } of product.packages) {
         if (!packagesHash[size]) {
@@ -318,9 +325,12 @@ export const groupOrdersForDelivery = async (orders, date = undefined) => {
         result.push(hash[order.customer.toString()]);
       }
 
+
+      console.log("🎈",mappedProducts(order.products));
+
       hash[order.customer.toString()].orders.push({
         _id: order._id,
-        products: mappedProducts(order.products),
+        products: mappedProducts(order.products).filter((product) => product !== undefined),
         price: order.price,
       });
     })
