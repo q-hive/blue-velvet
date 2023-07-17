@@ -477,96 +477,182 @@ export const buildOrderFromExistingOrder = (
   return newOrder;
 };
 
-export const scheduleProduction = (orgId, productions, order, products) => {
-    console.log("Scheduling production...");
-    console.log(productions)
-    if (!orgId || !productions || !productions.length>0 || !order || !products) {
-      throw new Error("Missing necessary data for scheduling production.");
-    }
-  
+export const isWorkingDay = (date) => {
+  //*WORKINNG DAYS ARE TUESDAY AND FRIDAY
+  const day = date.getDay();
+  if (day === 2 || day === 5) {
+    return true;
+  }
+  return false;
+};
+
+export const setClosestWorkingDay = (date) => {
+  //IF THE DAY IS AFTER TUESDAY, SET DATE TO THE PAST TUESDAY, IF NOT, SET DATE TO FRIDAY
+  const day = date.getDay();
+  if (day === 0 || day === 6 || day === 1) {
+    const diff = day === 0 ? 2 : day === 6 ? 1 : 3;
+    date.setDate(date.getDate() - diff);
+    return date;
+  }
+
+  if (day === 3 || day === 4) {
+    const diff = day - 2;
+    date.setDate(date.getDate() - diff);
+    return date;
+  }
+
+  return date;
+};
+
+export const scheduleProduction = async (orgId, productions, order, products) => {
+  console.log("Scheduling production...");
+  console.log(productions);
+  if (
+    !orgId ||
+    !productions ||
+    !productions.length > 0 ||
+    !order ||
+    !products
+  ) {
+    throw new Error("Missing necessary data for scheduling production.");
+  }
+
+  try {
     for (let production of productions) {
-      scheduleIndividualProduction(orgId, production, order, products);
+      try {
+        await scheduleIndividualProduction(orgId, production, order, products);
+      } catch (err) {
+        throw err;
+      }
     }
-  };
-  
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Function to schedule individual production
 const scheduleIndividualProduction = async (orgId, production, order, products) => {
-try {
+  try {
+    // Find the product associated with the production
     const product = products.find((prod) => prod._id.equals(production.ProductID));
 
+    // If no product is found, log an error and return
     if (!product) {
-    console.error(`No product found for ID ${production.ProductID}.`);
-    return;
+      console.error(`No product found for ID ${production.ProductID}.`);
+      throw new Error(`No product found for ID ${production.ProductID}.`);
     }
 
-    console.log("Product found.")
-    console.log(product)
+    // Log the found product
+    console.log("Product found:", product);
 
     // Convert order date to Date object for comparison
     const orderDate = new Date(order.date);
-
     const today = new Date();
 
-    const isToday = (date) =>{
-      return (
-        date.getFullYear() === today.getFullYear() && 
-        date.getMonth() === today.getMonth() && 
-        date.getDate() === today.getDate()
-      )
-    }
-      
+    // Function to check if a date is today
+    const isToday = (date) => (
+      date.getUTCFullYear() === today.getUTCFullYear() &&
+      date.getUTCMonth() === today.getUTCMonth() &&
+      date.getUTCDate() === today.getUTCDate()
+    );
+
+    // If the order date is today, set the status of the production to "harvestReady"
     if (isToday(orderDate)) {
-      // If the order date is today, set the status of the production to "harvestReady"
       production.status = "harvestReady";
     }
-    
+
+    // If the product is not a mix
     if (!product.mix.isMix) {
-        if (!['seeding', 'preSoaking'].includes(production.ProductionStatus)) {
-          try {
-            await updateProduction(orgId, production);
-            return;
-          } catch (error) {
-            console.log(error);
-            throw "Error creating production.";
-          }
-          }
-        
-        
-        const deliveryDate = new Date(order.date);
-        const startProductionData = deliveryDate.setDate(deliveryDate.getDate() - (product.parameters.day + product.parameters.night));
-        if (isToday(deliveryDate)) {
-          try {
-            await updateProduction(orgId, production);
-            return;
-          } catch (error) {
-            console.log(error);
-            throw "Error creating production.";
-          }
+      // Calculate the start production date
+      const deliveryDate = new Date(order.date);
+      deliveryDate.setUTCDate(deliveryDate.getUTCDate() - (product.parameters.day + product.parameters.night));
+      const startProductionDate = deliveryDate;
+
+      // If the production status is not 'seeding' or 'preSoaking' and the order delivery date is not today
+      if (!["seeding", "preSoaking"].includes(production.ProductionStatus) && !isToday(orderDate)) {
+        // Schedule a job to insert the production on the closest working day based on delivery date
+        try {
+          const scheduledDate =  setClosestWorkingDay(orderDate)
+          console.log("The scheduled date is: ", scheduledDate)
+          const job = nodeschedule.scheduleJob(
+            scheduledDate.toISOString(),
+            async () => {
+              await insertProduction(orgId, production);
+            }
+          );
+
+          console.log(`Scheduled production for ${scheduledDate} for order ${order._id} and product ${product.name}.`);
+          return job;
+        } catch (error) {
+          throw new Error("Error creating production.");
         }
-        
-        console.log("Scheduling production for " + deliveryDate + " for order " + order._id + " and product " + product.name + ".")
-        const job = nodeschedule.scheduleJob(deliveryDate, async () => {
-            await updateProduction(orgId, production);
-        });
+      }
+
+      // If the deliveryDate is today, insert the production
+      if(isToday(orderDate)){
+        try {
+          await insertProduction(orgId, production);
+          console.log("Production has been added to the database.");
+          return;
+        } catch (error) {
+          throw new Error("Error creating production.");
+        }
+      }
+      
+      // If the start production date is today, insert the production
+      if (isToday(startProductionDate)) {
+        try {
+          await insertProduction(orgId, production);
+          console.log("Production has been added to the database.");
+          return;
+        } catch (error) {
+          throw new Error("Error creating production.");
+        }
+      }
+
+      // If the start production date is not a working day, schedule a job to insert the production on the closest working day
+      if (!isWorkingDay(startProductionDate)) {
+        const job = nodeschedule.scheduleJob(
+          setClosestWorkingDay(startProductionDate).toISOString(),
+          async () => {
+            await insertProduction(orgId, production);
+          }
+        );
+
+        console.log(`Scheduled production for ${startProductionDate} for order ${order._id} and product ${product.name}.`);
+        return job;
+      }
+
+      // If the start production date is a working day, schedule a job to insert the production
+      const job = nodeschedule.scheduleJob(startProductionDate.toISOString(), async () => {
+        await insertProduction(orgId, production);
+      });
+
+      console.log(`Scheduled production for ${startProductionDate} for order ${order._id} and product ${product.name}.`);
+      return job;
     }
-} catch (error) {
+  } catch (error) {
     console.error(`Error scheduling production for ID ${production._id}: ${error.message}`);
-    throw "Error scheduling production.";
-}
+    throw new Error("Error scheduling production.");
+  }
 };
-  
-const updateProduction = async (orgId, production) => {
-try {
-    const updateOP = await organizationModel.updateOne(
-    { "_id": mongoose.Types.ObjectId(orgId) },
-    {
-        "$push":{
-        "containers.$[].production": {"$each": [production]},
+
+const insertProduction = async (orgId, production) => {
+  try {
+    await organizationModel.updateOne(
+      { _id: mongoose.Types.ObjectId(orgId) },
+      {
+        $push: {
+          "containers.$[].production": { $each: [production] },
         },
-    },
+      }
     );
-} catch (error) {
-    console.error(`Error updating production for ID ${production._id}: ${error.message}`);
-}
+  } catch (error) {
+    console.log(error)
+    console.error(
+      `Error updating production for ID ${production._id}: ${error.message}`
+    );
+  }
 };
 
 export const setOrderAbonment = (org, ordr, forProdOrder, prods, ovrhd) => {

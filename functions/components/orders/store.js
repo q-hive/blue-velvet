@@ -338,231 +338,106 @@ export const deleteOrders = (orgId, orders) => {
     })
 }
 
-export const createNewOrder = (orgId, order) => {
-    return new Promise(async (resolve, reject) => {
-        const errorFromOrg = {
-            "message":  "Error obtaining organization",
-            "status":    500
-        }
-        const errorSaving = {
-            "message": "Error saving organization",
-            "status":   400
-        }
-        const emptyOrgs = {
-            "message":  "Organizations DB empty",
-            "status":    204
-        }
+export const createNewOrder = async (orgId, order) => {
+    try {
+        // Generate a new ID for the order
+        const id = new ObjectId();
 
-        const noProducts = {
-            "message":  "No products in DB",
-            "status":   204
-        }
-        const priceFailure = {
-            "message": "There was an error calculating the price",
-            "status":   500
-        }
-        const errorGettingProducts = {
-            "message":"There was an error while getting products to match with the order.",
-            "status":500
-        }
-        const invalidDate = {
-            "message":"The date for the order is invalid, please compare the production times with the date you selected.",
-            "status":400
-        }
-        
-        // * Id for order
-        let id = new ObjectId()
+        // Fetch all products for the organization
+        const allProducts = await getAllProducts(orgId);
 
-        
-        let allProducts
-        let mappedProducts
-        let mappedAndUpdatedProducts
-        let prc
+        // Convert order date to a Date object and then to a UTC string
+        const orderDate = new Date(order.date).toISOString();
 
-        
-        //*Get all products of container to make validations (products on order have no the complete data)
-        try{
-            allProducts = await getAllProducts(orgId)
-            console.log(allProducts)
-        }catch(err){
-            console.log(err)
-            return reject(new Error(JSON.stringify(errorGettingProducts)))
-        }
-        
-        //*Check if is a valid date compared with production times estimations.
-        // try {
-        //     newOrderDateValidation(order, allProducts)
-        // } catch (err){
-        //     console.log(err)
-        //     return reject(new Error(JSON.stringify(invalidDate)))
-        // }
+        // Map the products in the order to the full product data from the database
+        const mappedProducts = order.products.map((prod) => {
+            const dbProduct = allProducts.find((product) => product._id.equals(prod._id));
 
-        //*Mapea los productos para completar el modelo de la base de datos en la propiedad products
-        try {
-            mappedProducts = order.products.map((prod) => {
-                const dbProduct = allProducts.find((product) => {
-                    return product._id.equals(prod._id)
-                })
-                let order = {
-                    _id:            prod._id,
-                    name:           prod.name,
-                    seedId:         dbProduct?.seed?.seedId,
-                    packages:       prod.packages,
-                    mix:            dbProduct.mix.isMix,
-                    price:          dbProduct.price
-                }
-                
-                if(dbProduct.mix.isMix){
-                    allProducts.find((product) => {
-                        return product._id.equals(prod._id)
-                    })
-                    
-                    return {
-                        ...order,
-                        status: prod.status.name,
-                        mixStatuses: prod.mixStatuses
-                    }
-                    
-                }
+            // Base order object
+            let orderProduct = {
+                _id: prod._id,
+                name: prod.name,
+                seedId: dbProduct?.seed?.seedId,
+                packages: prod.packages,
+                mix: dbProduct.mix.isMix,
+                price: dbProduct.price
+            };
 
-                if (!dbProduct.mix.isMix){
-                    return {
-                        ...order,
-                        status: prod.status,
-                    }
-                }
-                
-            })
-
-            mappedAndUpdatedProducts = mappedProducts;
-        } catch(err){
-            reject(err)
-        }
-
-        try{
-            prc = getOrdersPrice(order, allProducts)
-            
-            if(prc === undefined || prc === null){
-                return reject(new Error(JSON.stringify(priceFailure)))
+            // If the product is a mix, add the mix status
+            if (dbProduct.mix.isMix) {
+                return {
+                    ...orderProduct,
+                    status: prod.status.name,
+                    mixStatuses: prod.mixStatuses
+                };
             }
+
+            // If the product is not a mix, add the product status
+            return {
+                ...orderProduct,
+                status: prod.status,
+            };
+        });
+
+        // Calculate the price of the order
+        const price = getOrdersPrice(order, allProducts);
+        if (price === undefined || price === null) {
+            throw new Error("There was an error calculating the price");
         }
-        catch(err){
-            reject(err)
+
+        // Create the order object
+        let orderMapped = {
+            _id: id,
+            organization: orgId,
+            customer: order.customer._id,
+            price: price,
+            date: orderDate,
+            address: order.address,
+            products: mappedProducts,
+            status: order.status,
+            cyclic: order.cyclic,
+        };
+
+        // Fetch the organization's container
+        const org = await getContainers({ organization: orgId });
+        if (!org || !org.containers || org.containers.length !== 1) {
+            throw new Error("Error obtaining organization");
         }
 
-        try{
-            let org = await getContainers({organization:orgId})
+        // Calculate the overhead
+        const overhead = (org.containers[0].config.overhead) / 100;
 
-            const isValidContainerResponse = org !== null && org !== undefined && org.containers.length === 1
-            let overhead = 0;
-            if (isValidContainerResponse){
-                overhead = (org.containers[0].config.overhead)/100
-            } 
-            
-            
-            
-            if(allProducts && allProducts.length >0){
-                let orderMapped = {
-                    _id:            id,
-                    organization:   orgId,
-                    customer:       order.customer._id,
-                    price:          prc,
-                    date:           order.date,
-                    address:        order.address,
-                    products:       mappedAndUpdatedProducts,
-                    status:         order.status,
-                    cyclic:          order.cyclic,
-                }
-                
-                let production = await buildProductionDataFromOrder({...orderMapped}, allProducts, overhead, org.containers[0])
+        // Build the production data for the order
+        const production = await buildProductionDataFromOrder(orderMapped, allProducts, overhead, org.containers[0]);
 
-                try {
-                    scheduleProduction(orgId, production,orderMapped,allProducts)
-                } catch(err){
-                    console.log(err)
-                    return reject(err)
-                }
-                
+        // Calculate the total number of trays to use
+        const totalTraysToUse = production.reduce((acc, prod) => acc + prod.trays, 0);
 
-                getOrganizationById(orgId)
-                .then(async organization => {
-                    if(!organization){
-                        return reject(new Error(JSON.stringify(emptyOrgs)))
-                    }
-                    
-                    organization.orders.push(orderMapped)
+        // Schedule the production
+        await scheduleProduction(orgId, production, orderMapped, allProducts);
 
-                    try {
-                        await organization.save()
-                    }catch(err) {
-                        console.log(err)
-                        reject(new Error(JSON.stringify(errorSaving)))
-                    }
-                    console.log("Order mapped and saved, checking if it is cyclic")
-                    if(order.cyclic){
-                        // const orgWithNewOrdersFiltered = await organizationModel.findOne(
-                        //     {
-                        //         "_id":mongoose.Types.ObjectId(orgId)
-                        //     },
-                        //     {
-                        //         "orders":{
-                        //             "$filter":{
-                        //                 "input":"$orders",
-                        //                 "as":"order",
-                        //                 "cond":{ "$eq":["$$order._id", id] }
-                        //             }
-                        //         }
-                        //     }
-                        // ).exec()
-
-                        
-                        let jobName
-                        try {
-                            console.log("Order abonment required, once the production is finished, the order will be set again")
-                            // jobName = setOrderAbonment(orgId,orgWithNewOrdersFiltered.orders[0],orderMapped, allProducts, overhead)
-                        } catch (err) {
-                            reject(err)
-                        }
-                        
-                        try {
-                            await organizationModel.updateOne(
-                                {
-                                    "_id":mongoose.Types.ObjectId(orgId)
-                                },
-                                {
-                                    "$set":{
-                                        "orders.$[order].job":`Reorder-${id}`
-                                    }
-                                },
-                                {
-                                    "arrayFilters":[
-                                        {"order._id":id}
-                                    ]
-                                }
-                            )
-                        } catch (err) {
-                            reject(err)
-                        }
-
-                        resolve()
-                        return
-                    }
-
-                    resolve()
-                })
-                .catch(err => {
-                    console.log(err)
-                    reject(new Error(JSON.stringify(errorFromOrg)))
-                })    
-            } else {
-                reject(new Error(JSON.stringify(noProducts)))
-            }
-            
-        } catch (err) {
-            reject(err)
+        // Fetch the organization
+        const organization = await getOrganizationById(orgId);
+        if (!organization) {
+            throw new Error("Organizations DB empty");
         }
-    })
-}
+
+        // Update the organization's orders and available trays
+        organization.orders.push(orderMapped);
+        const available = organization.containers[0].available;
+        organization.containers[0].available = available - totalTraysToUse;
+
+        // Save the organization
+        await organization.save();
+
+        console.log("Order mapped and saved, checking if it is cyclic");
+
+        return organization;
+    } catch (err) {
+        console.error(err);
+        throw err;
+    }
+};
 
 export const insertNewOrderWithProduction = async (orgId, order, production) => {
     try {

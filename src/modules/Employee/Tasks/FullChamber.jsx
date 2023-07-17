@@ -90,50 +90,6 @@ export const FullChamber = () => {
     });
   };
 
-  const getCycleKeys = () => {
-    let arrcycl = [];
-
-    Object.keys(workdayProdData).map((activeKey, id) => {
-      workdayProdData[activeKey].length > 0
-        ? Object.keys(WorkContext.cicle).map((structureKey, id) => {
-            if (structureKey == activeKey && !arrcycl.includes(structureKey))
-              arrcycl.push(structureKey);
-          })
-        : null;
-    });
-    console.log("arrcycl innit", arrcycl);
-    return arrcycl;
-  };
-
-  /*    let psTrue = workdayProdData.preSoaking?.length>0
-    let sTrue = workdayProdData.seeding?.length>0
-    let hrTrue = workdayProdData.harvestReady?.length>0
-    */
-
-  /*psTrue?cycleKeys.push("preSoaking"):null
-    sTrue?cycleKeys.push("seeding"):null
-    hrTrue?cycleKeys.push("harvestReady"):null
-    */
-
-  const ordersList = orders;
-
-  function getAllProducts() {
-    const productList = [];
-    ordersList.map((order, id) => {
-      order.products.map((product, idx) => {
-        productList.push({
-          ...product,
-          status: order.status,
-          productionData:
-            order.productionData[
-              order.productionData.findIndex((x) => x.product === product.name)
-            ],
-        });
-      });
-    });
-    return productList;
-  }
-
   const allProducts = workData;
 
   const getTimeEstimate = async () => {
@@ -262,18 +218,6 @@ export const FullChamber = () => {
     return result;
   };
 
-  {
-    /* Products to send as props to TaskTest */
-  }
-  function getProductsByType(type) {
-    const filteredProductList = [];
-
-    allProducts.map((product, id) => {
-      if (product.status === type) filteredProductList.push(product);
-    });
-    return filteredProductList;
-  }
-
   const getWorkData = async () => {
     // if (window.localStorage.getItem("workData")) {
     //   return {
@@ -299,14 +243,12 @@ export const FullChamber = () => {
   };
 
   function prepareProductionStatusesForRender(workData) {
-    let psTrue = workData.preSoaking?.length > 0;
-    let sTrue = workData.seeding?.length > 0;
-    let hrTrue = workData.harvestReady?.length > 0;
-
     let testingKeys = Object.keys(workData);
     //*Delete growing from cycle (not useful display in cycle)
     const growingStatusIndex = testingKeys.indexOf("growing");
+    const readyStatusIndex = testingKeys.indexOf("ready");
     testingKeys.splice(growingStatusIndex, 1);
+    // testingKeys.splice(readyStatusIndex, 1)
 
     testingKeys.push("cleaning");
 
@@ -420,10 +362,6 @@ export const FullChamber = () => {
       return { ...cnSee };
     });
 
-    if (index < canSeeNextTask.counter) {
-      return;
-    }
-
     setWorkContext((wrkContext) => {
       if (
         WorkContext.cicle[cycleKeys[index]].started === undefined &&
@@ -445,6 +383,10 @@ export const FullChamber = () => {
     });
 
     setCanSeeNexttask({ ...canSeeNextTask, value: false });
+    
+    if (index < canSeeNextTask.counter) {
+      return;
+    }
   };
 
   const carouselButtonSX = {

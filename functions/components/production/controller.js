@@ -361,12 +361,6 @@ export const grouPProductionForWorkDay = (criteria,production, format, includePa
         const grouppedProduction = groupBy(criteria, production, format, includePackages, includeAllProducts, products)
         
         if(includePackages){
-            // if(format === "array"){
-            //     const orders = grouppedProduction.map(obj => obj.orders)
-            //     const packages = buildPackagesFromOrders(orders) 
-            //     grouppedProduction[0].packages = packages
-            // }
-    
             if(format === "hash"){
                 grouppedProduction.packages = packages
             }
@@ -532,15 +526,6 @@ export const getProductionWorkByContainerId = (req,res, criteria) => {
             //*If no production is returned then return empty array
             if(production.length > 0 && criteria === "tasks"){
                 const productionGrouped = grouPProductionForWorkDay("status",production, requiredProductionFormat, false)
-                const times  = calculateTimeEstimation(grouPProductionForWorkDay("status",production, "array", false), true)
-
-                // times.forEach((timeTask) => {
-                //     if(productionGrouped[Object.keys(timeTask)[0]].length=== 0) {
-                //         return
-                //     }
-                //     productionGrouped[Object.keys(timeTask)[0]].push({minutes:timeTask[Object.keys(timeTask)[0]].minutes})
-                // })
-                
                 resolve(productionGrouped)
                 return
             }
@@ -619,6 +604,9 @@ export const buildProductionProductData = async (prod, order, dbproducts, overHe
                     const trays = Math.ceil(seeds / mixFound.parameters.seedingRate)
                     const totalProductionDays = mixFound.parameters.day + mixFound.parameters.night
                     const mixStrainStatus = prod.mixStatuses.find((status) => status.product === mixFound.name).name
+                    const dryracks =  isLargeCicle(totalProductionDays) ? trays : setDryRacksByHarvest(trays, prodFound.name)
+
+                    
                     console.log(seeds + " seeds")
                     console.log(trays + " trays")
                     console.log(strharvest + " harvest")
@@ -640,8 +628,8 @@ export const buildProductionProductData = async (prod, order, dbproducts, overHe
                         ProductID:              mixFound._id,
                         harvest:                strharvest,
                         seeds:                  seeds,
-                        trays:                  trays,
-                        dryracks:               isLargeCicle(totalProductionDays) ? trays : setDryRacksByHarvest(trays, prodFound.name)
+                        trays:                  trays < 1 ? 1 : trays,
+                        dryracks:               dryracks < 1 ? 1 : dryracks,
                     }
 
                     if(mixStrainStatus === "harvestReady" || mixStrainStatus === "growing"){
@@ -682,6 +670,7 @@ export const buildProductionProductData = async (prod, order, dbproducts, overHe
                 const totalTrays = Math.floor(totalSeeds / prodFound.parameters.seedingRate) 
                 const totalProductionDays = prodFound.parameters.day + prodFound.parameters.night 
                 const productStatus = prod.status ? prod.status : getInitialStatus(prodFound)
+                const dryracks =  isLargeCicle(totalProductionDays) ? totalTrays : totalTrays * 0.5
                 
                 prod["productionData"] = [{
                     ProductName:            prodFound.name,
@@ -693,8 +682,8 @@ export const buildProductionProductData = async (prod, order, dbproducts, overHe
                     EstimatedHarvestDate:   harvestDate,
                     harvest:                strainHarvest,
                     seeds:                  totalSeeds,
-                    trays:                  totalTrays,
-                    dryracks:               isLargeCicle(totalProductionDays) ? totalTrays : totalTrays * 0.5
+                    trays:                  totalTrays < 1 ? 1 : totalTrays,
+                    dryracks:               dryracks < 1 ? 1 : dryracks
                 }]
                 
 

@@ -888,7 +888,7 @@ export const NewOrder = (props) => {
                   <TextField
                     id="smallPackages"
                     type="number"
-                    label="Small"
+                    label="25 gr"
                     placeholder="Quantity"
                     sx={BV_THEME.input.mobile.thirdSize.desktop.quarterSize}
                     onChange={(e) =>
@@ -905,7 +905,7 @@ export const NewOrder = (props) => {
                   <TextField
                     id="mediumPackages"
                     type="number"
-                    label="Medium"
+                    label="80 gr"
                     placeholder="Quantity"
                     sx={BV_THEME.input.mobile.thirdSize.desktop.quarterSize}
                     onChange={(e) =>
@@ -919,17 +919,6 @@ export const NewOrder = (props) => {
                     error={error.mediumPackages.active}
                     value={input.mediumPackages ? input.mediumPackages : ""}
                   />
-                  {/* <TextField
-                        id="largePackages"
-                        type="number"
-                        label="Large"
-                        placeholder="Quantity"
-                        sx={BV_THEME.input.mobile.thirdSize.desktop.quarterSize}
-                        onChange={(e) => handleChangeInput(e, e.target.value, "input")}
-                        helperText={error.largePackages.active ? error.largePackages.message : ""}
-                        error={error.largePackages.active}
-                        value={input.largePackages ? input.largePackages : ""}
-                    /> */}
                 </Box>
 
                 <Button
