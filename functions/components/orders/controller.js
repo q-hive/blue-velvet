@@ -610,18 +610,7 @@ const scheduleIndividualProduction = async (orgId, production, order, products, 
       }
 
       // If the deliveryDate is today, insert the production
-      if(isToday(orderDate)){
-        try {
-          await insertProduction(orgId, production);
-          console.log("Production has been added to the database.");
-          return;
-        } catch (error) {
-          throw new Error("Error creating production.");
-        }
-      }
-      
-      // If the start production date is today, insert the production
-      if (isToday(startProductionDate)) {
+      if(isToday(orderDate) || isToday(startProductionDate)){
         try {
           await insertProduction(orgId, production);
           console.log("Production has been added to the database.");
