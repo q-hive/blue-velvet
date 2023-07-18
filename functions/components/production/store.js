@@ -152,7 +152,7 @@ export const nextStatusForProduction = (productionModels, actualStatus) => {
     if(Array.isArray(productionModels)){
         productionModels.forEach((production) => {
 
-            const nextProductionStatus = cycleModel[actualStatus].next 
+            const nextProductionStatus = cycleModel[actualStatus ? actualStatus : production.ProductionStatus].next 
 
             production.ProductionStatus = nextProductionStatus
         })
