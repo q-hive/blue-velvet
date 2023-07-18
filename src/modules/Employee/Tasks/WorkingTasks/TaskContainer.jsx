@@ -62,14 +62,14 @@ export const TaskContainer = (props) => {
     //* STEPPER
     const [activeStep, setActiveStep] = useState(0)
     
-    let type, orders, products, packs, isDisabledStep
+    let type, orders, products, packs, disabledSteps
     
     if(props != null){
         type=props.type
         orders=props.orders
         products=props.products
         packs = state.packs
-        isDisabledStep = props.isDisabledStep
+        disabledSteps = props.disabledSteps
     }
 
     // const [isDisabled, setIsDisabled] = useState(state.workData[type].length<1)
@@ -185,6 +185,7 @@ export const TaskContainer = (props) => {
 
         case "cleaning":
             contentTitle = "Cleaning"
+            expectedtTime = transformTo("ms","minutes",state.time.times.cleaning.time)
             content = <CleaningContent index={activeStep}/>
             steps=[{step:"Cleaning"}]
         break;
@@ -403,6 +404,11 @@ export const TaskContainer = (props) => {
         return index == steps.length - 1
 
     };
+
+    const isDisabledStepButton = (index) => {
+        const isDisabledStep = disabledSteps.includes(type)
+        return isDisabledStep || (!isOnTime && isLastStep(index))
+    }
     
     // Stepper Navigation buttons
     const getStepContent = (step,index) => {
@@ -416,7 +422,7 @@ export const TaskContainer = (props) => {
                         variant="contained"
                         onClick={isLastStep(index) ? handleCompleteTask : handleNext}
                         sx={()=>({...BV_THEME.button.standard,mt: 1, mr: 1,})}
-                        disabled={isDisabledStep || (!isOnTime && isLastStep(index)) || type === "growing"}
+                        disabled={isDisabledStepButton(index) || type === "growing"}
                         
                     >
                         {isLastStep(index) ? 'Finish Task' :'Continue'}
@@ -453,7 +459,7 @@ export const TaskContainer = (props) => {
                         variant="contained"
                         onClick={isLastStep(index) ? handleCompleteTask : handleNext}
                         sx={()=>({...BV_THEME.button.standard})}
-                        disabled={isDisabledStep || (!isOnTime && isLastStep(index))  }
+                        disabled={isDisabledStepButton(index)  }
                         
                     >
                         {isLastStep(index) ? 'Finish Task' : 'Continue'}

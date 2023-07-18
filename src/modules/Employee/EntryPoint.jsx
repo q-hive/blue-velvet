@@ -315,13 +315,6 @@ export const EntryPoint = () => {
     return result;
   };
   const getWorkData = async () => {
-    if (window.localStorage.getItem("workData")) {
-      return {
-        workData: JSON.parse(window.localStorage.getItem("workData")),
-        packs: JSON.parse(window.localStorage.getItem("packs")),
-        deliverys: JSON.parse(window.localStorage.getItem("deliverys")),
-      };
-    }
     const production = await getContainerWorkDayProduction(user.assignedContainer)
     const packs = await getDeliveryPacksOrders()
     const deliverys = await getRoutesOrders()
@@ -334,31 +327,6 @@ export const EntryPoint = () => {
   };
 
   const setWorkingContext = (workDataModel, packs, deliverys) => {
-
-    // [x]: Obtener datos de workData y mandar cuales estan vacios para deshabilitar botones
-    const findStatusWithData = (workDataModel) => {
-      return Object.keys(workDataModel).filter((key) => {
-        const dataArray = workDataModel[key];
-        return dataArray.some(obj => (
-          (obj.dryracks !== 0 &&
-          obj.harvest !== 0 &&
-          obj.modelsId.length &&
-          obj.relatedOrders.length &&
-          obj.seeds !== 0 &&
-          obj.trays !== 0) ||
-          obj.modelsToHarvestMix.length
-        ));
-      }) || null;
-    }
-    
-    const allSteps = Object.keys(workDataModel);
-    const statusesWithData = findStatusWithData(workDataModel);
-    const statusesWithoutData = allSteps.filter((step) => !statusesWithData.includes(step));
-
-    // [x]: Mandar todos los status para desactivar sin hacer demas logica
-    if (statusesWithoutData.length === allSteps.length) {
-      return statusesWithoutData
-    }
 
     //*Employee started working identification
     if (!employeeIsWorking) {
@@ -390,7 +358,6 @@ export const EntryPoint = () => {
     } else {
       setWorkContext({ ...WorkContext, currentRender: getFinishedTasks().length });
     }
-    return statusesWithoutData
   };
 
   function getActiveProductsStatuses(workDataModel) {
@@ -487,7 +454,7 @@ export const EntryPoint = () => {
 
               setSnackState({ open: false });
               //*Working context
-              const disabledSteps = setWorkingContext(workData, packs, deliverys);
+              setWorkingContext(workData, packs, deliverys);
 
               setState({
                 ...state,
@@ -496,7 +463,6 @@ export const EntryPoint = () => {
                 packs: packs,
                 cycleKeys: statusesArr,
                 time: estimatedTime,
-                disabledSteps: disabledSteps
               })
               navigate("./../tasks/work");
             })
@@ -568,7 +534,7 @@ export const EntryPoint = () => {
 
               setSnackState({ open: false });
               //*Working context
-              const disabledSteps = setWorkingContext(workData, packs, deliverys);
+              setWorkingContext(workData, packs, deliverys);
 
               setState({
                 ...state,
@@ -577,7 +543,6 @@ export const EntryPoint = () => {
                 packs: packs,
                 cycleKeys: statusesArr,
                 time: estimatedTime,
-                disabledSteps: disabledSteps
               })
               navigate("./../tasks/work", {
                 state: {
@@ -586,7 +551,6 @@ export const EntryPoint = () => {
                   packs: packs,
                   cycleKeys: statusesArr,
                   time: estimatedTime,
-                  disabledSteps: disabledSteps
                 },
               });
             })

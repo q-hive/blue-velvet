@@ -24,7 +24,6 @@ import { getWorkdayProdData } from "../../../CoreComponents/requests";
 import useWork from "../../../hooks/useWork.js";
 import useProduction from "../../../hooks/useProduction.js";
 import useDelivery from "../../../hooks/useDelivery.js";
-
 //*UNUSED
 // import { Add } from '@mui/icons-material'
 //THEME
@@ -57,7 +56,7 @@ export const FullChamber = () => {
   } = useWorkingContext();
 
   //*DATA STATES
-  let { orders, workData, packs, deliverys, cycleKeys, disabledSteps } = state;
+  let { orders, workData, packs, deliverys, cycleKeys } = state;
 
   //*render states
   const [canSeeNextTask, setCanSeeNexttask] = useState({
@@ -407,7 +406,6 @@ export const FullChamber = () => {
         {"Next Task"}
       </Button>
     );
-
   const arrowPrev = (onClickHandler, hasPrev, label) =>
     hasPrev && (
       <Button
@@ -462,6 +460,29 @@ export const FullChamber = () => {
     });
   };
 
+  const getDisabledSteps = (workDataModel) => {
+   // [x]: Obtener datos de workData y mandar cuales estan vacios para deshabilitar botones
+    const findStatusWithData = (workDataModel) => {
+      return Object.keys(workDataModel).filter((key) => {
+        const dataArray = workDataModel[key];
+        return dataArray.some(obj => (
+          (obj.dryracks !== 0 &&
+          obj.harvest !== 0 &&
+          obj.modelsId.length &&
+          obj.relatedOrders.length &&
+          obj.seeds !== 0 &&
+          obj.trays !== 0) ||
+          obj.modelsToHarvestMix.length
+        ));
+      }) || null;
+    }
+    const allSteps = Object.keys(workDataModel);
+    const statusesWithData = findStatusWithData(workDataModel);
+    const statusesWithoutData = allSteps.filter((step) => !statusesWithData.includes(step));
+
+    return statusesWithoutData
+  }
+
   useEffect(() => {
     setWorkContext(() => {
       return {
@@ -514,7 +535,7 @@ export const FullChamber = () => {
                   products: workdayProdData[status],
                   packs: packs,
                   deliverys: deliverys,
-                  isDisabledStep: disabledSteps.includes(status),
+                  disabledSteps: getDisabledSteps(workdayProdData),
                   orders: orders,
                 })}
               </Box>
