@@ -752,7 +752,7 @@ export const getEstimatedStartProductionDate = (orderDate,product) => {
         const lightTime = product.parameters.day
         const darkTime = product.parameters.night
         const estimatedProductionStartDate = new Date(new Date(orderDate).getTime() - (((((lightTime*24)*60)*60)*1000) + ((((darkTime*24)*60)*60)*1000)))
-        estimatedProductionStartDate.setHours(4,0,0)  
+        estimatedProductionStartDate.setHours(0,0,0)  
 
         return estimatedProductionStartDate
     } catch (err) {
