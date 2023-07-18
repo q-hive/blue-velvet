@@ -24,6 +24,8 @@ import { getWorkdayProdData } from "../../../CoreComponents/requests";
 import useWork from "../../../hooks/useWork.js";
 import useProduction from "../../../hooks/useProduction.js";
 import useDelivery from "../../../hooks/useDelivery.js";
+import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
+import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 //*UNUSED
 // import { Add } from '@mui/icons-material'
 //THEME
@@ -400,10 +402,10 @@ export const FullChamber = () => {
         disabled={false /*canSeeNextTask.value == false*/}
         variant="contained"
         onClick={onClickHandler}
-        title={"next task"}
+        title={"View next task"}
         sx={() => ({ ...carouselButtonSX, right: "5%" })}
       >
-        {"Next Task"}
+        <ArrowForwardRoundedIcon />
       </Button>
     );
   const arrowPrev = (onClickHandler, hasPrev, label) =>
@@ -411,10 +413,10 @@ export const FullChamber = () => {
       <Button
         variant="contained"
         onClick={onClickHandler}
-        title={"previous task"}
+        title={"View previous task"}
         sx={() => ({ ...carouselButtonSX, left: { xs: "5%", md: "5%" } })}
       >
-        Prev Task
+        <ArrowBackRoundedIcon />
       </Button>
     );
 
