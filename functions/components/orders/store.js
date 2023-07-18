@@ -20,6 +20,7 @@ import { buildProductionDataFromOrder } from '../production/controller.js'
 import { getOrdersPrice, newOrderDateValidation, scheduleProduction, setOrderAbonment } from './controller.js'
 import { getProductionInContainer } from '../production/store.js'
 import { getContainerById, getContainers } from '../container/store.js'
+import moment from 'moment'
 
 const orgModel = organizationModel;
 
@@ -338,7 +339,7 @@ export const deleteOrders = (orgId, orders) => {
     })
 }
 
-export const createNewOrder = async (orgId, order) => {
+export const createNewOrder = async (orgId, order, query) => {
     try {
         // Generate a new ID for the order
         const id = new ObjectId();
@@ -346,9 +347,9 @@ export const createNewOrder = async (orgId, order) => {
         // Fetch all products for the organization
         const allProducts = await getAllProducts(orgId);
 
-        // Convert order date to a Date object and then to a UTC string
-        const orderDate = new Date(order.date).toISOString();
-
+        // Convert the order date to a moment object in the user's timezone
+        const orderDate = moment.utc(order.date).tz(query.tz)
+        
         // Map the products in the order to the full product data from the database
         const mappedProducts = order.products.map((prod) => {
             const dbProduct = allProducts.find((product) => product._id.equals(prod._id));
@@ -414,7 +415,7 @@ export const createNewOrder = async (orgId, order) => {
         const totalTraysToUse = production.reduce((acc, prod) => acc + prod.trays, 0);
 
         // Schedule the production
-        await scheduleProduction(orgId, production, orderMapped, allProducts);
+        await scheduleProduction(orgId, production, orderMapped, allProducts, query.tz);
 
         // Fetch the organization
         const organization = await getOrganizationById(orgId);

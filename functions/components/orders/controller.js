@@ -10,6 +10,7 @@ import {
 import { getOrganizationById } from "../organization/store.js";
 import { organizationModel } from "../../models/organization.js";
 import mongoose from "mongoose";
+import moment from "moment";
 
 const sortProductsPrices = (order, products) => {
   const orderProducts = order.products.map((prod) => {
@@ -489,7 +490,7 @@ export const buildOrderFromExistingOrder = (
 
 export const isWorkingDay = (date) => {
   //*WORKINNG DAYS ARE TUESDAY AND FRIDAY
-  const day = date.getDay();
+  const day = date.day();
   if (day === 2 || day === 5) {
     return true;
   }
@@ -498,23 +499,23 @@ export const isWorkingDay = (date) => {
 
 export const setClosestWorkingDay = (date) => {
   //IF THE DAY IS AFTER TUESDAY, SET DATE TO THE PAST TUESDAY, IF NOT, SET DATE TO FRIDAY
-  const day = date.getDay();
+  const day = date.day();
   if (day === 0 || day === 6 || day === 1) {
     const diff = day === 0 ? 2 : day === 6 ? 1 : 3;
-    date.setDate(date.getDate() - diff);
+    date.subtract(diff, 'days');
     return date;
   }
 
   if (day === 3 || day === 4) {
     const diff = day - 2;
-    date.setDate(date.getDate() - diff);
+    date.subtract(diff, 'day');
     return date;
   }
 
   return date;
 };
 
-export const scheduleProduction = async (orgId, productions, order, products) => {
+export const scheduleProduction = async (orgId, productions, order, products, tz) => {
   console.log("Scheduling production...");
   console.log(productions);
   if (
@@ -530,7 +531,7 @@ export const scheduleProduction = async (orgId, productions, order, products) =>
   try {
     for (let production of productions) {
       try {
-        await scheduleIndividualProduction(orgId, production, order, products);
+        await scheduleIndividualProduction(orgId, production, order, products, tz);
       } catch (err) {
         throw err;
       }
@@ -541,7 +542,7 @@ export const scheduleProduction = async (orgId, productions, order, products) =>
 };
 
 // Function to schedule individual production
-const scheduleIndividualProduction = async (orgId, production, order, products) => {
+const scheduleIndividualProduction = async (orgId, production, order, products, tz) => {
   try {
     // Find the product associated with the production
     const product = products.find((prod) => prod._id.equals(production.ProductID));
@@ -555,16 +556,19 @@ const scheduleIndividualProduction = async (orgId, production, order, products) 
     // Log the found product
     console.log("Product found:", product);
 
-    // Convert order date to Date object for comparison
-    const orderDate = new Date(order.date);
-    const today = new Date();
+    // Convert order date to Date object for comparison (COMES IN THE USER TIMEZONE)
+    const orderDate = order.date.clone();
+    const today = moment.tz(tz);
+    const serverTz = moment.tz.guess();
 
     // Function to check if a date is today
-    const isToday = (date) => (
-      date.getUTCFullYear() === today.getUTCFullYear() &&
-      date.getUTCMonth() === today.getUTCMonth() &&
-      date.getUTCDate() === today.getUTCDate()
-    );
+    const isToday = (date) => {
+      return (
+        date.year() === today.year() &&
+        date.month() === today.month() &&
+        date.date() === today.date()
+      ) 
+    };
 
     // If the order date is today, set the status of the production to "harvestReady"
     if (isToday(orderDate)) {
@@ -574,18 +578,25 @@ const scheduleIndividualProduction = async (orgId, production, order, products) 
     // If the product is not a mix
     if (!product.mix.isMix) {
       // Calculate the start production date
-      const deliveryDate = new Date(order.date);
-      deliveryDate.setUTCDate(deliveryDate.getUTCDate() - (product.parameters.day + product.parameters.night));
-      const startProductionDate = deliveryDate;
+      const deliveryDate = orderDate.clone();
+      deliveryDate.subtract(product.parameters.day + product.parameters.night, "days");
+      deliveryDate.startOf("day");
+      // deliveryDate.setUTCDate(deliveryDate.getUTCDate() - (product.parameters.day + product.parameters.night));
+      // deliveryDate.setUTCHours(0, 0, 0, 0);
+      const startProductionDate = deliveryDate.clone();
 
       // If the production status is not 'seeding' or 'preSoaking' and the order delivery date is not today
       if (!["seeding", "preSoaking"].includes(production.ProductionStatus) && !isToday(orderDate)) {
         // Schedule a job to insert the production on the closest working day based on delivery date
         try {
-          const scheduledDate =  setClosestWorkingDay(orderDate)
+          console.log("Scheduling for closest working day.", startProductionDate)
+          const scheduledDate =  setClosestWorkingDay(startProductionDate)
+          scheduledDate.startOf("day");
+          scheduledDate.tz(serverTz)
+          // scheduledDate.setUTCHours(0, 0, 0, 0);
           console.log("The scheduled date is: ", scheduledDate)
           const job = nodeschedule.scheduleJob(
-            scheduledDate.toISOString(),
+            scheduledDate.toDate(),
             async () => {
               await insertProduction(orgId, production);
             }
@@ -622,27 +633,30 @@ const scheduleIndividualProduction = async (orgId, production, order, products) 
 
       // If the start production date is not a working day, schedule a job to insert the production on the closest working day
       if (!isWorkingDay(startProductionDate)) {
+        console.log("Scheduling for closest working day.", startProductionDate)
+        const schedule = setClosestWorkingDay(startProductionDate)
+        schedule.tz(serverTz)
         const job = nodeschedule.scheduleJob(
-          setClosestWorkingDay(startProductionDate).toISOString(),
+          schedule.toDate(),
           async () => {
             await insertProduction(orgId, production);
           }
         );
-
-        console.log(`Scheduled production for ${startProductionDate} for order ${order._id} and product ${product.name}.`);
+        console.log(`Scheduled production for ${startProductionDate} (${serverTz}) for order ${order._id} and product ${product.name}. USER TIMEZONE: ${tz}`);
         return job;
       }
 
       // If the start production date is a working day, schedule a job to insert the production
-      const job = nodeschedule.scheduleJob(startProductionDate.toISOString(), async () => {
+      const job = nodeschedule.scheduleJob(startProductionDate.tz(serverTz).toDate(), async () => {
         await insertProduction(orgId, production);
       });
 
-      console.log(`Scheduled production for ${startProductionDate} for order ${order._id} and product ${product.name}.`);
+      console.log(`Scheduled production for ${startProductionDate} (${serverTz}) for order ${order._id} and product ${product.name}. USER TIMEZONE: ${tz}`);
       return job;
     }
   } catch (error) {
-    console.error(`Error scheduling production for ID ${production._id}: ${error.message}`);
+    console.log(error)
+    console.error(`Error scheduling production for production of ${production.ProductName}: ${error.message}`);
     throw new Error("Error scheduling production.");
   }
 };
