@@ -25,7 +25,7 @@ const Order = new Schema({
             ],   required: true  },
             status:     { type: String,   required: true  },
             seedId:     { type: String,   required: false },
-            mix:        { type: Boolean,  required: false  },
+            mix:        { isMix: {type: Boolean,  required: false}  },
             price:      { type:  [],      required: true  }
         }],
         required: true

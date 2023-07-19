@@ -570,9 +570,22 @@ const scheduleIndividualProduction = async (orgId, production, order, products, 
       ) 
     };
 
-    // If the order date is today, set the status of the production to "harvestReady"
+    // If the order date is today, set the status of the production to an active production status (harvestReady for default)
     if (isToday(orderDate)) {
-      production.status = "harvestReady";
+      const passiveProduction = ["preSoaking","seeding"]
+      // Set production model status to an active production status
+      if (passiveProduction.includes(production.ProductionStatus)) {
+        production.ProductionStatus = "harvestReady";
+      }
+      // Set the product status to an active production status
+      const productIndex = order.products.findIndex((prod) => prod._id.toString() === production.ProductID.toString());
+      if (productIndex !== -1 && passiveProduction.includes(order.products[productIndex].status)) {
+        order.products[productIndex].status = "harvestReady";
+      }
+      // Set the order status to an active production status
+      const orderStatuses = Array.from(new Set(order.products.map((prod) => prod.status)));
+      const finalStatus = orderStatuses.length === 1 ? orderStatuses[0]: "production"
+      order.status = finalStatus;
     }
 
     // If the product is not a mix
@@ -599,6 +612,7 @@ const scheduleIndividualProduction = async (orgId, production, order, products, 
             scheduledDate.toDate(),
             async () => {
               await insertProduction(orgId, production);
+              await modifyOrder(orgId, order);
             }
           );
 
@@ -613,6 +627,7 @@ const scheduleIndividualProduction = async (orgId, production, order, products, 
       if(isToday(orderDate) || isToday(startProductionDate)){
         try {
           await insertProduction(orgId, production);
+          await modifyOrder(orgId, order);
           console.log("Production has been added to the database.");
           return;
         } catch (error) {
@@ -629,6 +644,7 @@ const scheduleIndividualProduction = async (orgId, production, order, products, 
           schedule.toDate(),
           async () => {
             await insertProduction(orgId, production);
+            await modifyOrder(orgId, order);
           }
         );
         console.log(`Scheduled production for ${startProductionDate} (${serverTz}) for order ${order._id} and product ${product.name}. USER TIMEZONE: ${tz}`);
@@ -638,6 +654,7 @@ const scheduleIndividualProduction = async (orgId, production, order, products, 
       // If the start production date is a working day, schedule a job to insert the production
       const job = nodeschedule.scheduleJob(startProductionDate.tz(serverTz).toDate(), async () => {
         await insertProduction(orgId, production);
+        await modifyOrder(orgId, order);
       });
 
       console.log(`Scheduled production for ${startProductionDate} (${serverTz}) for order ${order._id} and product ${product.name}. USER TIMEZONE: ${tz}`);
@@ -664,6 +681,20 @@ const insertProduction = async (orgId, production) => {
     console.log(error)
     console.error(
       `Error updating production for ID ${production._id}: ${error.message}`
+    );
+  }
+};
+
+const modifyOrder = async (orgId, order) => {
+  try {
+    await organizationModel.updateOne(
+      { _id: mongoose.Types.ObjectId(orgId), "orders._id": order._id  },
+      { $set: { "orders.$": order } }
+    );
+  } catch (error) {
+    console.log(error)
+    console.error(
+      `Error updating order for ID ${order._id}: ${error.message}`
     );
   }
 };
