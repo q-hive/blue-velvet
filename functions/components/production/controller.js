@@ -473,7 +473,7 @@ export const deleteProductionProduct = (orgId, containerId, productionData) => {
 };
 
 export const getProductionWorkByContainerId = (req,res, criteria) => {
-    // [x]: Poner todo en workData, poner produccion en cada status
+    // Poner todo en workData, poner produccion en cada status
     return new Promise(async (resolve, reject) => {
         let requiredProductionFormat = "array"
         if(req.path === "/workday"){
@@ -485,12 +485,12 @@ export const getProductionWorkByContainerId = (req,res, criteria) => {
 
             const productionInContainer = await getProductionInContainer(res.locals.organization, req.query.containerId)
 
-            // [x]: Crea un modelos de produccion para cada status posible 
+            // Crea un modelo de produccion para cada status posible por producto 
             const productionStatuses = getPosibleStatusesForProduction()
             let productionInAllStatuses = []
 
             productionInContainer.forEach(productionModel => {
-                // [x]: Si tiene status delivered ya no deberia de estar en el workday
+                // Si tiene status delivered ya no deberia de estar en el workday
                 if (productionModel.ProductionStatus === "delivered") return;
                 
                 const dbProduct = products.find(dbProd => dbProd._id.toString() === productionModel.ProductID.toString())
@@ -500,7 +500,7 @@ export const getProductionWorkByContainerId = (req,res, criteria) => {
                     productionInAllStatuses.push(productionModel)
                 } else {
                     productionStatuses.forEach(status => {
-                        // [x]: Validacion para productos que requieran PreSoaking
+                        // Validacion para productos que requieran PreSoaking
                         if (!isLongCycle && status === 'preSoaking') return;
                         if ( status === 'seeding' || status === 'preSoaking' ) return;
                         let newProductionModel = JSON.parse(JSON.stringify(productionModel));

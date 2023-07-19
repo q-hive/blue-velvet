@@ -261,7 +261,7 @@ export const groupOrdersForPackaging = (orders, date = undefined) => {
   const hash = {},
     result = [];
   orders.forEach((order) => {
-    // [x]: Quitar todos los productos que esten en produccion pasiva (preSoaking, seeding, growing)
+    // Quitar todos los productos que esten en produccion pasiva (preSoaking, seeding, growing)
     const passiveProduction = ['preSoaking', 'seeding', 'growing']
     order.products.forEach((product) => {
       if (passiveProduction.includes(product.status)) return
@@ -287,7 +287,7 @@ export const groupOrdersForPackaging = (orders, date = undefined) => {
 export const groupOrdersForDelivery = async (orders, date = undefined) => {
   const mappedProducts = (products) => {
     const map = products.map((product) => {
-      // [x]: Quitar todos los productos que esten en produccion pasiva (preSoaking, seeding, growing)
+      // Quitar todos los productos que esten en produccion pasiva (preSoaking, seeding, growing)
       const passiveProduction = ['preSoaking', 'seeding', 'growing']
       if (passiveProduction.includes(product.status)) return
 

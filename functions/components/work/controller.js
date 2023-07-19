@@ -116,7 +116,7 @@ export const calculateTimeEstimation = async (totalProduction, isGroupped = fals
 
     const dbProducts =  await getAllProducts(orgId)        
 
-    // [x]: Obtencion de todos los tiempos para produccion
+    // Obtencion de todos los tiempos para produccion
     const getAllProductionInAllStatuses = (productionModels) => {
         const productionStatuses = ['preSoaking', 'harvestReady', 'packing', 'ready', 'seeding', 'growing']
         let productionInAllStatuses = []

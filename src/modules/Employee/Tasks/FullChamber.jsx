@@ -463,7 +463,7 @@ export const FullChamber = () => {
   };
 
   const getDisabledSteps = (workDataModel) => {
-   // [x]: Obtener datos de workData y mandar cuales estan vacios para deshabilitar botones
+   // Obtencion datos de workData y mandar cuales estan vacios para deshabilitar botones
     const findStatusWithData = (workDataModel) => {
       return Object.keys(workDataModel).filter((key) => {
         const dataArray = workDataModel[key];

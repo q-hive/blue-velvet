@@ -393,7 +393,7 @@ export const SalesView = () => {
     }
   
     const updateData = () => {
-      // [x]: Implementar logica para que se actualice la orden con el status de los productos (buscar en NewOrder.jsx)
+      // Implementación de logica para que se actualice la orden con el status de los productos
       newOrderData.status = getOrderStatus(newOrderData.products)
 
       updateOrder(orderId, newOrderData)

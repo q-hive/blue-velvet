@@ -477,7 +477,7 @@ export const NewOrder = (props) => {
         useProducts = true;
       }
 
-      // [x]: Poner el status de la orden dependiendo de los status de los productos
+      // Pone el status de la orden dependiendo de los status de los productos
       const getOrderStatus = (orderProducts) => {
         let allStatus = []
         orderProducts.map((product)=>{

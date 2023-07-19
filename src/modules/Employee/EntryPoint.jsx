@@ -352,7 +352,7 @@ export const EntryPoint = () => {
         }
       });
 
-      // [x]: Pone todos los status en started
+      // Pone todos los status en started
       Object.keys(WorkContext.cicle).map((status) => WorkContext.cicle[status].started=Date.now());
       window.localStorage.setItem("WorkContext", JSON.stringify(WorkContext));
     } else {

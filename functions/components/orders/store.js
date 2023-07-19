@@ -488,7 +488,7 @@ export const getOrdersByProd = (orgId, id) => {
     })
 }
 
-// [x]: Permite actualizar la orden normalmente y los productos segun el status finalizado 
+// Permite actualizar la orden normalmente y los productos segun el status finalizado 
 export const updateOrder = async (org, orderId, body, productId = undefined) => {
     let allProducts, price;
 

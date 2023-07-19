@@ -125,7 +125,7 @@ export const getDeliveryByDate = (date, orgId, container = undefined) => {
     })
 }
 
-// [x]: Obtener los packages y deliveries de las ordenes pendientes (no status delivered)
+// Obtener los packages y deliveries de las ordenes pendientes (no delivered status)
 const getPendingOrders = async (orgId, buildFn) => {
     const filteredOrders = await getFilteredOrders(orgId, undefined, false, null)
 

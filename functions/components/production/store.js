@@ -145,7 +145,7 @@ export const getPosibleStatusesForProduction = () => {
     return statuses
 }
 
-// [x]: Actualiza la produccion al siguiente status del que se selecciono a terimnar
+// Actualiza la produccion al siguiente status del que se selecciono a terminar
 export const nextStatusForProduction = (productionModels, actualStatus) => {
     const cycleModel = productionCycleObject
 
