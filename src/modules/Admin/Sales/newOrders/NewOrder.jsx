@@ -591,6 +591,28 @@ export const NewOrder = (props) => {
       }
     } catch (err) {
       console.log(err);
+      setDialog({
+        ...dialog,
+        open: true,
+        title: "Order could not be created",
+        message: err.response.data.message || "Please try again later",
+        actions: [
+          {
+            label: "Reload page",
+            btn_color: "primary",
+            execute: () => {
+              window.location.reload();
+            },
+          },
+          {
+            label: "Close",
+            btn_color: "secondary",
+            execute: () => {
+              setDialog({ ...dialog, open: false });
+            },
+          },
+        ],
+      });
     }
 
     return;
