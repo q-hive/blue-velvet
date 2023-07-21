@@ -315,13 +315,6 @@ export const EntryPoint = () => {
     return result;
   };
   const getWorkData = async () => {
-    if (window.localStorage.getItem("workData")) {
-      return {
-        workData: JSON.parse(window.localStorage.getItem("workData")),
-        packs: JSON.parse(window.localStorage.getItem("packs")),
-        deliverys: JSON.parse(window.localStorage.getItem("deliverys")),
-      };
-    }
     const production = await getContainerWorkDayProduction(user.assignedContainer)
     const packs = await getDeliveryPacksOrders()
     const deliverys = await getRoutesOrders()
@@ -334,6 +327,7 @@ export const EntryPoint = () => {
   };
 
   const setWorkingContext = (workDataModel, packs, deliverys) => {
+
     //*Employee started working identification
     if (!employeeIsWorking) {
       setEmployeeIsWorking(true);
@@ -358,10 +352,11 @@ export const EntryPoint = () => {
         }
       });
 
-      WorkContext.cicle[Object.keys(WorkContext.cicle)[0]].started = Date.now();
+      // Pone todos los status en started
+      Object.keys(WorkContext.cicle).map((status) => WorkContext.cicle[status].started=Date.now());
       window.localStorage.setItem("WorkContext", JSON.stringify(WorkContext));
     } else {
-      setWorkContext({ ...WorkContext, current: getFinishedTasks().length });
+      setWorkContext({ ...WorkContext, currentRender: getFinishedTasks().length });
     }
   };
 
@@ -460,6 +455,7 @@ export const EntryPoint = () => {
               setSnackState({ open: false });
               //*Working context
               setWorkingContext(workData, packs, deliverys);
+
               setState({
                 ...state,
                 orders: allOrders,
@@ -508,9 +504,7 @@ export const EntryPoint = () => {
         });
 
       return;
-    }
-
-    if (!employeeIsWorking) {
+    } else {
       getWorkData()
         .then(({ workData, packs, deliverys }) => {
           let statusesArr = prepareProductionStatusesForRender(workData); //getActiveProductsStatuses(workData)

@@ -9,12 +9,12 @@ import { organizationModel } from '../../models/organization.js'
 const router = express.Router()
 
 router.post('/', (req, res) => {
-    createNewOrder(res.locals.organization,req.body)
+    createNewOrder(res.locals.organization,req.body, req.query)
     .then((order) => {
         success(req, res, 201, 'New order created succesfully', order)
     })
     .catch((err) => {
-        error(req, res, 500, "Error creating new order - GENERIC ERROR", err, err)
+        error(req, res, 500, err.message ? err.message : "Error creating new order - GENERIC ERROR", err)
         
     })
 })

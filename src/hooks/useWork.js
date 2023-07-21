@@ -6,8 +6,9 @@ const useWork =  (headers) => {
     return await request('PATCH',`work/taskHistory`, header, {data: taskHistoryModel });
   };
 
-  const updateProduction = async (containerId, productionModelsIds, header=headers) => {
-    return await request('PATCH',`work/production/${containerId}`, header, {data: productionModelsIds });
+  const updateProduction = async (containerId, productionModelsIds, actualStatus, header=headers) => {
+    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return await request('PATCH',`work/production/${containerId}?tz=${userTimeZone}`, header, {data: {productionModelsIds, actualStatus} });
   };
 
   const getWorkTimeByContainer = async (userId, containerId) => {

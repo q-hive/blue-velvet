@@ -10,7 +10,7 @@ const Order = new Schema({
     job:            { type: String,     default:"No job"},
     price:          { type: Number,     required: true },
     date:           { type: Date,       required: true },
-    relatedOrdersFromJob: { type:[],    required:false },
+    next:           { type: ObjectId,   required: true },
     // end:            { type: Date,       required: true },
     products:   {
         type: [{
@@ -25,7 +25,7 @@ const Order = new Schema({
             ],   required: true  },
             status:     { type: String,   required: true  },
             seedId:     { type: String,   required: false },
-            mix:        { type: Boolean,  required: true  },
+            mix:        { isMix: {type: Boolean,  required: false}  },
             price:      { type:  [],      required: true  }
         }],
         required: true

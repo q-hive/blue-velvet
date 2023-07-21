@@ -59,17 +59,17 @@ export const TaskContainer = (props) => {
     const navigate = useNavigate()
     
 
-    const [isFinished,setIsFinished] = useState(false)
     //* STEPPER
     const [activeStep, setActiveStep] = useState(0)
     
-    let type, order, products, packs
+    let type, orders, products, packs, disabledSteps
     
     if(props != null){
         type=props.type
-        order=props.order
+        orders=props.orders
         products=props.products
         packs = state.packs
+        disabledSteps = props.disabledSteps
     }
 
     // const [isDisabled, setIsDisabled] = useState(state.workData[type].length<1)
@@ -185,6 +185,7 @@ export const TaskContainer = (props) => {
 
         case "cleaning":
             contentTitle = "Cleaning"
+            expectedtTime = transformTo("ms","minutes",state.time.times.cleaning.time)
             content = <CleaningContent index={activeStep}/>
             steps=[{step:"Cleaning"}]
         break;
@@ -309,15 +310,11 @@ export const TaskContainer = (props) => {
     }
 
 
-    let haventFinishedActualTask = WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved === undefined
-    if(!haventFinishedActualTask) {
-        content = <div>Yo already finished the task.</div>
-    }
 
     //Finish Task
     const handleCompleteTask = () => {
         let finished = Date.now()
-        let achieved =  finished - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].started
+        let achieved =  finished - WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.currentRender]].started
 
         const updateProductionData = async () => {
             let wd = JSON.parse(window.localStorage.getItem("workData"))
@@ -325,35 +322,35 @@ export const TaskContainer = (props) => {
             //*When this model is sent also updates the performance of the employee on the allocationRatio key.
             const taskHistoryModel = {
                 executedBy:     user._id,
-                expectedTime:   TrackWorkModel.expected.times[Object.keys(WorkContext.cicle)[WorkContext.current]].time,
+                expectedTime:   TrackWorkModel.expected.times[Object.keys(WorkContext.cicle)[WorkContext.currentRender]].time,
                 achievedTime:   achieved,  
                 orders:         state.orders.map((order) => order._id),
-                taskType:       Object.keys(WorkContext.cicle)[WorkContext.current],
+                taskType:       Object.keys(WorkContext.cicle)[WorkContext.currentRender],
                 workDay:        TrackWorkModel.workDay   
             }  
 
-            let ids = []
-            wd[Object.keys(WorkContext.cicle)[WorkContext.current]].forEach((model) => {
+            let productionModelsIds = []
+            wd[Object.keys(WorkContext.cicle)[WorkContext.currentRender]].forEach((model) => {
                 if(model.modelsId){
-                    model.modelsId.forEach((id) => ids.push(id))
+                    model.modelsId.forEach((productionModelsId) => productionModelsIds.push(productionModelsId))
                 }
             })
 
             let refreshedToken = await getRefreshedToken()
             await updateTaskHistory({...taskHistoryModel}, {authorization: refreshedToken, user: user})
-            await updateProduction(user.assignedContainer,{productionModelsIds:ids}, {authorization: refreshedToken,user: user})
+            await updateProduction(user.assignedContainer, productionModelsIds, type, {authorization: refreshedToken,user: user})
         }
             
         if(type === "cleaning"){
             console.log("The production cannot be updated as the same way of a productin model based task")
-            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].finished = finished
-            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current+1]].started = finished+1
-            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved =  achieved
-            TrackWorkModel.tasks.push(WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]])
+            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.currentRender]].finished = finished
+            // WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.currentRender+1]].started = finished+1
+            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.currentRender]].achieved =  achieved
+            TrackWorkModel.tasks.push(WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.currentRender]])
             setTrackWorkModel({...TrackWorkModel, tasks:TrackWorkModel.tasks})
 
-            WorkContext.current = WorkContext.current + 1
-            setWorkContext({...WorkContext, current:WorkContext.current, currentRender:WorkContext.current})
+            // WorkContext.currentRender = WorkContext.currentRender + 1
+            setWorkContext({...WorkContext, current:WorkContext.current, currentRender:WorkContext.currentRender})
             localStorage.setItem("WorkContext", JSON.stringify(WorkContext)) 
             
             props.setSnack({...props.snack, open:true, message:"Production updated succesfully", status:"success"})
@@ -366,14 +363,14 @@ export const TaskContainer = (props) => {
         .then((result) => {
 
             // hooks
-            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].finished = finished
-            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current+1]].started = finished+1
-            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved =  achieved
-            TrackWorkModel.tasks.push(WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]])
+            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.currentRender]].finished = finished
+            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.currentRender+1]].started = finished+1
+            WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.currentRender]].achieved =  achieved
+            TrackWorkModel.tasks.push(WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.currentRender]])
             setTrackWorkModel({...TrackWorkModel, tasks:TrackWorkModel.tasks})
 
-            WorkContext.current = WorkContext.current + 1
-            setWorkContext({...WorkContext, current:WorkContext.current, currentRender:WorkContext.current})
+            WorkContext.currentRender = WorkContext.currentRender + 1
+            setWorkContext({...WorkContext, current:WorkContext.current, currentRender:WorkContext.currentRender})
             localStorage.setItem("WorkContext", JSON.stringify(WorkContext)) 
             
             props.setSnack({...props.snack, open:true, message:"Production updated succesfully", status:"success"})
@@ -401,6 +398,11 @@ export const TaskContainer = (props) => {
         return index == steps.length - 1
 
     };
+
+    const isDisabledStepButton = (index) => {
+        const isDisabledStep = disabledSteps.includes(type)
+        return isDisabledStep || (!isOnTime && isLastStep(index))
+    }
     
     // Stepper Navigation buttons
     const getStepContent = (step,index) => {
@@ -414,7 +416,7 @@ export const TaskContainer = (props) => {
                         variant="contained"
                         onClick={isLastStep(index) ? handleCompleteTask : handleNext}
                         sx={()=>({...BV_THEME.button.standard,mt: 1, mr: 1,})}
-                        disabled={(!isOnTime && isLastStep(index)) || (isLastStep(index) && isFinished) && type === "growing"}
+                        disabled={isDisabledStepButton(index) || type === "growing"}
                         
                     >
                         {isLastStep(index) ? 'Finish Task' :'Continue'}
@@ -451,7 +453,7 @@ export const TaskContainer = (props) => {
                         variant="contained"
                         onClick={isLastStep(index) ? handleCompleteTask : handleNext}
                         sx={()=>({...BV_THEME.button.standard})}
-                        disabled={(!isOnTime && isLastStep(index)) || (isLastStep(index) && isFinished) }
+                        disabled={isDisabledStepButton(index)  }
                         
                     >
                         {isLastStep(index) ? 'Finish Task' : 'Continue'}
@@ -464,17 +466,13 @@ export const TaskContainer = (props) => {
 
     useEffect(() => {
         setActiveStep(() => {
-            if(employeeIsWorking && haventFinishedActualTask){
+            if(employeeIsWorking){
                 return 0
             }
 
             return steps.length - 1
         })
         
-        setIsFinished(() => {
-            return (WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.current]].achieved !== undefined) || WorkContext.cicle[Object.keys(WorkContext.cicle)[props.counter]]?.achieved !== undefined
-        })
-
     },[])
   return (
     <div style={{}}>

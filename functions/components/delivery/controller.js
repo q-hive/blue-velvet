@@ -125,24 +125,18 @@ export const getDeliveryByDate = (date, orgId, container = undefined) => {
     })
 }
 
-export const getPackagingByOrders = async (orgId) => {
-    console.log("Getting packages for all orders in DB")
-    const orders2 = await getFilteredOrders(orgId,undefined, false, {"key":"status", "value":"packing"})
-    if(orders2.length >0) {
-        const packages = buildPackagesFromOrders(orders2)
-        console.log(packages)
-        return packages
+// Obtener los packages y deliveries de las ordenes pendientes (no delivered status)
+const getPendingOrders = async (orgId, buildFn) => {
+    const filteredOrders = await getFilteredOrders(orgId, undefined, false, null)
+
+    if (filteredOrders.length) {
+        const pendingOrders = filteredOrders.filter((dbOrder) => dbOrder.status !== "delivered" && dbOrder.status !== "seeding" && dbOrder.status !== "preSoaking");
+        return pendingOrders.length ? await buildFn(pendingOrders) : []
     }
-    
+
     return []
 }
-export const getDeliveryByOrders = async (orgId) => {
-    console.log("Getting delivery data for all orders in DB")
-    const orders2 = await getFilteredOrders(orgId,undefined, false, {"key":"status", "value":"ready"})
-    if(orders2.length >0) {
-        const delivery = await buildDeliveryFromOrders(orders2)
-        return delivery
-    }
-    
-    return []
-}
+
+export const getPackagingByOrders = async (orgId) => getPendingOrders(orgId, buildPackagesFromOrders);
+
+export const getDeliveryByOrders = async (orgId) => getPendingOrders(orgId, buildDeliveryFromOrders);

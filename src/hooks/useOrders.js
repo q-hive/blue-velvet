@@ -3,7 +3,8 @@ import { request } from "../utils/helpers/requestsHelper";
 const useOrders =  (headers) => {
 
   const addOrder = async (orderData) => {
-    return await request('POST',`orders/`, headers, {data: orderData});
+    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return await request('POST',`orders/?tz=${userTimeZone}`, headers, {data: orderData});
   };
 
   const updateOrder = async (orderId, orderData) => {

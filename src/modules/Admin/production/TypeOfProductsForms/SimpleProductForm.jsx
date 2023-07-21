@@ -50,6 +50,7 @@ export const SimpleProductForm = ({editing, product}) => {
         night:              editing ? product.parameters.night : "",
         //*HANDLE PRODUCSTS CYCLE TYPE
         cycleType:          "",
+        message:            "",
         seeding:            editing ? product.parameters.seedingRate : "",
         harvest:            editing ? product.parameters.harvestRate : "",
         status:             editing ? product.status : ""

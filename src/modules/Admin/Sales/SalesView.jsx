@@ -377,8 +377,25 @@ export const SalesView = () => {
   }
 
   const handleUpdateOrder = (newOrderData, newProductionData, msg = "", reload = false, action = "") => {
+
+    const getOrderStatus = (orderProducts) => {
+      let allStatus = []
+      orderProducts.map((product)=>{
+        allStatus.push(product.status)
+      })
+
+      const uniqueStatus = new Set(allStatus);
+      if (uniqueStatus.size === 1) {
+        return [...uniqueStatus][0]
+      } else if (uniqueStatus.size > 1) {
+        return "production"
+      }
+    }
   
     const updateData = () => {
+      // Implementación de logica para que se actualice la orden con el status de los productos
+      newOrderData.status = getOrderStatus(newOrderData.products)
+
       updateOrder(orderId, newOrderData)
         .then((res) => {
           setDialog({
@@ -512,7 +529,7 @@ export const SalesView = () => {
       const newProduct = {
         name: product.name,
         status: status.name,
-        seedId: product?.seed,
+        seedId: product?.seed.seedId,
         provider: product?.provider,
         _id: product._id,
         packages

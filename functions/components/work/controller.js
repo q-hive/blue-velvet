@@ -7,6 +7,8 @@ import { updateOrder } from '../orders/store.js'
 import { getProductById, updateProduct } from '../products/store.js'
 import { getProductionInContainer } from '../production/store.js'
 
+import { getAllProducts } from '../products/store.js'
+
 import { getProductionWorkByContainerId, grouPProductionForAnalytics, grouPProductionForWorkDay } from '../production/controller.js'
 import { updateEmployee } from '../employees/store.js'
 
@@ -110,7 +112,38 @@ export const statusRequiredParameters = () => {
         "packing":      "trays"
     }
 }
-export const calculateTimeEstimation = (totalProduction, isGroupped = false) => {
+export const calculateTimeEstimation = async (totalProduction, isGroupped = false, allData=false, orgId=undefined) => {
+
+    const dbProducts =  await getAllProducts(orgId)        
+
+    // Obtencion de todos los tiempos para produccion
+    const getAllProductionInAllStatuses = (productionModels) => {
+        const productionStatuses = ['preSoaking', 'harvestReady', 'packing', 'ready', 'seeding', 'growing']
+        let productionInAllStatuses = []
+        productionModels.forEach(productionModel => {
+
+            if (productionModel.ProductionStatus === "delivered") return;
+                    
+            const productFind = dbProducts.find(dbProd => dbProd._id.toString() === productionModel.ProductID.toString())
+            const isLongCycle = productFind && (productFind.parameters.day + productFind.parameters.night) > 10;
+            
+            if (productionModel.ProductionStatus === "seeding" || productionModel.ProductionStatus === "preSoaking"){
+                productionInAllStatuses.push(productionModel)
+            } else {
+                productionStatuses.forEach(status => {
+                    if (!isLongCycle && status === 'preSoaking') return;
+                    if (status === 'seeding' || status === 'preSoaking') return;
+                    let newProductionModel = JSON.parse(JSON.stringify(productionModel));
+                    newProductionModel.ProductionStatus = status;
+                    productionInAllStatuses.push(newProductionModel);
+                });
+            }
+    
+        })
+
+        return productionInAllStatuses
+    }
+
     //*TIMES PER TRAY in minutes
     const estimatedTimes = {
         "preSoaking":   5,
@@ -126,7 +159,7 @@ export const calculateTimeEstimation = (totalProduction, isGroupped = false) => 
     if(isGroupped) {
         productionGroupedByStatus = totalProduction    
     } else {
-        productionGroupedByStatus = grouPProductionForWorkDay("status",totalProduction, "array", false, false)
+        productionGroupedByStatus = grouPProductionForWorkDay("status",allData ? getAllProductionInAllStatuses(totalProduction) : totalProduction, "array", false, false)
     }
 
     const parametersByStatus = statusRequiredParameters()
@@ -170,7 +203,7 @@ export const getWorkTimeByEmployee = (req, res) => {
     return new Promise((resolve, reject) => {
         getProductionInContainer(res.locals.organization,req.query.containerId)
         .then(async (production) => {
-            const totalEstimations = calculateTimeEstimation(production)
+            const totalEstimations = calculateTimeEstimation(production,false,true,res.locals.organization)
             
             resolve(totalEstimations)
         })

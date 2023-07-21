@@ -24,7 +24,8 @@ import { getWorkdayProdData } from "../../../CoreComponents/requests";
 import useWork from "../../../hooks/useWork.js";
 import useProduction from "../../../hooks/useProduction.js";
 import useDelivery from "../../../hooks/useDelivery.js";
-
+import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
+import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 //*UNUSED
 // import { Add } from '@mui/icons-material'
 //THEME
@@ -89,50 +90,6 @@ export const FullChamber = () => {
       open: false,
     });
   };
-
-  const getCycleKeys = () => {
-    let arrcycl = [];
-
-    Object.keys(workdayProdData).map((activeKey, id) => {
-      workdayProdData[activeKey].length > 0
-        ? Object.keys(WorkContext.cicle).map((structureKey, id) => {
-            if (structureKey == activeKey && !arrcycl.includes(structureKey))
-              arrcycl.push(structureKey);
-          })
-        : null;
-    });
-    console.log("arrcycl innit", arrcycl);
-    return arrcycl;
-  };
-
-  /*    let psTrue = workdayProdData.preSoaking?.length>0
-    let sTrue = workdayProdData.seeding?.length>0
-    let hrTrue = workdayProdData.harvestReady?.length>0
-    */
-
-  /*psTrue?cycleKeys.push("preSoaking"):null
-    sTrue?cycleKeys.push("seeding"):null
-    hrTrue?cycleKeys.push("harvestReady"):null
-    */
-
-  const ordersList = orders;
-
-  function getAllProducts() {
-    const productList = [];
-    ordersList.map((order, id) => {
-      order.products.map((product, idx) => {
-        productList.push({
-          ...product,
-          status: order.status,
-          productionData:
-            order.productionData[
-              order.productionData.findIndex((x) => x.product === product.name)
-            ],
-        });
-      });
-    });
-    return productList;
-  }
 
   const allProducts = workData;
 
@@ -262,18 +219,6 @@ export const FullChamber = () => {
     return result;
   };
 
-  {
-    /* Products to send as props to TaskTest */
-  }
-  function getProductsByType(type) {
-    const filteredProductList = [];
-
-    allProducts.map((product, id) => {
-      if (product.status === type) filteredProductList.push(product);
-    });
-    return filteredProductList;
-  }
-
   const getWorkData = async () => {
     // if (window.localStorage.getItem("workData")) {
     //   return {
@@ -299,14 +244,12 @@ export const FullChamber = () => {
   };
 
   function prepareProductionStatusesForRender(workData) {
-    let psTrue = workData.preSoaking?.length > 0;
-    let sTrue = workData.seeding?.length > 0;
-    let hrTrue = workData.harvestReady?.length > 0;
-
     let testingKeys = Object.keys(workData);
     //*Delete growing from cycle (not useful display in cycle)
     const growingStatusIndex = testingKeys.indexOf("growing");
+    const readyStatusIndex = testingKeys.indexOf("ready");
     testingKeys.splice(growingStatusIndex, 1);
+    // testingKeys.splice(readyStatusIndex, 1)
 
     testingKeys.push("cleaning");
 
@@ -420,14 +363,10 @@ export const FullChamber = () => {
       return { ...cnSee };
     });
 
-    if (index < canSeeNextTask.counter) {
-      return;
-    }
-
     setWorkContext((wrkContext) => {
       if (
         WorkContext.cicle[cycleKeys[index]].started === undefined &&
-        index == WorkContext.current
+        index == WorkContext.currentRender
       ) {
         return {
           ...wrkContext,
@@ -445,6 +384,10 @@ export const FullChamber = () => {
     });
 
     setCanSeeNexttask({ ...canSeeNextTask, value: false });
+    
+    if (index < canSeeNextTask.counter) {
+      return;
+    }
   };
 
   const carouselButtonSX = {
@@ -459,22 +402,21 @@ export const FullChamber = () => {
         disabled={false /*canSeeNextTask.value == false*/}
         variant="contained"
         onClick={onClickHandler}
-        title={"next task"}
+        title={"View next task"}
         sx={() => ({ ...carouselButtonSX, right: "5%" })}
       >
-        {"Next Task"}
+        <ArrowForwardRoundedIcon />
       </Button>
     );
-
   const arrowPrev = (onClickHandler, hasPrev, label) =>
     hasPrev && (
       <Button
         variant="contained"
         onClick={onClickHandler}
-        title={"previous task"}
+        title={"View previous task"}
         sx={() => ({ ...carouselButtonSX, left: { xs: "5%", md: "5%" } })}
       >
-        Prev Task
+        <ArrowBackRoundedIcon />
       </Button>
     );
 
@@ -497,12 +439,12 @@ export const FullChamber = () => {
             let finished = new Date();
             let elapsed = finished - started;
             let thisBreak = {
-              task: cycleKeys[WorkContext.current],
+              task: cycleKeys[WorkContext.currentRender],
               started: started,
               finished: finished,
               elapsed: elapsed,
             };
-            WorkContext.cicle[cycleKeys[WorkContext.current]].breaks.push(
+            WorkContext.cicle[cycleKeys[WorkContext.currentRender]].breaks.push(
               thisBreak
             );
             setWorkContext({ ...WorkContext });
@@ -510,7 +452,7 @@ export const FullChamber = () => {
             setTrackWorkModel({ ...TrackWorkModel });
             console.log(
               "current task breaks",
-              WorkContext.cicle[cycleKeys[WorkContext.current]].breaks
+              WorkContext.cicle[cycleKeys[WorkContext.currentRender]].breaks
             );
             console.log("trackwork model breaks ", TrackWorkModel.breaks);
             setDialog({ ...dialog, open: false });
@@ -520,20 +462,43 @@ export const FullChamber = () => {
     });
   };
 
+  const getDisabledSteps = (workDataModel) => {
+   // Obtencion datos de workData y mandar cuales estan vacios para deshabilitar botones
+    const findStatusWithData = (workDataModel) => {
+      return Object.keys(workDataModel).filter((key) => {
+        const dataArray = workDataModel[key];
+        return dataArray.some(obj => (
+          (obj.dryracks !== 0 &&
+          obj.harvest !== 0 &&
+          obj.modelsId.length &&
+          obj.relatedOrders.length &&
+          obj.seeds !== 0 &&
+          obj.trays !== 0) ||
+          obj.modelsToHarvestMix.length
+        ));
+      }) || null;
+    }
+    const allSteps = Object.keys(workDataModel);
+    const statusesWithData = findStatusWithData(workDataModel);
+    const statusesWithoutData = allSteps.filter((step) => !statusesWithData.includes(step));
+
+    return statusesWithoutData
+  }
+
   useEffect(() => {
     setWorkContext(() => {
       return {
         ...WorkContext,
         cicle: {
           ...WorkContext.cicle,
-          [cycleKeys[WorkContext.current]]: {
-            ...WorkContext.cicle[cycleKeys[WorkContext.current]],
+          [cycleKeys[WorkContext.currentRender]]: {
+            ...WorkContext.cicle[cycleKeys[WorkContext.currentRender]],
             stopped: Date.now(),
           },
         },
       };
     });
-  }, [WorkContext.current]);
+  }, [WorkContext.currentRender]);
 
 
   return (
@@ -547,7 +512,7 @@ export const FullChamber = () => {
         renderArrowNext={arrowNext}
         renderArrowPrev={arrowPrev}
         renderIndicator={false}
-        selectedItem={employeeIsWorking ? WorkContext.current : 0}
+        selectedItem={employeeIsWorking ? WorkContext.currentRender : 0}
         onChange={carouselChange}
         transitionTime={1000}
       >
@@ -572,6 +537,8 @@ export const FullChamber = () => {
                   products: workdayProdData[status],
                   packs: packs,
                   deliverys: deliverys,
+                  disabledSteps: getDisabledSteps(workdayProdData),
+                  orders: orders,
                 })}
               </Box>
             </Fade>

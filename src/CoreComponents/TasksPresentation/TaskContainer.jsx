@@ -5,7 +5,6 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { CleaningContent } from '../../modules/Employee/Tasks/ContainerTasks/CleaningContent'
 import { MaintenanceContent } from '../../modules/Employee/Tasks/ContainerTasks/MaintenanceContent'
 import { MatCutContent } from '../../modules/Employee/Tasks/ContainerTasks/MatCutContent'
-import { DeliveryContent } from '../../modules/Employee/Tasks/WorkingTasks/DeliveryContent'
 import { HarvestingContent } from '../../modules/Employee/Tasks/WorkingTasks/HarvestingContent'
 import { PackingContent } from '../../modules/Employee/Tasks/WorkingTasks/PackingContent'
 import { PreSoakingContent } from '../../modules/Employee/Tasks/WorkingTasks/PreSoakingContent'
@@ -150,13 +149,6 @@ export const TaskContainer = (props) => {
                 // {step:"Calibration"},
                 // {step:"Boxing"},
             ]
-        break;
-
-        case "ready":
-            contentTitle = "Delivery"
-            expectedtTime = transformTo("ms","minutes",state.time.times.harvestReady.time)
-            content = <DeliveryContent index={activeStep}/>
-            steps=[{step:"Delivery"}]
         break;
 
 

@@ -1,699 +1,716 @@
 //*db
-import { mongoose } from '../../mongo.js'
-let { ObjectId } = mongoose.Types
+import { mongoose } from '../../mongo.js';
+let { ObjectId } = mongoose.Types;
 
 //*Schema
-import Organization, { organizationModel } from '../../models/organization.js'
-import Order from '../../models/order.js'
+import Organization, { organizationModel } from '../../models/organization.js';
+import Order from '../../models/order.js';
 
 //*UTILS
-import { actualMonthInitialDate, addTimeToDate } from '../../utils/time.js'
+import { actualMonthInitialDate, addTimeToDate } from '../../utils/time.js';
 
 //*Org controllers
-import { getOrganizationById } from '../organization/store.js'
+import { getOrganizationById } from '../organization/store.js';
 
 //*PRODUCTS CONTROLLERS
-import { getAllProducts } from '../products/store.js'
+import { getAllProducts } from '../products/store.js';
 
-
-import { buildProductionDataFromOrder } from '../production/controller.js'
-import { getOrdersPrice, newOrderDateValidation, scheduleProduction, setOrderAbonment } from './controller.js'
-import { getProductionInContainer } from '../production/store.js'
-import { getContainerById, getContainers } from '../container/store.js'
+import { buildProductionDataFromOrder } from '../production/controller.js';
+import {
+  getOrdersPrice,
+  newOrderDateValidation,
+  scheduleProduction,
+  setOrderAbonment,
+} from './controller.js';
+import { getProductionInContainer } from '../production/store.js';
+import { getContainerById, getContainers } from '../container/store.js';
+import moment from 'moment';
 
 const orgModel = organizationModel;
 
-export const getAllOrders = (orgId, req, filtered=false, filter=undefined, production=false) => {
-    return new Promise((resolve, reject) => {
-        const orgIDNotProvided = {
-            "message":  "Organization ID was not provided",
-            "status":   400
-        }
-        const errorFromOrg = {
-            "message":  "Error obtaining organization",
-            "status":    500
-        }
-        
-        if(!orgId){
-            return reject(new Error(JSON.stringify(orgIDNotProvided)))
-        }
+export const getAllOrders = (
+  orgId,
+  req,
+  filtered = false,
+  filter = undefined,
+  production = false
+) => {
+  return new Promise((resolve, reject) => {
+    const orgIDNotProvided = {
+      message: 'Organization ID was not provided',
+      status: 400,
+    };
+    const errorFromOrg = {
+      message: 'Error obtaining organization',
+      status: 500,
+    };
 
-        getOrganizationById(orgId, true)
-        .then(async org => {
-            if(!Boolean(org)) return reject(new Error(errorFromOrg))
+    if (!orgId) {
+      return reject(new Error(JSON.stringify(orgIDNotProvided)));
+    }
 
-            let orgOrders = org.orders
-            
-            try {
-                if(filtered && filter){
-                
-                    const {key, value} = filter
-                    if(value == "uncompleted" && key == "status") {
-                        orgOrders = orgOrders.filter((order) => {
-                            return (order.status != "delivered") && (order.status !== "cancelled")
-                        })
-    
-                        orgOrders.orders = orgOrders
-                    } else {
-                        if(req && Boolean(req.query?.all)){
-                            orgOrders = await orgModel.find(
-                                {
-                                    "_id":  orgId,
-                                    [`orders.${key}`]: value
-                                },
-                                "orders -_id"
-                            )
-        
-                            orgOrders = orgOrders[0]
-                        } else { 
-                            orgOrders = await orgModel.findOne(
-                                {
-                                    "_id":        orgId,
-                                    [`orders.${key}`]: value
-                                },
-                                "orders -_id"
-                            )
+    getOrganizationById(orgId, true)
+      .then(async (org) => {
+        if (!Boolean(org)) return reject(new Error(errorFromOrg));
 
-                            if(key === "_id" && orgOrders !== null){
-                                orgOrders = orgOrders.orders.filter((order) => order[key].equals(value))
-                            }
+        let orgOrders = org.orders;
 
-                            if(key !== "_id" && orgOrders !== null){
-                                orgOrders = orgOrders.orders.filter((order) => order[key] === value)
-                            }
-                            
-                        }
-                        
-                    }
-                    
+        try {
+          if (filtered && filter) {
+            const { key, value } = filter;
+            if (value == 'uncompleted' && key == 'status') {
+              orgOrders = orgOrders.filter((order) => {
+                return (
+                  order.status != 'delivered' && order.status !== 'cancelled'
+                );
+              });
+
+              orgOrders.orders = orgOrders;
+            } else {
+              if (req && Boolean(req.query?.all)) {
+                orgOrders = await orgModel.find(
+                  {
+                    _id: orgId,
+                    [`orders.${key}`]: value,
+                  },
+                  'orders -_id'
+                );
+
+                orgOrders = orgOrders[0];
+              } else {
+                orgOrders = await orgModel.findOne(
+                  {
+                    _id: orgId,
+                    [`orders.${key}`]: value,
+                  },
+                  'orders -_id'
+                );
+
+                if (key === '_id' && orgOrders !== null) {
+                  orgOrders = orgOrders.orders.filter((order) =>
+                    order[key].equals(value)
+                  );
                 }
-                
-                if(req === undefined) {
-                    return resolve(orgOrders)
+
+                if (key !== '_id' && orgOrders !== null) {
+                  orgOrders = orgOrders.orders.filter(
+                    (order) => order[key] === value
+                  );
                 }
-                
-                // if(!Object.keys(req?.query).includes("production") && !Boolean(req.query?.production)){
-                //     return resolve(orgOrders)
-                // }
-
-                if(!orgOrders) {
-                    return resolve([])
-                }
-                
-                const mappedOrders = orgOrders.map((order, orderIndex) => {
-                    // const production = getOrderProdData(order, org.containers[0].products, true)
-                    // const mutableOrdergetKey(task) = order.toObject()
-                    return order
-                })
-                
-                resolve(mappedOrders)
-            } catch (err) {
-                console.log(err)
-                errorFromOrg.processError = err.message
-                reject(new Error(JSON.stringify(errorFromOrg)))
+              }
             }
+          }
 
-        })
-        .catch(err => {
-            console.log(err)
-            errorFromOrg.processError = err.message
-            reject(new Error(JSON.stringify(errorFromOrg)))
-        })
-    
-    })
-    
-}
-export const getFilteredOrders = (orgId, req = undefined, production, filter = undefined) => {
-    return new Promise((resolve, reject) => {
-        let key
-        let value
-        let mappedFilter
+          if (req === undefined) {
+            return resolve(orgOrders);
+          }
 
-        if(req === undefined) {
-            if(filter !== undefined){
-                mappedFilter = filter
-            }
-        } else {
-            if(Object.keys(req.query).includes('key') && Object.keys(req.query).includes('value')){
-                key = req.query.key
-                value = req.query.value
-                mappedFilter = {key, value}
-            } else if (req.params && filter === undefined) {
-                key = Object.entries(req.params)[0][0]
-                value = Object.entries(req.params)[0][1]
-                mappedFilter = {key, value}
-            }
+          // if(!Object.keys(req?.query).includes("production") && !Boolean(req.query?.production)){
+          //     return resolve(orgOrders)
+          // }
+
+          if (!orgOrders) {
+            return resolve([]);
+          }
+
+          const mappedOrders = orgOrders.map((order, orderIndex) => {
+            // const production = getOrderProdData(order, org.containers[0].products, true)
+            // const mutableOrdergetKey(task) = order.toObject()
+            return order;
+          });
+
+          resolve(mappedOrders);
+        } catch (err) {
+          console.log(err);
+          errorFromOrg.processError = err.message;
+          reject(new Error(JSON.stringify(errorFromOrg)));
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        errorFromOrg.processError = err.message;
+        reject(new Error(JSON.stringify(errorFromOrg)));
+      });
+  });
+};
+export const getFilteredOrders = (
+  orgId,
+  req = undefined,
+  production,
+  filter = undefined
+) => {
+  return new Promise((resolve, reject) => {
+    let key;
+    let value;
+    let mappedFilter;
+
+    if (req === undefined) {
+      if (filter !== undefined) {
+        mappedFilter = filter;
+      }
+    } else {
+      if (
+        Object.keys(req.query).includes('key') &&
+        Object.keys(req.query).includes('value')
+      ) {
+        key = req.query.key;
+        value = req.query.value;
+        mappedFilter = { key, value };
+      } else if (req.params && filter === undefined) {
+        key = Object.entries(req.params)[0][0];
+        value = Object.entries(req.params)[0][1];
+        mappedFilter = { key, value };
+      }
+    }
+
+    getAllOrders(orgId, req, true, mappedFilter, production)
+      .then((orders) => {
+        if (orders === null) {
+          resolve([]);
         }
 
-        
-
-        getAllOrders(orgId, req, true, mappedFilter, production)
-        .then((orders) => {
-            if(orders === null) {
-                resolve([])
-            }
-            
-            resolve(orders)
-        })
-        .catch((err) => {
-            return reject("Error getting filtered orders")
-        })
-    })
-}
+        resolve(orders);
+      })
+      .catch((err) => {
+        return reject('Error getting filtered orders');
+      });
+  });
+};
 
 export const getMonthlyOrders = (orgId) => {
-    return new Promise((resolve, reject) => {
-        organizationModel.findOne(
-            {"_id":mongoose.Types.ObjectId(orgId)},
-            {
-                "orders":{
-                    "$filter":{
-                        "input":"$orders",
-                        "as":"order",
-                        "cond": { "$gte":["$$order.created", actualMonthInitialDate()] }
-                    }
-                }
-            }
-        )
-        .then((data) => {
-            console.log(data)
-            resolve(data.orders)
-        })
-        .catch((err) => {
-            reject(err)
-        })
-    })
-}
+  return new Promise((resolve, reject) => {
+    organizationModel
+      .findOne(
+        { _id: mongoose.Types.ObjectId(orgId) },
+        {
+          orders: {
+            $filter: {
+              input: '$orders',
+              as: 'order',
+              cond: { $gte: ['$$order.created', actualMonthInitialDate()] },
+            },
+          },
+        }
+      )
+      .then((data) => {
+        console.log(data);
+        resolve(data.orders);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
 
 export const getMonthlyOrdersByCustomer = (orgId, customerId) => {
-    return new Promise((resolve, reject) => {
-        organizationModel.findOne(
-            {"_id":mongoose.Types.ObjectId(orgId)},
-            {
-                "orders":{
-                    "$filter":{
-                        "input":"$orders",
-                        "as":"order",
-                        "cond": {
-                            "$and": [
-                                { "$gte":["$$order.created", new Date(actualMonthInitialDate())] },
-                                { "$lt":["$$order.created", new Date(new Date().getUTCFullYear(),new Date().getUTCMonth()+1,1)] },
-                                { "$eq":["$$order.customer", mongoose.Types.ObjectId(customerId)] }
-                            ]
-                        }
-                    }
-                }
-            }
-        )
-        .then((data) => {
-            console.log(data)
-            resolve(data.orders)
-        })
-        .catch((err) => {
-            reject(err)
-        })
-    })
-}
+  return new Promise((resolve, reject) => {
+    organizationModel
+      .findOne(
+        { _id: mongoose.Types.ObjectId(orgId) },
+        {
+          orders: {
+            $filter: {
+              input: '$orders',
+              as: 'order',
+              cond: {
+                $and: [
+                  {
+                    $gte: [
+                      '$$order.created',
+                      new Date(actualMonthInitialDate()),
+                    ],
+                  },
+                  {
+                    $lt: [
+                      '$$order.created',
+                      new Date(
+                        new Date().getUTCFullYear(),
+                        new Date().getUTCMonth() + 1,
+                        1
+                      ),
+                    ],
+                  },
+                  {
+                    $eq: [
+                      '$$order.customer',
+                      mongoose.Types.ObjectId(customerId),
+                    ],
+                  },
+                ],
+              },
+            },
+          },
+        }
+      )
+      .then((data) => {
+        console.log(data);
+        resolve(data.orders);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
 
 export const deleteOrdersDirect = async (req, res) => {
-    return new Promise(async (resolve, reject) => {
-        const values = {
-            "_id":mongoose.Types.ObjectId(req.query.value)
-        }
-        
-        let traysToReduce
-        try {
-            traysToReduce =  await organizationModel.aggregate([
-                {
-                  '$match': {
-                    '_id': new ObjectId('636ae6a18453ae9796473eae')
-                  }
-                }, {
-                  '$unwind': {
-                    'path': '$containers', 
-                    'preserveNullAndEmptyArrays': false
-                  }
-                }, {
-                  '$project': {
-                    'containers': {
-                      'production': true
-                    }
-                  }
-                }, {
-                  '$unwind': {
-                    'path': '$containers.production', 
-                    'preserveNullAndEmptyArrays': false
-                  }
-                }, {
-                  '$match': {
-                    '$and': [
-                      {
-                        '$or': [
-                          {
-                            'containers.production.ProductionStatus': 'growing'
-                          }, {
-                            'containers.production.ProductionStatus': 'harvestReady'
-                          }
-                        ], 
-                        'containers.production.RelatedOrder': new ObjectId('63f0b112f9ba9d5c7d916af1')
-                      }
-                    ]
-                  }
-                }, {
-                  '$group': {
-                    '_id': 'trays', 
-                    'totalTrays': {
-                      '$sum': '$containers.production.trays'
-                    }
-                  }
-                }
-            ])
+  return new Promise(async (resolve, reject) => {
+    const values = {
+      _id: mongoose.Types.ObjectId(req.query.value),
+    };
 
-            traysToReduce = traysToReduce.reduce((acum,actual) => acum + actual.totalTrays,0)
-            
-            console.log(traysToReduce)
-        } catch (err) {
-            reject(err)
-        }
-        
-        
-        const deletionOp = await organizationModel.updateOne({"_id":res.locals.organization},{
-            "$pull":{
-                "containers.$[].production":{
-                    "RelatedOrder":values[req.query.key]
-                },
-                "orders":{
-                    [req.query.key]:values[req.query.key]
-                }
-            },
-        })
-
-        console.log("Deletion op")
-        console.log(deletionOp)
-        
-        organizationModel.updateOne({"_id":res.locals.organization},{
-            "$inc":{
-                "containers.$[].available": traysToReduce
-            }
-        })
-        .then(result => resolve(result))
-        .catch(err => reject(err))
-    })
-    
-
-}
-export const deleteOrders = (orgId, orders) => {
-    return new Promise(async(resolve, reject) => {
-        const org = await getOrganizationById(orgId)
-        const find = await orders.map(async(order) => {
-            const found = await org.orders.find((ordr)=> ordr._id.equals(order._id))
-
-            return found
-        })
-
-        Promise.all(find)
-        .then((found) => {
-            const operations = found.map(async(order) => {
-                const operation = await orgModel.updateOne({_id:orgId},{"$pull":{
-                    "orders": {
-                        "_id":order._id
-                    }
-                }})
-                return operation
-            })
-
-            Promise.all(operations)
-            .then((result) => {
-                resolve(result)
-            })
-            .catch(err => {
-                reject(err)
-            })
-            
-        })
-        .catch((err) => {
-            console.log(err)
-        })
-        
-    })
-}
-
-export const createNewOrder = (orgId, order) => {
-    return new Promise(async (resolve, reject) => {
-        const errorFromOrg = {
-            "message":  "Error obtaining organization",
-            "status":    500
-        }
-        const errorSaving = {
-            "message": "Error saving organization",
-            "status":   400
-        }
-        const emptyOrgs = {
-            "message":  "Organizations DB empty",
-            "status":    204
-        }
-
-        const noProducts = {
-            "message":  "No products in DB",
-            "status":   204
-        }
-        const priceFailure = {
-            "message": "There was an error calculating the price",
-            "status":   500
-        }
-        const errorGettingProducts = {
-            "message":"There was an error while getting products to match with the order.",
-            "status":500
-        }
-        const invalidDate = {
-            "message":"The date for the order is invalid, please compare the production times with the date you selected.",
-            "status":400
-        }
-        
-        // * Id for order
-        let id = new ObjectId()
-
-        
-        let allProducts
-        let mappedProducts
-        let mappedAndUpdatedProducts
-        let prc
-
-        
-        //*Get all products of container to make validations (products on order have no the complete data)
-        try{
-            allProducts = await getAllProducts(orgId)
-            console.log(allProducts)
-        }catch(err){
-            console.log(err)
-            return reject(new Error(JSON.stringify(errorGettingProducts)))
-        }
-        
-        //*Check if is a valid date compared with production times estimations.
-        // try {
-        //     newOrderDateValidation(order, allProducts)
-        // } catch (err){
-        //     console.log(err)
-        //     return reject(new Error(JSON.stringify(invalidDate)))
-        // }
-
-        //*Mapea los productos para completar el modelo de la base de datos en la propiedad products
-        try {
-            mappedProducts = order.products.map((prod) => {
-                const dbProduct = allProducts.find((product) => {
-                    return product._id.equals(prod._id)
-                })
-                let order = {
-                    _id:            prod._id,
-                    name:           prod.name,
-                    seedId:         dbProduct?.seed?.seedId,
-                    packages:       prod.packages,
-                    mix:            dbProduct.mix.isMix,
-                    price:          dbProduct.price
-                }
-                
-                if(dbProduct.mix.isMix){
-                    allProducts.find((product) => {
-                        return product._id.equals(prod._id)
-                    })
-                    
-                    return {
-                        ...order,
-                        status: prod.status.name,
-                        mixStatuses: prod.mixStatuses
-                    }
-                    
-                }
-
-                if (!dbProduct.mix.isMix){
-                    return {
-                        ...order,
-                        status: prod.status,
-                    }
-                }
-                
-            })
-
-            mappedAndUpdatedProducts = mappedProducts;
-        } catch(err){
-            reject(err)
-        }
-
-        try{
-            prc = getOrdersPrice(order, allProducts)
-            
-            if(prc === undefined || prc === null){
-                return reject(new Error(JSON.stringify(priceFailure)))
-            }
-        }
-        catch(err){
-            reject(err)
-        }
-
-        try{
-            let org = await getContainers({organization:orgId})
-
-            const isValidContainerResponse = org !== null && org !== undefined && org.containers.length === 1
-            let overhead = 0;
-            if (isValidContainerResponse){
-                overhead = (org.containers[0].config.overhead)/100
-            } 
-            
-            
-            
-            if(allProducts && allProducts.length >0){
-                let orderMapped = {
-                    _id:            id,
-                    organization:   orgId,
-                    customer:       order.customer._id,
-                    price:          prc,
-                    date:           order.date,
-                    address:        order.address,
-                    products:       mappedAndUpdatedProducts,
-                    status:         "production",
-                    cyclic:          order.cyclic,
-                }
-                
-                let production = await buildProductionDataFromOrder({...orderMapped}, allProducts, overhead, org.containers[0])
-
-                try {
-                    scheduleProduction(orgId, production,orderMapped,allProducts)
-                } catch(err){
-                    console.log(err)
-                    return reject(err)
-                }
-                
-
-                getOrganizationById(orgId)
-                .then(async organization => {
-                    if(!organization){
-                        return reject(new Error(JSON.stringify(emptyOrgs)))
-                    }
-                    
-                    organization.orders.push(orderMapped)
-
-                    try {
-                        await organization.save()
-                    }catch(err) {
-                        console.log(err)
-                        reject(new Error(JSON.stringify(errorSaving)))
-                    }
-                    console.log("Order mapped and saved, checking if it is cyclic")
-                    if(order.cyclic){
-                        // const orgWithNewOrdersFiltered = await organizationModel.findOne(
-                        //     {
-                        //         "_id":mongoose.Types.ObjectId(orgId)
-                        //     },
-                        //     {
-                        //         "orders":{
-                        //             "$filter":{
-                        //                 "input":"$orders",
-                        //                 "as":"order",
-                        //                 "cond":{ "$eq":["$$order._id", id] }
-                        //             }
-                        //         }
-                        //     }
-                        // ).exec()
-
-                        
-                        let jobName
-                        try {
-                            console.log("Order abonment required, once the production is finished, the order will be set again")
-                            // jobName = setOrderAbonment(orgId,orgWithNewOrdersFiltered.orders[0],orderMapped, allProducts, overhead)
-                        } catch (err) {
-                            reject(err)
-                        }
-                        
-                        try {
-                            await organizationModel.updateOne(
-                                {
-                                    "_id":mongoose.Types.ObjectId(orgId)
-                                },
-                                {
-                                    "$set":{
-                                        "orders.$[order].job":`Reorder-${id}`
-                                    }
-                                },
-                                {
-                                    "arrayFilters":[
-                                        {"order._id":id}
-                                    ]
-                                }
-                            )
-                        } catch (err) {
-                            reject(err)
-                        }
-
-                        resolve()
-                        return
-                    }
-
-                    resolve()
-                })
-                .catch(err => {
-                    console.log(err)
-                    reject(new Error(JSON.stringify(errorFromOrg)))
-                })    
-            } else {
-                reject(new Error(JSON.stringify(noProducts)))
-            }
-            
-        } catch (err) {
-            reject(err)
-        }
-    })
-}
-
-export const insertNewOrderWithProduction = async (orgId, order, production) => {
+    let traysToReduce;
     try {
-        await organizationModel.updateOne(
-            {
-                "_id":mongoose.Types.ObjectId(orgId)
+      traysToReduce = await organizationModel.aggregate([
+        {
+          $match: {
+            _id: new ObjectId('636ae6a18453ae9796473eae'),
+          },
+        },
+        {
+          $unwind: {
+            path: '$containers',
+            preserveNullAndEmptyArrays: false,
+          },
+        },
+        {
+          $project: {
+            containers: {
+              production: true,
             },
-            {
-                "$push":{
-                    "orders":order,
-                    "containers.$[].production": {"$each": production},
-                },
+          },
+        },
+        {
+          $unwind: {
+            path: '$containers.production',
+            preserveNullAndEmptyArrays: false,
+          },
+        },
+        {
+          $match: {
+            $and: [
+              {
+                $or: [
+                  {
+                    'containers.production.ProductionStatus': 'growing',
+                  },
+                  {
+                    'containers.production.ProductionStatus': 'harvestReady',
+                  },
+                ],
+                'containers.production.RelatedOrder': new ObjectId(
+                  '63f0b112f9ba9d5c7d916af1'
+                ),
+              },
+            ],
+          },
+        },
+        {
+          $group: {
+            _id: 'trays',
+            totalTrays: {
+              $sum: '$containers.production.trays',
             },
-        )
-    } catch(err) {
-        console.log("Error saving order and production")
-        console.log(err)
+          },
+        },
+      ]);
+
+      traysToReduce = traysToReduce.reduce(
+        (acum, actual) => acum + actual.totalTrays,
+        0
+      );
+
+      console.log(traysToReduce);
+    } catch (err) {
+      reject(err);
     }
+
+    const deletionOp = await organizationModel.updateOne(
+      { _id: res.locals.organization },
+      {
+        $pull: {
+          'containers.$[].production': {
+            RelatedOrder: values[req.query.key],
+          },
+          orders: {
+            [req.query.key]: values[req.query.key],
+          },
+        },
+      }
+    );
+
+    console.log('Deletion op');
+    console.log(deletionOp);
+
+    organizationModel
+      .updateOne(
+        { _id: res.locals.organization },
+        {
+          $inc: {
+            'containers.$[].available': traysToReduce,
+          },
+        }
+      )
+      .then((result) => resolve(result))
+      .catch((err) => reject(err));
+  });
+};
+export const deleteOrders = (orgId, orders) => {
+  return new Promise(async (resolve, reject) => {
+    const org = await getOrganizationById(orgId);
+    const find = await orders.map(async (order) => {
+      const found = await org.orders.find((ordr) => ordr._id.equals(order._id));
+
+      return found;
+    });
+
+    Promise.all(find)
+      .then((found) => {
+        const operations = found.map(async (order) => {
+          const operation = await orgModel.updateOne(
+            { _id: orgId },
+            {
+              $pull: {
+                orders: {
+                  _id: order._id,
+                },
+              },
+            }
+          );
+          return operation;
+        });
+
+        Promise.all(operations)
+          .then((result) => {
+            resolve(result);
+          })
+          .catch((err) => {
+            reject(err);
+          });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  });
+};
+
+export const insertOrderAndProduction = async (organization, order, allProducts, timezone) => {
+  try {
+      // Calculate the overhead
+      const overhead = organization.containers[0].config.overhead / 100;
+    
+      // Build the production data for the order
+      const production = await buildProductionDataFromOrder(
+        order,
+        allProducts,
+        overhead,
+        organization.containers[0]
+      );
+
+      // Calculate the total number of trays to use
+      const totalTraysToUse = production.reduce(
+        (acc, prod) => acc + prod.trays,
+        0
+      );
+
+      // Schedule the production
+      await scheduleProduction(
+        organization._id,
+        production,
+        order,
+        allProducts,
+        timezone
+      );
+
+      // Update the organization's orders and available trays
+      organization.orders.push(order);
+      const available = organization.containers[0].available;
+      organization.containers[0].available = available - totalTraysToUse;
+
+      // Save the organization
+      await organization.save();
+      
+  } catch(err) {
+    console.log(err)
+    throw new Error('Error creating order and production');
+  }
 }
+
+export const createNewOrder = async (orgId, order, query) => {
+  try {
+    const interationsToProjectOrder = 3;
+    
+    // Generate a new ID for the order
+    const id = new ObjectId();
+
+    // Fetch all products for the organization
+    const allProducts = await getAllProducts(orgId);
+
+    // Fetch the organization
+    const organization = await getOrganizationById(orgId);
+    if (!organization) {
+      throw new Error('Could not find organization');
+    }
+
+    // Calculate the price of the order
+    const price = getOrdersPrice(order, allProducts);
+    if (price === undefined || price === null) {
+      throw new Error('There was an error calculating the price');
+    }
+    
+    // Convert the order date to a moment object in the user's timezone
+    const deliveryDate = moment.utc(order.date).tz(query.tz);
+
+    // Map the products in the order to the full product data from the database
+    const mappedProducts = order.products.map((prod) => {
+      const dbProduct = allProducts.find((product) =>
+        product._id.equals(prod._id)
+      );
+
+      // Base order object
+      let orderProduct = {
+        _id: prod._id,
+        name: prod.name,
+        seedId: dbProduct?.seed?.seedId,
+        packages: prod.packages,
+        mix: dbProduct.mix.isMix,
+        price: dbProduct.price,
+        parameters: dbProduct.parameters,
+      };
+
+      // If the product is a mix, add the mix status
+      if (dbProduct.mix.isMix) {
+        return {
+          ...orderProduct,
+          status: prod.status.name,
+          mixStatuses: prod.mixStatuses,
+        };
+      }
+
+      // If the product is not a mix, add the product status
+      return {
+        ...orderProduct,
+        status: prod.status,
+      };
+    });
+    // Map the products in the order to the full product data from the database
+    const secondProducts = order.products.map((prod) => {
+      const dbProduct = allProducts.find((product) =>
+        product._id.equals(prod._id)
+      );
+
+      // Base order object
+      let orderProduct = {
+        _id: prod._id,
+        name: prod.name,
+        seedId: dbProduct?.seed?.seedId,
+        packages: prod.packages,
+        mix: dbProduct.mix.isMix,
+        price: dbProduct.price,
+        parameters: dbProduct.parameters,
+      };
+
+      // If the product is a mix, add the mix status
+      if (dbProduct.mix.isMix) {
+        return {
+          ...orderProduct,
+          status: prod.status.name,
+          mixStatuses: prod.mixStatuses,
+        };
+      }
+
+      // If the product is not a mix, add the product status
+      return {
+        ...orderProduct,
+        status: prod.status,
+      };
+    });
+
+    // Create the order object
+    let orderMapped = {
+      _id: id,
+      organization: orgId,
+      next: null,
+      customer: order.customer._id,
+      price: price,
+      date: deliveryDate,
+      address: order.address,
+      products: mappedProducts,
+      status: order.status,
+      cyclic: order.cyclic,
+    };
+
+    const orderStatuses = Array.from(
+      new Set(orderMapped.products.map((prod) => prod.status))
+    );
+    
+      if(!order.cyclic){
+        await insertOrderAndProduction(orgId, orderMapped, allProducts, query.tz)
+        return organization
+      }
+
+      if(order.cyclic){
+        let tempId = new ObjectId();
+        let tempOrder = {
+          _id: tempId,
+          organization: orgId,
+          customer: order.customer._id,
+          next:null,
+          price: price,
+          address: order.address,
+          products: secondProducts,
+          cyclic: order.cyclic,
+          status: orderStatuses.length === 1 ? orderStatuses[0] : 'production',
+          date: orderMapped.date.clone().date(orderMapped.date.date() + 7),
+        };
+
+        orderMapped.next = tempId
+        await insertOrderAndProduction(organization, orderMapped, allProducts, query.tz)
+        await insertOrderAndProduction(organization, tempOrder, allProducts, query.tz)
+
+        return organization
+      }
+      
+      throw new Error("Unrecognized configuration of order");
+    
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
+};
+
+export const insertNewOrderWithProduction = async (
+  orgId,
+  order,
+  production
+) => {
+  try {
+    await organizationModel.updateOne(
+      {
+        _id: mongoose.Types.ObjectId(orgId),
+      },
+      {
+        $push: {
+          orders: order,
+          'containers.$[].production': { $each: production },
+        },
+      }
+    );
+  } catch (err) {
+    console.log('Error saving order and production');
+    console.log(err);
+  }
+};
 
 export const getOrdersByProd = (orgId, id) => {
-    return new Promise(async (resolve, reject) => {
-        // TODO: Corregir query
-        const orgOrdersByProd = await orgModel.aggregate(
-            [
-                {
-                    "$match": {
-                        "_id": mongoose.Types.ObjectId(orgId),
-                        "orders.products._id": mongoose.Types.ObjectId(id)
-                    }
-                },
-                {
-                    "$unwind": "$orders"
-                },
-                {
-                    "$match": {
-                        "orders.products._id": mongoose.Types.ObjectId(id)
-                    }
-                },
-            ]
-        )
-        const mapOrdersFromAggregation = orgOrdersByProd.map((orgModel) => {
-            return orgModel.orders 
-        }) 
+  return new Promise(async (resolve, reject) => {
+    // TODO: Corregir query
+    const orgOrdersByProd = await orgModel.aggregate([
+      {
+        $match: {
+          _id: mongoose.Types.ObjectId(orgId),
+          'orders.products._id': mongoose.Types.ObjectId(id),
+        },
+      },
+      {
+        $unwind: '$orders',
+      },
+      {
+        $match: {
+          'orders.products._id': mongoose.Types.ObjectId(id),
+        },
+      },
+    ]);
+    const mapOrdersFromAggregation = orgOrdersByProd.map((orgModel) => {
+      return orgModel.orders;
+    });
 
-        resolve(mapOrdersFromAggregation)
-    })
-}
+    resolve(mapOrdersFromAggregation);
+  });
+};
 
-export const updateOrder = async (org, orderId, body) => {
-    let allProducts, price
+// Permite actualizar la orden normalmente y los productos segun el status finalizado
+export const updateOrder = async (
+  org,
+  orderId,
+  body,
+  productId = undefined
+) => {
+  let allProducts, price;
 
-    try{
-        allProducts = await getAllProducts(org)
+  try {
+    allProducts = await getAllProducts(org);
+    const orders = await getOrderById(org, orderId);
 
-        const orders = await getOrderById(org, orderId)
-        console.log(orders)
-        if(orders && orders.length === 1 && orders[0]){
-            price = await getOrdersPrice(orders[0], allProducts)
-        } else {
-            throw new Error('Error getting order price')
-        }
-        
-        
-    }catch(err){
-        console.log(err)
-        return reject(new Error(err.message === 'getAllProducts'
-            ? 'Error getting all products'
-            : 'Error getting order price'
-        ));
+    if (orders && orders.length === 1 && orders[0]) {
+      price = await getOrdersPrice(orders[0], allProducts);
+    } else {
+      throw new Error('Error getting order price');
     }
+  } catch (err) {
+    console.log(err);
+    throw new Error(
+      err.message === 'getAllProducts'
+        ? 'Error getting all products'
+        : 'Error getting order price'
+    );
+  }
 
-    return new Promise((resolve, reject) => {
-        orgModel.findById(org).exec()
-        .then((organization) => {
-            if(organization){
-                const dbOrder = organization.orders.find((order) => order._id.equals(orderId))
-                if(!dbOrder) {
-                    return reject(dbOrder)
-                }
+  let updateFields = {};
 
-                //**VALID STATUSES FOR ORDERS about production: ["received","production", "packed", "delivered"] */
-                //**VALID STATUSES FOR ORDERS about payment: ["unpaid","paid","pending"] */
+  if (body.paths) {
+    body.paths.forEach(({ path, value }) => {
+      updateFields[`orders.$.${path}`] = value;
+      if (productId) updateFields[`orders.$.products.$[prod].${path}`] = value;
+    });
+  } else {
+    Object.entries(body).forEach(([key, value]) => {
+      updateFields[`orders.$.${key}`] = key === 'price' ? price : value;
+    });
+  }
 
-                if(body.paths){
-                    body.paths.forEach(({path, value}, index) => {
-                        dbOrder[path] = value
-                    });
-                }else{
-                    Object.entries(body).forEach(([key, value]) => {
-                        dbOrder[key] = (key === 'price') ? price : value;
-                    });
-                }
+  let additionalOptions = {};
+  if (productId) {
+    additionalOptions.arrayFilters = [{ 'prod._id': productId }];
+  }
 
-                organization.save((err, doc) => {
-                    if(err) reject(JSON.stringify({"message":"Error saving organization", "status": 500, "processError":err}))
-
-                    resolve(dbOrder)
-                })
-                return
-            }
-
-            return reject(new Error(JSON.stringify({"message":"No organization found", "status": 204})))
-        })
-        .catch((err) => {
-            console.log(err);        
-        })
-    })
-}
+  return await orgModel
+    .findOneAndUpdate(
+      { _id: org, 'orders._id': orderId },
+      { $set: updateFields },
+      {
+        new: true,
+        runValidators: true,
+        ...additionalOptions,
+      }
+    )
+    .exec()
+    .catch((err) => {
+      console.error(err);
+      throw new Error('Error updating order');
+    });
+};
 
 export const updateManyOrders = (filter, update) => {
-    return new Promise(async(resolve, reject) => {
-        try {
-            const updateResult = await orgModel.updateOne(filter, update)
-            resolve(updateResult)
-        } catch (err) {
-            reject(err)
-        }
-    })
-}
+  return new Promise(async (resolve, reject) => {
+    try {
+      const updateResult = await orgModel.updateOne(filter, update);
+      resolve(updateResult);
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
 
 export const getOrderById = async (orgId, orderId) => {
-    const filter = {
-        "key":"_id",
-        "value":orderId
-    }
-    
-    const orders = await getFilteredOrders(orgId, undefined, false, filter)
+  const filter = {
+    key: '_id',
+    value: orderId,
+  };
 
-    return orders
-}
+  const orders = await getFilteredOrders(orgId, undefined, false, filter);
+
+  return orders;
+};
 //* production status
 //* seeding
 //* growing -- 2 days p/w 7am
@@ -701,7 +718,6 @@ export const getOrderById = async (orgId, orderId) => {
 //* harvested
 //* packaged
 //* delivered
-
 
 //* payment status
 //* unpaid

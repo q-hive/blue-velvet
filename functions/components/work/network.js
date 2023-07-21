@@ -32,7 +32,8 @@ router.patch('/performance/:id', (req, res) => {
 router.patch('/production/:container', (req, res) => {
     const validBody = validateBodyNotEmpty(req, res)
     if(!validBody){
-        updateProductionToNextStatus(res.locals.organization,req.params.container,req.body.productionModelsIds)
+        const { productionModelsIds, actualStatus } = req.body
+        updateProductionToNextStatus(res.locals.organization,req.params.container,productionModelsIds, actualStatus, req.query.tz)
         .then((result) => {
             success(req, res, 200, "Production updated succesfully", result)
         })
