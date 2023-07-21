@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 //*MUI Components
 import {
   Autocomplete,
@@ -17,42 +17,42 @@ import {
   Divider,
   Tooltip,
   IconButton,
-} from "@mui/material";
-import PersonAddIcon from "@mui/icons-material/PersonAdd";
-import PersonAddDisabledIcon from "@mui/icons-material/PersonAddDisabled";
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+} from '@mui/material';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import PersonAddDisabledIcon from '@mui/icons-material/PersonAddDisabled';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 //*App components
-import { BV_THEME } from "../../../../theme/BV-theme";
-import { CheckBoxGroup } from "../../../../CoreComponents/CheckboxGroup";
+import { BV_THEME } from '../../../../theme/BV-theme';
+import { CheckBoxGroup } from '../../../../CoreComponents/CheckboxGroup';
 
 //*Contexts
-import useAuth from "../../../../contextHooks/useAuthContext";
+import useAuth from '../../../../contextHooks/useAuthContext';
 
 //*Network and API
-import { useLocation, useNavigate } from "react-router-dom";
-import { UserDialog } from "../../../../CoreComponents/UserFeedback/Dialog";
+import { useLocation, useNavigate } from 'react-router-dom';
+import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog';
 
 // CUSTOM HOOKS
-import useOrders from "../../../../hooks/useOrders";
-import useCustomers from "../../../../hooks/useCustomers";
-import useProducts from "../../../../hooks/useProducts";
-import DateRangePicker from "../../../../CoreComponents/Dates/DateRangePicker";
+import useOrders from '../../../../hooks/useOrders';
+import useCustomers from '../../../../hooks/useCustomers';
+import useProducts from '../../../../hooks/useProducts';
+import DateRangePicker from '../../../../CoreComponents/Dates/DateRangePicker';
 
 export const NewOrder = (props) => {
   const [sameCustomerAddress, setSameCustomerAddress] = useState(false);
   const initialDeliveryAddress = {
-    street: "",
-    stNumber: "",
-    zip: "",
-    city: "",
-    state: "",
-    country: "",
-    references: "",
+    street: '',
+    stNumber: '',
+    zip: '',
+    city: '',
+    state: '',
+    country: '',
+    references: '',
     coords: {
-      latitude: "",
-      longitude: "",
+      latitude: '',
+      longitude: '',
     },
   };
   const [deliveryAddress, setDeliveryAddress] = useState(
@@ -65,7 +65,7 @@ export const NewOrder = (props) => {
     let scopeProducts;
 
     if (props.edit.isEdition) {
-      console.log("isEdition");
+      console.log('isEdition');
       scopeProducts = props.edit.order.products.map((product) => {
         return product;
       });
@@ -94,38 +94,38 @@ export const NewOrder = (props) => {
       {
         selectable: true,
         shortCycle: false,
-        name: "preSoaking",
-        label: "To be soaked",
+        name: 'preSoaking',
+        label: 'To be soaked',
       },
       {
         selectable: true,
         shortCycle: true,
-        name: "seeding",
-        label: "To be seeded",
+        name: 'seeding',
+        label: 'To be seeded',
       },
       {
         selectable: false,
         shortCycle: true,
-        name: "growing",
-        label: "Product is growing",
+        name: 'growing',
+        label: 'Product is growing',
       },
       {
         selectable: true,
         shortCycle: true,
-        name: "harvestReady",
-        label: "Product is ready to harvest",
+        name: 'harvestReady',
+        label: 'Product is ready to harvest',
       },
       {
         selectable: true,
         shortCycle: true,
-        name: "packing",
-        label: "Product is ready to pack",
+        name: 'packing',
+        label: 'Product is ready to pack',
       },
       {
         selectable: true,
         shortCycle: true,
-        name: "ready",
-        label: "Product packed",
+        name: 'ready',
+        label: 'Product packed',
       },
     ],
     products: [],
@@ -133,7 +133,7 @@ export const NewOrder = (props) => {
   const [input, setInput] = useState({
     customer: props.edit.isEdition ? props.edit.values.order.customer : {},
     product: {},
-    status: "",
+    status: '',
     smallPackages: 0,
     size: undefined,
     mediumPackages: 0,
@@ -148,31 +148,31 @@ export const NewOrder = (props) => {
   const [canSendOrder, setCanSendOrder] = useState(false);
   const [error, setError] = useState({
     customer: {
-      message: "Please correct or fill the customer",
+      message: 'Please correct or fill the customer',
       active: false,
     },
     product: {
-      message: "Please correct or fill the product.",
+      message: 'Please correct or fill the product.',
       active: false,
     },
     status: {
-      message: "Please correct or fill the status.",
+      message: 'Please correct or fill the status.',
       active: false,
     },
     date: {
-      message: "Please correct or fill the date.",
+      message: 'Please correct or fill the date.',
       active: false,
     },
     size: {
-      message: "Please correct or fill the size.",
+      message: 'Please correct or fill the size.',
       active: false,
     },
     smallPackages: {
-      message: "Please correct or fill the number of packages.",
+      message: 'Please correct or fill the number of packages.',
       active: false,
     },
     mediumPackages: {
-      message: "Please correct or fill the number of packages.",
+      message: 'Please correct or fill the number of packages.',
       active: false,
     },
   });
@@ -188,7 +188,7 @@ export const NewOrder = (props) => {
   };
 
   const handleClose = (event, reason) => {
-    if (reason === "clickaway") {
+    if (reason === 'clickaway') {
       return;
     }
 
@@ -205,8 +205,8 @@ export const NewOrder = (props) => {
   //Dialog
   const [dialog, setDialog] = useState({
     open: false,
-    title: "",
-    message: "",
+    title: '',
+    message: '',
     actions: [],
   });
   //
@@ -215,7 +215,7 @@ export const NewOrder = (props) => {
     const { name, value } = event.target;
     setDeliveryAddress((prevAddress) => ({
       ...prevAddress,
-      ...(name === "latitude" || name === "longitude"
+      ...(name === 'latitude' || name === 'longitude'
         ? { coords: { ...prevAddress.coords, [name]: value } }
         : { [name]: value }),
     }));
@@ -224,16 +224,16 @@ export const NewOrder = (props) => {
   const useSameCustomerAddress = () => {
     setSameCustomerAddress((prevValue) => !prevValue);
     setDeliveryAddress({
-      street: input.customer.address?.street || "",
-      stNumber: input.customer.address?.stNumber || "",
-      zip: input.customer.address?.zip || "",
-      city: input.customer.address?.city || "",
-      state: input.customer.address?.state || "",
-      country: input.customer.address?.country || "",
-      references: input.customer.address?.references || "",
+      street: input.customer.address?.street || '',
+      stNumber: input.customer.address?.stNumber || '',
+      zip: input.customer.address?.zip || '',
+      city: input.customer.address?.city || '',
+      state: input.customer.address?.state || '',
+      country: input.customer.address?.country || '',
+      references: input.customer.address?.references || '',
       coords: {
-        latitude: input.customer.address?.coords?.latitude || "",
-        longitude: input.customer.address?.coords?.longitude || "",
+        latitude: input.customer.address?.coords?.latitude || '',
+        longitude: input.customer.address?.coords?.longitude || '',
       },
     });
   };
@@ -243,14 +243,14 @@ export const NewOrder = (props) => {
     let value;
     id = e.target.id;
     switch (r) {
-      case "input":
+      case 'input':
         value = v;
-        if (id === "smallPackages" || id === "mediumPackages") {
+        if (id === 'smallPackages' || id === 'mediumPackages') {
           value = Number(v);
         }
         break;
-      case "selectOption":
-        id = e.target.id.split("-")[0];
+      case 'selectOption':
+        id = e.target.id.split('-')[0];
         value = v;
         break;
       default:
@@ -267,26 +267,30 @@ export const NewOrder = (props) => {
       });
     }
 
-
     setInput((prevInput) => ({
       ...prevInput,
       [id]: value,
-      status: (prevInput.status.mix && id === "status") ? prevInput.status : (id === "status") ? value : prevInput.status,
+      status:
+        prevInput.status.mix && id === 'status'
+          ? prevInput.status
+          : id === 'status'
+          ? value
+          : prevInput.status,
     }));
-    if (id === "customer") {
-      console.log("[strlongitude]", value.address?.coords?.longitude);
+    if (id === 'customer') {
+      console.log('[strlongitude]', value.address?.coords?.longitude);
       setSameCustomerAddress(true);
       setDeliveryAddress({
-        street: value.address?.street || "",
-        stNumber: value.address?.stNumber || "",
-        zip: value.address?.zip || "",
-        city: value.address?.city || "",
-        state: value.address?.state || "",
-        country: value.address?.country || "",
-        references: value.address?.references || "",
+        street: value.address?.street || '',
+        stNumber: value.address?.stNumber || '',
+        zip: value.address?.zip || '',
+        city: value.address?.city || '',
+        state: value.address?.state || '',
+        country: value.address?.country || '',
+        references: value.address?.references || '',
         coords: {
-          latitude: value.address?.coords?.latitude || "",
-          longitude: value.address?.coords?.longitude || "",
+          latitude: value.address?.coords?.latitude || '',
+          longitude: value.address?.coords?.longitude || '',
         },
       });
     }
@@ -335,15 +339,15 @@ export const NewOrder = (props) => {
   const handleAddToOrder = (e) => {
     let packages;
     if (e) {
-      if (e.target.id === "add") {
+      if (e.target.id === 'add') {
         packages = [
           {
             number: input.smallPackages,
-            size: "small",
+            size: 'small',
           },
           {
             number: input.mediumPackages,
-            size: "medium",
+            size: 'medium',
           },
         ];
 
@@ -373,7 +377,7 @@ export const NewOrder = (props) => {
         setInput({
           ...input,
           product: {},
-          status: "",
+          status: '',
           smallPackages: 0,
           mediumPackages: 0,
         });
@@ -381,15 +385,15 @@ export const NewOrder = (props) => {
     }
   };
   const handleDeleteProduct = (product) => {
-    console.log("antes", products);
+    console.log('antes', products);
 
     var arr = products.filter((prod) => {
       return prod.name != product.name;
     });
     setProducts(arr);
 
-    console.log("despues", products);
-    console.log("tempArr", arr);
+    console.log('despues', products);
+    console.log('tempArr', arr);
   };
 
   function disableNonAvailableDays(date) {
@@ -409,7 +413,7 @@ export const NewOrder = (props) => {
   }
 
   const handleSetOrder = async (e) => {
-    if (e.target.id === "accept") {
+    if (e.target.id === 'accept') {
       console.log(input.customer);
       setError({
         ...error,
@@ -429,7 +433,7 @@ export const NewOrder = (props) => {
             }
             */
     }
-    if (e.target.id === "test") {
+    if (e.target.id === 'test') {
       if (products !== 0) {
         setProductsInput(false);
       }
@@ -444,11 +448,11 @@ export const NewOrder = (props) => {
         packages = [
           {
             number: input.smallPackages,
-            size: "small",
+            size: 'small',
           },
           {
             number: input.mediumPackages,
-            size: "medium",
+            size: 'medium',
           },
         ];
       } else {
@@ -456,10 +460,10 @@ export const NewOrder = (props) => {
           {
             number: input.smallPackages || input.mediumPackages,
             size: input.smallPackages
-              ? "small"
+              ? 'small'
               : input.mediumPackages
-              ? "medium"
-              : "small",
+              ? 'medium'
+              : 'small',
           },
         ];
       }
@@ -479,18 +483,18 @@ export const NewOrder = (props) => {
 
       // Pone el status de la orden dependiendo de los status de los productos
       const getOrderStatus = (orderProducts) => {
-        let allStatus = []
-        orderProducts.map((product)=>{
-          allStatus.push(product.status)
-        })
+        let allStatus = [];
+        orderProducts.map((product) => {
+          allStatus.push(product.status);
+        });
 
         const uniqueStatus = new Set(allStatus);
         if (uniqueStatus.size === 1) {
-          return [...uniqueStatus][0]
+          return [...uniqueStatus][0];
         } else if (uniqueStatus.size > 1) {
-          return "production"
+          return 'production';
         }
-      }
+      };
 
       mappedData = {
         customer: input.customer,
@@ -505,7 +509,7 @@ export const NewOrder = (props) => {
     };
 
     try {
-      console.log("MAPINPUT:", mapInput());
+      console.log('MAPINPUT:', mapInput());
       const response = await addOrder(mapInput());
 
       if (response.status === 201) {
@@ -514,19 +518,19 @@ export const NewOrder = (props) => {
         setDialog({
           ...dialog,
           open: true,
-          title: "Order created succesfully",
-          message: "Check the status of the order in the orders section",
+          title: 'Order created succesfully',
+          message: 'Check the status of the order in the orders section',
           actions: [
             {
-              label: "Continue",
-              btn_color: "primary",
+              label: 'Continue',
+              btn_color: 'primary',
               execute: () => {
                 window.location.reload();
               },
             },
             {
               label: loading ? <CircularProgress /> : "Print Order's Invoice",
-              btn_color: "secondary",
+              btn_color: 'secondary',
               execute: () => {
                 setLoading(true);
                 getOrderInvoice(response.data.data)
@@ -534,11 +538,11 @@ export const NewOrder = (props) => {
                     const url = window.URL.createObjectURL(
                       new Blob([new Uint8Array(result.data.data.data).buffer])
                     );
-                    const link = document.createElement("a");
+                    const link = document.createElement('a');
                     link.href = url;
 
                     link.setAttribute(
-                      "download",
+                      'download',
                       `Invoice ${response.data.data._id}.pdf`
                     );
 
@@ -551,12 +555,12 @@ export const NewOrder = (props) => {
                     setDialog({
                       ...dialog,
                       open: true,
-                      title: "Error getting file",
+                      title: 'Error getting file',
                       message:
-                        "Please try again, there was an issue getting the file",
+                        'Please try again, there was an issue getting the file',
                       actions: [
                         {
-                          label: "Ok",
+                          label: 'Ok',
                           execute: () => window.location.reload(),
                         },
                       ],
@@ -571,18 +575,18 @@ export const NewOrder = (props) => {
         setDialog({
           ...dialog,
           open: true,
-          title: "Order could not be created",
+          title: 'Order could not be created',
           actions: [
             {
-              label: "Retry",
-              btn_color: "primary",
+              label: 'Retry',
+              btn_color: 'primary',
               execute: () => {
                 window.location.reload();
               },
             },
             {
-              label: "Close",
-              btn_color: "secondary",
+              label: 'Close',
+              btn_color: 'secondary',
               execute: () => {
                 setDialog({ ...dialog, open: false });
               },
@@ -592,29 +596,30 @@ export const NewOrder = (props) => {
       }
     } catch (err) {
       console.log(err);
-      let message="Please try again later"
+      let message = 'Please try again later';
       if (err.response) {
         switch (err.response.status) {
-          case 500: message="Server error, please try again later"
+          case 500:
+            message = 'Server error, please try again later';
           // case 400: message="Server error, please try again later"
         }
       }
       setDialog({
         ...dialog,
         open: true,
-        title: "Order could not be created",
+        title: 'Order could not be created',
         message: message,
         actions: [
           {
-            label: "Reload page",
-            btn_color: "primary",
+            label: 'Reload page',
+            btn_color: 'primary',
             execute: () => {
               window.location.reload();
             },
           },
           {
-            label: "Close",
-            btn_color: "secondary",
+            label: 'Close',
+            btn_color: 'secondary',
             execute: () => {
               setDialog({ ...dialog, open: false });
             },
@@ -627,7 +632,7 @@ export const NewOrder = (props) => {
   };
 
   const handleSelectProduct = (e, v, r) => {
-    if (r === "selectOption") {
+    if (r === 'selectOption') {
       const product = options.products.find((product) => product._id === v._id);
       setInput({
         ...input,
@@ -643,7 +648,7 @@ export const NewOrder = (props) => {
       setInput({
         ...input,
         status: {
-          name: "mixed",
+          name: 'mixed',
           mix: [
             {
               name: v.name,
@@ -672,7 +677,7 @@ export const NewOrder = (props) => {
           ...ipt,
           status: {
             ...status,
-            name: "mixed",
+            name: 'mixed',
             mix: mixUpdated,
           },
         };
@@ -681,7 +686,7 @@ export const NewOrder = (props) => {
       setInput({
         ...input,
         status: {
-          name: "mixed",
+          name: 'mixed',
           mix: [
             ...input.status.mix,
             {
@@ -721,13 +726,13 @@ export const NewOrder = (props) => {
           return (
             <TextField
               {...params}
-              helperText={status.active ? status.message : ""}
+              helperText={status.active ? status.message : ''}
               error={status.active}
-              label="Status"
+              label='Status'
             />
           );
         }}
-        getOptionLabel={(opt) => (opt.label ? opt.label : "")}
+        getOptionLabel={(opt) => (opt.label ? opt.label : '')}
         isOptionEqualToValue={(o, v) => {
           if (!v) {
             return true;
@@ -812,26 +817,26 @@ export const NewOrder = (props) => {
       <Fade in={true} timeout={1000} unmountOnExit>
         <Box
           sx={{
-            display: "flex",
-            width: "100%",
-            alignItems: "center",
-            marginTop: "5vh",
-            flexDirection: "column",
+            display: 'flex',
+            width: '100%',
+            alignItems: 'center',
+            marginTop: '5vh',
+            flexDirection: 'column',
           }}
         >
           <Box
             sx={{
-              width: "90%",
-              display: "flex",
-              flexDirection: { xs: "column", sm: "column" },
+              width: '90%',
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'column' },
             }}
-            alignItems="center"
-            textAlign="center"
+            alignItems='center'
+            textAlign='center'
           >
             {productsInput ? (
               <>
                 <Autocomplete
-                  id="product"
+                  id='product'
                   options={options.products}
                   sx={BV_THEME.input.mobile.fullSize.desktop.halfSize}
                   renderInput={(params) => {
@@ -839,13 +844,13 @@ export const NewOrder = (props) => {
                     return (
                       <TextField
                         {...params}
-                        helperText={product.active ? product.message : ""}
+                        helperText={product.active ? product.message : ''}
                         error={product.active}
-                        label="Product"
+                        label='Product'
                       />
                     );
                   }}
-                  getOptionLabel={(opt) => (opt.name ? opt.name : "")}
+                  getOptionLabel={(opt) => (opt.name ? opt.name : '')}
                   isOptionEqualToValue={(o, v) => {
                     if (Object.keys(v).length === 0) {
                       return true;
@@ -862,21 +867,21 @@ export const NewOrder = (props) => {
                 input.product.mix.isMix ? (
                   <Box
                     sx={{
-                      width: "100%",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
+                      width: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
                     }}
                   >
-                    <Typography variant="h5" color="secondary" marginY={3}>
+                    <Typography variant='h5' color='secondary' marginY={3}>
                       Mix products statuses
                     </Typography>
                     <Box
                       sx={{
-                        width: "100%",
-                        display: "flex",
-                        flexDirection: "row",
-                        alignItems: "center",
+                        width: '100%',
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
                       }}
                     >
                       {input.product.mix.products.map((product) => {
@@ -887,15 +892,15 @@ export const NewOrder = (props) => {
                         return (
                           <Box
                             sx={{
-                              width: "100%",
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "center",
+                              width: '100%',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
                             }}
                           >
                             <Typography
-                              variant="h6"
-                              color="secondary"
+                              variant='h6'
+                              color='secondary'
                               marginY={2}
                             >
                               {tempProd.name}
@@ -910,62 +915,62 @@ export const NewOrder = (props) => {
                   <StatusComponent />
                 )}
 
-                <Typography variant="h5" color="secondary" marginY={3}>
+                <Typography variant='h5' color='secondary' marginY={3}>
                   No. of Packages
                 </Typography>
 
                 <Box>
                   <TextField
-                    id="smallPackages"
-                    type="number"
-                    label="25 gr"
-                    placeholder="Quantity"
+                    id='smallPackages'
+                    type='number'
+                    label='25 gr'
+                    placeholder='Quantity'
                     sx={BV_THEME.input.mobile.thirdSize.desktop.quarterSize}
                     onChange={(e) =>
-                      handleChangeInput(e, e.target.value, "input")
+                      handleChangeInput(e, e.target.value, 'input')
                     }
                     helperText={
                       error.smallPackages.active
                         ? error.smallPackages.message
-                        : ""
+                        : ''
                     }
                     error={error.smallPackages.active}
-                    value={input.smallPackages ? input.smallPackages : ""}
+                    value={input.smallPackages ? input.smallPackages : ''}
                   />
                   <TextField
-                    id="mediumPackages"
-                    type="number"
-                    label="80 gr"
-                    placeholder="Quantity"
+                    id='mediumPackages'
+                    type='number'
+                    label='80 gr'
+                    placeholder='Quantity'
                     sx={BV_THEME.input.mobile.thirdSize.desktop.quarterSize}
                     onChange={(e) =>
-                      handleChangeInput(e, e.target.value, "input")
+                      handleChangeInput(e, e.target.value, 'input')
                     }
                     helperText={
                       error.mediumPackages.active
                         ? error.mediumPackages.message
-                        : ""
+                        : ''
                     }
                     error={error.mediumPackages.active}
-                    value={input.mediumPackages ? input.mediumPackages : ""}
+                    value={input.mediumPackages ? input.mediumPackages : ''}
                   />
                 </Box>
 
                 <Button
-                  id="add"
-                  sx={{ marginTop: "2vh" }}
+                  id='add'
+                  sx={{ marginTop: '2vh' }}
                   onClick={handleAddToOrder}
                 >
                   Add product
                 </Button>
 
                 <Button
-                  variant="contained"
-                  id="test"
+                  variant='contained'
+                  id='test'
                   onClick={handleSetOrder}
                   disabled={products.length < 1}
                   sx={{
-                    marginTop: "2vh",
+                    marginTop: '2vh',
                     color: { ...BV_THEME.palette.white_btn },
                   }}
                 >
@@ -974,12 +979,12 @@ export const NewOrder = (props) => {
               </>
             ) : (
               <>
-                <Typography variant="h4" mb={{ xs: "5vh", md: "3vh" }}>
+                <Typography variant='h4' mb={{ xs: '5vh', md: '3vh' }}>
                   New order settings
                 </Typography>
 
                 <Autocomplete
-                  id="customer"
+                  id='customer'
                   options={options.customers}
                   sx={() => ({
                     ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
@@ -989,30 +994,30 @@ export const NewOrder = (props) => {
                     return (
                       <TextField
                         {...params}
-                        label="Customer"
-                        helperText={customer.active ? customer.message : ""}
+                        label='Customer'
+                        helperText={customer.active ? customer.message : ''}
                         error={customer.active}
                       />
                     );
                   }}
                   onChange={handleChangeInput}
-                  getOptionLabel={(opt) => (opt.name ? opt.name : "")}
+                  getOptionLabel={(opt) => (opt.name ? opt.name : '')}
                   value={input.customer ? input.customer : undefined}
                 />
 
-                <Typography variant="h6" mb="1vh" mt="4vh">
+                <Typography variant='h6' mb='1vh' mt='4vh'>
                   Delivery date
                 </Typography>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                   <DatePicker
-                    label="Select a date"
+                    label='Select a date'
                     onChange={handleChangeDate}
                     renderInput={(params) => {
                       const { date } = error;
                       return (
                         <TextField
                           {...params}
-                          helperText={date.active ? date.message : ""}
+                          helperText={date.active ? date.message : ''}
                           error={date.active}
                         />
                       );
@@ -1031,14 +1036,14 @@ export const NewOrder = (props) => {
                   <FormControlLabel
                     control={
                       <Checkbox
-                        id="cyclic"
+                        id='cyclic'
                         checked={input.cyclic}
                         onChange={(e) =>
-                          handleChangeInput(e, e.target.checked, "input")
+                          handleChangeInput(e, e.target.checked, 'input')
                         }
                       />
                     }
-                    label="Cyclic order"
+                    label='Cyclic order'
                   />
                 </FormControl>
 
@@ -1053,27 +1058,27 @@ export const NewOrder = (props) => {
 
                 <Box
                   sx={{
-                    width: { xs: "98%", sm: "49%" },
-                    mt: "4vh",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignContent: "center",
+                    width: { xs: '98%', sm: '49%' },
+                    mt: '4vh',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignContent: 'center',
                   }}
                 >
-                  <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                  <Typography variant='h6' sx={{ flexGrow: 1 }}>
                     Delivery address
                   </Typography>
                   <Tooltip
                     title={
                       sameCustomerAddress
-                        ? "Click to input other address"
-                        : "Click to use customer address"
+                        ? 'Click to input other address'
+                        : 'Click to use customer address'
                     }
                     arrow
                   >
                     <IconButton
                       onClick={useSameCustomerAddress}
-                      color={sameCustomerAddress ? "error" : "primary"}
+                      color={sameCustomerAddress ? 'error' : 'primary'}
                     >
                       {sameCustomerAddress ? (
                         <PersonAddDisabledIcon />
@@ -1084,40 +1089,40 @@ export const NewOrder = (props) => {
                   </Tooltip>
                 </Box>
                 <Divider
-                  variant="middle"
+                  variant='middle'
                   sx={{
-                    width: { xs: "98%", sm: "50%", md: "50%" },
-                    marginY: "1vh",
+                    width: { xs: '98%', sm: '50%', md: '50%' },
+                    marginY: '1vh',
                   }}
                 />
                 <TextField
-                  name="street"
+                  name='street'
                   onChange={handleDeliveryAddress}
                   value={deliveryAddress?.street}
-                  label="Street"
+                  label='Street'
                   sx={() => ({
                     ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
                   })}
                   disabled={sameCustomerAddress}
                 />
-                <Box sx={{ width: { xs: "98%", sm: "49%" } }}>
+                <Box sx={{ width: { xs: '98%', sm: '49%' } }}>
                   <TextField
-                    name="stNumber"
+                    name='stNumber'
                     onChange={handleDeliveryAddress}
                     value={deliveryAddress?.stNumber}
-                    label="No."
-                    type="number"
+                    label='No.'
+                    type='number'
                     sx={() => ({
                       ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
                     })}
                     disabled={sameCustomerAddress}
                   />
                   <TextField
-                    name="zip"
+                    name='zip'
                     onChange={handleDeliveryAddress}
                     value={deliveryAddress?.zip}
-                    label="ZipCode"
-                    type="text"
+                    label='ZipCode'
+                    type='text'
                     sx={() => ({
                       ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
                     })}
@@ -1125,64 +1130,64 @@ export const NewOrder = (props) => {
                   />
                 </Box>
                 <TextField
-                  name="city"
+                  name='city'
                   onChange={handleDeliveryAddress}
                   value={deliveryAddress?.city}
-                  label="City"
+                  label='City'
                   sx={() => ({
                     ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
                   })}
                   disabled={sameCustomerAddress}
                 />
                 <TextField
-                  name="state"
+                  name='state'
                   onChange={handleDeliveryAddress}
                   value={deliveryAddress?.state}
-                  label="State"
+                  label='State'
                   sx={() => ({
                     ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
                   })}
                   disabled={sameCustomerAddress}
                 />
                 <TextField
-                  name="country"
+                  name='country'
                   onChange={handleDeliveryAddress}
                   value={deliveryAddress?.country}
-                  label="Country"
+                  label='Country'
                   sx={() => ({
                     ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
                   })}
                   disabled={sameCustomerAddress}
                 />
                 <TextField
-                  name="references"
+                  name='references'
                   onChange={handleDeliveryAddress}
                   value={deliveryAddress?.references}
                   multiline
-                  label="References"
+                  label='References'
                   sx={() => ({
                     ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
                   })}
                   disabled={sameCustomerAddress}
                 />
-                <Box sx={{ width: { xs: "98%", sm: "49%" } }}>
+                <Box sx={{ width: { xs: '98%', sm: '49%' } }}>
                   <TextField
-                    name="latitude"
+                    name='latitude'
                     onChange={handleDeliveryAddress}
                     value={deliveryAddress?.coords?.latitude}
-                    label="Latitude"
-                    type="number"
+                    label='Latitude'
+                    type='number'
                     sx={() => ({
                       ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
                     })}
                     disabled={sameCustomerAddress}
                   />
                   <TextField
-                    name="longitude"
+                    name='longitude'
                     onChange={handleDeliveryAddress}
                     value={deliveryAddress?.coords?.longitude}
-                    label="Longitude"
-                    type="number"
+                    label='Longitude'
+                    type='number'
                     sx={() => ({
                       ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
                     })}
@@ -1191,12 +1196,12 @@ export const NewOrder = (props) => {
                 </Box>
 
                 <Button
-                  id="accept"
-                  variant="contained"
+                  id='accept'
+                  variant='contained'
                   onClick={handleSetOrder}
                   disabled={!canSendOrder}
                   sx={{
-                    marginTop: "1vh",
+                    marginTop: '1vh',
                     color: { ...BV_THEME.palette.white_btn },
                   }}
                 >
@@ -1209,42 +1214,42 @@ export const NewOrder = (props) => {
             {products.length != 0 ? (
               <Box
                 sx={{
-                  display: "inline-block",
-                  minWidth: "22em",
-                  textAlign: "justify",
-                  alignItems: "center",
-                  marginY: "5vh",
-                  padding: "3px",
+                  display: 'inline-block',
+                  minWidth: '22em',
+                  textAlign: 'justify',
+                  alignItems: 'center',
+                  marginY: '5vh',
+                  padding: '3px',
                 }}
               >
-                <hr color="secondary" />
+                <hr color='secondary' />
                 <Typography
-                  color="secondary"
-                  sx={{ textAlign: "center", marginTop: 1 }}
+                  color='secondary'
+                  sx={{ textAlign: 'center', marginTop: 1 }}
                 >
                   Products in Order
                 </Typography>
 
                 <table
                   style={{
-                    marginTop: "1vh",
-                    width: "100%",
-                    textAlign: "center",
+                    marginTop: '1vh',
+                    width: '100%',
+                    textAlign: 'center',
                   }}
                 >
                   <thead>
                     <tr>
                       <th>
-                        <Typography variant="subtitle1">Name</Typography>
+                        <Typography variant='subtitle1'>Name</Typography>
                       </th>
                       <th>
-                        <Typography variant="subtitle1">Status</Typography>
+                        <Typography variant='subtitle1'>Status</Typography>
                       </th>
                       <th>
-                        <Typography variant="subtitle1">Small</Typography>
+                        <Typography variant='subtitle1'>Small</Typography>
                       </th>
                       <th>
-                        <Typography variant="subtitle1">Medium</Typography>
+                        <Typography variant='subtitle1'>Medium</Typography>
                       </th>
                     </tr>
                   </thead>
@@ -1252,7 +1257,7 @@ export const NewOrder = (props) => {
                   <tbody>
                     {getContextProducts().map((product, id) => {
                       return (
-                        <tr key={id} style={{ textAlign: "center" }}>
+                        <tr key={id} style={{ textAlign: 'center' }}>
                           <td>
                             <Typography>{product.name}</Typography>
                           </td>
@@ -1264,28 +1269,28 @@ export const NewOrder = (props) => {
                           {product.packages.length > 1 ? (
                             product.packages.map((pkg, idx) => {
                               return (
-                                <td key={idx} style={{ textAlign: "center" }}>
+                                <td key={idx} style={{ textAlign: 'center' }}>
                                   <Typography>{pkg.number}</Typography>
                                 </td>
                               );
                             })
-                          ) : product.packages[0].size === "small" ? (
+                          ) : product.packages[0].size === 'small' ? (
                             <>
-                              <td style={{ textAlign: "center" }}>
+                              <td style={{ textAlign: 'center' }}>
                                 <Typography>
                                   {product.packages[0].number}
                                 </Typography>
                               </td>
-                              <td style={{ textAlign: "center" }}>
+                              <td style={{ textAlign: 'center' }}>
                                 <Typography>0</Typography>
                               </td>
                             </>
                           ) : (
                             <>
-                              <td style={{ textAlign: "center" }}>
+                              <td style={{ textAlign: 'center' }}>
                                 <Typography>0</Typography>
                               </td>
-                              <td style={{ textAlign: "center" }}>
+                              <td style={{ textAlign: 'center' }}>
                                 <Typography>
                                   {product.packages[0].number}
                                 </Typography>
@@ -1294,8 +1299,8 @@ export const NewOrder = (props) => {
                           )}
                           <td>
                             <Button
-                              variant="contained"
-                              color="error"
+                              variant='contained'
+                              color='error'
                               onClick={() => handleDeleteProduct(product)}
                             >
                               Delete
@@ -1313,11 +1318,11 @@ export const NewOrder = (props) => {
       </Fade>
       <Snackbar
         open={open}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         autoHideDuration={5000}
         onClose={handleClose}
       >
-        <Alert onClose={handleClose} severity="success" sx={{ width: "100%" }}>
+        <Alert onClose={handleClose} severity='success' sx={{ width: '100%' }}>
           Order generated succesfully!
         </Alert>
       </Snackbar>
