@@ -10,7 +10,7 @@ const Order = new Schema({
     job:            { type: String,     default:"No job"},
     price:          { type: Number,     required: true },
     date:           { type: Date,       required: true },
-    relatedOrdersFromJob: { type:[],    required:false },
+    next:           { type: ObjectId,   required: true },
     // end:            { type: Date,       required: true },
     products:   {
         type: [{

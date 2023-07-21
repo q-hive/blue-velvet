@@ -515,6 +515,7 @@ export const NewOrder = (props) => {
           ...dialog,
           open: true,
           title: "Order created succesfully",
+          message: "Check the status of the order in the orders section",
           actions: [
             {
               label: "Continue",
@@ -591,11 +592,18 @@ export const NewOrder = (props) => {
       }
     } catch (err) {
       console.log(err);
+      let message="Please try again later"
+      if (err.response) {
+        switch (err.response.status) {
+          case 500: message="Server error, please try again later"
+          // case 400: message="Server error, please try again later"
+        }
+      }
       setDialog({
         ...dialog,
         open: true,
         title: "Order could not be created",
-        message: err.response.data.message || "Please try again later",
+        message: message,
         actions: [
           {
             label: "Reload page",

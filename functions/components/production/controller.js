@@ -19,6 +19,7 @@ import { getOrderById } from "../orders/store.js"
 import { buildPackagesFromOrders } from "../delivery/controller.js"
 import { isLargeCicle } from "../products/controller.js"
 import { getContainerById, updateContainerById } from "../container/store.js"
+import moment from "moment"
 
 
 export const getTaskByStatus = async (production, orgId=undefined, container=undefined) => {
@@ -56,7 +57,7 @@ export const scheduleTask = async (config) => {
     nodeschedule.scheduleJob(config.scheduleInDate, async function() {
         let result = ""
         try {
-            result = await config.task(config.organization, config.container, [config.production._id])
+            result = await config.task(config.organization, config.container, [config.production._id], config.production.ProductionStatus,moment().tz.guess())
         } catch (err) {
             Promise.reject(err)
         }
@@ -551,7 +552,19 @@ export const setDryRacksByHarvest = (trays, name) => {
 }
 
 export const buildProductionProductData = async (prod, order, dbproducts, overHeadParam, container) => {
-        const prodFound = dbproducts.find((fprod) => fprod._id == prod._id)
+        const prodFound = dbproducts.find((fprod) => {
+            if(typeof fprod._id === "object"){
+                return fprod._id.equals(prod._id)
+            }
+
+            if (typeof prod._id === "object"){
+                return prod._id.equals(fprod._id)
+            }
+            
+            
+            return fprod._id == prod._id
+        })
+
         prod.packages.forEach((pkg, idx) => {
             switch(pkg.size){
                 case "small":
@@ -770,9 +783,9 @@ export const saveProductionForWorkDay = async (orgId, containerId, production) =
     }
 }
 
-export const updateProductionToNextStatus = (orgId,container,productionModelsIds, actualStatus, ordersIds) => {
+export const updateProductionToNextStatus = (orgId,container,productionModelsIds, actualStatus, tz) => {
     return new Promise((resolve, reject) => {
-        updateManyProductionModels(orgId,container,productionModelsIds, actualStatus, ordersIds)
+        updateManyProductionModels(orgId,container,productionModelsIds, actualStatus, tz)
         .then((result) => resolve(result))
         .catch(err => reject(err))
     })

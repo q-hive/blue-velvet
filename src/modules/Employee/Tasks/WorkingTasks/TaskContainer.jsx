@@ -330,21 +330,15 @@ export const TaskContainer = (props) => {
             }  
 
             let productionModelsIds = []
-            let ordersIds = []
             wd[Object.keys(WorkContext.cicle)[WorkContext.currentRender]].forEach((model) => {
                 if(model.modelsId){
                     model.modelsId.forEach((productionModelsId) => productionModelsIds.push(productionModelsId))
                 }
-                if(model.relatedOrders){
-                    model.relatedOrders.forEach((orderId) => ordersIds.push(orderId))
-                }
             })
-
-            ordersIds = [...new Set(ordersIds)]
 
             let refreshedToken = await getRefreshedToken()
             await updateTaskHistory({...taskHistoryModel}, {authorization: refreshedToken, user: user})
-            await updateProduction(user.assignedContainer, productionModelsIds, type, ordersIds, {authorization: refreshedToken,user: user})
+            await updateProduction(user.assignedContainer, productionModelsIds, type, {authorization: refreshedToken,user: user})
         }
             
         if(type === "cleaning"){
