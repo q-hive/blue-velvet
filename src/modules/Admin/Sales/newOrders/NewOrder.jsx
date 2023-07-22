@@ -6,6 +6,9 @@ import {
   Typography,
   Button,
   Box,
+  Grid,
+  Container,
+  Paper,
   Snackbar,
   Alert,
   Stack,
@@ -20,6 +23,7 @@ import {
 } from '@mui/material';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import PersonAddDisabledIcon from '@mui/icons-material/PersonAddDisabled';
+import HeartBrokenIcon from '@mui/icons-material/HeartBroken';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
@@ -144,7 +148,6 @@ export const NewOrder = (props) => {
   const [endDate, setEndDate] = useState(new Date());
 
   //*Render states
-  const [productsInput, setProductsInput] = useState(true);
   const [canSendOrder, setCanSendOrder] = useState(false);
   const [error, setError] = useState({
     customer: {
@@ -426,18 +429,6 @@ export const NewOrder = (props) => {
           active: Object.keys(input.customer).length === 0,
         },
       });
-
-      /*
-            if(input.date !== undefined && Object.keys(input.customer).length !== 0){
-                
-            }
-            */
-    }
-    if (e.target.id === 'test') {
-      if (products !== 0) {
-        setProductsInput(false);
-      }
-      return;
     }
 
     const mapInput = () => {
@@ -720,7 +711,7 @@ export const NewOrder = (props) => {
       <Autocomplete
         id={`status`}
         options={tempOpts}
-        sx={BV_THEME.input.mobile.fullSize.desktop.halfSize}
+        sx={BV_THEME.input.mobile.fullSize.desktop.fullSize}
         renderInput={(params) => {
           const { status } = error;
           return (
@@ -805,527 +796,688 @@ export const NewOrder = (props) => {
 
   return (
     <>
-      <UserDialog
-        title={dialog.title}
-        content={dialog.message}
-        dialog={dialog}
-        setDialog={setDialog}
-        actions={dialog.actions}
-        open={dialog.open}
-      />
-
       <Fade in={true} timeout={1000} unmountOnExit>
-        <Box
-          sx={{
-            display: 'flex',
-            width: '100%',
-            alignItems: 'center',
-            marginTop: '5vh',
-            flexDirection: 'column',
-          }}
-        >
-          <Box
-            sx={{
-              width: '90%',
-              display: 'flex',
-              flexDirection: { xs: 'column', sm: 'column' },
-            }}
-            alignItems='center'
-            textAlign='center'
-          >
-            {productsInput ? (
-              <>
-                <Autocomplete
-                  id='product'
-                  options={options.products}
-                  sx={BV_THEME.input.mobile.fullSize.desktop.halfSize}
-                  renderInput={(params) => {
-                    const { product } = error;
-                    return (
-                      <TextField
-                        {...params}
-                        helperText={product.active ? product.message : ''}
-                        error={product.active}
-                        label='Product'
-                      />
-                    );
-                  }}
-                  getOptionLabel={(opt) => (opt.name ? opt.name : '')}
-                  isOptionEqualToValue={(o, v) => {
-                    if (Object.keys(v).length === 0) {
-                      return true;
-                    }
-                    return o.name === v.name;
-                  }}
-                  onChange={handleSelectProduct}
-                  value={
-                    Object.keys(input.product) !== 0 ? input.product : undefined
-                  }
-                />
+        <Box sx={{ width: '100%', height: '100%' }}>
+          {/* DIALOG */}
+          <UserDialog
+            title={dialog.title}
+            content={dialog.message}
+            dialog={dialog}
+            setDialog={setDialog}
+            actions={dialog.actions}
+            open={dialog.open}
+          />
 
-                {Object.keys(input.product).length > 0 &&
-                input.product.mix.isMix ? (
+          {/* NEW ORDER CONTENT */}
+          <Container maxWidth='xl' sx={{ padding: '2%' }}>
+            {/* TITLE */}
+            <Typography
+              variant='h4'
+              color='secondary'
+              textAlign='center'
+              margin={BV_THEME.margin.mainHeader}
+            >
+              NEW ORDER SETTINGS
+            </Typography>
+
+            {/* SCREEN DIVIDER */}
+            <Grid container spacing={2}>
+              {/* LEFT SIDE */}
+              <Grid item xs={12} md={6}>
+                {/* PRODUCTS */}
+                <Paper
+                  elevation={4}
+                  sx={{
+                    padding: BV_THEME.spacing(2),
+                    minHeight: '40vh',
+                    height: '40vh',
+                  }}
+                >
+                  {/* PRODUCTS HEADER */}
                   <Box
                     sx={{
-                      width: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
+                      display: 'grid',
+                      gridTemplateColumns: '1fr auto',
+                      gap: '1rem',
                       alignItems: 'center',
                     }}
                   >
-                    <Typography variant='h5' color='secondary' marginY={3}>
-                      Mix products statuses
+                    <Typography
+                      variant='h5'
+                      color='secondary'
+                      textAlign='center'
+                    >
+                      SELECT PRODUCTS
                     </Typography>
+                    <Button
+                      id='add'
+                      onClick={handleAddToOrder}
+                      sx={{
+                        '&:hover': {
+                          color: BV_THEME.palette.secondary.main,
+                        },
+                      }}
+                    >
+                      Add
+                    </Button>
+                  </Box>
+
+                  {/* PRODUCTS BODY */}
+                  <Box>
+                    {/* PRODUCTS SELECTION */}
+                    <Autocomplete
+                      id='product'
+                      options={options.products}
+                      sx={BV_THEME.input.mobile.fullSize.desktop.fullSize}
+                      renderInput={(params) => {
+                        const { product } = error;
+                        return (
+                          <TextField
+                            {...params}
+                            helperText={product.active ? product.message : ''}
+                            error={product.active}
+                            label='Product'
+                          />
+                        );
+                      }}
+                      getOptionLabel={(opt) => (opt.name ? opt.name : '')}
+                      isOptionEqualToValue={(o, v) => {
+                        if (Object.keys(v).length === 0) {
+                          return true;
+                        }
+                        return o.name === v.name;
+                      }}
+                      onChange={handleSelectProduct}
+                      value={
+                        Object.keys(input.product) !== 0
+                          ? input.product
+                          : undefined
+                      }
+                    />
+
+                    {/* STATUS SELECTION (MIX AND NORMAL) */}
+
+                    {Object.keys(input.product).length > 0 &&
+                    input.product.mix.isMix ? (
+                      <Box
+                        sx={{
+                          width: '100%',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Typography variant='h5' color='secondary' marginY={1}>
+                          Mix products statuses
+                        </Typography>
+                        <Box
+                          sx={{
+                            width: '100%',
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                          }}
+                        >
+                          {input.product.mix.products.map((product) => {
+                            let tempProd = options.products.find(
+                              (prod) => prod._id === product.strain
+                            );
+
+                            return (
+                              <Box
+                                sx={{
+                                  width: '100%',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <Typography
+                                  variant='h6'
+                                  color='secondary'
+                                  marginY={1}
+                                >
+                                  {tempProd.name}
+                                </Typography>
+                                <StatusComponent product={tempProd} />
+                              </Box>
+                            );
+                          })}
+                        </Box>
+                      </Box>
+                    ) : (
+                      <StatusComponent />
+                    )}
+
+                    {/* NO OF PACKAGES SELECTION */}
+                    <Typography
+                      variant='h5'
+                      color='secondary'
+                      marginY={1}
+                      textAlign='center'
+                    >
+                      No. of Packages
+                    </Typography>
+
                     <Box
                       sx={{
-                        width: '100%',
                         display: 'flex',
-                        flexDirection: 'row',
+                        justifyContent: 'center',
                         alignItems: 'center',
                       }}
                     >
-                      {input.product.mix.products.map((product) => {
-                        let tempProd = options.products.find(
-                          (prod) => prod._id === product.strain
-                        );
-
-                        return (
-                          <Box
-                            sx={{
-                              width: '100%',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                            }}
-                          >
-                            <Typography
-                              variant='h6'
-                              color='secondary'
-                              marginY={2}
-                            >
-                              {tempProd.name}
-                            </Typography>
-                            <StatusComponent product={tempProd} />
-                          </Box>
-                        );
-                      })}
+                      <TextField
+                        id='smallPackages'
+                        type='number'
+                        label='25 gr'
+                        placeholder='Quantity'
+                        sx={BV_THEME.input.mobile.thirdSize.desktop.thirdSize}
+                        onChange={(e) =>
+                          handleChangeInput(e, e.target.value, 'input')
+                        }
+                        helperText={
+                          error.smallPackages.active
+                            ? error.smallPackages.message
+                            : ''
+                        }
+                        error={error.smallPackages.active}
+                        value={input.smallPackages ? input.smallPackages : ''}
+                      />
+                      <TextField
+                        id='mediumPackages'
+                        type='number'
+                        label='80 gr'
+                        placeholder='Quantity'
+                        sx={BV_THEME.input.mobile.thirdSize.desktop.thirdSize}
+                        onChange={(e) =>
+                          handleChangeInput(e, e.target.value, 'input')
+                        }
+                        helperText={
+                          error.mediumPackages.active
+                            ? error.mediumPackages.message
+                            : ''
+                        }
+                        error={error.mediumPackages.active}
+                        value={input.mediumPackages ? input.mediumPackages : ''}
+                      />
                     </Box>
                   </Box>
-                ) : (
-                  <StatusComponent />
-                )}
+                </Paper>
 
-                <Typography variant='h5' color='secondary' marginY={3}>
-                  No. of Packages
-                </Typography>
-
-                <Box>
-                  <TextField
-                    id='smallPackages'
-                    type='number'
-                    label='25 gr'
-                    placeholder='Quantity'
-                    sx={BV_THEME.input.mobile.thirdSize.desktop.quarterSize}
-                    onChange={(e) =>
-                      handleChangeInput(e, e.target.value, 'input')
-                    }
-                    helperText={
-                      error.smallPackages.active
-                        ? error.smallPackages.message
-                        : ''
-                    }
-                    error={error.smallPackages.active}
-                    value={input.smallPackages ? input.smallPackages : ''}
-                  />
-                  <TextField
-                    id='mediumPackages'
-                    type='number'
-                    label='80 gr'
-                    placeholder='Quantity'
-                    sx={BV_THEME.input.mobile.thirdSize.desktop.quarterSize}
-                    onChange={(e) =>
-                      handleChangeInput(e, e.target.value, 'input')
-                    }
-                    helperText={
-                      error.mediumPackages.active
-                        ? error.mediumPackages.message
-                        : ''
-                    }
-                    error={error.mediumPackages.active}
-                    value={input.mediumPackages ? input.mediumPackages : ''}
-                  />
-                </Box>
-
-                <Button
-                  id='add'
-                  sx={{ marginTop: '2vh' }}
-                  onClick={handleAddToOrder}
-                >
-                  Add product
-                </Button>
-
-                <Button
-                  variant='contained'
-                  id='test'
-                  onClick={handleSetOrder}
-                  disabled={products.length < 1}
+                {/* PRODUCTS IN ORDER */}
+                <Paper
+                  elevation={4}
                   sx={{
+                    padding: BV_THEME.spacing(2),
+                    minHeight: '20vh',
                     marginTop: '2vh',
-                    color: { ...BV_THEME.palette.white_btn },
                   }}
                 >
-                  Select customer and Delivery Date
-                </Button>
-              </>
-            ) : (
-              <>
-                <Typography variant='h4' mb={{ xs: '5vh', md: '3vh' }}>
-                  New order settings
-                </Typography>
-
-                <Autocomplete
-                  id='customer'
-                  options={options.customers}
-                  sx={() => ({
-                    ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
-                  })}
-                  renderInput={(params) => {
-                    const { customer } = error;
-                    return (
-                      <TextField
-                        {...params}
-                        label='Customer'
-                        helperText={customer.active ? customer.message : ''}
-                        error={customer.active}
-                      />
-                    );
-                  }}
-                  onChange={handleChangeInput}
-                  getOptionLabel={(opt) => (opt.name ? opt.name : '')}
-                  value={input.customer ? input.customer : undefined}
-                />
-
-                <Typography variant='h6' mb='1vh' mt='4vh'>
-                  Delivery date
-                </Typography>
-                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                  <DatePicker
-                    label='Select a date'
-                    onChange={handleChangeDate}
-                    renderInput={(params) => {
-                      const { date } = error;
-                      return (
-                        <TextField
-                          {...params}
-                          helperText={date.active ? date.message : ''}
-                          error={date.active}
-                        />
-                      );
-                    }}
-                    value={input.date}
-                    sx={() => ({
-                      ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
-                    })}
-                    disablePast={true}
-                    // shouldDisableDate={disableNonAvailableDays}
-                    // minDate={calculateMinDate()}
-                  />
-                </LocalizationProvider>
-
-                <FormControl>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        id='cyclic'
-                        checked={input.cyclic}
-                        onChange={(e) =>
-                          handleChangeInput(e, e.target.checked, 'input')
-                        }
-                      />
-                    }
-                    label='Cyclic order'
-                  />
-                </FormControl>
-
-                {input.cyclic && (
-                  <DateRangePicker
-                    startDate={startDate}
-                    endDate={endDate}
-                    onStartDateChange={handleStartDateChange}
-                    onEndDateChange={handleEndDateChange}
-                  />
-                )}
-
-                <Box
-                  sx={{
-                    width: { xs: '98%', sm: '49%' },
-                    mt: '4vh',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignContent: 'center',
-                  }}
-                >
-                  <Typography variant='h6' sx={{ flexGrow: 1 }}>
-                    Delivery address
-                  </Typography>
-                  <Tooltip
-                    title={
-                      sameCustomerAddress
-                        ? 'Click to input other address'
-                        : 'Click to use customer address'
-                    }
-                    arrow
+                  {/* PRODUCTS IN ORDER HEADER */}
+                  <Typography
+                    variant='h6'
+                    color='secondary'
+                    sx={{ textAlign: 'center' }}
                   >
-                    <IconButton
-                      onClick={useSameCustomerAddress}
-                      color={sameCustomerAddress ? 'error' : 'primary'}
-                    >
-                      {sameCustomerAddress ? (
-                        <PersonAddDisabledIcon />
-                      ) : (
-                        <PersonAddIcon />
-                      )}
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-                <Divider
-                  variant='middle'
-                  sx={{
-                    width: { xs: '98%', sm: '50%', md: '50%' },
-                    marginY: '1vh',
-                  }}
-                />
-                <TextField
-                  name='street'
-                  onChange={handleDeliveryAddress}
-                  value={deliveryAddress?.street}
-                  label='Street'
-                  sx={() => ({
-                    ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
-                  })}
-                  disabled={sameCustomerAddress}
-                />
-                <Box sx={{ width: { xs: '98%', sm: '49%' } }}>
-                  <TextField
-                    name='stNumber'
-                    onChange={handleDeliveryAddress}
-                    value={deliveryAddress?.stNumber}
-                    label='No.'
-                    type='number'
-                    sx={() => ({
-                      ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
-                    })}
-                    disabled={sameCustomerAddress}
-                  />
-                  <TextField
-                    name='zip'
-                    onChange={handleDeliveryAddress}
-                    value={deliveryAddress?.zip}
-                    label='ZipCode'
-                    type='text'
-                    sx={() => ({
-                      ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
-                    })}
-                    disabled={sameCustomerAddress}
-                  />
-                </Box>
-                <TextField
-                  name='city'
-                  onChange={handleDeliveryAddress}
-                  value={deliveryAddress?.city}
-                  label='City'
-                  sx={() => ({
-                    ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
-                  })}
-                  disabled={sameCustomerAddress}
-                />
-                <TextField
-                  name='state'
-                  onChange={handleDeliveryAddress}
-                  value={deliveryAddress?.state}
-                  label='State'
-                  sx={() => ({
-                    ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
-                  })}
-                  disabled={sameCustomerAddress}
-                />
-                <TextField
-                  name='country'
-                  onChange={handleDeliveryAddress}
-                  value={deliveryAddress?.country}
-                  label='Country'
-                  sx={() => ({
-                    ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
-                  })}
-                  disabled={sameCustomerAddress}
-                />
-                <TextField
-                  name='references'
-                  onChange={handleDeliveryAddress}
-                  value={deliveryAddress?.references}
-                  multiline
-                  label='References'
-                  sx={() => ({
-                    ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
-                  })}
-                  disabled={sameCustomerAddress}
-                />
-                <Box sx={{ width: { xs: '98%', sm: '49%' } }}>
-                  <TextField
-                    name='latitude'
-                    onChange={handleDeliveryAddress}
-                    value={deliveryAddress?.coords?.latitude}
-                    label='Latitude'
-                    type='number'
-                    sx={() => ({
-                      ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
-                    })}
-                    disabled={sameCustomerAddress}
-                  />
-                  <TextField
-                    name='longitude'
-                    onChange={handleDeliveryAddress}
-                    value={deliveryAddress?.coords?.longitude}
-                    label='Longitude'
-                    type='number'
-                    sx={() => ({
-                      ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
-                    })}
-                    disabled={sameCustomerAddress}
-                  />
-                </Box>
+                    PRODUCTS IN ORDER
+                  </Typography>
 
-                <Button
-                  id='accept'
-                  variant='contained'
-                  onClick={handleSetOrder}
-                  disabled={!canSendOrder}
-                  sx={{
-                    marginTop: '1vh',
-                    color: { ...BV_THEME.palette.white_btn },
-                  }}
-                >
-                  Set Order
-                </Button>
-              </>
-            )}
-
-            {/* Generate Feedback table */}
-            {products.length != 0 ? (
-              <Box
-                sx={{
-                  display: 'inline-block',
-                  minWidth: '22em',
-                  textAlign: 'justify',
-                  alignItems: 'center',
-                  marginY: '5vh',
-                  padding: '3px',
-                }}
-              >
-                <hr color='secondary' />
-                <Typography
-                  color='secondary'
-                  sx={{ textAlign: 'center', marginTop: 1 }}
-                >
-                  Products in Order
-                </Typography>
-
-                <table
-                  style={{
-                    marginTop: '1vh',
-                    width: '100%',
-                    textAlign: 'center',
-                  }}
-                >
-                  <thead>
-                    <tr>
-                      <th>
-                        <Typography variant='subtitle1'>Name</Typography>
-                      </th>
-                      <th>
-                        <Typography variant='subtitle1'>Status</Typography>
-                      </th>
-                      <th>
-                        <Typography variant='subtitle1'>Small</Typography>
-                      </th>
-                      <th>
-                        <Typography variant='subtitle1'>Medium</Typography>
-                      </th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {getContextProducts().map((product, id) => {
-                      return (
-                        <tr key={id} style={{ textAlign: 'center' }}>
-                          <td>
-                            <Typography>{product.name}</Typography>
-                          </td>
-                          <td>
-                            <Typography sx={{ mx: 2 }}>
-                              {product.status}
-                            </Typography>
-                          </td>
-                          {product.packages.length > 1 ? (
-                            product.packages.map((pkg, idx) => {
+                  {/* LIST OF PRODUCTS */}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      minHeight: '13vh',
+                    }}
+                  >
+                    {products.length != 0 ? (
+                      <Box
+                        sx={{
+                          display: 'inline-block',
+                          minWidth: '22em',
+                          textAlign: 'justify',
+                          alignItems: 'center',
+                          padding: '5px',
+                        }}
+                      >
+                        <table
+                          style={{
+                            width: '100%',
+                            textAlign: 'center',
+                          }}
+                        >
+                          <thead>
+                            <tr>
+                              <th>
+                                <Typography variant='subtitle1'>
+                                  Name
+                                </Typography>
+                              </th>
+                              <th>
+                                <Typography variant='subtitle1'>
+                                  Status
+                                </Typography>
+                              </th>
+                              <th>
+                                <Typography variant='subtitle1'>
+                                  25gr
+                                </Typography>
+                              </th>
+                              <th>
+                                <Typography variant='subtitle1'>
+                                  80gr
+                                </Typography>
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {getContextProducts().map((product, id) => {
                               return (
-                                <td key={idx} style={{ textAlign: 'center' }}>
-                                  <Typography>{pkg.number}</Typography>
-                                </td>
+                                <tr key={id} style={{ textAlign: 'center' }}>
+                                  <td>
+                                    <Typography>{product.name}</Typography>
+                                  </td>
+                                  <td>
+                                    <Typography sx={{ mx: 2 }}>
+                                      {product.status}
+                                    </Typography>
+                                  </td>
+                                  {product.packages.length > 1 ? (
+                                    product.packages.map((pkg, idx) => {
+                                      return (
+                                        <td
+                                          key={idx}
+                                          style={{ textAlign: 'center' }}
+                                        >
+                                          <Typography>{pkg.number}</Typography>
+                                        </td>
+                                      );
+                                    })
+                                  ) : product.packages[0].size === 'small' ? (
+                                    <>
+                                      <td style={{ textAlign: 'center' }}>
+                                        <Typography>
+                                          {product.packages[0].number}
+                                        </Typography>
+                                      </td>
+                                      <td style={{ textAlign: 'center' }}>
+                                        <Typography>0</Typography>
+                                      </td>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <td style={{ textAlign: 'center' }}>
+                                        <Typography>0</Typography>
+                                      </td>
+                                      <td style={{ textAlign: 'center' }}>
+                                        <Typography>
+                                          {product.packages[0].number}
+                                        </Typography>
+                                      </td>
+                                    </>
+                                  )}
+                                  <td>
+                                    <Button
+                                      variant='contained'
+                                      color='error'
+                                      onClick={() =>
+                                        handleDeleteProduct(product)
+                                      }
+                                    >
+                                      Delete
+                                    </Button>
+                                  </td>
+                                </tr>
                               );
-                            })
-                          ) : product.packages[0].size === 'small' ? (
-                            <>
-                              <td style={{ textAlign: 'center' }}>
-                                <Typography>
-                                  {product.packages[0].number}
-                                </Typography>
-                              </td>
-                              <td style={{ textAlign: 'center' }}>
-                                <Typography>0</Typography>
-                              </td>
-                            </>
-                          ) : (
-                            <>
-                              <td style={{ textAlign: 'center' }}>
-                                <Typography>0</Typography>
-                              </td>
-                              <td style={{ textAlign: 'center' }}>
-                                <Typography>
-                                  {product.packages[0].number}
-                                </Typography>
-                              </td>
-                            </>
-                          )}
-                          <td>
-                            <Button
-                              variant='contained'
-                              color='error'
-                              onClick={() => handleDeleteProduct(product)}
+                            })}
+                          </tbody>
+                        </table>
+                      </Box>
+                    ) : (
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <HeartBrokenIcon color='primary' fontSize='large' />
+                        <Typography marginTop={2} textAlign='center'>
+                          There is not any product added to the order
+                        </Typography>
+                        <Typography textAlign='center'>
+                          Add one on the section above!
+                        </Typography>
+                      </Box>
+                    )}
+                  </Box>
+                </Paper>
+              </Grid>
+
+              {/* RIGHT SIDE */}
+              <Grid item xs={12} md={6}>
+                {/* DELIVERY DATA */}
+                <Paper
+                  elevation={4}
+                  sx={{
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                >
+                  {/* DELIVERY DATA */}
+                  <Typography
+                    variant='h6'
+                    color='secondary'
+                    sx={{
+                      paddingTop: BV_THEME.spacing(2),
+                      paddingLeft: BV_THEME.spacing(2),
+                      textAlign: 'center',
+                    }}
+                  >
+                    DELIVERY DATA
+                  </Typography>
+                  <Box
+                    elevation={4}
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-evenly',
+                      height: '100%',
+                      padding: BV_THEME.spacing(2),
+                    }}
+                  >
+                    <Box
+                      elevation={4}
+                      sx={{
+                        display: 'flex',
+                        flexDirection: { xs: 'row', md: 'column' },
+                        flexWrap: 'wrap',
+                        flex: 1,
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          flex: 1,
+                          paddingX: '1vh',
+                          maxWidth: { xs: '50%', md: '100%' },
+                        }}
+                      >
+                        {/* CUSTOMER */}
+                        <Autocomplete
+                          id='customer'
+                          options={options.customers}
+                          sx={() => ({
+                            ...BV_THEME.input.mobile.fullSize.desktop.fullSize,
+                          })}
+                          renderInput={(params) => {
+                            const { customer } = error;
+                            return (
+                              <TextField
+                                {...params}
+                                label='Customer'
+                                helperText={
+                                  customer.active ? customer.message : ''
+                                }
+                                error={customer.active}
+                              />
+                            );
+                          }}
+                          onChange={handleChangeInput}
+                          getOptionLabel={(opt) => (opt.name ? opt.name : '')}
+                          value={input.customer ? input.customer : undefined}
+                        />
+
+                        {/* CALENDAR */}
+                        <LocalizationProvider dateAdapter={AdapterDateFns}>
+                          <DatePicker
+                            label='Select a date'
+                            onChange={handleChangeDate}
+                            renderInput={(params) => {
+                              const { date } = error;
+                              return (
+                                <TextField
+                                  {...params}
+                                  helperText={date.active ? date.message : ''}
+                                  error={date.active}
+                                />
+                              );
+                            }}
+                            value={input.date}
+                            sx={() => ({
+                              ...BV_THEME.input.mobile.fullSize.desktop
+                                .fullSize,
+                            })}
+                            disablePast={true}
+                          />
+                        </LocalizationProvider>
+
+                        {/* CHECKBOX CICLIC */}
+                        <FormControl>
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                id='cyclic'
+                                checked={input.cyclic}
+                                onChange={(e) =>
+                                  handleChangeInput(
+                                    e,
+                                    e.target.checked,
+                                    'input'
+                                  )
+                                }
+                              />
+                            }
+                            label='Cyclic order'
+                          />
+                        </FormControl>
+                        {input.cyclic && (
+                          <DateRangePicker
+                            startDate={startDate}
+                            endDate={endDate}
+                            onStartDateChange={handleStartDateChange}
+                            onEndDateChange={handleEndDateChange}
+                          />
+                        )}
+                      </Box>
+                      {/* DELIVERY ADDRESS */}
+                      <Box
+                        sx={{
+                          flex: 1,
+                          paddingX: '1vh',
+                          maxWidth: { xs: '50%', md: '100%' },
+                        }}
+                      >
+                        <Typography
+                          variant='subtitle1'
+                          color='secondary'
+                          sx={{ my: '10px' }}
+                        >
+                          DELIVERY ADDRESS
+                        </Typography>
+
+                        <Box
+                          sx={{
+                            width: { xs: '98%', sm: '49%' },
+                            mt: '4vh',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignContent: 'center',
+                          }}
+                        >
+                          <Typography variant='h6' sx={{ flexGrow: 1 }}>
+                            Delivery address
+                          </Typography>
+                          <Tooltip
+                            title={
+                              sameCustomerAddress
+                                ? 'Click to input other address'
+                                : 'Click to use customer address'
+                            }
+                            arrow
+                          >
+                            <IconButton
+                              onClick={useSameCustomerAddress}
+                              color={sameCustomerAddress ? 'error' : 'primary'}
                             >
-                              Delete
-                            </Button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </Box>
-            ) : null}
-          </Box>
+                              {sameCustomerAddress ? (
+                                <PersonAddDisabledIcon />
+                              ) : (
+                                <PersonAddIcon />
+                              )}
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                        <Divider
+                          variant='middle'
+                          sx={{
+                            width: { xs: '98%', sm: '50%', md: '50%' },
+                            marginY: '1vh',
+                          }}
+                        />
+                        <TextField
+                          name='street'
+                          onChange={handleDeliveryAddress}
+                          value={deliveryAddress?.street}
+                          label='Street'
+                          sx={() => ({
+                            ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
+                          })}
+                          disabled={sameCustomerAddress}
+                        />
+                        <Box sx={{ width: { xs: '98%', sm: '49%' } }}>
+                          <TextField
+                            name='stNumber'
+                            onChange={handleDeliveryAddress}
+                            value={deliveryAddress?.stNumber}
+                            label='No.'
+                            type='number'
+                            sx={() => ({
+                              ...BV_THEME.input.mobile.fullSize.desktop
+                                .halfSize,
+                            })}
+                            disabled={sameCustomerAddress}
+                          />
+                          <TextField
+                            name='zip'
+                            onChange={handleDeliveryAddress}
+                            value={deliveryAddress?.zip}
+                            label='ZipCode'
+                            type='text'
+                            sx={() => ({
+                              ...BV_THEME.input.mobile.fullSize.desktop
+                                .halfSize,
+                            })}
+                            disabled={sameCustomerAddress}
+                          />
+                        </Box>
+                        <TextField
+                          name='city'
+                          onChange={handleDeliveryAddress}
+                          value={deliveryAddress?.city}
+                          label='City'
+                          sx={() => ({
+                            ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
+                          })}
+                          disabled={sameCustomerAddress}
+                        />
+                        <TextField
+                          name='state'
+                          onChange={handleDeliveryAddress}
+                          value={deliveryAddress?.state}
+                          label='State'
+                          sx={() => ({
+                            ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
+                          })}
+                          disabled={sameCustomerAddress}
+                        />
+                        <TextField
+                          name='country'
+                          onChange={handleDeliveryAddress}
+                          value={deliveryAddress?.country}
+                          label='Country'
+                          sx={() => ({
+                            ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
+                          })}
+                          disabled={sameCustomerAddress}
+                        />
+                        <TextField
+                          name='references'
+                          onChange={handleDeliveryAddress}
+                          value={deliveryAddress?.references}
+                          multiline
+                          label='References'
+                          sx={() => ({
+                            ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
+                          })}
+                          disabled={sameCustomerAddress}
+                        />
+                        <Box sx={{ width: { xs: '98%', sm: '49%' } }}>
+                          <TextField
+                            name='latitude'
+                            onChange={handleDeliveryAddress}
+                            value={deliveryAddress?.coords?.latitude}
+                            label='Latitude'
+                            type='number'
+                            sx={() => ({
+                              ...BV_THEME.input.mobile.fullSize.desktop
+                                .halfSize,
+                            })}
+                            disabled={sameCustomerAddress}
+                          />
+                          <TextField
+                            name='longitude'
+                            onChange={handleDeliveryAddress}
+                            value={deliveryAddress?.coords?.longitude}
+                            label='Longitude'
+                            type='number'
+                            sx={() => ({
+                              ...BV_THEME.input.mobile.fullSize.desktop
+                                .halfSize,
+                            })}
+                            disabled={sameCustomerAddress}
+                          />
+                        </Box>
+
+                        <Button
+                          id='accept'
+                          variant='contained'
+                          onClick={handleSetOrder}
+                          disabled={!canSendOrder}
+                          sx={{
+                            marginTop: '1vh',
+                            color: { ...BV_THEME.palette.white_btn },
+                          }}
+                        >
+                          Set Order
+                        </Button>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Paper>
+              </Grid>
+            </Grid>
+          </Container>
+
+          {/* SNACKBAR */}
+          <Snackbar
+            open={open}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            autoHideDuration={5000}
+            onClose={handleClose}
+          >
+            <Alert
+              onClose={handleClose}
+              severity='success'
+              sx={{ width: '100%' }}
+            >
+              Order generated succesfully!
+            </Alert>
+          </Snackbar>
         </Box>
       </Fade>
-      <Snackbar
-        open={open}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        autoHideDuration={5000}
-        onClose={handleClose}
-      >
-        <Alert onClose={handleClose} severity='success' sx={{ width: '100%' }}>
-          Order generated succesfully!
-        </Alert>
-      </Snackbar>
     </>
   );
 };
