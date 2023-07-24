@@ -23,6 +23,7 @@ import {
 } from '@mui/material';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import PersonAddDisabledIcon from '@mui/icons-material/PersonAddDisabled';
+import DeleteIcon from '@mui/icons-material/Delete';
 import HeartBrokenIcon from '@mui/icons-material/HeartBroken';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -142,7 +143,7 @@ export const NewOrder = (props) => {
     size: undefined,
     mediumPackages: 0,
     date: undefined,
-    cyclic: false,
+    cyclic: true,
   });
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
@@ -830,7 +831,6 @@ export const NewOrder = (props) => {
                   sx={{
                     padding: BV_THEME.spacing(2),
                     minHeight: '40vh',
-                    height: '40vh',
                   }}
                 >
                   {/* PRODUCTS HEADER */}
@@ -843,21 +843,14 @@ export const NewOrder = (props) => {
                     }}
                   >
                     <Typography
-                      variant='h5'
+                      variant='h6'
                       color='secondary'
                       textAlign='center'
                     >
                       SELECT PRODUCTS
                     </Typography>
-                    <Button
-                      id='add'
-                      onClick={handleAddToOrder}
-                      sx={{
-                        '&:hover': {
-                          color: BV_THEME.palette.secondary.main,
-                        },
-                      }}
-                    >
+
+                    <Button id='add' onClick={handleAddToOrder}>
                       Add
                     </Button>
                   </Box>
@@ -907,8 +900,12 @@ export const NewOrder = (props) => {
                           alignItems: 'center',
                         }}
                       >
-                        <Typography variant='h5' color='secondary' marginY={1}>
-                          Mix products statuses
+                        <Typography
+                          variant='subtitle1'
+                          color='secondary'
+                          marginY={1}
+                        >
+                          MIX PRODUCTS STATUSES
                         </Typography>
                         <Box
                           sx={{
@@ -933,7 +930,7 @@ export const NewOrder = (props) => {
                                 }}
                               >
                                 <Typography
-                                  variant='h6'
+                                  variant='subtitle1'
                                   color='secondary'
                                   marginY={1}
                                 >
@@ -951,12 +948,12 @@ export const NewOrder = (props) => {
 
                     {/* NO OF PACKAGES SELECTION */}
                     <Typography
-                      variant='h5'
+                      variant='subtitle1'
                       color='secondary'
                       marginY={1}
                       textAlign='center'
                     >
-                      No. of Packages
+                      NO. OF PACKAGES
                     </Typography>
 
                     <Box
@@ -1009,7 +1006,7 @@ export const NewOrder = (props) => {
                   elevation={4}
                   sx={{
                     padding: BV_THEME.spacing(2),
-                    minHeight: '20vh',
+                    minHeight: '25vh',
                     marginTop: '2vh',
                   }}
                 >
@@ -1041,98 +1038,107 @@ export const NewOrder = (props) => {
                           padding: '5px',
                         }}
                       >
-                        <table
-                          style={{
-                            width: '100%',
-                            textAlign: 'center',
-                          }}
-                        >
-                          <thead>
-                            <tr>
-                              <th>
-                                <Typography variant='subtitle1'>
-                                  Name
-                                </Typography>
-                              </th>
-                              <th>
-                                <Typography variant='subtitle1'>
-                                  Status
-                                </Typography>
-                              </th>
-                              <th>
-                                <Typography variant='subtitle1'>
-                                  25gr
-                                </Typography>
-                              </th>
-                              <th>
-                                <Typography variant='subtitle1'>
-                                  80gr
-                                </Typography>
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {getContextProducts().map((product, id) => {
-                              return (
-                                <tr key={id} style={{ textAlign: 'center' }}>
-                                  <td>
-                                    <Typography>{product.name}</Typography>
-                                  </td>
-                                  <td>
-                                    <Typography sx={{ mx: 2 }}>
-                                      {product.status}
-                                    </Typography>
-                                  </td>
-                                  {product.packages.length > 1 ? (
-                                    product.packages.map((pkg, idx) => {
-                                      return (
-                                        <td
-                                          key={idx}
-                                          style={{ textAlign: 'center' }}
-                                        >
-                                          <Typography>{pkg.number}</Typography>
+                        <div style={{ maxHeight: '25vh', overflowY: 'auto' }}>
+                          <table
+                            style={{
+                              width: '100%',
+                              textAlign: 'center',
+                            }}
+                          >
+                            <thead>
+                              <tr>
+                                <th>
+                                  <Typography variant='subtitle1'>
+                                    Name
+                                  </Typography>
+                                </th>
+                                <th>
+                                  <Typography variant='subtitle1'>
+                                    Status
+                                  </Typography>
+                                </th>
+                                <th>
+                                  <Typography variant='subtitle1'>
+                                    25gr
+                                  </Typography>
+                                </th>
+                                <th>
+                                  <Typography variant='subtitle1'>
+                                    80gr
+                                  </Typography>
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {getContextProducts().map((product, id) => {
+                                return (
+                                  <tr key={id} style={{ textAlign: 'center' }}>
+                                    <td>
+                                      <Typography>{product.name}</Typography>
+                                    </td>
+                                    <td>
+                                      <Typography sx={{ mx: 2 }}>
+                                        {product.status}
+                                      </Typography>
+                                    </td>
+                                    {product.packages.length > 1 ? (
+                                      product.packages.map((pkg, idx) => {
+                                        return (
+                                          <td
+                                            key={idx}
+                                            style={{ textAlign: 'center' }}
+                                          >
+                                            <Typography>
+                                              {pkg.number}
+                                            </Typography>
+                                          </td>
+                                        );
+                                      })
+                                    ) : product.packages[0].size === 'small' ? (
+                                      <>
+                                        <td style={{ textAlign: 'center' }}>
+                                          <Typography>
+                                            {product.packages[0].number}
+                                          </Typography>
                                         </td>
-                                      );
-                                    })
-                                  ) : product.packages[0].size === 'small' ? (
-                                    <>
-                                      <td style={{ textAlign: 'center' }}>
-                                        <Typography>
-                                          {product.packages[0].number}
-                                        </Typography>
-                                      </td>
-                                      <td style={{ textAlign: 'center' }}>
-                                        <Typography>0</Typography>
-                                      </td>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <td style={{ textAlign: 'center' }}>
-                                        <Typography>0</Typography>
-                                      </td>
-                                      <td style={{ textAlign: 'center' }}>
-                                        <Typography>
-                                          {product.packages[0].number}
-                                        </Typography>
-                                      </td>
-                                    </>
-                                  )}
-                                  <td>
-                                    <Button
-                                      variant='contained'
-                                      color='error'
-                                      onClick={() =>
-                                        handleDeleteProduct(product)
-                                      }
-                                    >
-                                      Delete
-                                    </Button>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
+                                        <td style={{ textAlign: 'center' }}>
+                                          <Typography>0</Typography>
+                                        </td>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <td style={{ textAlign: 'center' }}>
+                                          <Typography>0</Typography>
+                                        </td>
+                                        <td style={{ textAlign: 'center' }}>
+                                          <Typography>
+                                            {product.packages[0].number}
+                                          </Typography>
+                                        </td>
+                                      </>
+                                    )}
+                                    <td>
+                                      <Tooltip
+                                        title={'Delete product from order'}
+                                        arrow
+                                      >
+                                        <IconButton
+                                          variant='contained'
+                                          color='error'
+                                          onClick={() =>
+                                            handleDeleteProduct(product)
+                                          }
+                                        >
+                                          <DeleteIcon />
+                                        </IconButton>
+                                      </Tooltip>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
                       </Box>
                     ) : (
                       <Box
@@ -1158,7 +1164,7 @@ export const NewOrder = (props) => {
 
               {/* RIGHT SIDE */}
               <Grid item xs={12} md={6}>
-                {/* DELIVERY DATA */}
+                {/* DELIVERY DATA SECTION */}
                 <Paper
                   elevation={4}
                   sx={{
@@ -1167,7 +1173,7 @@ export const NewOrder = (props) => {
                     flexDirection: 'column',
                   }}
                 >
-                  {/* DELIVERY DATA */}
+                  {/* RIGTH TITLE */}
                   <Typography
                     variant='h6'
                     color='secondary'
@@ -1189,20 +1195,23 @@ export const NewOrder = (props) => {
                       padding: BV_THEME.spacing(2),
                     }}
                   >
+                    {/* UP SECTION */}
                     <Box
-                      elevation={4}
                       sx={{
                         display: 'flex',
-                        flexDirection: { xs: 'row', md: 'column' },
-                        flexWrap: 'wrap',
-                        flex: 1,
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        paddingX: '1vh',
+                        maxWidth: '100%',
                       }}
                     >
                       <Box
                         sx={{
-                          flex: 1,
-                          paddingX: '1vh',
-                          maxWidth: { xs: '50%', md: '100%' },
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          width: '100%',
                         }}
                       >
                         {/* CUSTOMER */}
@@ -1253,90 +1262,94 @@ export const NewOrder = (props) => {
                             disablePast={true}
                           />
                         </LocalizationProvider>
-
-                        {/* CHECKBOX CICLIC */}
-                        <FormControl>
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                id='cyclic'
-                                checked={input.cyclic}
-                                onChange={(e) =>
-                                  handleChangeInput(
-                                    e,
-                                    e.target.checked,
-                                    'input'
-                                  )
-                                }
-                              />
-                            }
-                            label='Cyclic order'
-                          />
-                        </FormControl>
-                        {input.cyclic && (
-                          <DateRangePicker
-                            startDate={startDate}
-                            endDate={endDate}
-                            onStartDateChange={handleStartDateChange}
-                            onEndDateChange={handleEndDateChange}
-                          />
-                        )}
                       </Box>
-                      {/* DELIVERY ADDRESS */}
+
+                      {/* CHECKBOX CICLIC */}
+                      <FormControl>
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              id='cyclic'
+                              checked={input.cyclic}
+                              onChange={(e) =>
+                                handleChangeInput(e, e.target.checked, 'input')
+                              }
+                            />
+                          }
+                          label='Cyclic order'
+                        />
+                      </FormControl>
+                      {input.cyclic && (
+                        <DateRangePicker
+                          startDate={startDate}
+                          endDate={endDate}
+                          onStartDateChange={handleStartDateChange}
+                          onEndDateChange={handleEndDateChange}
+                        />
+                      )}
+                    </Box>
+                    {/* DOWN SECTION */}
+                    {/* DELIVERY ADDRESS */}
+                    <Box
+                      sx={{
+                        flex: 1,
+                        paddingX: '1vh',
+                        maxWidth: '100%',
+                      }}
+                    >
+                      {/* SUBTITLE */}
                       <Box
                         sx={{
-                          flex: 1,
-                          paddingX: '1vh',
-                          maxWidth: { xs: '50%', md: '100%' },
+                          mt: '2vh',
+                          textAlign: 'center',
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignContent: 'center',
                         }}
                       >
                         <Typography
                           variant='subtitle1'
                           color='secondary'
-                          sx={{ my: '10px' }}
+                          sx={{ my: '10px', flexGrow: 1 }}
                         >
                           DELIVERY ADDRESS
                         </Typography>
-
-                        <Box
-                          sx={{
-                            width: { xs: '98%', sm: '49%' },
-                            mt: '4vh',
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignContent: 'center',
-                          }}
+                        <Tooltip
+                          title={
+                            sameCustomerAddress
+                              ? 'Click to input other address'
+                              : 'Click to use customer address'
+                          }
+                          arrow
                         >
-                          <Typography variant='h6' sx={{ flexGrow: 1 }}>
-                            Delivery address
-                          </Typography>
-                          <Tooltip
-                            title={
-                              sameCustomerAddress
-                                ? 'Click to input other address'
-                                : 'Click to use customer address'
-                            }
-                            arrow
+                          <IconButton
+                            onClick={useSameCustomerAddress}
+                            color={sameCustomerAddress ? 'error' : 'primary'}
                           >
-                            <IconButton
-                              onClick={useSameCustomerAddress}
-                              color={sameCustomerAddress ? 'error' : 'primary'}
-                            >
-                              {sameCustomerAddress ? (
-                                <PersonAddDisabledIcon />
-                              ) : (
-                                <PersonAddIcon />
-                              )}
-                            </IconButton>
-                          </Tooltip>
-                        </Box>
-                        <Divider
-                          variant='middle'
-                          sx={{
-                            width: { xs: '98%', sm: '50%', md: '50%' },
-                            marginY: '1vh',
-                          }}
-                        />
+                            {sameCustomerAddress ? (
+                              <PersonAddDisabledIcon />
+                            ) : (
+                              <PersonAddIcon />
+                            )}
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                      <Divider
+                        variant='middle'
+                        sx={{
+                          width: '98%',
+                          marginY: '1vh',
+                        }}
+                      />
+                      {/* ADDRESS INPUTS */}
+                      <Box
+                        sx={{
+                          width: '100%',
+                          display: 'flex',
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                        }}
+                      >
                         <TextField
                           name='street'
                           onChange={handleDeliveryAddress}
@@ -1347,7 +1360,7 @@ export const NewOrder = (props) => {
                           })}
                           disabled={sameCustomerAddress}
                         />
-                        <Box sx={{ width: { xs: '98%', sm: '49%' } }}>
+                        <Box sx={{ width: '50%', display: 'flex' }}>
                           <TextField
                             name='stNumber'
                             onChange={handleDeliveryAddress}
@@ -1373,74 +1386,74 @@ export const NewOrder = (props) => {
                             disabled={sameCustomerAddress}
                           />
                         </Box>
-                        <TextField
-                          name='city'
-                          onChange={handleDeliveryAddress}
-                          value={deliveryAddress?.city}
-                          label='City'
-                          sx={() => ({
-                            ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
-                          })}
-                          disabled={sameCustomerAddress}
-                        />
-                        <TextField
-                          name='state'
-                          onChange={handleDeliveryAddress}
-                          value={deliveryAddress?.state}
-                          label='State'
-                          sx={() => ({
-                            ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
-                          })}
-                          disabled={sameCustomerAddress}
-                        />
-                        <TextField
-                          name='country'
-                          onChange={handleDeliveryAddress}
-                          value={deliveryAddress?.country}
-                          label='Country'
-                          sx={() => ({
-                            ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
-                          })}
-                          disabled={sameCustomerAddress}
-                        />
-                        <TextField
-                          name='references'
-                          onChange={handleDeliveryAddress}
-                          value={deliveryAddress?.references}
-                          multiline
-                          label='References'
-                          sx={() => ({
-                            ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
-                          })}
-                          disabled={sameCustomerAddress}
-                        />
-                        <Box sx={{ width: { xs: '98%', sm: '49%' } }}>
-                          <TextField
-                            name='latitude'
-                            onChange={handleDeliveryAddress}
-                            value={deliveryAddress?.coords?.latitude}
-                            label='Latitude'
-                            type='number'
-                            sx={() => ({
-                              ...BV_THEME.input.mobile.fullSize.desktop
-                                .halfSize,
-                            })}
-                            disabled={sameCustomerAddress}
-                          />
-                          <TextField
-                            name='longitude'
-                            onChange={handleDeliveryAddress}
-                            value={deliveryAddress?.coords?.longitude}
-                            label='Longitude'
-                            type='number'
-                            sx={() => ({
-                              ...BV_THEME.input.mobile.fullSize.desktop
-                                .halfSize,
-                            })}
-                            disabled={sameCustomerAddress}
-                          />
-                        </Box>
+                      </Box>
+                      <TextField
+                        name='city'
+                        onChange={handleDeliveryAddress}
+                        value={deliveryAddress?.city}
+                        label='City'
+                        sx={() => ({
+                          ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
+                        })}
+                        disabled={sameCustomerAddress}
+                      />
+                      <TextField
+                        name='state'
+                        onChange={handleDeliveryAddress}
+                        value={deliveryAddress?.state}
+                        label='State'
+                        sx={() => ({
+                          ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
+                        })}
+                        disabled={sameCustomerAddress}
+                      />
+                      <TextField
+                        name='country'
+                        onChange={handleDeliveryAddress}
+                        value={deliveryAddress?.country}
+                        label='Country'
+                        sx={() => ({
+                          ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
+                        })}
+                        disabled={sameCustomerAddress}
+                      />
+                      <TextField
+                        name='references'
+                        onChange={handleDeliveryAddress}
+                        value={deliveryAddress?.references}
+                        multiline
+                        label='References'
+                        sx={() => ({
+                          ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
+                        })}
+                        disabled={sameCustomerAddress}
+                      />
+                      {/* HACK: Uncomment if the latitude and longitude are necessary  */}
+                      {/* <TextField
+                        name='latitude'
+                        onChange={handleDeliveryAddress}
+                        value={deliveryAddress?.coords?.latitude}
+                        label='Latitude'
+                        type='number'
+                        sx={() => ({
+                          ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
+                        })}
+                        disabled={sameCustomerAddress}
+                      />
+                      <TextField
+                        name='longitude'
+                        onChange={handleDeliveryAddress}
+                        value={deliveryAddress?.coords?.longitude}
+                        label='Longitude'
+                        type='number'
+                        sx={() => ({
+                          ...BV_THEME.input.mobile.fullSize.desktop.halfSize,
+                        })}
+                        disabled={sameCustomerAddress}
+                      /> */}
 
+                      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                        {/* CREATE ORDER BUTTON */}
                         <Button
                           id='accept'
                           variant='contained'
@@ -1448,6 +1461,7 @@ export const NewOrder = (props) => {
                           disabled={!canSendOrder}
                           sx={{
                             marginTop: '1vh',
+                            width: '25%',
                             color: { ...BV_THEME.palette.white_btn },
                           }}
                         >
