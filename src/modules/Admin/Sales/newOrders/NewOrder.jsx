@@ -92,6 +92,7 @@ export const NewOrder = (props) => {
   const navigate = useNavigate();
   //*Data States
   const [loading, setLoading] = useState(false);
+  const [canAddProduct, setCanAddProduct] = useState(false);
   const [loadingWithDefault, setLoadingWithDefault] = useState();
   const [options, setOptions] = useState({
     customers: [],
@@ -282,7 +283,6 @@ export const NewOrder = (props) => {
           : prevInput.status,
     }));
     if (id === 'customer') {
-      console.log('[strlongitude]', value.address?.coords?.longitude);
       setSameCustomerAddress(true);
       setDeliveryAddress({
         street: value.address?.street || '',
@@ -355,28 +355,20 @@ export const NewOrder = (props) => {
           },
         ];
 
-        if (!input.product.mix.isMix) {
-          products.push({
-            name: input.product.name,
-            status: input.status.name,
-            seedId: input.product?.seed,
-            provider: input.product?.provider,
-            _id: input.product._id,
-            packages: packages,
-          });
-        }
+        let newProduct = {
+          name: input.product.name,
+          status: input.status.name,
+          seedId: input.product?.seed,
+          provider: input.product?.provider,
+          _id: input.product._id,
+          packages: packages,
+        };
 
         if (input.product.mix.isMix) {
-          products.push({
-            name: input.product.name,
-            status: input.status.name,
-            mixStatuses: input.status.mix,
-            seedId: input.product?.seed,
-            provider: input.product?.provider,
-            _id: input.product._id,
-            packages: packages,
-          });
+          newProduct.mixStatuses = input.status.mix;
         }
+
+        products.push(newProduct);
 
         setInput({
           ...input,
@@ -773,18 +765,42 @@ export const NewOrder = (props) => {
       return Boolean(input.smallPackages) || Boolean(input.mediumPackages);
     };
 
+    const validateProuctAndStatus = () => {
+      return (
+        Object.keys(input.product).length !== 0 &&
+        Object.keys(input.status).length !== 0
+      );
+    };
+
     const validateCustomerAndDate = () => {
       return Boolean(input.customer) && Boolean(input.date);
     };
 
-    const validProduct = Object.keys(input.product) !== 0;
+    const validateDeliveryAddress = () => {
+      return (
+        Boolean(deliveryAddress.street) &&
+        Boolean(deliveryAddress.stNumber) &&
+        Boolean(deliveryAddress.zip) &&
+        Boolean(deliveryAddress.city) &&
+        Boolean(deliveryAddress.state) &&
+        Boolean(deliveryAddress.country)
+      );
+    };
+
+    const validProductAndStatus = validateProuctAndStatus();
     const validPackages = validatePackages();
     const validDate = validateCustomerAndDate();
+    const validAddress = validateDeliveryAddress();
 
-    if (/* validProduct && validPackages && */ validDate) {
+    if (validDate && validAddress && products.length !== 0) {
       setCanSendOrder(() => {
         return true;
       });
+    }
+    if (validProductAndStatus && validPackages) {
+      setCanAddProduct(true);
+    } else {
+      setCanAddProduct(false);
     }
   }, [
     input.product,
@@ -793,6 +809,8 @@ export const NewOrder = (props) => {
     input.size,
     input.customer,
     input.date,
+    deliveryAddress,
+    products,
   ]);
 
   return (
@@ -850,7 +868,11 @@ export const NewOrder = (props) => {
                       SELECT PRODUCTS
                     </Typography>
 
-                    <Button id='add' onClick={handleAddToOrder}>
+                    <Button
+                      id='add'
+                      onClick={handleAddToOrder}
+                      disabled={!canAddProduct}
+                    >
                       Add
                     </Button>
                   </Box>
@@ -972,6 +994,7 @@ export const NewOrder = (props) => {
                         onChange={(e) =>
                           handleChangeInput(e, e.target.value, 'input')
                         }
+                        inputProps={{ min: '0', step: '1', pattern: '\\d+' }}
                         helperText={
                           error.smallPackages.active
                             ? error.smallPackages.message
@@ -989,6 +1012,7 @@ export const NewOrder = (props) => {
                         onChange={(e) =>
                           handleChangeInput(e, e.target.value, 'input')
                         }
+                        inputProps={{ min: '0', step: '1', pattern: '\\d+' }}
                         helperText={
                           error.mediumPackages.active
                             ? error.mediumPackages.message
