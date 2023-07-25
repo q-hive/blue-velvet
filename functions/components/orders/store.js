@@ -544,7 +544,7 @@ export const createNewOrder = async (orgId, order, query) => {
     );
     
       if(!order.cyclic){
-        await insertOrderAndProduction(orgId, orderMapped, allProducts, query.tz)
+        await insertOrderAndProduction(organization, orderMapped, allProducts, query.tz)
         return organization
       }
 
