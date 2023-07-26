@@ -1,366 +1,618 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Fade,
+  Box,
+  Typography,
+  Container,
+  Grid,
+  Paper,
+  Select,
+  MenuItem,
+  Button,
+  Modal,
+  ToggleButton,
+  ToggleButtonGroup,
+} from '@mui/material';
+import { List, ViewModule } from '@mui/icons-material';
+import useAuth from '../../../../contextHooks/useAuthContext';
+import useOrders from '../../../../hooks/useOrders';
+import useCustomers from '../../../../hooks/useCustomers';
+import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog';
+import { BV_THEME } from '../../../../theme/BV-theme';
 
-import React, { useState, useEffect } from 'react'
-
-//*MUI Components
-    // import { DataGrid } from '@mui/x-data-grid'
-import { Box, Button, Container, Fade, Grid, LinearProgress, Typography, Paper,Grow, AccordionDetails,Divider, Accordion, AccordionSummary } from '@mui/material'
-
-//*UTILS
-import { getData } from '../../../Admin/Sales/SalesIndex'
-import { getCustomerData, getDeliveries } from '../../../../CoreComponents/requests'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-
-import useAuth from '../../../../contextHooks/useAuthContext'
-
-
-//THEME
-import { BV_THEME } from '../../../../theme/BV-theme'
-
-const taskCard_sx = {
-    display:"flex",
-    width:"100%", 
-    justifyContent:"center",
-    marginTop:"5vh", 
-    flexDirection:"column",
-    alignItems:"center"
-}
-
-
-
-let clientList=[{
-    customerName:"fulanito1",
-
-}]
-
-export const DeliveryComponent = (props) => {
-    const [loading,setLoading] = useState(true)
-    const [customers, setCustomers] = useState([])
-    const [customers2, setCustomers2] = useState([])
-    const [totalIncome, setTotalIncome] = useState(0)
-    const {user, credential} = useAuth()
-    const [dialog,setDialog] = useState()
-
-
-    
-
-    const DeliveryCard = ( props ) =>{
-        /*
-        This component must be calles inside a Grid Container, as it returns a Grid Item
-        TODO, pass down all the possible props ? extend Grid ?
-        */
-        /*let clientInfo = props.client
-
-        let clientus = props.orders.reduce((clientes,order)=>{
-            const cust_id = order.customer
-            if (!clientes[cust_id]) {
-            clientes[cust_id] = [];
-            }
-            clientes[cust_id].push(order);
-            return clientes;
-        },{})
-
-        const clientsArrays = Object.keys(clientus).map((client) => {
-            return {
-              client,
-              orders: clientus[client]
-            };
-          });
-
-
-        console.log("clients id m8", clientsArrays)
-
-        const res = customers.filter(function(o) {
-            return clientsArrays.some(function(o2) {
-                return o._id === o2.client;
-            })
-        });
-        */
-
-        const showProdPackages = (products) =>{
-            return (
-                products.map((prodDescription,id)=>{
-
-                return (
-                    <>
-                        <Box sx={{display:"flex" ,justifyContent:"space-evenly"}}>
-                            <Typography sx={{minWidth:"30%"}}>{prodDescription.ProductName}</Typography>
-                            <Typography>25g:</Typography>
-                            <Typography>{prodDescription.packages.small ? prodDescription.packages.small : 0}</Typography>
-                            <Typography>80g:</Typography>
-                            <Typography>{prodDescription.packages.medium ? prodDescription.packages.medium : 0}</Typography>
-                        </Box>
-                        
-                        <Divider /> 
-                    </>
-
-                )
-                
-            })
-            )
-        }
-
-        const showOrders = (orders) =>{
-            return(
-
-                orders.map((order,id)=>{
-                    return(
-                    /*<Box sx={{ display:"flex",justifyContent: "space-between",marginTop:"1vh"}}>
-                    <Typography>{order._id} </Typography>
-                    <Button sx={{display:"flex"}} variant="contained" size="small">
-                        View
-                    </Button>
-                    </Box>*/
-        
-                    <Box display="flex" sx={{flexDirection:"row"}} p={1}>
-                        <Accordion expanded sx={{width:{xs:"100%",md:"50%",lg:"100%",xl:"100%"}}}>
-                            <AccordionSummary
-                                expandIcon={<ExpandMoreIcon />}
-                                aria-controls="panel1a-content"
-                                id="panel1a-header"
-                            >
-                                <Typography>Id: {order._id}</Typography>
-                            </AccordionSummary>
-        
-                            <AccordionDetails>
-                                            <>
-                                            <Typography align="left">Packages :  </Typography>
-        
-                                            {showProdPackages(order.products)}
-        
-        
-                                            </>
-                            </AccordionDetails>
-                        </Accordion>
-                    </Box>
-                    
-                    )
-                })
-
-            )
-        }
-
-
-        
-
-        console.log("customers 2 ",customers2)
-        return(
-        customers2.map((client,id)=>{
-            return(
-            
-                <Grid item xs={12} lg={6}>
-                    <Paper elevation={4}  sx={{padding:{xs:"3vh",md:"5vh"}}}>
-
-                    <Box sx={{display:"flex",justifyContent: "space-between",marginBottom:"3vh"}}>
-                        <Typography variant={"h5"}>Address:</Typography>
-                        <Typography sx={{maxWidth:"50%"}}>{client.customerAdreess}</Typography>
-                    </Box>
-                    <Box sx={{display:"flex",justifyContent: "space-between",marginBottom:"3vh"}}>
-                        <Typography variant={"h5"}>Customer: </Typography>
-                        <Typography sx={{maxWidth:"50%"}}>{client.customerName}</Typography>
-                    </Box>
-                    
-                    <Typography variant={"h6"}>Orders:</Typography>
-                        
-                    
-                    <Box sx={{display:"flex", maxHeight:"200px", overflow:"auto", flexDirection:"column"}}>
-
-                        {showOrders(client.orders)}
-                            
-                    </Box>
-
-                    </Paper>
+const DetailedOrders = ({ orders, customers, handleMarkAsDelivered }) => {
+  return (
+    <Container maxWidth='xl' sx={{ paddingY: BV_THEME.spacing(2) }}>
+      <Grid container spacing={2}>
+        {orders.map((order) => (
+          <Grid key={order._id} item xs={12} md={6} lg={4}>
+            <Paper elevation={4} sx={{ padding: BV_THEME.spacing(2) }}>
+              <Grid container spacing={2}>
+                {/* Top / Top Left */}
+                <Grid item xs={6} md={12}>
+                  <Typography variant='subtitle1'>
+                    <b>Delivery Address:</b>
+                  </Typography>
+                  <Typography variant='body1'>
+                    {order.address.street}, No. {order.address.stNumber}
+                  </Typography>
+                  <Typography variant='body1'>
+                    {order.address.city}, {order.address.state},{' '}
+                    {order.address.country}
+                  </Typography>
                 </Grid>
-                )
-        })
-        )
-    
-        
-    }
 
-    
-    let unformattedDate = new Date()
+                {/* Middle / Top Right */}
+                <Grid item xs={6} md={12}>
+                  <Typography variant='subtitle1'>
+                    <b>Income:</b> ${order.price}
+                  </Typography>
+                  <Typography variant='subtitle1'>
+                    <b>Status:</b> {order.status}
+                  </Typography>
+                  <Typography variant='subtitle1'>
+                    <b>Customer:</b>{' '}
+                    {customers.find((c) => c._id === order.customer)?.name}
+                  </Typography>
+                  <Typography variant='subtitle1'>
+                    <b>Delivery date:</b>{' '}
+                    {new Date(order.date).toLocaleDateString()}
+                  </Typography>
+                </Grid>
 
-    const getFormatedDate = (date) => {
+                {/* Bottom */}
+                <Grid item xs={12} sx={{ textAlign: 'center' }}>
+                  <div
+                    style={{
+                      overflowX: 'auto',
+                      width: '100%',
+                      maxHeight: 300,
+                      marginTop: 8,
+                    }}
+                  >
+                    <table
+                      style={{
+                        width: '100%',
+                        borderCollapse: 'collapse',
+                        borderSpacing: '0 8px',
+                      }}
+                    >
+                      <thead>
+                        <tr>
+                          <th
+                            style={{
+                              borderBottom: '1px solid black',
+                              padding: '8px',
+                            }}
+                          >
+                            Product
+                          </th>
+                          <th
+                            style={{
+                              borderBottom: '1px solid black',
+                              padding: '8px',
+                            }}
+                          >
+                            Status
+                          </th>
+                          <th
+                            style={{
+                              borderBottom: '1px solid black',
+                              padding: '8px',
+                            }}
+                          >
+                            25gr
+                          </th>
+                          <th
+                            style={{
+                              borderBottom: '1px solid black',
+                              padding: '8px',
+                            }}
+                          >
+                            80gr
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {order.products.map((product) => (
+                          <tr key={product._id}>
+                            <td
+                              style={{
+                                borderBottom: '1px solid black',
+                                padding: '8px',
+                              }}
+                            >
+                              {product.name}
+                            </td>
+                            <td
+                              style={{
+                                borderBottom: '1px solid black',
+                                padding: '8px',
+                              }}
+                            >
+                              {product.status}
+                            </td>
+                            <td
+                              style={{
+                                borderBottom: '1px solid black',
+                                padding: '8px',
+                              }}
+                            >
+                              {product.packages.find(
+                                (pkg) => pkg.size === 'small'
+                              )?.number || 0}
+                            </td>
+                            <td
+                              style={{
+                                borderBottom: '1px solid black',
+                                padding: '8px',
+                              }}
+                            >
+                              {product.packages.find(
+                                (pkg) => pkg.size === 'medium'
+                              )?.number || 0}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <Button
+                    variant='outlined'
+                    sx={{ mt: 2 }}
+                    onClick={() => handleMarkAsDelivered(order)}
+                  >
+                    Mark as delivered
+                  </Button>
+                </Grid>
+              </Grid>
+            </Paper>
+          </Grid>
+        ))}
+      </Grid>
+    </Container>
+  );
+};
 
-        let day = date.getDate()
-        
-        /*
-        Using the "options" argument of date Prototype to get the month's customerName
-        */
-        let month= new Intl.DateTimeFormat('en-US', {month:"long"}).format(date)
+const SimpleOrders = ({ orders, customers, handleMarkAsDelivered }) => {
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [productsModalOpen, setProductsModalOpen] = useState(false);
 
-        let formattedDate = month + " " + day
-        return formattedDate
+  const handleProductsModalOpen = (order) => {
+    setSelectedOrder(order);
+    setProductsModalOpen(true);
+  };
 
-    }
+  const handleProductsModalClose = () => {
+    setSelectedOrder(null);
+    setProductsModalOpen(false);
+  };
 
-    
-    let allOrders = []
+  return (
+    <Container
+      maxWidth='xl'
+      sx={{
+        py: BV_THEME.spacing(2),
+        display: 'flex',
+        justifyContent: 'center',
+      }}
+    >
+      <table
+        style={{
+          width: '80%',
+          borderCollapse: 'collapse',
+          borderSpacing: '0 8px',
+          textAlign: 'center',
+        }}
+      >
+        <thead>
+          <tr>
+            <th>Delivery date</th>
+            <th>Customer</th>
+            <th>Income</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {orders.map((order) => (
+            <tr key={order._id}>
+              <td>{new Date(order.date).toLocaleDateString()}</td>
+              <td>{customers.find((c) => c._id === order.customer)?.name}</td>
+              <td>{order.price}</td>
+              <td>{order.status}</td>
+              <td>
+                <Button
+                  variant='outlined'
+                  onClick={() => handleProductsModalOpen(order)}
+                >
+                  Details
+                </Button>
+                <Button
+                  variant='outlined'
+                  onClick={() => handleMarkAsDelivered(order)}
+                >
+                  Delivery
+                </Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
-    function OrderFailure  () {
-        /* 
-        This is not a failure.
-        it's an alternative to order request,
-        as we dont truly need all of the 
-        orders values
+      <Modal open={productsModalOpen} onClose={handleProductsModalClose}>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '60%',
+            bgcolor: 'white',
+            borderRadius: 8,
+            p: 4,
+          }}
+        >
+          {selectedOrder && (
+            <>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography variant='h6'>
+                  <b>Products</b>
+                </Typography>
+              </Box>
+              <Box
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  overflow: 'auto',
+                }}
+              >
+                <table
+                  style={{
+                    width: '80%',
+                    borderCollapse: 'collapse',
+                    borderSpacing: '0 8px',
+                    textAlign: 'center',
+                  }}
+                >
+                  <thead>
+                    <tr>
+                      <th
+                        style={{
+                          borderBottom: '1px solid black',
+                          padding: '8px',
+                        }}
+                      >
+                        Product
+                      </th>
+                      <th
+                        style={{
+                          borderBottom: '1px solid black',
+                          padding: '8px',
+                        }}
+                      >
+                        Status
+                      </th>
+                      <th
+                        style={{
+                          borderBottom: '1px solid black',
+                          padding: '8px',
+                        }}
+                      >
+                        25gr
+                      </th>
+                      <th
+                        style={{
+                          borderBottom: '1px solid black',
+                          padding: '8px',
+                        }}
+                      >
+                        80gr
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedOrder.products.map((product) => (
+                      <tr key={product._id}>
+                        <td
+                          style={{
+                            borderBottom: '1px solid black',
+                            padding: '8px',
+                          }}
+                        >
+                          {product.name}
+                        </td>
+                        <td
+                          style={{
+                            borderBottom: '1px solid black',
+                            padding: '8px',
+                          }}
+                        >
+                          {product.status}
+                        </td>
+                        <td
+                          style={{
+                            borderBottom: '1px solid black',
+                            padding: '8px',
+                          }}
+                        >
+                          {product.packages.find((pkg) => pkg.size === 'small')
+                            ?.number || 0}
+                        </td>
+                        <td
+                          style={{
+                            borderBottom: '1px solid black',
+                            padding: '8px',
+                          }}
+                        >
+                          {product.packages.find((pkg) => pkg.size === 'medium')
+                            ?.number || 0}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </Box>
+              <Box sx={{ textAlign: 'center', mt: 3 }}>
+                <Typography variant='h6'>
+                  <b>Delivery Address</b>
+                </Typography>
+                <Typography variant='body1' sx={{ mb: 1 }}>
+                  {`${selectedOrder.address.street}, No. ${selectedOrder.address.stNumber}, ${selectedOrder.address.city}, ${selectedOrder.address.state}, ${selectedOrder.address.country}, Zip Code: ${selectedOrder.address.zip}`}
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                <Button
+                  variant='outlined'
+                  onClick={() => handleMarkAsDelivered(selectedOrder)}
+                >
+                  Mark as delivered
+                </Button>
+              </Box>
+            </>
+          )}
+        </Box>
+      </Modal>
+    </Container>
+  );
+};
 
-        I may add an endpoint filter, as i think I should
-        */
-        customers.map((customer,_id)=>{
-            console.log("cusm",customer)
-            customer.orders.map((order,id)=>{
-                allOrders.push(order)
-            })
-        
-        })
-    }
+export const DeliveryComponent = () => {
+  const { user, credential } = useAuth();
+  let headers = {
+    authorization: credential._tokenResponse.idToken,
+    user: user,
+  };
+  const { getOrders } = useOrders(headers);
+  const { getCustomers } = useCustomers(headers);
+  const [activeOrders, setActiveOrders] = useState([]);
+  const [customers, setCustomers] = useState([]);
+  const [orderBy, setOrderBy] = useState('Delivery Date');
+  const [viewMode, setViewMode] = useState('Detailed');
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [dialog, setDialog] = useState({
+    open: false,
+    title: '',
+    message: '',
+    actions: [],
+  });
 
-    OrderFailure()
-
-    const datesAsKeys_obj = allOrders.reduce((dates, order) => {
-        console.log("khomo",dates,order)
-        const date = order.end.split('T')[0];
-        if (!dates[date]) {
-          dates[date] = [];
-        }
-        dates[date].push(order);
-        return dates;
-      }, {});
-      
-      // Edit: to add it in the array format instead
-      const datesArray = Object.keys(datesAsKeys_obj).map((date) => {
-        return {
-          date,
-          orders: datesAsKeys_obj[date]
-        };
+  useEffect(() => {
+    getOrders()
+      .then((res) => {
+        const activeStatus = ['harvestReady', 'packing', 'ready'];
+        const activeOrdersAPI = res.data.data.filter((order) =>
+          activeStatus.includes(order.status)
+        );
+        setActiveOrders(activeOrdersAPI);
+        console.log('[ORDERS]', activeOrdersAPI);
+      })
+      .catch((err) => {
+        console.log(err);
+        setDialog({
+          ...dialog,
+          open: true,
+          title: 'Error getting orders',
+          message: 'Please try again',
+          actions: [
+            {
+              label: 'Ok',
+              execute: () => window.location.reload(),
+            },
+          ],
+        });
       });
-      
-      console.log("group arrays2",datesArray);
+    getCustomers()
+      .then((res) => {
+        setCustomers(res.data.data);
+        console.log('[CUSTOMERS]', res.data.data);
+      })
+      .catch((err) => {
+        console.log(err);
+        setDialog({
+          ...dialog,
+          open: true,
+          title: 'Error getting customers',
+          message: 'Please try again later',
+          actions: [
+            {
+              label: 'Ok',
+              execute: () => window.location.reload(),
+            },
+          ],
+        });
+      });
+  }, []);
 
+  const groupOrders = (orders) => {
+    const groupedOrders = {};
 
+    orders.forEach((order) => {
+      const groupKey =
+        orderBy === 'Delivery Date'
+          ? new Date(order.date).toLocaleDateString()
+          : customers.find((c) => c._id === order.customer)?.name;
+      if (!groupedOrders[groupKey]) {
+        groupedOrders[groupKey] = [];
+      }
+      groupedOrders[groupKey].push(order);
+    });
 
-    useEffect(() => {
-        getCustomerData({
-            setCustomers:setCustomers,
-            setLoading:setLoading,
-            dialog:dialog,
-            setDialog:setDialog,
-            user:user,
-            credential:credential,
-            
-        }).then(
-        console.log("data STATES",customers,totalIncome)
-        )
+    return groupedOrders;
+  };
 
-        console.log("data STATES",customers,totalIncome)
-        
-    }, [])
+  const sortOrders = (orders) => {
+    if (orderBy === 'Delivery Date') {
+      return orders.sort((a, b) => new Date(a.date) - new Date(b.date));
+    } else if (orderBy === 'Customer') {
+      return orders.sort((a, b) => a.customer.localeCompare(b.customer));
+    }
+    return orders;
+  };
 
+  // Group and sort the active orders
+  const groupedAndSortedOrders = groupOrders(sortOrders(activeOrders));
 
-    useEffect(()=>{
-        getDeliveries({
-            user:user,
-            credential:credential,
-            setProdData:setCustomers2,
-        })
-    },[])
+  const calculateDaysLeft = (groupKey) => {
+    const currentDate = new Date().setHours(0, 0, 0, 0);
+    const groupKeyDate = new Date(groupKey).setHours(0, 0, 0, 0);
+    const daysDiff = Math.floor(
+      (groupKeyDate - currentDate) / (1000 * 60 * 60 * 24)
+    );
 
-    console.log("usable customers? ", customers)
+    if (daysDiff === 1) return 'Tomorrow';
+    if (daysDiff > 1) return `${daysDiff} days left`;
+    if (daysDiff === 0) return 'Today';
+    return 'Date has already passed';
+  };
 
-        return (<>
-            <Fade in={true} timeout={1000} unmountOnExit>
-            <Box sx={taskCard_sx}>
-                <Typography variant="h2" color="secondary.dark">Deliveries</Typography>
-                
-                    {/* GRID CONTAINER */}
-                    <Container maxWidth="xl" sx={{paddingTop:2,paddingBottom:2,marginX:{xs:4,md:"auto"},marginTop:{xs:4,md:3},
-                                        "& .header-sales-table":{
-                                            backgroundColor:BV_THEME.palette.primary.main,
-                                            color:"white"
-                                        }}}>
-                        <Grid container maxWidth={"xl"} spacing={4} marginTop={0}>
-                
-                
-                            {/* Order Mockup */}
-                            
-                                
-                                {false ?
-                                
-                                datesArray.sort().map((date,id)=>{
-                                
-                                    console.log("date perro",date)
-                                    return(
-                                        <Grow in={true} timeout={2000} unmountOnExit>
-                                    <Grid item xs={12} md={12} lg={12}>
-                                    <Paper elevation={0} sx={{
-                                        padding: BV_THEME.spacing(2),
-                                        display: "flex",
-                                        overflow: "auto",
-                                        flexDirection: "column",
-                                        height: 540
-                                    }}>
-                                        <Typography variant="h6" color="secondary">
-                                            Date: {date.date}
-                                        </Typography>
-                                        
-                                        <Grid container maxWidth={"xl"} spacing={4} marginTop={1}>
-                                        {
-                                            loading
-                                            ?   
-                                            <LinearProgress color="primary" sx={{marginY:"2vh"}}/>
-                                            :
-                                            <DeliveryCard orders={date.orders} date={date.date}/>
-                                            
-                                            
-                                        }    
-                                        </Grid>
-                                    </Paper>
-                                    
-                                </Grid>
-                                </Grow>)
-                                    })
-                                    :
+  const handleViewChange = (_, newView) => {
+    if (newView !== null) {
+      setViewMode(newView);
+    }
+  };
 
-                                    <Grow in={true} timeout={2000} unmountOnExit>
-                                    <Grid item xs={12} md={12} lg={12}>
-                                    <Paper elevation={0} sx={{
-                                        padding: BV_THEME.spacing(2),
-                                        display: "flex",
-                                        overflow: "auto",
-                                        flexDirection: "column",
-                                        height: 540
-                                    }}>
-                                        <Typography variant="h6" color="secondary">
-                                            All orders that are ready for delivery sorted by customer. {//new Date().toString().split('T')[0]
-                                            }
-                                        </Typography>
-                                        
-                                        <Grid container maxWidth={"xl"} spacing={4} marginTop={1}>
-                                        {
-                                            loading
-                                            ?   
-                                            <LinearProgress color="primary" sx={{marginY:"2vh"}}/>
-                                            :
-                                            <DeliveryCard />
-                                            
-                                            
-                                        }    
-                                        </Grid>
-                                    </Paper>
-                                    
-                                </Grid>
-                                    </Grow>
-                                    }
+  const handleMarkAsDelivered = (order) => {
+    setSelectedOrder(order);
+    setDialog({
+      ...dialog,
+      open: true,
+      title: 'Order updated',
+      message: 'The order has been marked as delivered',
+      actions: [
+        {
+          label: 'Ok',
+          execute: () => window.location.reload(),
+        },
+      ],
+    });
+  };
 
-                            
-                            
-                        </Grid>
-                    </Container>
+  return (
+    <>
+      <Fade in={true} timeout={1000} unmountOnExit>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'white',
+            width: '100%',
+            marginTop: '5vh',
+          }}
+        >
+          <Typography variant='h2' color='secondary.dark'>
+            Deliveries
+          </Typography>
 
+          <Box
+            sx={{
+              mt: 2,
+              mb: 4,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-evenly',
+              width: '100%',
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <ToggleButtonGroup
+                value={viewMode}
+                exclusive
+                onChange={handleViewChange}
+                aria-label='View mode switch'
+              >
+                <ToggleButton value='Simple' aria-label='Simple View'>
+                  <List color='secondary' />
+                </ToggleButton>
+                <ToggleButton value='Detailed' aria-label='Detailed View'>
+                  <ViewModule color='secondary' />
+                </ToggleButton>
+              </ToggleButtonGroup>
             </Box>
-            </Fade>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Typography variant='body1' sx={{ mr: 1 }}>
+                Order by:
+              </Typography>
+              <Select
+                value={orderBy}
+                onChange={(e) => setOrderBy(e.target.value)}
+                sx={{ minWidth: 200 }}
+              >
+                <MenuItem value='Delivery Date'>Delivery Date</MenuItem>
+                <MenuItem value='Customer'>Customer</MenuItem>
+              </Select>
+            </Box>
+          </Box>
 
-        </>);
+          {Object.entries(groupedAndSortedOrders).map(([groupKey, orders]) => (
+            <div
+              key={groupKey}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                width: '100%',
+                mt: 2,
+              }}
+            >
+              <Typography
+                variant='h4'
+                color='secondary'
+                sx={{ textAlign: 'center', width: '100%', my: 1 }}
+              >
+                {orderBy === 'Delivery Date'
+                  ? `${groupKey} (${calculateDaysLeft(groupKey)})`
+                  : `${groupKey}`}
+              </Typography>
+              {viewMode === 'Detailed' ? (
+                <DetailedOrders
+                  orders={orders}
+                  customers={customers}
+                  handleMarkAsDelivered={handleMarkAsDelivered}
+                />
+              ) : (
+                <SimpleOrders
+                  orders={orders}
+                  customers={customers}
+                  handleMarkAsDelivered={handleMarkAsDelivered}
+                />
+              )}
+            </div>
+          ))}
+        </Box>
+      </Fade>
 
-
-}
+      {/* Modal for "Mark as delivered" */}
+      <UserDialog
+        title={dialog.title}
+        content={dialog.message}
+        dialog={dialog}
+        setDialog={setDialog}
+        actions={dialog.actions}
+        open={dialog.open}
+      />
+    </>
+  );
+};
