@@ -13,12 +13,22 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from '@mui/material';
+import { DataGrid } from '@mui/x-data-grid';
 import { List, ViewModule } from '@mui/icons-material';
+import { formattedDate } from '../../../../utils/times';
 import useAuth from '../../../../contextHooks/useAuthContext';
 import useOrders from '../../../../hooks/useOrders';
 import useCustomers from '../../../../hooks/useCustomers';
 import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog';
 import { BV_THEME } from '../../../../theme/BV-theme';
+
+const textTypographyStyle = {
+  fontSize: '1rem',
+  lineHeight: 1.75,
+  letterSpacing: '0.00938em',
+  fontWeight: 400,
+  fontStyle: 'arial',
+};
 
 const DetailedOrders = ({ orders, customers, handleMarkAsDelivered }) => {
   return (
@@ -28,39 +38,32 @@ const DetailedOrders = ({ orders, customers, handleMarkAsDelivered }) => {
           <Grid key={order._id} item xs={12} md={6} lg={4}>
             <Paper elevation={4} sx={{ padding: BV_THEME.spacing(2) }}>
               <Grid container spacing={2}>
-                {/* Top / Top Left */}
                 <Grid item xs={6} md={12}>
                   <Typography variant='subtitle1'>
-                    <b>Delivery Address:</b>
-                  </Typography>
-                  <Typography variant='body1'>
-                    {order.address.street}, No. {order.address.stNumber}
+                    <b>Delivery Address:</b> {order.address.street}, No.{' '}
+                    {order.address.stNumber}
                   </Typography>
                   <Typography variant='body1'>
                     {order.address.city}, {order.address.state},{' '}
                     {order.address.country}
                   </Typography>
                 </Grid>
-
-                {/* Middle / Top Right */}
                 <Grid item xs={6} md={12}>
                   <Typography variant='subtitle1'>
-                    <b>Income:</b> ${order.price}
+                    <b>Income: </b>${order.price}
                   </Typography>
                   <Typography variant='subtitle1'>
-                    <b>Status:</b> {order.status}
+                    <b>Status: </b> {order.status}
                   </Typography>
                   <Typography variant='subtitle1'>
-                    <b>Customer:</b>{' '}
+                    <b>Customer: </b>
                     {customers.find((c) => c._id === order.customer)?.name}
                   </Typography>
                   <Typography variant='subtitle1'>
-                    <b>Delivery date:</b>{' '}
+                    <b>Delivery date: </b>
                     {new Date(order.date).toLocaleDateString()}
                   </Typography>
                 </Grid>
-
-                {/* Bottom */}
                 <Grid item xs={12} sx={{ textAlign: 'center' }}>
                   <div
                     style={{
@@ -85,7 +88,9 @@ const DetailedOrders = ({ orders, customers, handleMarkAsDelivered }) => {
                               padding: '8px',
                             }}
                           >
-                            Product
+                            <Typography variant='subtitle2'>
+                              <b>Product</b>
+                            </Typography>
                           </th>
                           <th
                             style={{
@@ -93,7 +98,9 @@ const DetailedOrders = ({ orders, customers, handleMarkAsDelivered }) => {
                               padding: '8px',
                             }}
                           >
-                            Status
+                            <Typography variant='subtitle2'>
+                              <b>Stauts</b>
+                            </Typography>
                           </th>
                           <th
                             style={{
@@ -101,7 +108,9 @@ const DetailedOrders = ({ orders, customers, handleMarkAsDelivered }) => {
                               padding: '8px',
                             }}
                           >
-                            25gr
+                            <Typography variant='subtitle2'>
+                              <b>25 gr</b>
+                            </Typography>
                           </th>
                           <th
                             style={{
@@ -109,7 +118,9 @@ const DetailedOrders = ({ orders, customers, handleMarkAsDelivered }) => {
                               padding: '8px',
                             }}
                           >
-                            80gr
+                            <Typography variant='subtitle2'>
+                              <b>80 gr</b>
+                            </Typography>
                           </th>
                         </tr>
                       </thead>
@@ -122,7 +133,9 @@ const DetailedOrders = ({ orders, customers, handleMarkAsDelivered }) => {
                                 padding: '8px',
                               }}
                             >
-                              {product.name}
+                              <Typography variant='subtitle2'>
+                                {product.name}
+                              </Typography>
                             </td>
                             <td
                               style={{
@@ -130,7 +143,9 @@ const DetailedOrders = ({ orders, customers, handleMarkAsDelivered }) => {
                                 padding: '8px',
                               }}
                             >
-                              {product.status}
+                              <Typography variant='subtitle2'>
+                                {product.status}
+                              </Typography>
                             </td>
                             <td
                               style={{
@@ -138,9 +153,11 @@ const DetailedOrders = ({ orders, customers, handleMarkAsDelivered }) => {
                                 padding: '8px',
                               }}
                             >
-                              {product.packages.find(
-                                (pkg) => pkg.size === 'small'
-                              )?.number || 0}
+                              <Typography variant='subtitle2'>
+                                {product.packages.find(
+                                  (pkg) => pkg.size === 'small'
+                                )?.number || 0}
+                              </Typography>
                             </td>
                             <td
                               style={{
@@ -148,9 +165,11 @@ const DetailedOrders = ({ orders, customers, handleMarkAsDelivered }) => {
                                 padding: '8px',
                               }}
                             >
-                              {product.packages.find(
-                                (pkg) => pkg.size === 'medium'
-                              )?.number || 0}
+                              <Typography variant='subtitle2'>
+                                {product.packages.find(
+                                  (pkg) => pkg.size === 'medium'
+                                )?.number || 0}
+                              </Typography>
                             </td>
                           </tr>
                         ))}
@@ -158,8 +177,12 @@ const DetailedOrders = ({ orders, customers, handleMarkAsDelivered }) => {
                     </table>
                   </div>
                   <Button
-                    variant='outlined'
-                    sx={{ mt: 2 }}
+                    variant='contained'
+                    sx={{
+                      ...BV_THEME.button.table,
+                      fontSize: '15px',
+                      mt: 2,
+                    }}
                     onClick={() => handleMarkAsDelivered(order)}
                   >
                     Mark as delivered
@@ -188,6 +211,95 @@ const SimpleOrders = ({ orders, customers, handleMarkAsDelivered }) => {
     setProductsModalOpen(false);
   };
 
+  const ordersColumns = [
+    {
+      field: 'date',
+      headerName: 'Delivery Date',
+      renderHeader: () => 'Delivery Date',
+      headerAlign: 'center',
+      align: 'center',
+      headerClassName: 'header-orders-table',
+      minWidth: { xs: '25%', md: 130 },
+      flex: 2,
+    },
+    {
+      field: 'customer',
+      headerName: 'Customer',
+      renderHeader: () => 'Customer',
+      headerAlign: 'center',
+      align: 'center',
+      headerClassName: 'header-orders-table',
+      minWidth: { xs: '25%', md: 130 },
+      flex: 1,
+    },
+    {
+      field: 'price',
+      headerName: 'Income',
+      renderHeader: () => 'Income',
+      headerAlign: 'center',
+      align: 'center',
+      headerClassName: 'header-orders-table',
+      minWidth: { xs: '25%', md: 130 },
+      flex: 1,
+    },
+    {
+      field: 'status',
+      headerName: 'Status',
+      renderHeader: () => 'Status',
+      headerAlign: 'center',
+      align: 'center',
+      headerClassName: 'header-orders-table',
+      minWidth: { xs: '25%', md: 130 },
+      flex: 1,
+    },
+    {
+      field: 'details',
+      headerName: 'Details',
+      renderHeader: () => 'Details',
+      headerAlign: 'center',
+      align: 'center',
+      headerClassName: 'header-orders-table',
+      minWidth: { xs: '25%', md: 130 },
+      flex: 1,
+      renderCell: (params) => (
+        <Button
+          variant='contained'
+          onClick={() => handleProductsModalOpen(params.row.completeOrder)}
+          sx={{ ...BV_THEME.button.table, fontSize: '12px' }}
+        >
+          Details
+        </Button>
+      ),
+    },
+    {
+      field: 'delivery',
+      headerName: 'Delivery',
+      renderHeader: () => 'Delivery',
+      headerAlign: 'center',
+      align: 'center',
+      headerClassName: 'header-orders-table',
+      minWidth: { xs: '25%', md: 130 },
+      flex: 1,
+      renderCell: (params) => (
+        <Button
+          variant='contained'
+          onClick={() => handleMarkAsDelivered(params.row.completeOrder)}
+          sx={{ ...BV_THEME.button.table, fontSize: '12px' }}
+        >
+          Delivery
+        </Button>
+      ),
+    },
+  ];
+  const formattedOrders = orders.map((order) => ({
+    id: order._id,
+    date: formattedDate(new Date(order.date)),
+    customer: customers.find((c) => c._id === order.customer)?.name,
+    price: order.price,
+    status: order.status,
+    completeOrder: { ...order },
+  }));
+
   return (
     <Container
       maxWidth='xl'
@@ -197,48 +309,28 @@ const SimpleOrders = ({ orders, customers, handleMarkAsDelivered }) => {
         justifyContent: 'center',
       }}
     >
-      <table
-        style={{
-          width: '80%',
-          borderCollapse: 'collapse',
-          borderSpacing: '0 8px',
-          textAlign: 'center',
+      <Box
+        sx={{
+          width: '95%',
+          minHeight: '300px',
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
-        <thead>
-          <tr>
-            <th>Delivery date</th>
-            <th>Customer</th>
-            <th>Income</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {orders.map((order) => (
-            <tr key={order._id}>
-              <td>{new Date(order.date).toLocaleDateString()}</td>
-              <td>{customers.find((c) => c._id === order.customer)?.name}</td>
-              <td>{order.price}</td>
-              <td>{order.status}</td>
-              <td>
-                <Button
-                  variant='outlined'
-                  onClick={() => handleProductsModalOpen(order)}
-                >
-                  Details
-                </Button>
-                <Button
-                  variant='outlined'
-                  onClick={() => handleMarkAsDelivered(order)}
-                >
-                  Delivery
-                </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        <DataGrid
+          columns={ordersColumns}
+          rows={formattedOrders}
+          sx={{
+            flex: 1,
+            '& .header-orders-table': {
+              backgroundColor: 'primary.main',
+              color: 'white',
+            },
+          }}
+          getRowId={(row) => row.id}
+          pageSize={25}
+        />
+      </Box>
 
       <Modal open={productsModalOpen} onClose={handleProductsModalClose}>
         <Box
@@ -283,7 +375,9 @@ const SimpleOrders = ({ orders, customers, handleMarkAsDelivered }) => {
                           padding: '8px',
                         }}
                       >
-                        Product
+                        <Typography variant='subtitle2'>
+                          <b>Product</b>
+                        </Typography>
                       </th>
                       <th
                         style={{
@@ -291,7 +385,9 @@ const SimpleOrders = ({ orders, customers, handleMarkAsDelivered }) => {
                           padding: '8px',
                         }}
                       >
-                        Status
+                        <Typography variant='subtitle2'>
+                          <b>Stauts</b>
+                        </Typography>
                       </th>
                       <th
                         style={{
@@ -299,7 +395,9 @@ const SimpleOrders = ({ orders, customers, handleMarkAsDelivered }) => {
                           padding: '8px',
                         }}
                       >
-                        25gr
+                        <Typography variant='subtitle2'>
+                          <b>25 gr</b>
+                        </Typography>
                       </th>
                       <th
                         style={{
@@ -307,7 +405,9 @@ const SimpleOrders = ({ orders, customers, handleMarkAsDelivered }) => {
                           padding: '8px',
                         }}
                       >
-                        80gr
+                        <Typography variant='subtitle2'>
+                          <b>80 gr</b>
+                        </Typography>
                       </th>
                     </tr>
                   </thead>
@@ -320,7 +420,9 @@ const SimpleOrders = ({ orders, customers, handleMarkAsDelivered }) => {
                             padding: '8px',
                           }}
                         >
-                          {product.name}
+                          <Typography variant='subtitle2'>
+                            {product.name}
+                          </Typography>
                         </td>
                         <td
                           style={{
@@ -328,7 +430,9 @@ const SimpleOrders = ({ orders, customers, handleMarkAsDelivered }) => {
                             padding: '8px',
                           }}
                         >
-                          {product.status}
+                          <Typography variant='subtitle2'>
+                            {product.status}
+                          </Typography>
                         </td>
                         <td
                           style={{
@@ -336,8 +440,11 @@ const SimpleOrders = ({ orders, customers, handleMarkAsDelivered }) => {
                             padding: '8px',
                           }}
                         >
-                          {product.packages.find((pkg) => pkg.size === 'small')
-                            ?.number || 0}
+                          <Typography variant='subtitle2'>
+                            {product.packages.find(
+                              (pkg) => pkg.size === 'small'
+                            )?.number || 0}
+                          </Typography>
                         </td>
                         <td
                           style={{
@@ -345,8 +452,11 @@ const SimpleOrders = ({ orders, customers, handleMarkAsDelivered }) => {
                             padding: '8px',
                           }}
                         >
-                          {product.packages.find((pkg) => pkg.size === 'medium')
-                            ?.number || 0}
+                          <Typography variant='subtitle2'>
+                            {product.packages.find(
+                              (pkg) => pkg.size === 'medium'
+                            )?.number || 0}
+                          </Typography>
                         </td>
                       </tr>
                     ))}
@@ -363,7 +473,8 @@ const SimpleOrders = ({ orders, customers, handleMarkAsDelivered }) => {
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
                 <Button
-                  variant='outlined'
+                  variant='contained'
+                  sx={{ ...BV_THEME.button.table, fontSize: '14px' }}
                   onClick={() => handleMarkAsDelivered(selectedOrder)}
                 >
                   Mark as delivered
