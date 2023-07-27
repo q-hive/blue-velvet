@@ -22,14 +22,6 @@ import useCustomers from '../../../../hooks/useCustomers';
 import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog';
 import { BV_THEME } from '../../../../theme/BV-theme';
 
-const textTypographyStyle = {
-  fontSize: '1rem',
-  lineHeight: 1.75,
-  letterSpacing: '0.00938em',
-  fontWeight: 400,
-  fontStyle: 'arial',
-};
-
 const DetailedOrders = ({ orders, customers, handleMarkAsDelivered }) => {
   return (
     <Container maxWidth='xl' sx={{ paddingY: BV_THEME.spacing(2) }}>
@@ -109,7 +101,7 @@ const DetailedOrders = ({ orders, customers, handleMarkAsDelivered }) => {
                             }}
                           >
                             <Typography variant='subtitle2'>
-                              <b>25 gr</b>
+                              <b>25gr</b>
                             </Typography>
                           </th>
                           <th
@@ -119,7 +111,7 @@ const DetailedOrders = ({ orders, customers, handleMarkAsDelivered }) => {
                             }}
                           >
                             <Typography variant='subtitle2'>
-                              <b>80 gr</b>
+                              <b>80gr</b>
                             </Typography>
                           </th>
                         </tr>
@@ -396,7 +388,7 @@ const SimpleOrders = ({ orders, customers, handleMarkAsDelivered }) => {
                         }}
                       >
                         <Typography variant='subtitle2'>
-                          <b>25 gr</b>
+                          <b>25gr</b>
                         </Typography>
                       </th>
                       <th
@@ -406,7 +398,7 @@ const SimpleOrders = ({ orders, customers, handleMarkAsDelivered }) => {
                         }}
                       >
                         <Typography variant='subtitle2'>
-                          <b>80 gr</b>
+                          <b>80gr</b>
                         </Typography>
                       </th>
                     </tr>
@@ -637,81 +629,92 @@ export const DeliveryComponent = () => {
             Deliveries
           </Typography>
 
-          <Box
-            sx={{
-              mt: 2,
-              mb: 4,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-evenly',
-              width: '100%',
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <ToggleButtonGroup
-                value={viewMode}
-                exclusive
-                onChange={handleViewChange}
-                aria-label='View mode switch'
+          {activeOrders.length ? (
+            <>
+              <Box
+                sx={{
+                  mt: 2,
+                  mb: 4,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-evenly',
+                  width: '100%',
+                }}
               >
-                <ToggleButton value='Simple' aria-label='Simple View'>
-                  <List color='secondary' />
-                </ToggleButton>
-                <ToggleButton value='Detailed' aria-label='Detailed View'>
-                  <ViewModule color='secondary' />
-                </ToggleButton>
-              </ToggleButtonGroup>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Typography variant='body1' sx={{ mr: 1 }}>
-                Order by:
-              </Typography>
-              <Select
-                value={orderBy}
-                onChange={(e) => setOrderBy(e.target.value)}
-                sx={{ minWidth: 200 }}
-              >
-                <MenuItem value='Delivery Date'>Delivery Date</MenuItem>
-                <MenuItem value='Customer'>Customer</MenuItem>
-              </Select>
-            </Box>
-          </Box>
-
-          {Object.entries(groupedAndSortedOrders).map(([groupKey, orders]) => (
-            <div
-              key={groupKey}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                width: '100%',
-                mt: 2,
-              }}
-            >
-              <Typography
-                variant='h4'
-                color='secondary'
-                sx={{ textAlign: 'center', width: '100%', my: 1 }}
-              >
-                {orderBy === 'Delivery Date'
-                  ? `${groupKey} (${calculateDaysLeft(groupKey)})`
-                  : `${groupKey}`}
-              </Typography>
-              {viewMode === 'Detailed' ? (
-                <DetailedOrders
-                  orders={orders}
-                  customers={customers}
-                  handleMarkAsDelivered={handleMarkAsDelivered}
-                />
-              ) : (
-                <SimpleOrders
-                  orders={orders}
-                  customers={customers}
-                  handleMarkAsDelivered={handleMarkAsDelivered}
-                />
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <ToggleButtonGroup
+                    value={viewMode}
+                    exclusive
+                    onChange={handleViewChange}
+                    aria-label='View mode switch'
+                  >
+                    <ToggleButton value='Simple' aria-label='Simple View'>
+                      <List color='secondary' />
+                    </ToggleButton>
+                    <ToggleButton value='Detailed' aria-label='Detailed View'>
+                      <ViewModule color='secondary' />
+                    </ToggleButton>
+                  </ToggleButtonGroup>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Typography variant='body1' sx={{ mr: 1 }}>
+                    Order by:
+                  </Typography>
+                  <Select
+                    value={orderBy}
+                    onChange={(e) => setOrderBy(e.target.value)}
+                    sx={{ minWidth: 200 }}
+                  >
+                    <MenuItem value='Delivery Date'>Delivery Date</MenuItem>
+                    <MenuItem value='Customer'>Customer</MenuItem>
+                  </Select>
+                </Box>
+              </Box>
+              {Object.entries(groupedAndSortedOrders).map(
+                ([groupKey, orders]) => (
+                  <div
+                    key={groupKey}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      width: '100%',
+                      mt: 2,
+                    }}
+                  >
+                    <Typography
+                      variant='h4'
+                      color='secondary'
+                      sx={{ textAlign: 'center', width: '100%', my: 1 }}
+                    >
+                      {orderBy === 'Delivery Date'
+                        ? `${groupKey} (${calculateDaysLeft(groupKey)})`
+                        : `${groupKey}`}
+                    </Typography>
+                    {viewMode === 'Detailed' ? (
+                      <DetailedOrders
+                        orders={orders}
+                        customers={customers}
+                        handleMarkAsDelivered={handleMarkAsDelivered}
+                      />
+                    ) : (
+                      <SimpleOrders
+                        orders={orders}
+                        customers={customers}
+                        handleMarkAsDelivered={handleMarkAsDelivered}
+                      />
+                    )}
+                  </div>
+                )
               )}
-            </div>
-          ))}
+            </>
+          ) : (
+            <>
+              <Typography variant='h5' sx={{ mt: 4 }}>
+                There are no orders to delivery
+              </Typography>
+            </>
+          )}
         </Box>
       </Fade>
 
