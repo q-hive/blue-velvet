@@ -545,7 +545,7 @@ export const createNewOrder = async (orgId, order, query) => {
     
       if(!order.cyclic){
         await insertOrderAndProduction(organization, orderMapped, allProducts, query.tz)
-        return organization
+        return orderMapped
       }
 
       if(order.cyclic){
@@ -567,7 +567,7 @@ export const createNewOrder = async (orgId, order, query) => {
         await insertOrderAndProduction(organization, orderMapped, allProducts, query.tz)
         await insertOrderAndProduction(organization, tempOrder, allProducts, query.tz)
 
-        return organization
+        return orderMapped
       }
       
       throw new Error("Unrecognized configuration of order");

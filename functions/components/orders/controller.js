@@ -9,6 +9,7 @@ import {
 } from "../production/controller.js";
 import { getOrganizationById } from "../organization/store.js";
 import { organizationModel } from "../../models/organization.js";
+import { insertScheduler } from "../scheduler/store.js";
 import mongoose, { set } from "mongoose";
 import moment from "moment";
 
@@ -498,6 +499,16 @@ const scheduler = async (todayDate, scheduleDate, orgId, productionData, orderDa
   if (scheduleDate.isBefore(todayDate) && !isToday(scheduleDate, todayDate)) {
     throw new Error ("Cannot schedule production for a date in the past.");
   }
+
+  let schedulerObject = {
+    OrganizationId: orgId,
+    OrderId: productionData.RelatedOrder,
+    ProductId: productionData.ProductID,
+    creationDate: todayDate,
+    deliveryDate: orderData.date,
+    startProductionDate: scheduleDate,
+  }
+  await insertScheduler(schedulerObject)
 
   const job = nodeschedule.scheduleJob(
     scheduleDate.toDate(),
