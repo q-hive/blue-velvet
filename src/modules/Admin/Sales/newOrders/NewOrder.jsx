@@ -512,14 +512,22 @@ export const NewOrder = (props) => {
               label: 'Continue',
               btn_color: 'primary',
               execute: async () => {
-                const responseScheduler = await getSchedulesByCriteria(response.data.data._id);
+                const responseScheduler = await getSchedulesByCriteria(
+                  response.data.data._id
+                );
                 if (responseScheduler.data.data.length) {
                   const generateList = (data) => {
                     return (
                       <ul>
                         {data.map((item, index) => (
                           <li key={index}>
-                            {options.products.find(prod => prod._id.toString() === item.ProductId.toString())?.name || "Product not found."} - {formattedDate(new Date(item.startProductionDate))}
+                            {options.products.find(
+                              (prod) =>
+                                prod._id.toString() ===
+                                item.ProductId.toString()
+                            )?.name || 'Product not found.'}{' '}
+                            -{' '}
+                            {formattedDate(new Date(item.startProductionDate))}
                           </li>
                         ))}
                       </ul>
@@ -534,11 +542,11 @@ export const NewOrder = (props) => {
                       {
                         label: 'reload',
                         btn_color: 'primary',
-                        execute: () => window.location.reload()
-                      }
-                    ]
-                  })
-                }else{
+                        execute: () => window.location.reload(),
+                      },
+                    ],
+                  });
+                } else {
                   setDialog({
                     ...dialog,
                     open: true,
@@ -548,11 +556,11 @@ export const NewOrder = (props) => {
                       {
                         label: 'reload',
                         btn_color: 'primary',
-                        execute: () => window.location.reload()
-                      }
-                    ]
-                  })
-                }     
+                        execute: () => window.location.reload(),
+                      },
+                    ],
+                  });
+                }
               },
             },
             {
@@ -895,14 +903,7 @@ export const NewOrder = (props) => {
                   }}
                 >
                   {/* PRODUCTS HEADER */}
-                  <Box
-                    sx={{
-                      display: 'grid',
-                      gridTemplateColumns: '1fr auto',
-                      gap: '1rem',
-                      alignItems: 'center',
-                    }}
-                  >
+                  <Box>
                     <Typography
                       variant='h6'
                       color='secondary'
@@ -910,18 +911,10 @@ export const NewOrder = (props) => {
                     >
                       SELECT PRODUCTS
                     </Typography>
-
-                    <Button
-                      id='add'
-                      onClick={handleAddToOrder}
-                      disabled={!canAddProduct}
-                    >
-                      Add
-                    </Button>
                   </Box>
 
                   {/* PRODUCTS BODY */}
-                  <Box>
+                  <Box sx={{display:'flex', flexDirection:'column', alignItems:'center'}}>
                     {/* PRODUCTS SELECTION */}
                     <Autocomplete
                       id='product'
@@ -1065,6 +1058,21 @@ export const NewOrder = (props) => {
                         value={input.mediumPackages ? input.mediumPackages : ''}
                       />
                     </Box>
+
+                    {/* BUTTON TO ADD PRODUCT TO ORDER */}
+                    <Button
+                      id='add'
+                      variant='contained'
+                      onClick={handleAddToOrder}
+                      disabled={!canAddProduct}
+                      sx={{
+                        marginTop: '1vh',
+                        width: '25%',
+                        color: { ...BV_THEME.palette.white_btn },
+                      }}
+                    >
+                      Add
+                    </Button>
                   </Box>
                 </Paper>
 
