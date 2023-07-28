@@ -2,7 +2,7 @@ import express from 'express'
 import { error, success } from '../../network/response.js'
 import { updateProductionToNextStatus } from '../production/controller.js'
 import { validateBodyNotEmpty } from '../security/secureHelpers.js'
-import {getProductionWorkById, getWorkTimeByEmployee, parseProduction, setPerformance, updateOrgTasksHistory, updatePerformance, updateWorkDayForEmployee} from './controller.js'
+import {getProductionWorkById, getWorkTimeByEmployee, parseProduction, setPerformance, updateOrgTasksHistory, updatePerformance, updateWorkDayForEmployee, deliveryOneOrderAndProductionModels} from './controller.js'
 
 
 const router = express.Router()
@@ -42,6 +42,20 @@ router.patch('/production/:container', (req, res) => {
         })
     }
 })
+
+router.patch('/production/:containerId/:orderId', async (req, res) => {
+    const { organization, uid } = res.locals;
+    const { tz } = req.query;
+    const { containerId, orderId } = req.params;
+    deliveryOneOrderAndProductionModels(organization, containerId, orderId, tz, uid)
+        .then((result) => {
+            success(req, res, 200, "Order delivered succesfully", result)
+        })
+        .catch(err => {
+            error(req, res, 500, "Error delivering the order", err, err)
+        })
+})
+
 router.patch('/workday/:employeeId/:containerId', (req, res) => {
     // const validBody = validateBodyNotEmpty(req, res)
     updateWorkDayForEmployee(req, res, false)

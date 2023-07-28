@@ -20,6 +20,7 @@ import { List, ViewModule } from '@mui/icons-material';
 import { formattedDate } from '../../../../utils/times';
 import useAuth from '../../../../contextHooks/useAuthContext';
 import useOrders from '../../../../hooks/useOrders';
+import useWork from '../../../../hooks/useWork';
 import useOrganizations from '../../../../hooks/useOrganizations';
 import useCustomers from '../../../../hooks/useCustomers';
 import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog';
@@ -524,6 +525,7 @@ export const DeliveryComponent = () => {
     user: user,
   };
   const { getOrders } = useOrders(headers);
+  const { deliveryOneOrder } = useWork(headers);
   const { getAllUsers } = useOrganizations(headers);
   const { getCustomers } = useCustomers(headers);
   const [activeOrders, setActiveOrders] = useState([]);
@@ -543,7 +545,14 @@ export const DeliveryComponent = () => {
   useEffect(() => {
     getOrders()
       .then((res) => {
-        const activeStatus = ['harvestReady', 'packing', 'ready', 'delivered'];
+        const activeStatus = [
+          'harvestReady',
+          'packing',
+          'ready',
+          'delivered',
+          'production',
+          'mixed',
+        ];
         const activeOrdersAPI = res.data.data.filter((order) =>
           activeStatus.includes(order.status)
         );
@@ -553,7 +562,6 @@ export const DeliveryComponent = () => {
           : activeOrdersAPI.filter((order) => order.status !== 'delivered');
 
         setActiveOrders(filteredOrders);
-        console.log('[ORDERS]', filteredOrders);
       })
       .catch((err) => {
         console.log(err);
@@ -662,18 +670,35 @@ export const DeliveryComponent = () => {
 
   const handleMarkAsDelivered = (order) => {
     setSelectedOrder(order);
-    setDialog({
-      ...dialog,
-      open: true,
-      title: 'Order updated',
-      message: 'The order has been marked as delivered',
-      actions: [
-        {
-          label: 'Ok',
-          execute: () => window.location.reload(),
-        },
-      ],
-    });
+    deliveryOneOrder(user.assignedContainer, order._id)
+      .then((res) => {
+        setDialog({
+          ...dialog,
+          open: true,
+          title: 'Order updated',
+          message: 'The order has been marked as delivered',
+          actions: [
+            {
+              label: 'Ok',
+              execute: () => window.location.reload(),
+            },
+          ],
+        });
+      })
+      .catch((err) => {
+        setDialog({
+          ...dialog,
+          open: true,
+          title: 'Order can`t be updated',
+          message: 'Please try again later',
+          actions: [
+            {
+              label: 'Ok',
+              execute: () => window.location.reload(),
+            },
+          ],
+        });
+      });
   };
 
   return (
@@ -693,6 +718,17 @@ export const DeliveryComponent = () => {
           <Typography variant='h2' color='secondary.dark'>
             Deliveries
           </Typography>
+          {/* Checkbox to show delivered orders */}
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={showDelivered}
+                onChange={() => setShowDelivered(!showDelivered)}
+                color='primary'
+              />
+            }
+            label={'Show delivered orders'}
+          />
 
           {activeOrders.length ? (
             <>
@@ -733,17 +769,6 @@ export const DeliveryComponent = () => {
                     <MenuItem value='Delivery Date'>Delivery Date</MenuItem>
                     <MenuItem value='Customer'>Customer</MenuItem>
                   </Select>
-                  {/* Checkbox to show delivered orders */}
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={showDelivered}
-                        onChange={() => setShowDelivered(!showDelivered)}
-                        color='primary'
-                      />
-                    }
-                    label={'Show delivered orders'}
-                  />
                 </Box>
               </Box>
               {Object.entries(groupedAndSortedOrders).map(

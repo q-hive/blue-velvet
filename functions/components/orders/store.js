@@ -481,7 +481,7 @@ export const createNewOrder = async (orgId, order, query) => {
       if (dbProduct.mix.isMix) {
         return {
           ...orderProduct,
-          status: prod.status.name,
+          status: prod.status,
           mixStatuses: prod.mixStatuses,
         };
       }

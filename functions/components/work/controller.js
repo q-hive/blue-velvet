@@ -9,7 +9,7 @@ import { getProductionInContainer } from '../production/store.js'
 
 import { getAllProducts } from '../products/store.js'
 
-import { getProductionWorkByContainerId, grouPProductionForAnalytics, grouPProductionForWorkDay } from '../production/controller.js'
+import { getProductionWorkByContainerId, grouPProductionForAnalytics, grouPProductionForWorkDay, getAllProductionByOrderId, updateProductionToNextStatus } from '../production/controller.js'
 import { updateEmployee } from '../employees/store.js'
 
 const orgModel = mongoose.model('organization', Organization)
@@ -326,3 +326,27 @@ export const updateOrgTasksHistory = (orgId, taskModel) => {
         }
     })
 }
+
+export const deliveryOneOrderAndProductionModels = (organization, containerId, orderId, tz, uid) => {
+    return new Promise( async (resolve, reject) => {
+        try {
+            const productionModels = await getAllProductionByOrderId(organization, containerId, orderId);
+            const productionModelsIds = productionModels.map(productionModel => productionModel._id.toString());
+            if (productionModelsIds.length === 0) reject("No production models found for this order");
+                
+            const orderDelivered = await updateProductionToNextStatus(
+                organization,
+                containerId,
+                productionModelsIds,
+                "ready", // This status will be updated to the next, 'delivered'
+                tz,
+                uid
+            );
+
+            resolve(orderDelivered);
+        } catch (err) {
+            reject(err);
+        }
+    });
+};
+  
