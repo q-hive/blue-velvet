@@ -12,6 +12,8 @@ import {
   Modal,
   ToggleButton,
   ToggleButtonGroup,
+  Checkbox,
+  FormControlLabel,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { List, ViewModule } from '@mui/icons-material';
@@ -21,8 +23,14 @@ import useOrders from '../../../../hooks/useOrders';
 import useCustomers from '../../../../hooks/useCustomers';
 import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog';
 import { BV_THEME } from '../../../../theme/BV-theme';
+import useEmployees from '../../../../hooks/useEmployees';
 
-const DetailedOrders = ({ orders, customers, handleMarkAsDelivered }) => {
+const DetailedOrders = ({
+  orders,
+  customers,
+  allUsers,
+  handleMarkAsDelivered,
+}) => {
   return (
     <Container maxWidth='xl' sx={{ paddingY: BV_THEME.spacing(2) }}>
       <Grid container spacing={2}>
@@ -168,17 +176,21 @@ const DetailedOrders = ({ orders, customers, handleMarkAsDelivered }) => {
                       </tbody>
                     </table>
                   </div>
-                  <Button
-                    variant='contained'
-                    sx={{
-                      ...BV_THEME.button.table,
-                      fontSize: '15px',
-                      mt: 2,
-                    }}
-                    onClick={() => handleMarkAsDelivered(order)}
-                  >
-                    Mark as delivered
-                  </Button>
+                  {order.status === 'delivered' ? (
+                    <Typography variant='body1' sx={{ mt: 2 }}>
+                      <b>Delivered by:</b>
+                      <br />
+                      {allUsers.find((u) => u.uid === order.deliveredBy)?.email}
+                    </Typography>
+                  ) : (
+                    <Button
+                      variant='contained'
+                      sx={{ ...BV_THEME.button.table, fontSize: '15px', mt: 2 }}
+                      onClick={() => handleMarkAsDelivered(order)}
+                    >
+                      Mark as delivered
+                    </Button>
+                  )}
                 </Grid>
               </Grid>
             </Paper>
@@ -189,7 +201,12 @@ const DetailedOrders = ({ orders, customers, handleMarkAsDelivered }) => {
   );
 };
 
-const SimpleOrders = ({ orders, customers, handleMarkAsDelivered }) => {
+const SimpleOrders = ({
+  orders,
+  customers,
+  allUsers,
+  handleMarkAsDelivered,
+}) => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [productsModalOpen, setProductsModalOpen] = useState(false);
 
@@ -271,16 +288,26 @@ const SimpleOrders = ({ orders, customers, handleMarkAsDelivered }) => {
       align: 'center',
       headerClassName: 'header-orders-table',
       minWidth: { xs: '25%', md: 130 },
-      flex: 1,
-      renderCell: (params) => (
-        <Button
-          variant='contained'
-          onClick={() => handleMarkAsDelivered(params.row.completeOrder)}
-          sx={{ ...BV_THEME.button.table, fontSize: '12px' }}
-        >
-          Delivery
-        </Button>
-      ),
+      flex: 2,
+      renderCell: (params) =>
+        params.row.status === 'delivered' &&
+        params.row.completeOrder.deliveredBy ? (
+          <p>
+            {
+              allUsers.find(
+                (u) => u.uid === params.row.completeOrder.deliveredBy
+              )?.email
+            }
+          </p>
+        ) : (
+          <Button
+            variant='contained'
+            onClick={() => handleMarkAsDelivered(params.row.completeOrder)}
+            sx={{ ...BV_THEME.button.table, fontSize: '12px' }}
+          >
+            Delivery
+          </Button>
+        ),
     },
   ];
   const formattedOrders = orders.map((order) => ({
@@ -464,13 +491,23 @@ const SimpleOrders = ({ orders, customers, handleMarkAsDelivered }) => {
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                <Button
-                  variant='contained'
-                  sx={{ ...BV_THEME.button.table, fontSize: '14px' }}
-                  onClick={() => handleMarkAsDelivered(selectedOrder)}
-                >
-                  Mark as delivered
-                </Button>
+                {selectedOrder.status === 'delivered' ? (
+                  <Typography variant='body1'>
+                    <b>Delivered by:</b>{' '}
+                    {
+                      allUsers.find((u) => u.uid === selectedOrder.deliveredBy)
+                        ?.email
+                    }
+                  </Typography>
+                ) : (
+                  <Button
+                    variant='contained'
+                    sx={{ ...BV_THEME.button.table, fontSize: '14px' }}
+                    onClick={() => handleMarkAsDelivered(selectedOrder)}
+                  >
+                    Mark as delivered
+                  </Button>
+                )}
               </Box>
             </>
           )}
@@ -487,11 +524,14 @@ export const DeliveryComponent = () => {
     user: user,
   };
   const { getOrders } = useOrders(headers);
+  const { getEmployees } = useEmployees(headers);
   const { getCustomers } = useCustomers(headers);
   const [activeOrders, setActiveOrders] = useState([]);
   const [customers, setCustomers] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
   const [orderBy, setOrderBy] = useState('Delivery Date');
   const [viewMode, setViewMode] = useState('Detailed');
+  const [showDelivered, setShowDelivered] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [dialog, setDialog] = useState({
     open: false,
@@ -503,12 +543,17 @@ export const DeliveryComponent = () => {
   useEffect(() => {
     getOrders()
       .then((res) => {
-        const activeStatus = ['harvestReady', 'packing', 'ready'];
+        const activeStatus = ['harvestReady', 'packing', 'ready', 'delivered'];
         const activeOrdersAPI = res.data.data.filter((order) =>
           activeStatus.includes(order.status)
         );
-        setActiveOrders(activeOrdersAPI);
-        console.log('[ORDERS]', activeOrdersAPI);
+
+        const filteredOrders = showDelivered
+          ? activeOrdersAPI
+          : activeOrdersAPI.filter((order) => order.status !== 'delivered');
+
+        setActiveOrders(filteredOrders);
+        console.log('[ORDERS]', filteredOrders);
       })
       .catch((err) => {
         console.log(err);
@@ -545,7 +590,27 @@ export const DeliveryComponent = () => {
           ],
         });
       });
-  }, []);
+    getEmployees()
+      .then((res) => {
+        setAllUsers([user, ...res.data.data]);
+        console.log('[ALL USERS]', [user, ...res.data.data]);
+      })
+      .catch((err) => {
+        console.log(err);
+        setDialog({
+          ...dialog,
+          open: true,
+          title: 'Error getting employees',
+          message: 'Please try again later',
+          actions: [
+            {
+              label: 'Ok',
+              execute: () => window.location.reload(),
+            },
+          ],
+        });
+      });
+  }, [showDelivered]);
 
   const groupOrders = (orders) => {
     const groupedOrders = {};
@@ -663,11 +728,22 @@ export const DeliveryComponent = () => {
                   <Select
                     value={orderBy}
                     onChange={(e) => setOrderBy(e.target.value)}
-                    sx={{ minWidth: 200 }}
+                    sx={{ minWidth: 200, mr: 5 }}
                   >
                     <MenuItem value='Delivery Date'>Delivery Date</MenuItem>
                     <MenuItem value='Customer'>Customer</MenuItem>
                   </Select>
+                  {/* Checkbox to show delivered orders */}
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={showDelivered}
+                        onChange={() => setShowDelivered(!showDelivered)}
+                        color='primary'
+                      />
+                    }
+                    label={'Show delivered orders'}
+                  />
                 </Box>
               </Box>
               {Object.entries(groupedAndSortedOrders).map(
@@ -695,12 +771,14 @@ export const DeliveryComponent = () => {
                       <DetailedOrders
                         orders={orders}
                         customers={customers}
+                        allUsers={allUsers}
                         handleMarkAsDelivered={handleMarkAsDelivered}
                       />
                     ) : (
                       <SimpleOrders
                         orders={orders}
                         customers={customers}
+                        allUsers={allUsers}
                         handleMarkAsDelivered={handleMarkAsDelivered}
                       />
                     )}

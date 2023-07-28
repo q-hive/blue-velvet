@@ -319,7 +319,7 @@ export const groupOrdersForDelivery = async (orders, date = undefined) => {
       if (!hash[order.customer.toString()]) {
         hash[order.customer.toString()] = {
           customerName: customer.name,
-          customerAdreess: customer.address.street,
+          orderAddress: order.address,
           orders: [],
         };
 

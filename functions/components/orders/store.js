@@ -530,6 +530,7 @@ export const createNewOrder = async (orgId, order, query) => {
       _id: id,
       organization: orgId,
       next: null,
+      deliveredBy:null,
       customer: order.customer._id,
       price: price,
       date: deliveryDate,
@@ -555,6 +556,7 @@ export const createNewOrder = async (orgId, order, query) => {
           organization: orgId,
           customer: order.customer._id,
           next:null,
+          deliveredBy:null,
           price: price,
           address: order.address,
           products: secondProducts,
@@ -633,7 +635,7 @@ export const updateOrder = async (
   org,
   orderId,
   body,
-  productId = undefined
+  productId = undefined,
 ) => {
   let allProducts, price;
 

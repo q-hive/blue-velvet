@@ -11,6 +11,7 @@ const Order = new Schema({
     price:          { type: Number,     required: true },
     date:           { type: Date,       required: true },
     next:           { type: ObjectId,   required: false },
+    deliveredBy:    { type: String,     required: false },
     // end:            { type: Date,       required: true },
     products:   {
         type: [{
