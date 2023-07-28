@@ -20,10 +20,10 @@ import { List, ViewModule } from '@mui/icons-material';
 import { formattedDate } from '../../../../utils/times';
 import useAuth from '../../../../contextHooks/useAuthContext';
 import useOrders from '../../../../hooks/useOrders';
+import useOrganizations from '../../../../hooks/useOrganizations';
 import useCustomers from '../../../../hooks/useCustomers';
 import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog';
 import { BV_THEME } from '../../../../theme/BV-theme';
-import useEmployees from '../../../../hooks/useEmployees';
 
 const DetailedOrders = ({
   orders,
@@ -524,7 +524,7 @@ export const DeliveryComponent = () => {
     user: user,
   };
   const { getOrders } = useOrders(headers);
-  const { getEmployees } = useEmployees(headers);
+  const { getAllUsers } = useOrganizations(headers);
   const { getCustomers } = useCustomers(headers);
   const [activeOrders, setActiveOrders] = useState([]);
   const [customers, setCustomers] = useState([]);
@@ -590,17 +590,17 @@ export const DeliveryComponent = () => {
           ],
         });
       });
-    getEmployees()
+    getAllUsers(user.organization)
       .then((res) => {
-        setAllUsers([user, ...res.data.data]);
-        console.log('[ALL USERS]', [user, ...res.data.data]);
+        setAllUsers(res.data.data);
+        console.log('[ALL USERS]', res.data.data);
       })
       .catch((err) => {
         console.log(err);
         setDialog({
           ...dialog,
           open: true,
-          title: 'Error getting employees',
+          title: 'Error getting all users from this organization',
           message: 'Please try again later',
           actions: [
             {
