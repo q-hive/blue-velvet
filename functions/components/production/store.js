@@ -89,36 +89,54 @@ export const productionCycleObject = {
 }
 
 
-export const getProductionInContainer = async (orgId, containerId, tz) => {
+export const getProductionInContainerByCurrentDate = async (orgId, containerId, tz) => {
     const currentDate = moment().tz(tz).format('YYYY-MM-DD');
 
     return new Promise((resolve, reject) => {
-        orgModel.findOne(
+        orgModel.aggregate([
             {
-                "_id": mongoose.Types.ObjectId(orgId),
-                "containers._id": mongoose.Types.ObjectId(containerId)
-            },
-            {
-                "containers.production.$": true
+              '$match': {
+                '_id': mongoose.Types.ObjectId(orgId)
+              }
+            },{
+              '$unwind': {
+                'path': '$containers'
+              }
+            }, {
+              '$match': {
+                'containers._id': mongoose.Types.ObjectId(containerId)
+              }
+            }, {
+              '$unwind': {
+                'path': '$containers.production'
+              }
+            }, {
+              '$addFields': {
+                'startProductionDateString': {
+                  '$dateToString': {
+                    'format': '%Y-%m-%d', 
+                    'date': '$containers.production.startProductionDate', 
+                    'timezone': tz
+                  }
+                }
+              }
+            }, {
+              '$match': {
+                'startProductionDateString': {
+                  '$eq': currentDate
+                }
+              }
+            }, {
+              '$replaceRoot': {
+                'newRoot': '$containers.production'
+              }
             }
-        )
-            .then((doc) => {
-                if (!doc) {
+          ])
+            .then((productionForToday) => {
+                if (!productionForToday) {
                     resolve([])
                     return
                 }
-
-
-                const allProduction = doc.containers[0]?.production
-                if (!allProduction) {
-                    resolve([])
-                    return
-                }
-
-                const productionForToday = allProduction.filter(production => {
-                    const startProductionDate = moment(production.startProductionDate).tz(tz).format('YYYY-MM-DD');
-                    return startProductionDate === currentDate;
-                });
 
                 resolve(productionForToday)
 

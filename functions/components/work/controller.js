@@ -5,7 +5,7 @@ import { getMongoQueryByObject } from '../../utils/getMongoQuery.js'
 
 import { updateOrder } from '../orders/store.js'
 import { getProductById, updateProduct } from '../products/store.js'
-import { getProductionInContainer } from '../production/store.js'
+import { getProductionInContainerByCurrentDate } from '../production/store.js'
 
 import { getAllProducts } from '../products/store.js'
 
@@ -202,7 +202,7 @@ const insertOrdersInProduction = (production, orders) => {
 
 export const getWorkTimeByEmployee = (req, res) => {
     return new Promise((resolve, reject) => {
-        getProductionInContainer(res.locals.organization, req.query.containerId, req.query.tz)
+        getProductionInContainerByCurrentDate(res.locals.organization, req.query.containerId, req.query.tz)
             .then(async (production) => {
                 const totalEstimations = calculateTimeEstimation(production, false, true, res.locals.organization)
 
