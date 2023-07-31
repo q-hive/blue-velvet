@@ -22,7 +22,7 @@ import {
   scheduleProduction,
   setOrderAbonment,
 } from './controller.js';
-import { getProductionInContainer } from '../production/store.js';
+import { getProductionByOrderId } from '../production/store.js';
 import { getContainerById, getContainers } from '../container/store.js';
 import moment from 'moment';
 
@@ -435,7 +435,7 @@ export const insertOrderAndProduction = async (organization, order, allProducts,
   }
 }
 
-export const createNewOrder = async (orgId, order, query) => {
+export const createNewOrder = async (orgId, containerId, order, query) => {
   try {
     const interationsToProjectOrder = 3;
     
@@ -560,7 +560,8 @@ export const createNewOrder = async (orgId, order, query) => {
     
       if(!order.cyclic){
         await insertOrderAndProduction(organization, orderMapped, allProducts, query.tz)
-        return orderMapped
+
+        return getFeedbackOfProduction(orgId, containerId, orderMapped._id)
       }
 
       if(order.cyclic){
@@ -583,7 +584,7 @@ export const createNewOrder = async (orgId, order, query) => {
         await insertOrderAndProduction(organization, orderMapped, cloneArray(allProducts), query.tz)
         await insertOrderAndProduction(organization, tempOrder, allProducts, query.tz)
 
-        return orderMapped
+        return getFeedbackOfProduction(orgId, containerId, orderMapped._id)
       }
       
       throw new Error("Unrecognized configuration of order");
@@ -612,6 +613,24 @@ const cloneArray = (arrayData) => {
     return data
   });
 }
+
+const getFeedbackOfProduction = async (orgId, containerId, orderId) => {
+  try {
+    const productionModels = await getProductionByOrderId(orgId, containerId, orderId);
+    const productionData = productionModels.map((prodMod) => {
+      return {
+        name: prodMod.ProductName,
+        startDate: prodMod.startProductionDate,
+        status: prodMod.ProductionStatus,
+      };
+    });
+    return productionData;
+  } catch (err) {
+    console.log(err);
+    throw new Error('Error getting production');
+  }
+};
+
 
 export const insertNewOrderWithProduction = async (
   orgId,

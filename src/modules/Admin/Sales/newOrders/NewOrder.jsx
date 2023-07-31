@@ -498,13 +498,28 @@ export const NewOrder = (props) => {
       const response = await addOrder(mapInput());
 
       if (response.status === 201) {
+        const formatDataToList = (data) => (
+          <>
+            <p>Production schedule for the following days:</p>
+            <ol>
+              {data.map((item, index) => (
+                <li key={index}>
+                  <p>{`${item.name} for ${formattedDate(
+                    new Date(item.startDate)
+                  )} on status ${item.status}`}</p>
+                </li>
+              ))}
+            </ol>
+          </>
+        );
+
         setOpen(true);
         products.splice(0, products.length - 1);
         setDialog({
           ...dialog,
           open: true,
           title: 'Order created succesfully',
-          message: 'Check the status of the order in the orders section',
+          message: formatDataToList(response.data.data),
           actions: [
             {
               label: 'Continue',

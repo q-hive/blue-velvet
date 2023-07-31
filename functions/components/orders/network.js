@@ -9,7 +9,7 @@ import { organizationModel } from '../../models/organization.js'
 const router = express.Router()
 
 router.post('/', (req, res) => {
-    createNewOrder(res.locals.organization,req.body, req.query)
+    createNewOrder(res.locals.organization,res.locals.containers.containers[0]._id,req.body, req.query)
     .then((order) => {
         success(req, res, 201, 'New order created succesfully', order)
     })
