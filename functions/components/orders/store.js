@@ -460,6 +460,20 @@ export const createNewOrder = async (orgId, order, query) => {
     // Convert the order date to a moment object in the user's timezone
     const deliveryDate = moment.utc(order.date).tz(query.tz);
 
+    // Find parameters of the product
+    const productParams = (allProducts, actualProduct) => {
+      if (actualProduct.mix.isMix) {
+        const allParameters = actualProduct.mix.products.map((prod) => {
+          const dbProduct = allProducts.find((product) =>
+            product._id.equals(prod.strain)
+          );
+          return dbProduct.parameters;
+        })
+        return allParameters
+      }
+      return actualProduct.parameters
+    }
+
     // Map the products in the order to the full product data from the database
     const mappedProducts = order.products.map((prod) => {
       const dbProduct = allProducts.find((product) =>
@@ -474,7 +488,7 @@ export const createNewOrder = async (orgId, order, query) => {
         packages: prod.packages,
         mix: dbProduct.mix.isMix,
         price: dbProduct.price,
-        parameters: dbProduct.parameters,
+        parameters: productParams(allProducts, dbProduct),
       };
 
       // If the product is a mix, add the mix status
@@ -506,14 +520,14 @@ export const createNewOrder = async (orgId, order, query) => {
         packages: prod.packages,
         mix: dbProduct.mix.isMix,
         price: dbProduct.price,
-        parameters: dbProduct.parameters,
+        parameters: productParams(allProducts, dbProduct),
       };
 
       // If the product is a mix, add the mix status
       if (dbProduct.mix.isMix) {
         return {
           ...orderProduct,
-          status: prod.status.name,
+          status: prod.status,
           mixStatuses: prod.mixStatuses,
         };
       }
