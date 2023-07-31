@@ -213,7 +213,7 @@ export const updateOrdersInModels = async (updatedModels, orgId, container) => {
 
 }
 
-export const updateProduction = async (orgId, container, id, modifiedModels, statuses) => {
+export const updateProduction = async (orgId, container, id, modifiedModels, statuses, userUID) => {
     //*CHANGED TO FOR OF LOOP TO MANAGE SCOP OF ORDERUPDATED VARIABLE (BUT ITS BLOCKING THE MAIN THREAD)
     const updateOperation = modifiedModels.map(async (newmodel) => {
         console.log("Updating production model")
@@ -276,8 +276,20 @@ export const updateProduction = async (orgId, container, id, modifiedModels, sta
             }
         }
         query.orders[newmodel.RelatedOrder.toString()] = {
-            "paths":[{"path":"status","value":newmodel.ProductionStatus}]
+            "paths":[
+                {"path":"status","value":newmodel.ProductionStatus},
+                {"path":"deliveredBy","value":userUID}
+            ]
         }
+
+        query.orders[newmodel.RelatedOrder.toString()] = {
+            paths: [
+              { path: "status", value: newmodel.ProductionStatus },
+              ...(newmodel.ProductionStatus === 'delivered' 
+                ? [{ path: "deliveredBy", value: userUID }]
+                : [])
+            ],
+          };
 
         await updateOrder(orgId, newmodel.RelatedOrder, query.orders[newmodel.RelatedOrder.toString()], newmodel.ProductID)
 
@@ -323,9 +335,9 @@ export const updateProduction = async (orgId, container, id, modifiedModels, sta
     return up
 }
 //*THIS FUNCTION ONLY UPDATES TO THE NEXT STATUS CORRESPONDING TO THE PRODUCTION CYCLE ACCORDING THE ACTUAL STATUS OF TASK FINISHED
-export const updateManyProductionModels = (orgId, container, productionModelsIds, actualStatus, tz) => {
+export const updateManyProductionModels = (orgId, container, productionModelsIds, actualStatus, tz, userUID) => {
     return new Promise(async(resolve, reject) => {
-        console.log("Updating production models in " + container +  " container")
+        console.log("Updating production models in " + container +  " container" + "by uid:" + userUID)
         console.log("***************");
         
         let filteredProductionModels = []
@@ -389,7 +401,7 @@ export const updateManyProductionModels = (orgId, container, productionModelsIds
         ])
         let allStatuses = allProductionStatus.length>0 ? Array.from(new Set(allProductionStatus[0].productionStatus)).filter((element) => element != undefined) : allProductionStatus
         try {
-            const updateProd = await updateProduction(orgId, container, null, modifiedModels, allStatuses)
+            const updateProd = await updateProduction(orgId, container, null, modifiedModels, allStatuses, userUID)
     
             if (modifiedModels.length>0 && allStatuses.length === 1 && allStatuses[0] === "ready"){
                 console.log("Creating new order if its cyclic")

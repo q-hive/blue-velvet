@@ -6,6 +6,7 @@ import ordersRouter from '../components/orders/network.js'
 import tasksRouter from '../components/tasks/network.js'
 import organizationRouter from '../components/organization/network.js'
 import productionRouter from '../components/production/network.js'
+import schedulerRouter from '../components/scheduler/network.js'
 import passphraseRouter from '../components/passphrase/network.js'
 import customersRouter from '../components/customer/network.js'
 import filesRouter from '../components/files/network.js'
@@ -64,7 +65,10 @@ export const productionRoutes = (app) => {
     const authorized = ["admin", "employee"]
     app.use(`${apiV1}/production`,  isAuthenticated, isAuthorized(authorized), productionRouter)
 }
-
+export const schedulerRoutes = (app) => {
+    const authorized = ["admin", "employee"]
+    app.use(`${apiV1}/scheduler`,  isAuthenticated, isAuthorized(authorized), schedulerRouter)
+}
 export const deliveryRoutes = (app) => {
     const authorized = ["admin", "employee"]
     app.use(`${apiV1}/delivery`,  isAuthenticated, isAuthorized(authorized), deliveryRouter)

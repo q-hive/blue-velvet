@@ -481,7 +481,7 @@ export const createNewOrder = async (orgId, order, query) => {
       if (dbProduct.mix.isMix) {
         return {
           ...orderProduct,
-          status: prod.status.name,
+          status: prod.status,
           mixStatuses: prod.mixStatuses,
         };
       }
@@ -530,6 +530,7 @@ export const createNewOrder = async (orgId, order, query) => {
       _id: id,
       organization: orgId,
       next: null,
+      deliveredBy:null,
       customer: order.customer._id,
       price: price,
       date: deliveryDate,
@@ -545,7 +546,7 @@ export const createNewOrder = async (orgId, order, query) => {
     
       if(!order.cyclic){
         await insertOrderAndProduction(organization, orderMapped, allProducts, query.tz)
-        return organization
+        return orderMapped
       }
 
       if(order.cyclic){
@@ -555,6 +556,7 @@ export const createNewOrder = async (orgId, order, query) => {
           organization: orgId,
           customer: order.customer._id,
           next:null,
+          deliveredBy:null,
           price: price,
           address: order.address,
           products: secondProducts,
@@ -567,7 +569,7 @@ export const createNewOrder = async (orgId, order, query) => {
         await insertOrderAndProduction(organization, orderMapped, allProducts, query.tz)
         await insertOrderAndProduction(organization, tempOrder, allProducts, query.tz)
 
-        return organization
+        return orderMapped
       }
       
       throw new Error("Unrecognized configuration of order");
@@ -633,7 +635,7 @@ export const updateOrder = async (
   org,
   orderId,
   body,
-  productId = undefined
+  productId = undefined,
 ) => {
   let allProducts, price;
 

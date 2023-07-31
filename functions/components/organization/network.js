@@ -4,7 +4,7 @@ import { mongoose } from '../../mongo.js'
 import { success, error } from '../../network/response.js'
 import { hashPassphrase, genPassphrase } from '../admin/helper.js'
 import { updatePassphraseByClient } from '../passphrase/store.js'
-import { getOrganizations, getOrganizationById, newOrganization, updateOrganization, deleteOrganization } from './store.js'
+import { getOrganizations, getOrganizationById, newOrganization, updateOrganization, deleteOrganization, getAllOrganizationUsers } from './store.js'
 import { updateClient } from '../client/store.js'
 import { modelsValidationError } from '../../utils/errorHandler.js'
 import { newContainer } from '../container/store.js'
@@ -58,6 +58,17 @@ router.get('/', (req, res) =>{
     getOrganizations(filter)
     .then(orgs => {
         return success(req, res, 200, 'Organizations found', orgs)
+    })
+    .catch(err => {
+        return error(req, res, 400, 'Exception occurrer', err)
+    })
+})
+
+router.get('/:orgId/allUsers', (req, res) =>{
+    // Returns all users from an organization (Admin and employees)
+    getAllOrganizationUsers(req.params.orgId)
+    .then(orgs => {
+        return success(req, res, 200, 'All users from this organization found', orgs)
     })
     .catch(err => {
         return error(req, res, 400, 'Exception occurrer', err)

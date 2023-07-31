@@ -1,9 +1,11 @@
 import { mongoose } from '../../mongo.js'
 import Organization from '../../models/organization.js'
+import Client from '../../models/client.js'
 import { deleteClient } from '../../components/client/store.js'
 import { deletePassphrase } from '../passphrase/store.js'
 
 const orgModel = mongoose.model('organizations', Organization)
+const clientModel = mongoose.model('clients', Client)
 
 export const newOrganization = (orgData) => {
     return new Promise((resolve, reject) => {
@@ -44,6 +46,28 @@ export const getOrganizations = (filter) => {
         })
     })   
 }
+
+export const getAllOrganizationUsers = (orgId) => {
+    return new Promise((resolve, reject) => {
+        orgModel.findById(orgId).populate('employees')
+            .then((organization) => {
+                if (!organization) {
+                    reject(new Error('Organization not found'));
+                } else {
+                    clientModel.findOne({ organization: orgId })
+                        .then((client) => {
+                            const admin = client.toObject();
+                            const employees = organization.employees.map((employee) => employee.toObject());
+                            const allUsers = [admin, ...employees];
+                            resolve(allUsers);
+                        })
+                        .catch((err) => reject(err));
+                }
+            })
+            .catch((err) => reject(err));
+    });
+};
+  
 
 export const getOrganizationByOwner = (ownerId) => {
     return new Promise((resolve, reject) => {

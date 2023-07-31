@@ -12,7 +12,8 @@ import {
     containerRoutes,
     productionRoutes,
     deliveryRoutes,
-    backgroundJobsRouter
+    backgroundJobsRouter,
+    schedulerRoutes
 } from './network/routes.js'
 
 import { authRoutes } from './network/routes.js'
@@ -76,6 +77,9 @@ employeesRoutes(app)
 
 //*CONTAINER
 containerRoutes(app)
+
+//*SCHEDULER
+schedulerRoutes(app)
 
 //*PRODUCTION
 productionRoutes(app)
