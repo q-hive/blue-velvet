@@ -580,7 +580,7 @@ export const createNewOrder = async (orgId, order, query) => {
         };
 
         orderMapped.next = tempId
-        await insertOrderAndProduction(organization, orderMapped, allProducts, query.tz)
+        await insertOrderAndProduction(organization, orderMapped, cloneArray(allProducts), query.tz)
         await insertOrderAndProduction(organization, tempOrder, allProducts, query.tz)
 
         return orderMapped
@@ -593,6 +593,25 @@ export const createNewOrder = async (orgId, order, query) => {
     throw err;
   }
 };
+
+const cloneArray = (arrayData) => {
+  return arrayData.map((data) => {
+    if (typeof(data) === 'object'){
+      console.log("Es objeto", data);
+      const newData = JSON.parse(JSON.stringify(data))
+      if(data._id){
+        newData._id = new ObjectId(data._id)
+      }
+      return newData
+    }
+    if (Array.isArray(data)) {
+      console.log("Es array",data);
+      return cloneArray(data)
+    }
+    console.log("Ninguno", data);
+    return data
+  });
+}
 
 export const insertNewOrderWithProduction = async (
   orgId,
