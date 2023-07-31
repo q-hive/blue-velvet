@@ -9,7 +9,6 @@ import {
 } from "../production/controller.js";
 import { getOrganizationById } from "../organization/store.js";
 import { organizationModel } from "../../models/organization.js";
-import { insertScheduler } from "../scheduler/store.js";
 import mongoose, { set } from "mongoose";
 import moment from "moment";
 
@@ -214,26 +213,22 @@ export const groupOrdersByDate = (
     if (useOrderDate) {
       if (
         !hash[
-          `${order.date.getDate()}-${
-            order.date.getMonth() + 1
-          }-${order.date.getFullYear()}`
+        `${order.date.getDate()}-${order.date.getMonth() + 1
+        }-${order.date.getFullYear()}`
         ]
       ) {
         hash[
-          `${order.date.getDate()}-${
-            order.date.getMonth() + 1
+          `${order.date.getDate()}-${order.date.getMonth() + 1
           }-${order.date.getFullYear()}`
         ] = {
           ...order.toObject(),
         };
         result.push({
-          [`${order.date.getDate()}-${
-            order.date.getMonth() + 1
-          }-${order.date.getFullYear()}`]:
+          [`${order.date.getDate()}-${order.date.getMonth() + 1
+            }-${order.date.getFullYear()}`]:
             hash[
-              `${order.date.getDate()}-${
-                order.date.getMonth() + 1
-              }-${order.date.getFullYear()}`
+            `${order.date.getDate()}-${order.date.getMonth() + 1
+            }-${order.date.getFullYear()}`
             ],
         });
       }
@@ -327,7 +322,7 @@ export const groupOrdersForDelivery = async (orders, date = undefined) => {
       }
 
 
-      console.log("🎈",mappedProducts(order.products));
+      console.log("🎈", mappedProducts(order.products));
 
       hash[order.customer.toString()].orders.push({
         _id: order._id,
@@ -491,24 +486,14 @@ export const buildOrderFromExistingOrder = (
 export const isWorkingDay = (date) => {
   //*WORKINNG DAYS ARE TUESDAY (2) AND FRIDAY (5)
   const day = date.day();
-  return (day === 2 || day === 5) 
+  return (day === 2 || day === 5)
 };
 
 const scheduler = async (todayDate, scheduleDate, orgId, productionData, orderData) => {
   console.log("Scheduling production...");
   if (scheduleDate.isBefore(todayDate) && !isToday(scheduleDate, todayDate)) {
-    throw new Error ("Cannot schedule production for a date in the past.");
+    throw new Error("Cannot schedule production for a date in the past.");
   }
-
-  let schedulerObject = {
-    OrganizationId: orgId,
-    OrderId: productionData.RelatedOrder,
-    ProductId: productionData.ProductID,
-    creationDate: todayDate,
-    deliveryDate: orderData.date,
-    startProductionDate: scheduleDate,
-  }
-  await insertScheduler(schedulerObject)
 
   const job = nodeschedule.scheduleJob(
     scheduleDate.toDate(),
@@ -525,7 +510,7 @@ export const getClosestWorkableDay = (date, today) => {
   //IF THE DAY IS AFTER TUESDAY, SET DATE TO THE PAST TUESDAY, IF NOT, SET DATE TO FRIDAY
   let newDate = date.clone();
   const day = newDate.day();
-  if (!newDate.isBefore(today)) {    
+  if (!newDate.isBefore(today)) {
     console.log("La pinchi fecha es mayor o igual a hoy")
     //     Sunday     Saturday     Monday
     if (day === 0 || day === 6 || day === 1) {
@@ -558,7 +543,7 @@ export const getClosestWorkableDay = (date, today) => {
     return newDate;
   }
 
-  if(day === 2 || day === 5) {
+  if (day === 2 || day === 5) {
     return newDate;
   }
   throw new Error("No closest working day matched")
@@ -596,11 +581,11 @@ const isToday = (date, today) => {
     date.year() === today.year() &&
     date.month() === today.month() &&
     date.date() === today.date()
-  ) 
+  )
 };
 
 // Function to set data to an active production status
-const setToActiveStatus = (production, order, activeStatus="harvestReady") => {
+const setToActiveStatus = (production, order, activeStatus = "harvestReady") => {
   // Set production model status to an active production status
   production.ProductionStatus = activeStatus;
   // Set the product status to an active production status
@@ -610,7 +595,7 @@ const setToActiveStatus = (production, order, activeStatus="harvestReady") => {
   }
   // Set the order status to an active production status
   const orderStatuses = Array.from(new Set(order.products.map((prod) => prod.status)));
-  order.status = orderStatuses.length === 1 ? orderStatuses[0]: "production"
+  order.status = orderStatuses.length === 1 ? orderStatuses[0] : "production"
 }
 
 // Function to schedule individual production
@@ -648,7 +633,7 @@ const scheduleIndividualProduction = async (orgId, production, order, products, 
       console.log("🚀 [closestDateToDeliveryDadte]:", moment(closestDateToDeliveryDadte).format("ddd, DD-MM-YYYY"))
       console.log("🚀 [startProductionDate]:", moment(startProductionDate).format("ddd, DD-MM-YYYY"))
       console.log("/////////////");
-  
+
 
       // If the production status is not passive status and the order delivery date is not today
       if (!["seeding", "preSoaking"].includes(production.ProductionStatus) && !isToday(deliveryDate, today)) {
@@ -656,8 +641,8 @@ const scheduleIndividualProduction = async (orgId, production, order, products, 
         try {
           console.log("🎈 OP 1");
           // const scheduledDate =  getClosestWorkableDay(startProductionDate, today).startOf("day").tz(serverTz)
-          console.log("🚀[scheduledDate]",moment(closestDateToDeliveryDadte).format("ddd, DD-MM-YYYY"));
-          const job = scheduler(today,closestDateToDeliveryDadte,orgId, production, order)
+          console.log("🚀[scheduledDate]", moment(closestDateToDeliveryDadte).format("ddd, DD-MM-YYYY"));
+          const job = scheduler(today, closestDateToDeliveryDadte, orgId, production, order)
           console.log(`Scheduled production for ${closestDateToDeliveryDadte} for order ${order._id} and product ${product.name}.`);
           return job;
         } catch (error) {
@@ -668,7 +653,7 @@ const scheduleIndividualProduction = async (orgId, production, order, products, 
       }
 
       // If the delivery date is today and it's a working day, will set the production to harvestReady, if not, to ready
-      if(isToday(deliveryDate, today)){
+      if (isToday(deliveryDate, today)) {
         try {
           console.log("🎈🎈 OP 2");
           const activeStatus = isToday(getClosestWorkableDay(deliveryDate, today), today) ? "harvestReady" : "ready";
@@ -708,8 +693,8 @@ const scheduleIndividualProduction = async (orgId, production, order, products, 
             throw new Error("Error creating production.");
           }
         }
-        console.log("🚀 [schedule]",moment(schedule).format("ddd, DD-MM-YYYY"));
-        const job = scheduler(today,schedule,orgId, production, order)
+        console.log("🚀 [schedule]", moment(schedule).format("ddd, DD-MM-YYYY"));
+        const job = scheduler(today, schedule, orgId, production, order)
         console.log(`Scheduled production for ${schedule} (${serverTz}) for order ${order._id} and product ${product.name}. USER TIMEZONE: ${tz}`);
         return job;
       }
@@ -721,10 +706,10 @@ const scheduleIndividualProduction = async (orgId, production, order, products, 
       const isafter = scheduleDate.isAfter(today)
       // const diffDays = moment.duration(today.diff(scheduleDate)).asDays()
       const diffDays = moment.duration(scheduleDate.diff(today)).asDays()
-      
-      console.log("isafter---",isafter)
-      console.log("diffDates---",diffDays)
-      if ((isafter || isToday(scheduleDate, today)) &&  diffDays < (product.parameters.day + product.parameters.night)) {
+
+      console.log("isafter---", isafter)
+      console.log("diffDates---", diffDays)
+      if ((isafter || isToday(scheduleDate, today)) && diffDays < (product.parameters.day + product.parameters.night)) {
         setToActiveStatus(production, order, "harvestReady")
         const job = scheduler(today, scheduleDate, orgId, production, order)
         console.log(`Scheduled production for ${scheduleDate} (${serverTz}) for order ${order._id} and product ${product.name}. USER TIMEZONE: ${tz}`);
@@ -762,7 +747,7 @@ const insertProduction = async (orgId, production) => {
 const modifyOrder = async (orgId, order) => {
   try {
     await organizationModel.updateOne(
-      { _id: mongoose.Types.ObjectId(orgId), "orders._id": order._id  },
+      { _id: mongoose.Types.ObjectId(orgId), "orders._id": order._id },
       { $set: { "orders.$": order } }
     );
   } catch (error) {

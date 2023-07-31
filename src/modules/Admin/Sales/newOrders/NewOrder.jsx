@@ -45,7 +45,6 @@ import useOrders from '../../../../hooks/useOrders';
 import useCustomers from '../../../../hooks/useCustomers';
 import useProducts from '../../../../hooks/useProducts';
 import DateRangePicker from '../../../../CoreComponents/Dates/DateRangePicker';
-import useScheduler from '../../../../hooks/useScheduler';
 
 export const NewOrder = (props) => {
   const [sameCustomerAddress, setSameCustomerAddress] = useState(false);
@@ -88,7 +87,6 @@ export const NewOrder = (props) => {
     user: user,
   };
   const { getOrderInvoiceById, addOrder } = useOrders(headers);
-  const { getSchedulesByCriteria } = useScheduler(headers);
   const { getCustomers } = useCustomers(headers);
   const { getProducts } = useProducts(headers);
 
@@ -506,61 +504,13 @@ export const NewOrder = (props) => {
           ...dialog,
           open: true,
           title: 'Order created succesfully',
-          message: 'Click continue to see existing schedules for this order',
+          message: 'Check the status of the order in the orders section',
           actions: [
             {
               label: 'Continue',
               btn_color: 'primary',
-              execute: async () => {
-                const responseScheduler = await getSchedulesByCriteria(
-                  response.data.data._id
-                );
-                if (responseScheduler.data.data.length) {
-                  const generateList = (data) => {
-                    return (
-                      <ul>
-                        {data.map((item, index) => (
-                          <li key={index}>
-                            {options.products.find(
-                              (prod) =>
-                                prod._id.toString() ===
-                                item.ProductId.toString()
-                            )?.name || 'Product not found.'}{' '}
-                            -{' '}
-                            {formattedDate(new Date(item.startProductionDate))}
-                          </li>
-                        ))}
-                      </ul>
-                    );
-                  };
-                  setDialog({
-                    ...dialog,
-                    open: true,
-                    title: 'Schedule',
-                    message: generateList(responseScheduler.data.data),
-                    actions: [
-                      {
-                        label: 'reload',
-                        btn_color: 'primary',
-                        execute: () => window.location.reload(),
-                      },
-                    ],
-                  });
-                } else {
-                  setDialog({
-                    ...dialog,
-                    open: true,
-                    title: 'Schedule',
-                    message: 'The production is scheduled for today',
-                    actions: [
-                      {
-                        label: 'reload',
-                        btn_color: 'primary',
-                        execute: () => window.location.reload(),
-                      },
-                    ],
-                  });
-                }
+              execute: () => {
+                window.location.reload();
               },
             },
             {
@@ -914,7 +864,13 @@ export const NewOrder = (props) => {
                   </Box>
 
                   {/* PRODUCTS BODY */}
-                  <Box sx={{display:'flex', flexDirection:'column', alignItems:'center'}}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                    }}
+                  >
                     {/* PRODUCTS SELECTION */}
                     <Autocomplete
                       id='product'
