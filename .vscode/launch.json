@@ -7,11 +7,11 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
+            "name": "Launch Server",
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}\\functions\\components\\files\\controller.js"
+            "program": "${workspaceFolder}/functions/index.js"
         }
     ]
 }
