@@ -495,14 +495,9 @@ const scheduler = async (todayDate, scheduleDate, orgId, productionData, orderDa
     throw new Error("Cannot schedule production for a date in the past.");
   }
 
-  const job = nodeschedule.scheduleJob(
-    scheduleDate.toDate(),
-    async () => {
-      await insertProduction(orgId, productionData);
-      await modifyOrder(orgId, orderData);
-    }
-  );
-  return job;
+  productionData.startProductionDate = scheduleDate.startOf('day').toDate();
+  await insertProduction(orgId, productionData);
+  await modifyOrder(orgId, orderData);
 }
 
 export const getClosestWorkableDay = (date, today) => {
@@ -642,9 +637,9 @@ const scheduleIndividualProduction = async (orgId, production, order, products, 
           console.log("🎈 OP 1");
           // const scheduledDate =  getClosestWorkableDay(startProductionDate, today).startOf("day").tz(serverTz)
           console.log("🚀[scheduledDate]", moment(closestDateToDeliveryDadte).format("ddd, DD-MM-YYYY"));
-          const job = scheduler(today, closestDateToDeliveryDadte, orgId, production, order)
+          scheduler(today, closestDateToDeliveryDadte, orgId, production, order)
           console.log(`Scheduled production for ${closestDateToDeliveryDadte} for order ${order._id} and product ${product.name}.`);
-          return job;
+          return;
         } catch (error) {
           console.log("Error creating production");
           console.log(error);
@@ -658,8 +653,7 @@ const scheduleIndividualProduction = async (orgId, production, order, products, 
           console.log("🎈🎈 OP 2");
           const activeStatus = isToday(getClosestWorkableDay(deliveryDate, today), today) ? "harvestReady" : "ready";
           setToActiveStatus(production, order, activeStatus);
-          await insertProduction(orgId, production);
-          await modifyOrder(orgId, order);
+          scheduler(today, deliveryDate, orgId, production, order)
           console.log("Production has been added to the database.");
           return;
         } catch (error) {
@@ -670,8 +664,7 @@ const scheduleIndividualProduction = async (orgId, production, order, products, 
       if (isToday(startProductionDate, today)) {
         try {
           console.log("🎈🎈🎈 OP 3");
-          await insertProduction(orgId, production);
-          await modifyOrder(orgId, order);
+          scheduler(today, startProductionDate, orgId, production, order)
           console.log("Production has been added to the database.");
           return;
         } catch (error) {
@@ -685,8 +678,7 @@ const scheduleIndividualProduction = async (orgId, production, order, products, 
         const schedule = getClosestWorkableDay(startProductionDate, today).startOf("day")
         if (isToday(schedule, today)) {
           try {
-            await insertProduction(orgId, production);
-            await modifyOrder(orgId, order);
+            scheduler(today, schedule, orgId, production, order)
             console.log("Production has been added to the database.");
             return;
           } catch (error) {
@@ -694,9 +686,9 @@ const scheduleIndividualProduction = async (orgId, production, order, products, 
           }
         }
         console.log("🚀 [schedule]", moment(schedule).format("ddd, DD-MM-YYYY"));
-        const job = scheduler(today, schedule, orgId, production, order)
+        scheduler(today, schedule, orgId, production, order)
         console.log(`Scheduled production for ${schedule} (${serverTz}) for order ${order._id} and product ${product.name}. USER TIMEZONE: ${tz}`);
-        return job;
+        return;
       }
 
       // If the start production date is a working day, schedule a job to insert the production
@@ -711,13 +703,13 @@ const scheduleIndividualProduction = async (orgId, production, order, products, 
       console.log("diffDates---", diffDays)
       if ((isafter || isToday(scheduleDate, today)) && diffDays < (product.parameters.day + product.parameters.night)) {
         setToActiveStatus(production, order, "harvestReady")
-        const job = scheduler(today, scheduleDate, orgId, production, order)
+        scheduler(today, scheduleDate, orgId, production, order)
         console.log(`Scheduled production for ${scheduleDate} (${serverTz}) for order ${order._id} and product ${product.name}. USER TIMEZONE: ${tz}`);
-        return job
+        return
       }
-      const job = scheduler(today, startProductionDate, orgId, production, order)
+      scheduler(today, startProductionDate, orgId, production, order)
       console.log(`Scheduled production for ${startProductionDate} (${serverTz}) for order ${order._id} and product ${product.name}. USER TIMEZONE: ${tz}`);
-      return job;
+      return;
     }
   } catch (error) {
     console.log(error)
