@@ -201,7 +201,7 @@ const insertOrdersInProduction = (production, orders) => {
 
 export const getWorkTimeByEmployee = (req, res) => {
     return new Promise((resolve, reject) => {
-        getProductionInContainer(res.locals.organization,req.query.containerId)
+        getProductionInContainer(res.locals.organization,req.query.containerId,req.query.tz)
         .then(async (production) => {
             const totalEstimations = calculateTimeEstimation(production,false,true,res.locals.organization)
             

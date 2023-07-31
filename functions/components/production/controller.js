@@ -484,7 +484,7 @@ export const getProductionWorkByContainerId = (req,res, criteria) => {
         if(criteria === "workday"){
             const products =  await getAllProducts(res.locals.organization)        
 
-            const productionInContainer = await getProductionInContainer(res.locals.organization, req.query.containerId)
+            const productionInContainer = await getProductionInContainer(res.locals.organization, req.query.containerId, req.query.tz)
 
             // Crea un modelo de produccion para cada status posible por producto 
             const productionStatuses = getPosibleStatusesForProduction()
@@ -518,7 +518,7 @@ export const getProductionWorkByContainerId = (req,res, criteria) => {
         }
 
         if(criteria === "employee"){
-            const productionInContainer = await getProductionInContainer(res.locals.organization, req.query.containerId)
+            const productionInContainer = await getProductionInContainer(res.locals.organization, req.query.containerId, req.query.tz)
 
             const productionGroupped = grouPProductionForWorkDay("status", productionInContainer, requiredProductionFormat, false)
 
@@ -526,7 +526,7 @@ export const getProductionWorkByContainerId = (req,res, criteria) => {
             return
         }
 
-        getProductionInContainer(res.locals.organization, req.query.containerId)
+        getProductionInContainer(res.locals.organization, req.query.containerId, req.query.tz)
         .then((production) => {
             
             //*If no production is returned then return empty array

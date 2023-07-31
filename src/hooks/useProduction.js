@@ -2,8 +2,10 @@ import { request } from "../utils/helpers/requestsHelper";
 
 const useProduction =  (headers) => {
 
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
   const getContainerWorkDayProduction = async (containerId) => {
-    return await request('GET',`production/workday?containerId=${containerId}`, headers);
+    return await request('GET',`production/workday?containerId=${containerId}&tz=${userTimeZone}`, headers);
   };
 
   const getGrowingStatus = async (containerId) => {

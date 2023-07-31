@@ -89,7 +89,9 @@ export const productionCycleObject = {
 }
 
 
-export const getProductionInContainer = async (orgId, containerId) => {
+export const getProductionInContainer = async (orgId, containerId, tz) => {
+    const currentDate = moment().tz(tz).format('YYYY-MM-DD');
+
     return new Promise((resolve, reject) => {
         orgModel.findOne(
             {
@@ -107,13 +109,18 @@ export const getProductionInContainer = async (orgId, containerId) => {
             }
             
             
-            const result = doc.containers[0]?.production
-            if(!result){
+            const allProduction = doc.containers[0]?.production
+            if(!allProduction){
                 resolve([])
                 return
             }
+            
+            const productionForToday = allProduction.filter(production => {
+                const startProductionDate = moment(production.startProductionDate).tz(tz).format('YYYY-MM-DD');
+                return startProductionDate === currentDate;
+            });
 
-            resolve(result)
+            resolve(productionForToday)
 
         })
         .catch((err) => reject(err))
