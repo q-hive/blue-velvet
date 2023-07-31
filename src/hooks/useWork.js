@@ -11,6 +11,12 @@ const useWork =  (headers) => {
     return await request('PATCH',`work/production/${containerId}?tz=${userTimeZone}`, header, {data: {productionModelsIds, actualStatus} });
   };
 
+  const deliveryOneOrder = async (containerId, orderId) => {
+    // Change the order, the order products and the production model on status 'delivered' (Create other if it`s cyclic)
+    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return await request('PATCH', `work/production/${containerId}/${orderId}?tz=${userTimeZone}`, headers);
+  };
+
   const getWorkTimeByContainer = async (userId, containerId) => {
     return await request('GET',`work/time/${userId}?containerId=${containerId}`, headers);
   };
@@ -26,6 +32,7 @@ const useWork =  (headers) => {
   return {
     updateTaskHistory,
     updateProduction,
+    deliveryOneOrder,
     getWorkTimeByContainer,
     updateUserPerformance,
     updateWorkDay

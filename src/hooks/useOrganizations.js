@@ -10,6 +10,10 @@ const useOrganizations =  (headers) => {
     return await request('GET',`organizations/${id}`, headers);
   };
 
+  const getAllUsers = async (orgId) => {
+    return await request('GET', `organizations/${orgId}/allUsers`, headers);
+  };
+
   const createOrganization = async (mappedOrganizationData) => {
     return await request('POST',`auth/create/admin`, headers, {data: mappedOrganizationData, api:false});
   };
@@ -25,6 +29,7 @@ const useOrganizations =  (headers) => {
   return {
     getOrganizations,
     getOrganization,
+    getAllUsers,
     createOrganization,
     updateOrganization,
     deleteOrganization
