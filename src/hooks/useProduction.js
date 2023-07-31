@@ -1,31 +1,31 @@
 import { request } from "../utils/helpers/requestsHelper";
 
-const useProduction =  (headers) => {
+const useProduction = (headers) => {
 
   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   const getContainerWorkDayProduction = async (containerId) => {
-    return await request('GET',`production/workday?containerId=${containerId}&tz=${userTimeZone}`, headers);
+    return await request('GET', `production/workday?containerId=${containerId}&tz=${userTimeZone}`, headers);
   };
 
   const getGrowingStatus = async (containerId) => {
-    return await request('GET',`production/status/growing?containerId=${containerId}`, headers);
+    return await request('GET', `production/status/growing?containerId=${containerId}`, headers);
   };
 
   const getOrderProduction = async (containerId, orderId) => {
-    return await request('GET',`production/${containerId}/${orderId}`, headers);
+    return await request('GET', `production/${containerId}/${orderId}`, headers);
   };
 
   const addOrderProduction = async (containerId, productionModelData) => {
-    return await request('POST',`production/${containerId}`, headers, {data: productionModelData});
+    return await request('POST', `production/${containerId}`, headers, { data: productionModelData });
   };
 
   const updateOrderProduction = async (containerId, productionModelData) => {
-    return await request('PATCH',`production/${containerId}`, headers, {data: productionModelData});
+    return await request('PATCH', `production/${containerId}`, headers, { data: productionModelData });
   };
 
   const deleteOrderProduction = async (containerId, productionData) => {
-    return await request('DELETE',`production/${containerId}`, headers, {data: productionData});
+    return await request('DELETE', `production/${containerId}`, headers, { data: productionData });
   };
 
   return {
