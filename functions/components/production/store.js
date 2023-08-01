@@ -15,12 +15,12 @@ const orgModel = mongoose.model('organizations', Organization)
 
 export const productionCycleObject = {
     "preSoaking": {
-        "next":"seeding",
-        "hasBackGroundTask":false,
-        "requireNewDoc":true,
-        "affectsCapacity":{
-            "affect":false,
-            "how":null
+        "next": "seeding",
+        "hasBackGroundTask": false,
+        "requireNewDoc": true,
+        "affectsCapacity": {
+            "affect": false,
+            "how": null
         }
     },
     // "soaking1":{
@@ -41,95 +41,120 @@ export const productionCycleObject = {
     //         "how":null
     //     }
     // },
-    "harvestReady":{
-        "next":"packing",
-        "hasBackGroundTask":false,
-        "requireNewDoc":true,
-        "affectsCapacity":{
-            "affect":false,
-            "how":null
+    "harvestReady": {
+        "next": "packing",
+        "hasBackGroundTask": false,
+        "requireNewDoc": true,
+        "affectsCapacity": {
+            "affect": false,
+            "how": null
         }
     },
     "packing": {
-        "next":"ready",
-        "hasBackgroundTask":false,
-        "requireNewDoc":true,
-        "affectsCapacity":{
-            "affect":true,
-            "how":"inc"
+        "next": "ready",
+        "hasBackgroundTask": false,
+        "requireNewDoc": true,
+        "affectsCapacity": {
+            "affect": true,
+            "how": "inc"
         }
     },
     "ready": {
-        "next":"delivered",
-        "hasBackgroundTask":false,
-        "requireNewDoc":true,
-        "affectsCapacity":{
-            "affect":false,
-            "how":null
+        "next": "delivered",
+        "hasBackgroundTask": false,
+        "requireNewDoc": true,
+        "affectsCapacity": {
+            "affect": false,
+            "how": null
         }
     },
-    "seeding":{
-        "next":"growing",
-        "hasBackGroundTask":false,
-        "requireNewDoc":true,
-        "affectsCapacity":{
-            "affect":false,
-            "how":null
+    "seeding": {
+        "next": "growing",
+        "hasBackGroundTask": false,
+        "requireNewDoc": true,
+        "affectsCapacity": {
+            "affect": false,
+            "how": null
         }
     },
-    "growing":{
-        "next":"harvestReady",
-        "hasBackGroundTask":true,
-        "requireNewDoc":true,
-        "affectsCapacity":{
-            "affect":true,
-            "how":"dec"
+    "growing": {
+        "next": "harvestReady",
+        "hasBackGroundTask": true,
+        "requireNewDoc": true,
+        "affectsCapacity": {
+            "affect": true,
+            "how": "dec"
         }
     },
 }
 
 
-export const getProductionInContainer = async (orgId, containerId) => {
+export const getProductionInContainerByCurrentDate = async (orgId, containerId, tz) => {
+    const currentDate = moment().tz(tz).format('YYYY-MM-DD');
+
     return new Promise((resolve, reject) => {
-        orgModel.findOne(
+        orgModel.aggregate([
             {
-                "_id":mongoose.Types.ObjectId(orgId), 
-                "containers._id":mongoose.Types.ObjectId(containerId)
-            },
-            {
-                "containers.production.$":true
+              '$match': {
+                '_id': mongoose.Types.ObjectId(orgId)
+              }
+            },{
+              '$unwind': {
+                'path': '$containers'
+              }
+            }, {
+              '$match': {
+                'containers._id': mongoose.Types.ObjectId(containerId)
+              }
+            }, {
+              '$unwind': {
+                'path': '$containers.production'
+              }
+            }, {
+              '$addFields': {
+                'startProductionDateString': {
+                  '$dateToString': {
+                    'format': '%Y-%m-%d', 
+                    'date': '$containers.production.startProductionDate', 
+                    'timezone': tz
+                  }
+                }
+              }
+            }, {
+              '$match': {
+                'startProductionDateString': {
+                  '$eq': currentDate
+                }
+              }
+            }, {
+              '$replaceRoot': {
+                'newRoot': '$containers.production'
+              }
             }
-        )
-        .then((doc) => {
-            if(!doc){
-                resolve([])
-                return
-            }
-            
-            
-            const result = doc.containers[0]?.production
-            if(!result){
-                resolve([])
-                return
-            }
+          ])
+            .then((productionForToday) => {
+                if (!productionForToday) {
+                    resolve([])
+                    return
+                }
 
-            resolve(result)
+                resolve(productionForToday)
 
-        })
-        .catch((err) => reject(err))
+            })
+            .catch((err) => reject(err))
     })
 }
 
-export const insertWorkDayProductionModel = (orgId,container,productionModel) => {
-    return new Promise(async(resolve, reject) => {
+export const insertWorkDayProductionModel = (orgId, container, productionModel) => {
+    return new Promise(async (resolve, reject) => {
         try {
             const updateOperation = await orgModel.updateOne(
                 {
-                    "_id":mongoose.Types.ObjectId(orgId),
-                    "containers._id":mongoose.Types.ObjectId(container)
+                    "_id": mongoose.Types.ObjectId(orgId),
+                    "containers._id": mongoose.Types.ObjectId(container)
                 },
                 {
-                    "$set": {"containers.$.workday":{"production":productionModel}}
+                    "$set": { "containers.$.workday": { "production": productionModel } }
                 }
             )
             resolve(updateOperation)
@@ -153,10 +178,10 @@ export const getPosibleStatusesForProduction = () => {
 export const nextStatusForProduction = (productionModels, actualStatus) => {
     const cycleModel = productionCycleObject
 
-    if(Array.isArray(productionModels)){
+    if (Array.isArray(productionModels)) {
         productionModels.forEach((production) => {
 
-            const nextProductionStatus = cycleModel[actualStatus ? actualStatus : production.ProductionStatus].next 
+            const nextProductionStatus = cycleModel[actualStatus ? actualStatus : production.ProductionStatus].next
 
             production.ProductionStatus = nextProductionStatus
         })
@@ -168,31 +193,31 @@ export const nextStatusForProduction = (productionModels, actualStatus) => {
 
 export const updateOrdersInModels = async (updatedModels, orgId, container) => {
     let bodyQuery = {
-        "orders":{
-            "_id":{
-                "paths":[{"path":"","value":""}]
+        "orders": {
+            "_id": {
+                "paths": [{ "path": "", "value": "" }]
             },
         }
     }
-    
+
     await Promise.all(
-        updatedModels.map(async(productionModel) => {
+        updatedModels.map(async (productionModel) => {
 
             const productionDB = await getProductionByOrderId(orgId, container, productionModel.RelatedOrder)
-            
+
             const indexOfModelInDB = productionDB.findIndex((model) => model._id.equals(productionModel._id))
-            
-            productionDB[indexOfModelInDB].ProductionStatus = productionModel.ProductionStatus 
-            
+
+            productionDB[indexOfModelInDB].ProductionStatus = productionModel.ProductionStatus
+
             const statusInProductionDB = productionDB.map((productionmodel) => productionmodel.ProductionStatus).filter((element) => element != undefined)
             console.log("Production status of the order" + productionModel.RelatedOrder + " in DB woud be:  " + statusInProductionDB)
             console.log("with the applied update")
-            
+
             bodyQuery.orders[productionModel.RelatedOrder.toString()] = {
-                "paths":[{"path":"status","value":productionModel.ProductionStatus}]
+                "paths": [{ "path": "status", "value": productionModel.ProductionStatus }]
             }
-    
-            
+
+
             //*Status in DB must be equal (packing)i n all production models related to the order before updating status
             await updateOrder(orgId, productionModel.RelatedOrder, bodyQuery.orders[productionModel.RelatedOrder.toString()])
             //*Add order to DB of packaging
@@ -205,11 +230,11 @@ export const updateOrdersInModels = async (updatedModels, orgId, container) => {
             //     await orgModel.updateOne({"_id":mongoose.Types.ObjectId(orgId), "$push":{"dliveryReady": productionModel.RelatedOrder}})
             //     await orgModel.updateOne({"_id":mongoose.Types.ObjectId(orgId), "$pull":{"packaging": productionModel.RelatedOrder}})
             // }
-            
+
         }).filter((elem) => elem != undefined)
     )
-    
-    
+
+
 
 }
 
@@ -220,76 +245,76 @@ export const updateProduction = async (orgId, container, id, modifiedModels, sta
         console.log(newmodel)
         const productionStatus = newmodel.ProductionStatus
         console.log("Production model updating to ->", productionStatus)
-        
+
         const op = await orgModel.updateOne(
             {
-                "_id":mongoose.Types.ObjectId(orgId),
-                "containers":{
+                "_id": mongoose.Types.ObjectId(orgId),
+                "containers": {
                     "$elemMatch": {
-                        "_id":mongoose.Types.ObjectId(container),
-                        "production":{
-                            "$elemMatch":{
-                                "_id":mongoose.Types.ObjectId(newmodel._id)
+                        "_id": mongoose.Types.ObjectId(container),
+                        "production": {
+                            "$elemMatch": {
+                                "_id": mongoose.Types.ObjectId(newmodel._id)
                             }
                         }
                     }
                 }
             },
             {
-                "$set":{
-                    "containers.$.production.$[prod]":newmodel
+                "$set": {
+                    "containers.$.production.$[prod]": newmodel
                 }
             },
             {
-                "arrayFilters":[{"prod._id":mongoose.Types.ObjectId(newmodel._id)}]
+                "arrayFilters": [{ "prod._id": mongoose.Types.ObjectId(newmodel._id) }]
             }
         )
 
-        if(productionCycleObject[productionStatus]?.hasBackGroundTask){
+        if (productionCycleObject[productionStatus]?.hasBackGroundTask) {
             console.log("The production status " + productionStatus + " has a background task")
-            await scheduleTask({organization:orgId, container, production:newmodel, name:"updateForProduction"})
+            await scheduleTask({ organization: orgId, container, production: newmodel, name: "updateForProduction" })
         }
 
-        if(productionCycleObject[productionStatus]?.affectsCapacity.affect){
+        if (productionCycleObject[productionStatus]?.affectsCapacity.affect) {
             let trays = newmodel.trays
             console.log("El container must be updated")
-            if(productionCycleObject[productionStatus]?.affectsCapacity.how === "dec"){
+            if (productionCycleObject[productionStatus]?.affectsCapacity.how === "dec") {
                 trays = trays
             }
 
-            if(productionCycleObject[productionStatus]?.affectsCapacity.how === "inc"){
+            if (productionCycleObject[productionStatus]?.affectsCapacity.how === "inc") {
                 trays = -trays
             }
-            
-            await updateContainerById(orgId, container, {query:"add",key:"available", value:-trays})
+
+            await updateContainerById(orgId, container, { query: "add", key: "available", value: -trays })
         }
 
-        
+
         console.log("Production status of the order " + newmodel.RelatedOrder + " in DB is:  " + statuses)
 
 
         const query = {
-            orders:{
-                "_id":{
-                    "paths":[{"path":"","value":""}]
+            orders: {
+                "_id": {
+                    "paths": [{ "path": "", "value": "" }]
                 },
             }
         }
         query.orders[newmodel.RelatedOrder.toString()] = {
-            "paths":[
-                {"path":"status","value":newmodel.ProductionStatus},
-                {"path":"deliveredBy","value":userUID}
+            "paths": [
+                { "path": "status", "value": newmodel.ProductionStatus },
+                { "path": "deliveredBy", "value": userUID }
             ]
         }
 
         query.orders[newmodel.RelatedOrder.toString()] = {
             paths: [
-              { path: "status", value: newmodel.ProductionStatus },
-              ...(newmodel.ProductionStatus === 'delivered' 
-                ? [{ path: "deliveredBy", value: userUID }]
-                : [])
+                { path: "status", value: newmodel.ProductionStatus },
+                ...(newmodel.ProductionStatus === 'delivered'
+                    ? [{ path: "deliveredBy", value: userUID }]
+                    : [])
             ],
-          };
+        };
 
         await updateOrder(orgId, newmodel.RelatedOrder, query.orders[newmodel.RelatedOrder.toString()], newmodel.ProductID)
 
@@ -315,14 +340,14 @@ export const updateProduction = async (orgId, container, id, modifiedModels, sta
             //         const orderToBuildProduction = JSON.parse(JSON.stringify(newOrder))
             //         const newProduction = await buildProductionDataFromOrder(orderToBuildProduction,allProducts, overhead)
 
-                    
+
             //         await insertNewOrderWithProduction(orgId, newOrder, newProduction)
             //         orderUpdated = true
-                    
+
             //     }
             //     console.log("No order found or its not cyclic")
             // }
-        } catch(err) {
+        } catch (err) {
             console.log("Error creating new order from cyclic order")
             console.log(err)
         }
@@ -336,30 +361,30 @@ export const updateProduction = async (orgId, container, id, modifiedModels, sta
 }
 //*THIS FUNCTION ONLY UPDATES TO THE NEXT STATUS CORRESPONDING TO THE PRODUCTION CYCLE ACCORDING THE ACTUAL STATUS OF TASK FINISHED
 export const updateManyProductionModels = (orgId, container, productionModelsIds, actualStatus, tz, userUID) => {
-    return new Promise(async(resolve, reject) => {
-        console.log("Updating production models in " + container +  " container" + "by uid:" + userUID)
+    return new Promise(async (resolve, reject) => {
+        console.log("Updating production models in " + container + " container" + "by uid:" + userUID)
         console.log("***************");
-        
+
         let filteredProductionModels = []
         const getProduction = productionModelsIds.map(async (id) => {
             const productionModel = await orgModel.findOne({
-                "_id":mongoose.Types.ObjectId(orgId),
-                "containers":{
+                "_id": mongoose.Types.ObjectId(orgId),
+                "containers": {
                     "$elemMatch": {
-                        "_id":mongoose.Types.ObjectId(container),
-                        "production":{
-                            "$elemMatch":{
-                                "_id":mongoose.Types.ObjectId(id)
+                        "_id": mongoose.Types.ObjectId(container),
+                        "production": {
+                            "$elemMatch": {
+                                "_id": mongoose.Types.ObjectId(id)
                             }
                         }
                     }
                 }
             },
-            {
-                "containers.$":1
-            }
+                {
+                    "containers.$": 1
+                }
             )
-            
+
             productionModel.containers.forEach((container) => {
                 const productionModelFound = container.production.find((production) => production._id.equals(id))
 
@@ -372,82 +397,82 @@ export const updateManyProductionModels = (orgId, container, productionModelsIds
         const modifiedModels = nextStatusForProduction(filteredProductionModels, actualStatus)
         const allProductionStatus = await orgModel.aggregate([
             {
-                "$match":{
-                    "_id":mongoose.Types.ObjectId(orgId)
+                "$match": {
+                    "_id": mongoose.Types.ObjectId(orgId)
                 }
             },
             {
-                "$unwind":"$containers"
+                "$unwind": "$containers"
             },
             {
-                "$unwind":"$containers.production"
+                "$unwind": "$containers.production"
             },
             {
-                "$match":{
-                    "containers.production.RelatedOrder":{
-                        "$in":modifiedModels.map((model) => model.RelatedOrder)
+                "$match": {
+                    "containers.production.RelatedOrder": {
+                        "$in": modifiedModels.map((model) => model.RelatedOrder)
                     }
                 }
             },
             {
-                "$group":{
-                    "_id":"$containers.production.RelatedOrder",
-                    "productionStatus":{
-                        "$push":"$containers.production.ProductionStatus"
+                "$group": {
+                    "_id": "$containers.production.RelatedOrder",
+                    "productionStatus": {
+                        "$push": "$containers.production.ProductionStatus"
                     }
 
                 }
             }
         ])
-        let allStatuses = allProductionStatus.length>0 ? Array.from(new Set(allProductionStatus[0].productionStatus)).filter((element) => element != undefined) : allProductionStatus
+        let allStatuses = allProductionStatus.length > 0 ? Array.from(new Set(allProductionStatus[0].productionStatus)).filter((element) => element != undefined) : allProductionStatus
         try {
             const updateProd = await updateProduction(orgId, container, null, modifiedModels, allStatuses, userUID)
-    
-            if (modifiedModels.length>0 && allStatuses.length === 1 && allStatuses[0] === "ready"){
+
+            if (modifiedModels.length > 0 && allStatuses.length === 1 && allStatuses[0] === "ready") {
                 console.log("Creating new order if its cyclic")
                 const orders = await getOrderById(orgId, modifiedModels[0].RelatedOrder)
                 console.log(orders)
-                if(orders[0] && orders[0].cyclic){
+                if (orders[0] && orders[0].cyclic) {
                     let baseOrder = orders[0]
-                    const relatedOrder = await getOrderById(orgId, baseOrder.next)                
-                    
-                    if(relatedOrder[0] && relatedOrder[0]){
+                    const relatedOrder = await getOrderById(orgId, baseOrder.next)
+
+                    if (relatedOrder[0] && relatedOrder[0]) {
                         const allProducts = await getAllProducts(orgId);
                         const relatedOrderStatuses = Array.from(
                             new Set(relatedOrder[0].products.map((prod) => prod.status))
                         );
-                        
-                        
+
+
                         let org = await getOrganizationById(orgId);
                         let tempId = new ObjectId();
-                        
+
                         const relOrderIndex = org.orders.findIndex(order => order._id.equals(relatedOrder[0]._id))
 
-                        if(relOrderIndex !== -1){
+                        if (relOrderIndex !== -1) {
                             org.orders[relOrderIndex].next = tempId
                         }
-                        
+
                         const newProducts = relatedOrder[0].products.map((prod) => {
                             const product = allProducts.find((fprod) => {
-                                if(typeof fprod._id === "object"){
+                                if (typeof fprod._id === "object") {
                                     return fprod._id.equals(prod._id)
                                 }
-                    
-                                if (typeof prod._id === "object"){
+
+                                if (typeof prod._id === "object") {
                                     return prod._id.equals(fprod._id)
                                 }
-                                
-                                return fprod._id == prod._id 
+
+                                return fprod._id == prod._id
                             })
                             prod.status = getInitialStatus(product)
                             return prod
                         })
-                        
+
                         let tempOrder = {
                             _id: tempId,
                             organization: orgId,
                             customer: relatedOrder[0].customer,
-                            next:null,
+                            next: null,
                             price: relatedOrder[0].price,
                             address: relatedOrder[0].address,
                             products: newProducts,
@@ -457,68 +482,68 @@ export const updateManyProductionModels = (orgId, container, productionModelsIds
                         };
 
                         await insertOrderAndProduction(org, tempOrder, allProducts, tz)
-                            
+
                     }
                 }
                 console.log("No order found or its not cyclic")
             }
-        
+
             resolve(updateProd)
-        } catch (err){
+        } catch (err) {
             reject(err)
         }
 
-        
+
     })
 }
 
 export const getProductionByStatus = (orgId, container, status) => {
     return new Promise((resolve, reject) => {
-        console.log(orgId,container)
-        
+        console.log(orgId, container)
+
         orgModel.aggregate(
             [
                 {
                     "$match": {
-                        "_id":mongoose.Types.ObjectId(orgId),
-                    }   
-                },
-                {
-                    "$unwind":"$containers"
-                },
-                {
-                    "$match":{
-                        "containers._id":mongoose.Types.ObjectId(container)
+                        "_id": mongoose.Types.ObjectId(orgId),
                     }
                 },
                 {
-                    "$match":{
-                        "containers.production.ProductionStatus":status
-                    }  
+                    "$unwind": "$containers"
                 },
                 {
-                    "$project":{
-                        "containers":{
-                            "_id":1,
-                            "production":1
+                    "$match": {
+                        "containers._id": mongoose.Types.ObjectId(container)
+                    }
+                },
+                {
+                    "$match": {
+                        "containers.production.ProductionStatus": status
+                    }
+                },
+                {
+                    "$project": {
+                        "containers": {
+                            "_id": 1,
+                            "production": 1
                         }
                     }
                 }
             ]
         )
-        .then((result) => {
-            console.log(result)
+            .then((result) => {
+                console.log(result)
 
-            if(result.length === 0){
-                resolve(result)
-            }
-            
-            const grouppedProd = grouPProductionForWorkDay("status",result[0].containers.production, "hash")
-            resolve(grouppedProd)
-        })
-        .catch((err) => {
-            reject(err)
-        })
+                if (result.length === 0) {
+                    resolve(result)
+                }
+
+                const grouppedProd = grouPProductionForWorkDay("status", result[0].containers.production, "hash")
+                resolve(grouppedProd)
+            })
+            .catch((err) => {
+                reject(err)
+            })
 
     })
 }
@@ -529,24 +554,24 @@ export const getProductionByOrderId = (orgId, container, orderId) => {
             [
                 {
                     "$match": {
-                        "_id":mongoose.Types.ObjectId(orgId),
-                    }   
-                },
-                {
-                    "$unwind":"$containers"
-                },
-                {
-                    "$match":{
-                        "containers._id":mongoose.Types.ObjectId(container)
+                        "_id": mongoose.Types.ObjectId(orgId),
                     }
                 },
                 {
-                    "$unwind":"$containers.production"
+                    "$unwind": "$containers"
                 },
                 {
-                    "$match":{
-                        "containers.production.RelatedOrder":mongoose.Types.ObjectId(orderId)
-                    }  
+                    "$match": {
+                        "containers._id": mongoose.Types.ObjectId(container)
+                    }
+                },
+                {
+                    "$unwind": "$containers.production"
+                },
+                {
+                    "$match": {
+                        "containers.production.RelatedOrder": mongoose.Types.ObjectId(orderId)
+                    }
                 },
                 {
                     "$replaceRoot": {
@@ -555,64 +580,64 @@ export const getProductionByOrderId = (orgId, container, orderId) => {
                 }
             ]
         )
-        .then((result) => {
-            resolve(result)
-        })
-        .catch((err) => {
-            reject(err)
-        })
+            .then((result) => {
+                resolve(result)
+            })
+            .catch((err) => {
+                reject(err)
+            })
 
     })
 }
 
-export const getProductionByProduct = (productId,orgId) => {
+export const getProductionByProduct = (productId, orgId) => {
     return new Promise((resolve, reject) => {
         orgModel.aggregate(
             [
                 {
-                    "$match":{
-                        "_id":new mongoose.Types.ObjectId(orgId)
+                    "$match": {
+                        "_id": new mongoose.Types.ObjectId(orgId)
                     }
                 },
                 {
-                    "$project":{
-                        "containers.production":true
+                    "$project": {
+                        "containers.production": true
                     }
                 },
             ]
         )
-        .then((organization) => {
-            const production = []
-            
-            organization[0].containers.forEach((container) => {
-                const filteredProduction = container.production.filter((production) => new mongoose.Types.ObjectId(productId).equals(production.ProductID))
+            .then((organization) => {
+                const production = []
 
-                filteredProduction.forEach((prod) => production.push(prod))
+                organization[0].containers.forEach((container) => {
+                    const filteredProduction = container.production.filter((production) => new mongoose.Types.ObjectId(productId).equals(production.ProductID))
+
+                    filteredProduction.forEach((prod) => production.push(prod))
+                })
+
+                resolve(production)
             })
-
-            resolve(production)
-        })
-        .catch(err => {
-            reject(err)
-        })
+            .catch(err => {
+                reject(err)
+            })
     })
 }
 
 
 export const upsertProduction = (productionArray, orgId) => {
-    const updateAllElements = productionArray.map(async(productionModel) => {
+    const updateAllElements = productionArray.map(async (productionModel) => {
         console.log(productionModel)
         const update = await orgModel.updateOne(
             {
                 "_id": orgId,
             },
             {
-                "$set":{
-                    "containers.$[].production.$[pr]":productionModel
+                "$set": {
+                    "containers.$[].production.$[pr]": productionModel
                 }
             },
             {
-                arrayFilters:[{"pr._id":productionModel._id}],
+                arrayFilters: [{ "pr._id": productionModel._id }],
 
             }
         )
@@ -621,7 +646,7 @@ export const upsertProduction = (productionArray, orgId) => {
         console.log(update)
         return update
     })
-    
+
     return Promise.all(updateAllElements)
 }
 
@@ -636,55 +661,55 @@ export const createSingleProductionModelProduct = (orgId, containerId, productio
             },
             { new: true }
         )
-        .exec()
-        .then((org) => {
-            if (org) {
-                resolve(org);
-            } else {
-                reject(new Error(JSON.stringify({ message: "Organization or container not found", status: 404 })));
-            }
-        })
-        .catch((err) => {
-            reject(new Error(JSON.stringify({ message: "Error updating production", status: 500, processError: err })));
-        });
+            .exec()
+            .then((org) => {
+                if (org) {
+                    resolve(org);
+                } else {
+                    reject(new Error(JSON.stringify({ message: "Organization or container not found", status: 404 })));
+                }
+            })
+            .catch((err) => {
+                reject(new Error(JSON.stringify({ message: "Error updating production", status: 500, processError: err })));
+            });
     });
 };
 
 export const updateSingleProductionModelProduct = (orgId, containerId, productionData) => {
     return new Promise((resolve, reject) => {
         orgModel.findOneAndUpdate(
-        {
-            _id: orgId,
-            "containers._id": containerId,
-            "containers.production._id": productionData._id
-        },
-        {
-            $set: {
-            "containers.$[container].production.$[production]": productionData
+            {
+                _id: orgId,
+                "containers._id": containerId,
+                "containers.production._id": productionData._id
+            },
+            {
+                $set: {
+                    "containers.$[container].production.$[production]": productionData
+                }
+            },
+            {
+                arrayFilters: [
+                    { "container._id": containerId },
+                    { "production._id": productionData._id }
+                ],
+                new: true
             }
-        },
-        {
-            arrayFilters: [
-            { "container._id": containerId },
-            { "production._id": productionData._id }
-            ],
-            new: true
-        }
         )
-        .exec()
-        .then((org) => {
-            if (org) {
-            resolve(org);
-            } else {
-            reject(new Error(JSON.stringify({ message: "Organization, container, or production not found", status: 404 })));
-            }
-        })
-        .catch((err) => {
-            reject(new Error(JSON.stringify({ message: "Error updating production", status: 500, processError: err })));
-        });
+            .exec()
+            .then((org) => {
+                if (org) {
+                    resolve(org);
+                } else {
+                    reject(new Error(JSON.stringify({ message: "Organization, container, or production not found", status: 404 })));
+                }
+            })
+            .catch((err) => {
+                reject(new Error(JSON.stringify({ message: "Error updating production", status: 500, processError: err })));
+            });
     });
 };
-  
+
 export const deleteSingleProductionModelProduct = (orgId, containerId, productionId) => {
     return new Promise((resolve, reject) => {
         orgModel.findOneAndUpdate(
@@ -699,12 +724,12 @@ export const deleteSingleProductionModelProduct = (orgId, containerId, productio
             .then((org) => {
                 if (org) {
                     resolve(org);
-                    } else {
-                        reject(new Error(JSON.stringify({ message: "Organization, container, or production model(s) not found", status: 404 })));
-                    }
-                })
+                } else {
+                    reject(new Error(JSON.stringify({ message: "Organization, container, or production model(s) not found", status: 404 })));
+                }
+            })
             .catch((err) => {
                 reject(new Error(JSON.stringify({ message: "Error deleting product of production", status: 500, processError: err })));
             });
-    });    
+    });
 }

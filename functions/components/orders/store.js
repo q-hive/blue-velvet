@@ -22,7 +22,7 @@ import {
   scheduleProduction,
   setOrderAbonment,
 } from './controller.js';
-import { getProductionInContainer } from '../production/store.js';
+import { getProductionByOrderId } from '../production/store.js';
 import { getContainerById, getContainers } from '../container/store.js';
 import moment from 'moment';
 
@@ -435,7 +435,7 @@ export const insertOrderAndProduction = async (organization, order, allProducts,
   }
 }
 
-export const createNewOrder = async (orgId, order, query) => {
+export const createNewOrder = async (orgId, containerId, order, query) => {
   try {
     const interationsToProjectOrder = 3;
     
@@ -460,6 +460,20 @@ export const createNewOrder = async (orgId, order, query) => {
     // Convert the order date to a moment object in the user's timezone
     const deliveryDate = moment.utc(order.date).tz(query.tz);
 
+    // Find parameters of the product
+    const productParams = (allProducts, actualProduct) => {
+      if (actualProduct.mix.isMix) {
+        const allParameters = actualProduct.mix.products.map((prod) => {
+          const dbProduct = allProducts.find((product) =>
+            product._id.equals(prod.strain)
+          );
+          return dbProduct.parameters;
+        })
+        return allParameters
+      }
+      return actualProduct.parameters
+    }
+
     // Map the products in the order to the full product data from the database
     const mappedProducts = order.products.map((prod) => {
       const dbProduct = allProducts.find((product) =>
@@ -474,7 +488,7 @@ export const createNewOrder = async (orgId, order, query) => {
         packages: prod.packages,
         mix: dbProduct.mix.isMix,
         price: dbProduct.price,
-        parameters: dbProduct.parameters,
+        parameters: productParams(allProducts, dbProduct),
       };
 
       // If the product is a mix, add the mix status
@@ -506,14 +520,14 @@ export const createNewOrder = async (orgId, order, query) => {
         packages: prod.packages,
         mix: dbProduct.mix.isMix,
         price: dbProduct.price,
-        parameters: dbProduct.parameters,
+        parameters: productParams(allProducts, dbProduct),
       };
 
       // If the product is a mix, add the mix status
       if (dbProduct.mix.isMix) {
         return {
           ...orderProduct,
-          status: prod.status.name,
+          status: prod.status,
           mixStatuses: prod.mixStatuses,
         };
       }
@@ -546,7 +560,8 @@ export const createNewOrder = async (orgId, order, query) => {
     
       if(!order.cyclic){
         await insertOrderAndProduction(organization, orderMapped, allProducts, query.tz)
-        return orderMapped
+
+        return getFeedbackOfProduction(orgId, containerId, orderMapped._id)
       }
 
       if(order.cyclic){
@@ -566,10 +581,10 @@ export const createNewOrder = async (orgId, order, query) => {
         };
 
         orderMapped.next = tempId
-        await insertOrderAndProduction(organization, orderMapped, allProducts, query.tz)
+        await insertOrderAndProduction(organization, orderMapped, cloneArray(allProducts), query.tz)
         await insertOrderAndProduction(organization, tempOrder, allProducts, query.tz)
 
-        return orderMapped
+        return getFeedbackOfProduction(orgId, containerId, orderMapped._id)
       }
       
       throw new Error("Unrecognized configuration of order");
@@ -579,6 +594,43 @@ export const createNewOrder = async (orgId, order, query) => {
     throw err;
   }
 };
+
+const cloneArray = (arrayData) => {
+  return arrayData.map((data) => {
+    if (typeof(data) === 'object'){
+      console.log("Es objeto", data);
+      const newData = JSON.parse(JSON.stringify(data))
+      if(data._id){
+        newData._id = new ObjectId(data._id)
+      }
+      return newData
+    }
+    if (Array.isArray(data)) {
+      console.log("Es array",data);
+      return cloneArray(data)
+    }
+    console.log("Ninguno", data);
+    return data
+  });
+}
+
+const getFeedbackOfProduction = async (orgId, containerId, orderId) => {
+  try {
+    const productionModels = await getProductionByOrderId(orgId, containerId, orderId);
+    const productionData = productionModels.map((prodMod) => {
+      return {
+        name: prodMod.ProductName,
+        startDate: prodMod.startProductionDate,
+        status: prodMod.ProductionStatus,
+      };
+    });
+    return productionData;
+  } catch (err) {
+    console.log(err);
+    throw new Error('Error getting production');
+  }
+};
+
 
 export const insertNewOrderWithProduction = async (
   orgId,
