@@ -1,11 +1,11 @@
-import {mongoose} from '../../mongo.js'
+import { mongoose } from '../../mongo.js'
 import Organization from '../../models/organization.js'
 
 import { getMongoQueryByObject } from '../../utils/getMongoQuery.js'
 
 import { updateOrder } from '../orders/store.js'
 import { getProductById, updateProduct } from '../products/store.js'
-import { getProductionInContainer } from '../production/store.js'
+import { getProductionInContainerByCurrentDate } from '../production/store.js'
 
 import { getAllProducts } from '../products/store.js'
 
@@ -23,19 +23,19 @@ export const setPerformance = (orgId, id, array) => {
     return new Promise((resolve, reject) => {
         const queries = array.map(async (queryConfig) => {
             const dbOp = await orgModel.updateOne(
-                {_id:mongoose.Types.ObjectId(orgId), "employees._id":mongoose.Types.ObjectId(id)},
-                {"$set":{[`employees.$.performance.${Object.keys(queryConfig)[1]}`]:Object.entries(queryConfig)[1][1]}}
+                { _id: mongoose.Types.ObjectId(orgId), "employees._id": mongoose.Types.ObjectId(id) },
+                { "$set": { [`employees.$.performance.${Object.keys(queryConfig)[1]}`]: Object.entries(queryConfig)[1][1] } }
             )
 
             return dbOp
         })
         Promise.all(queries)
-        .then(results => {
-            resolve(results)
-        })
-        .catch(err => {
-            reject(err)
-        })
+            .then(results => {
+                resolve(results)
+            })
+            .catch(err => {
+                reject(err)
+            })
     })
 }
 
@@ -45,14 +45,15 @@ export const updatePerformance = (orgId, id, array) => {
 
         const queries = array.map(async (queryConfig) => {
             console.log(`${getMongoQueryByObject(queryConfig)} employees.$.performance.${Object.keys(queryConfig)[1]}: ${typeof Object.entries(queryConfig)[1][1]}`)
-            
+
             const dbOp = await orgModel.updateOne(
                 {
-                    "_id":mongoose.Types.ObjectId(orgId), 
-                    "employees._id":mongoose.Types.ObjectId(id)},
+                    "_id": mongoose.Types.ObjectId(orgId),
+                    "employees._id": mongoose.Types.ObjectId(id)
+                },
                 {
                     [`${getMongoQueryByObject(queryConfig)}`]: {
-                        [`employees.$.performance.${Object.keys(queryConfig)[1]}`]:Object.entries(queryConfig)[1][1],
+                        [`employees.$.performance.${Object.keys(queryConfig)[1]}`]: Object.entries(queryConfig)[1][1],
                     }
                 }
             )
@@ -61,22 +62,22 @@ export const updatePerformance = (orgId, id, array) => {
         })
 
         Promise.all(queries)
-        .then(results => {
-            resolve(results)
-        })
-        .catch(err => {
-            reject(err)
-        })
+            .then(results => {
+                resolve(results)
+            })
+            .catch(err => {
+                reject(err)
+            })
     })
 }
 
 export const updateWorkDayForEmployee = (req, res, isTask, paramOfTask = undefined) => {
     return new Promise(async (resolve, reject) => {
-        if(isTask){
+        if (isTask) {
             console.log("Task will be updated in employee workday")
-            await updatePerformance(res.locals.organization, req.body.executedBy, [{query:"set", allocationRatio:1}])
+            await updatePerformance(res.locals.organization, req.body.executedBy, [{ query: "set", allocationRatio: 1 }])
 
-            const result = await updateEmployee(res.locals.organization,req.body.executedBy,{"workDayTask":{"type":req.body.taskType,"value":{[paramOfTask]:req.body[paramOfTask]}}})
+            const result = await updateEmployee(res.locals.organization, req.body.executedBy, { "workDayTask": { "type": req.body.taskType, "value": { [paramOfTask]: req.body[paramOfTask] } } })
             resolve(result)
             return
         }
@@ -84,37 +85,37 @@ export const updateWorkDayForEmployee = (req, res, isTask, paramOfTask = undefin
         req.query.containerId = req.params.containerId
         let production = {}
         let productionAnalytics = {}
-        if(req.query.delete === undefined){
+        if (req.query.delete === undefined) {
             production = await getProductionWorkByContainerId(req, res, "employee")
 
             productionAnalytics = grouPProductionForAnalytics("tasks", production, "hash")
         }
 
         try {
-           const result =  await updateEmployee(res.locals.organization,req.params.employeeId,{"workDay":productionAnalytics})
-           console.log(result)
-           
+            const result = await updateEmployee(res.locals.organization, req.params.employeeId, { "workDay": productionAnalytics })
+            console.log(result)
+
         } catch (err) {
             reject(err)
         }
-        
+
         resolve("Updated")
     })
 }
 
 export const statusRequiredParameters = () => {
     return {
-        "preSoaking":   "trays",
-        "seeding":      "trays",
-        "growing":      "trays",
+        "preSoaking": "trays",
+        "seeding": "trays",
+        "growing": "trays",
         "harvestReady": "trays",
-        "ready":        "trays",
-        "packing":      "trays"
+        "ready": "trays",
+        "packing": "trays"
     }
 }
-export const calculateTimeEstimation = async (totalProduction, isGroupped = false, allData=false, orgId=undefined) => {
+export const calculateTimeEstimation = async (totalProduction, isGroupped = false, allData = false, orgId = undefined) => {
 
-    const dbProducts =  await getAllProducts(orgId)        
+    const dbProducts = await getAllProducts(orgId)
 
     // Obtencion de todos los tiempos para produccion
     const getAllProductionInAllStatuses = (productionModels) => {
@@ -123,11 +124,11 @@ export const calculateTimeEstimation = async (totalProduction, isGroupped = fals
         productionModels.forEach(productionModel => {
 
             if (productionModel.ProductionStatus === "delivered") return;
-                    
+
             const productFind = dbProducts.find(dbProd => dbProd._id.toString() === productionModel.ProductID.toString())
             const isLongCycle = productFind && (productFind.parameters.day + productFind.parameters.night) > 10;
-            
-            if (productionModel.ProductionStatus === "seeding" || productionModel.ProductionStatus === "preSoaking"){
+
+            if (productionModel.ProductionStatus === "seeding" || productionModel.ProductionStatus === "preSoaking") {
                 productionInAllStatuses.push(productionModel)
             } else {
                 productionStatuses.forEach(status => {
@@ -138,7 +139,7 @@ export const calculateTimeEstimation = async (totalProduction, isGroupped = fals
                     productionInAllStatuses.push(newProductionModel);
                 });
             }
-    
+
         })
 
         return productionInAllStatuses
@@ -146,41 +147,41 @@ export const calculateTimeEstimation = async (totalProduction, isGroupped = fals
 
     //*TIMES PER TRAY in minutes
     const estimatedTimes = {
-        "preSoaking":   5,
-        "seeding":      2.2,
-        "growing":      0,
+        "preSoaking": 5,
+        "seeding": 2.2,
+        "growing": 0,
         "harvestReady": 2,
-        "ready":        3,
-        "packing":      2,
-        "delivery":     3
+        "ready": 3,
+        "packing": 2,
+        "delivery": 3
     }
 
     let productionGroupedByStatus
-    if(isGroupped) {
-        productionGroupedByStatus = totalProduction    
+    if (isGroupped) {
+        productionGroupedByStatus = totalProduction
     } else {
-        productionGroupedByStatus = grouPProductionForWorkDay("status",allData ? getAllProductionInAllStatuses(totalProduction) : totalProduction, "array", false, false)
+        productionGroupedByStatus = grouPProductionForWorkDay("status", allData ? getAllProductionInAllStatuses(totalProduction) : totalProduction, "array", false, false)
     }
 
     const parametersByStatus = statusRequiredParameters()
-    
-    
+
+
     const totals = productionGroupedByStatus.map((productionModel) => {
         const total = productionModel[Object.keys(productionModel)[0]].reduce((previous, current) => {
 
             const previousRequiredParameterTotal = previous[parametersByStatus[Object.keys(productionModel)[0]]]
             const currentRequiredParameterTotal = current[parametersByStatus[Object.keys(productionModel)[0]]]
-            
-            return {[parametersByStatus[Object.keys(productionModel)[0]]]:previousRequiredParameterTotal + currentRequiredParameterTotal}
-        },{
-            [parametersByStatus[Object.keys(productionModel)[0]]]:0,
+
+            return { [parametersByStatus[Object.keys(productionModel)[0]]]: previousRequiredParameterTotal + currentRequiredParameterTotal }
+        }, {
+            [parametersByStatus[Object.keys(productionModel)[0]]]: 0,
         })
 
         console.log(total)
-        return {[`${Object.keys(productionModel)[0]}`]:{"minutes":Number((((total[parametersByStatus[Object.keys(productionModel)[0]]]*estimatedTimes[Object.keys(productionModel)[0]])*60)*1000).toFixed(2))}} 
+        return { [`${Object.keys(productionModel)[0]}`]: { "minutes": Number((((total[parametersByStatus[Object.keys(productionModel)[0]]] * estimatedTimes[Object.keys(productionModel)[0]]) * 60) * 1000).toFixed(2)) } }
     })
 
-    
+
     return totals
 }
 
@@ -193,7 +194,7 @@ const insertOrdersInProduction = (production, orders) => {
     })
 
     let mappedMatchedOrders = prodMatchedOrders.forEach((matchedOrder) => {
-        production.orders.push(matchedOrder._id)    
+        production.orders.push(matchedOrder._id)
     })
 
     return production
@@ -201,63 +202,63 @@ const insertOrdersInProduction = (production, orders) => {
 
 export const getWorkTimeByEmployee = (req, res) => {
     return new Promise((resolve, reject) => {
-        getProductionInContainer(res.locals.organization,req.query.containerId)
-        .then(async (production) => {
-            const totalEstimations = calculateTimeEstimation(production,false,true,res.locals.organization)
-            
-            resolve(totalEstimations)
-        })
-        .catch((err) => {
-            reject(err)
-        })
+        getProductionInContainerByCurrentDate(res.locals.organization, req.query.containerId, req.query.tz)
+            .then(async (production) => {
+                const totalEstimations = calculateTimeEstimation(production, false, true, res.locals.organization)
+
+                resolve(totalEstimations)
+            })
+            .catch((err) => {
+                reject(err)
+            })
     })
 }
 
-export const getProductionWorkById = (req,res) => {
+export const getProductionWorkById = (req, res) => {
     return new Promise((resolve, reject) => {
         getProductionTotal(req, res)
-        .then(production => {
-            resolve(production)
-        })
-        .catch((err) => {
-            console.log(err)
-            reject(err)
-        })
+            .then(production => {
+                resolve(production)
+            })
+            .catch((err) => {
+                console.log(err)
+                reject(err)
+            })
     })
 }
 
-export const parseProduction = (req,res,work) => {
+export const parseProduction = (req, res, work) => {
     return new Promise((resolve, reject) => {
         const asyncMapWork = work.map(async (totalWork) => {
-            const productData = await getProductById(res.locals.organization,req.query.container, totalWork.prodId)
+            const productData = await getProductById(res.locals.organization, req.query.container, totalWork.prodId)
             const newProductModel = {
-                "trays":    totalWork.trays,
-                "harvest":  totalWork.harvest,
-                "seeds":    totalWork.seeds,
-                "name":     productData.name,
-                "status":   productData.status,
-                "mix":      productData.mix.isMix,
-                "prodId":   totalWork.prodId,
-                "orders":   totalWork.orders
+                "trays": totalWork.trays,
+                "harvest": totalWork.harvest,
+                "seeds": totalWork.seeds,
+                "name": productData.name,
+                "status": productData.status,
+                "mix": productData.mix.isMix,
+                "prodId": totalWork.prodId,
+                "orders": totalWork.orders
             }
-            return { 
+            return {
                 productData: newProductModel
             }
-            
-        }) 
+
+        })
         Promise.all(asyncMapWork)
-        .then((mappedWork) => {
-            let finalModel = {
-                production: {
-                   products: mappedWork
+            .then((mappedWork) => {
+                let finalModel = {
+                    production: {
+                        products: mappedWork
+                    }
                 }
-            }
-            
-            resolve(finalModel)
-        })
-        .catch(err => {
-            reject(err)
-        })
+
+                resolve(finalModel)
+            })
+            .catch(err => {
+                reject(err)
+            })
     })
 }
 
@@ -271,15 +272,15 @@ export const buildTaskFromProductionAccumulated = (taskName, production) => {
     })
 
     const allModelsIds = production.flatMap((productionModel) => {
-        return productionModel?.modelsId 
+        return productionModel?.modelsId
     })
 
-    
+
     let task = {
         [taskName]: {
-            expectedTime:time[taskName].minutes,
-            modelsIds:allModelsIds,
-            achievedTime:0 
+            expectedTime: time[taskName].minutes,
+            modelsIds: allModelsIds,
+            achievedTime: 0
         }
     }
 
@@ -291,18 +292,18 @@ export const buildTaskFromProductionAccumulated = (taskName, production) => {
 }
 
 export const updateOrgTasksHistory = (orgId, taskModel) => {
-    return new Promise( async (resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         let mappedTaskModel
-            
+
         try {
 
             mappedTaskModel = {
-                executedBy:    mongoose.Types.ObjectId(taskModel.executedBy),
-                expectedTime:  Number(taskModel.expectedTime),
-                achievedTime:  Number(taskModel.achievedTime),    
-                orders:        taskModel.orders.map((orderId) => mongoose.Types.ObjectId(orderId)),
-                taskType:      taskModel.taskType,
-                workDay:       taskModel.workDay
+                executedBy: mongoose.Types.ObjectId(taskModel.executedBy),
+                expectedTime: Number(taskModel.expectedTime),
+                achievedTime: Number(taskModel.achievedTime),
+                orders: taskModel.orders.map((orderId) => mongoose.Types.ObjectId(orderId)),
+                taskType: taskModel.taskType,
+                workDay: taskModel.workDay
             }
 
             // const mongooseTaskModel = mongoose.model('task', mappedTaskModel)
@@ -314,9 +315,9 @@ export const updateOrgTasksHistory = (orgId, taskModel) => {
                     "$push": {
                         "tasksHistory": mappedTaskModel
                     }
-                }, 
+                },
                 {
-                    "upsert":true,
+                    "upsert": true,
                 }
             ).exec()
 
@@ -328,12 +329,12 @@ export const updateOrgTasksHistory = (orgId, taskModel) => {
 }
 
 export const deliveryOneOrderAndProductionModels = (organization, containerId, orderId, tz, uid) => {
-    return new Promise( async (resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         try {
             const productionModels = await getAllProductionByOrderId(organization, containerId, orderId);
             const productionModelsIds = productionModels.map(productionModel => productionModel._id.toString());
             if (productionModelsIds.length === 0) reject("No production models found for this order");
-                
+
             const orderDelivered = await updateProductionToNextStatus(
                 organization,
                 containerId,
@@ -349,4 +350,3 @@ export const deliveryOneOrderAndProductionModels = (organization, containerId, o
         }
     });
 };
-  

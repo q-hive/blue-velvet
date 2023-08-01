@@ -6,7 +6,6 @@ import ordersRouter from '../components/orders/network.js'
 import tasksRouter from '../components/tasks/network.js'
 import organizationRouter from '../components/organization/network.js'
 import productionRouter from '../components/production/network.js'
-import schedulerRouter from '../components/scheduler/network.js'
 import passphraseRouter from '../components/passphrase/network.js'
 import customersRouter from '../components/customer/network.js'
 import filesRouter from '../components/files/network.js'
@@ -42,7 +41,7 @@ export const containerRoutes = (app) => {
 }
 export const productsRoutes = (app) => {
     const authorized = ["admin"]
-    app.use(`${apiV1}/products`, isAuthenticated, isAuthorized(authorized),productsRouter)
+    app.use(`${apiV1}/products`, isAuthenticated, isAuthorized(authorized), productsRouter)
 }
 export const ordersRoutes = (app) => {
     const authorized = ["admin"]
@@ -63,15 +62,11 @@ export const workRoutes = (app) => {
 }
 export const productionRoutes = (app) => {
     const authorized = ["admin", "employee"]
-    app.use(`${apiV1}/production`,  isAuthenticated, isAuthorized(authorized), productionRouter)
-}
-export const schedulerRoutes = (app) => {
-    const authorized = ["admin", "employee"]
-    app.use(`${apiV1}/scheduler`,  isAuthenticated, isAuthorized(authorized), schedulerRouter)
+    app.use(`${apiV1}/production`, isAuthenticated, isAuthorized(authorized), productionRouter)
 }
 export const deliveryRoutes = (app) => {
     const authorized = ["admin", "employee"]
-    app.use(`${apiV1}/delivery`,  isAuthenticated, isAuthorized(authorized), deliveryRouter)
+    app.use(`${apiV1}/delivery`, isAuthenticated, isAuthorized(authorized), deliveryRouter)
 }
 export const adminRoutes = (app) => {
     const authorized = ["superadmin", "admin"]
@@ -97,8 +92,8 @@ export const passphraseRoutes = (app) => {
     app.use(`${apiV1}/passphrase`, passphraseRouter)
 }
 
-export const filesApi = (app) =>  {
+export const filesApi = (app) => {
     const authorized = ["admin"]
-    
-    app.use(`${apiV1}/files`, isAuthenticated, isAuthorized(authorized),filesRouter)
+
+    app.use(`${apiV1}/files`, isAuthenticated, isAuthorized(authorized), filesRouter)
 }
