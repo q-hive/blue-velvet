@@ -458,7 +458,7 @@ export const createNewOrder = async (orgId, containerId, order, query) => {
     }
     
     // Convert the order date to a moment object in the user's timezone
-    const deliveryDate = moment.utc(order.date).tz(query.tz);
+    const deliveryDate = moment(order.date).utc().startOf('day');
 
     // Find parameters of the product
     const productParams = (allProducts, actualProduct) => {
@@ -617,7 +617,9 @@ const cloneArray = (arrayData) => {
 const getFeedbackOfProduction = async (orgId, containerId, orderId) => {
   try {
     const productionModels = await getProductionByOrderId(orgId, containerId, orderId);
-    const productionData = productionModels.map((prodMod) => {
+    console.log("[PRODUCTION SCHEDULED]")
+    const productionData = productionModels.map((prodMod,index) => {
+      console.log(`[${index}] -> "${prodMod.ProductName}" to "${prodMod.startProductionDate.toUTCString()}" on status: "${prodMod.ProductionStatus}"`)
       return {
         name: prodMod.ProductName,
         startDate: prodMod.startProductionDate,

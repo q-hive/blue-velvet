@@ -495,7 +495,11 @@ const scheduler = async (todayDate, scheduleDate, orgId, productionData, orderDa
     throw new Error("Cannot schedule production for a date in the past.");
   }
 
-  productionData.startProductionDate = scheduleDate.startOf('day').toDate();
+  const startDate = new Date(scheduleDate.utc().startOf('day'));
+  productionData.startProductionDate = startDate
+  const activeStatus = ['harvestReady', 'packing', 'ready']
+  productionData.startHarvestDate = activeStatus.includes(productionData.ProductionStatus) ? startDate : null;
+
   await insertProduction(orgId, productionData);
   await modifyOrder(orgId, orderData);
 }
@@ -613,8 +617,8 @@ const scheduleIndividualProduction = async (orgId, production, order, products, 
     // console.log("Product found:", product);
 
     // Convert delivery date to Date object for comparison (COMES IN THE USER TIMEZONE)
-    const today = moment(); //moment("2023-07-18T13:04:09-06:00")
-    const deliveryDate = order.date.clone()
+    const today = moment().utc().startOf('day');
+    const deliveryDate = order.date.clone().startOf('day')
     const serverTz = moment.tz.guess();
     const closestDateToDeliveryDadte = getClosestWorkableDay(deliveryDate, today).startOf("day")
     const startProductionDate = closestDateToDeliveryDadte.clone().subtract(product.parameters.day + product.parameters.night, "days").startOf("day");
@@ -623,10 +627,10 @@ const scheduleIndividualProduction = async (orgId, production, order, products, 
     if (!product.mix.isMix) {
       // Calculate the start production date
       console.log("/////////////");
-      console.log("🚀 [today]:", moment(today).format("ddd, DD-MM-YYYY"))
-      console.log("🚀 [deliveryDate]:", moment(deliveryDate).format("ddd, DD-MM-YYYY"))
-      console.log("🚀 [closestDateToDeliveryDadte]:", moment(closestDateToDeliveryDadte).format("ddd, DD-MM-YYYY"))
-      console.log("🚀 [startProductionDate]:", moment(startProductionDate).format("ddd, DD-MM-YYYY"))
+      console.log("🚀 [today]:", moment(today))
+      console.log("🚀 [deliveryDate]:", moment(deliveryDate))
+      console.log("🚀 [closestDateToDeliveryDadte]:", moment(closestDateToDeliveryDadte))
+      console.log("🚀 [startProductionDate]:", moment(startProductionDate))
       console.log("/////////////");
 
 
@@ -696,17 +700,18 @@ const scheduleIndividualProduction = async (orgId, production, order, products, 
       const scheduleDate = closestDateToDeliveryDadte.startOf("day")
       console.log("🚀 [scheduleDate]:", scheduleDate)
       const isafter = scheduleDate.isAfter(today)
-      // const diffDays = moment.duration(today.diff(scheduleDate)).asDays()
       const diffDays = moment.duration(scheduleDate.diff(today)).asDays()
 
       console.log("isafter---", isafter)
       console.log("diffDates---", diffDays)
       if ((isafter || isToday(scheduleDate, today)) && diffDays < (product.parameters.day + product.parameters.night)) {
+        console.log("🎈🎈🎈🎈🎈 OP 5.1");
         setToActiveStatus(production, order, "harvestReady")
         scheduler(today, scheduleDate, orgId, production, order)
         console.log(`Scheduled production for ${scheduleDate} (${serverTz}) for order ${order._id} and product ${product.name}. USER TIMEZONE: ${tz}`);
         return
       }
+      console.log("🎈🎈🎈🎈🎈 OP 5.2");
       scheduler(today, startProductionDate, orgId, production, order)
       console.log(`Scheduled production for ${startProductionDate} (${serverTz}) for order ${order._id} and product ${product.name}. USER TIMEZONE: ${tz}`);
       return;

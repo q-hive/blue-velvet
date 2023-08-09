@@ -5,7 +5,7 @@ import { getContainers, updateContainerById } from '../container/store.js'
 import { buildOrderFromExistingOrder } from '../orders/controller.js'
 import { getOrderById, insertNewOrderWithProduction, updateOrder, insertOrderAndProduction } from '../orders/store.js'
 import { getAllProducts } from '../products/store.js'
-import { buildProductionDataFromOrder, grouPProductionForWorkDay, scheduleTask } from './controller.js'
+import { buildProductionDataFromOrder, grouPProductionForWorkDay, updateStartHarvestDate } from './controller.js'
 import { getOrganizationById } from '../organization/store.js'
 import moment from 'moment'
 import { getInitialStatus } from './controller.js'
@@ -90,7 +90,7 @@ export const productionCycleObject = {
 
 
 export const getProductionInContainerByCurrentDate = async (orgId, containerId, tz) => {
-    const currentDate = moment().tz(tz).format('YYYY-MM-DD');
+    const currentDate = moment().utc().startOf('day').format('YYYY-MM-DD');
 
     return new Promise((resolve, reject) => {
         orgModel.aggregate([
@@ -116,7 +116,7 @@ export const getProductionInContainerByCurrentDate = async (orgId, containerId, 
                   '$dateToString': {
                     'format': '%Y-%m-%d', 
                     'date': '$containers.production.startProductionDate', 
-                    'timezone': tz
+                    // 'timezone': tz
                   }
                 }
               }
@@ -165,7 +165,7 @@ export const insertWorkDayProductionModel = (orgId, container, productionModel) 
 }
 
 export const startBackGroundTask = (config) => {
-    scheduleTask(config)
+    updateStartHarvestDate(config)
     return
 }
 
@@ -246,6 +246,13 @@ export const updateProduction = async (orgId, container, id, modifiedModels, sta
         const productionStatus = newmodel.ProductionStatus
         console.log("Production model updating to ->", productionStatus)
 
+        if (productionCycleObject[productionStatus]?.hasBackGroundTask) {
+            console.log("The production status " + productionStatus + " has a background task")
+            const startHarvestDate = await updateStartHarvestDate({ organization: orgId, container, production: newmodel, name: "updateForProduction", userUID })
+            newmodel.startHarvestDate = startHarvestDate
+            console.log(`The estimated harvest day for product "${newmodel.ProductName}" is ${startHarvestDate.toUTCString()}` )
+        }
+
         const op = await orgModel.updateOne(
             {
                 "_id": mongoose.Types.ObjectId(orgId),
@@ -270,10 +277,6 @@ export const updateProduction = async (orgId, container, id, modifiedModels, sta
             }
         )
 
-        if (productionCycleObject[productionStatus]?.hasBackGroundTask) {
-            console.log("The production status " + productionStatus + " has a background task")
-            await scheduleTask({ organization: orgId, container, production: newmodel, name: "updateForProduction" })
-        }
 
         if (productionCycleObject[productionStatus]?.affectsCapacity.affect) {
             let trays = newmodel.trays
