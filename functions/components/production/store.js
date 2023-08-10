@@ -90,7 +90,7 @@ export const productionCycleObject = {
 
 
 export const getProductionInContainerByCurrentDate = async (orgId, containerId, tz) => {
-    const currentDate = moment().utc().startOf('day').format('YYYY-MM-DD');
+    const currentDate = moment().tz(tz).startOf('day').format('YYYY-MM-DD');
 
     return new Promise((resolve, reject) => {
         orgModel.aggregate([
@@ -116,15 +116,23 @@ export const getProductionInContainerByCurrentDate = async (orgId, containerId, 
                   '$dateToString': {
                     'format': '%Y-%m-%d', 
                     'date': '$containers.production.startProductionDate', 
-                    // 'timezone': tz
+                    'timezone': tz
+                  }
+                },
+                'startHarvestDateString': {
+                  '$dateToString': {
+                    'format': '%Y-%m-%d', 
+                    'date': '$containers.production.startHarvestDate', 
+                    'timezone': tz
                   }
                 }
               }
             }, {
               '$match': {
-                'startProductionDateString': {
-                  '$eq': currentDate
-                }
+                '$or': [
+                  { 'startProductionDateString': { '$eq': currentDate } },
+                  { 'startHarvestDateString': { '$eq': currentDate } }
+                ]
               }
             }, {
               '$replaceRoot': {
@@ -238,7 +246,7 @@ export const updateOrdersInModels = async (updatedModels, orgId, container) => {
 
 }
 
-export const updateProduction = async (orgId, container, id, modifiedModels, statuses, userUID) => {
+export const updateProduction = async (orgId, container, id, modifiedModels, statuses, userUID, tz) => {
     //*CHANGED TO FOR OF LOOP TO MANAGE SCOP OF ORDERUPDATED VARIABLE (BUT ITS BLOCKING THE MAIN THREAD)
     const updateOperation = modifiedModels.map(async (newmodel) => {
         console.log("Updating production model")
@@ -248,9 +256,9 @@ export const updateProduction = async (orgId, container, id, modifiedModels, sta
 
         if (productionCycleObject[productionStatus]?.hasBackGroundTask) {
             console.log("The production status " + productionStatus + " has a background task")
-            const startHarvestDate = await updateStartHarvestDate({ organization: orgId, container, production: newmodel, name: "updateForProduction", userUID })
+            const startHarvestDate = await updateStartHarvestDate({ organization: orgId, container, production: newmodel, name: "updateForProduction", userUID, tz })
             newmodel.startHarvestDate = startHarvestDate
-            console.log(`The estimated harvest day for product "${newmodel.ProductName}" is ${startHarvestDate.toUTCString()}` )
+            console.log(`The estimated harvest day for product "${newmodel.ProductName}" is ${startHarvestDate.toISOString()}` )
         }
 
         const op = await orgModel.updateOne(
@@ -429,7 +437,7 @@ export const updateManyProductionModels = (orgId, container, productionModelsIds
         ])
         let allStatuses = allProductionStatus.length > 0 ? Array.from(new Set(allProductionStatus[0].productionStatus)).filter((element) => element != undefined) : allProductionStatus
         try {
-            const updateProd = await updateProduction(orgId, container, null, modifiedModels, allStatuses, userUID)
+            const updateProd = await updateProduction(orgId, container, null, modifiedModels, allStatuses, userUID, tz)
 
             if (modifiedModels.length > 0 && allStatuses.length === 1 && allStatuses[0] === "ready") {
                 console.log("Creating new order if its cyclic")

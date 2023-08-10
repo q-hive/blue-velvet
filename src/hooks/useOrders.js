@@ -1,9 +1,9 @@
 import { request } from "../utils/helpers/requestsHelper";
 
 const useOrders =  (headers) => {
-
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  
   const addOrder = async (orderData) => {
-    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     return await request('POST',`orders/?tz=${userTimeZone}`, headers, {data: orderData});
   };
 

@@ -23,7 +23,7 @@ import moment from "moment"
 
 
 export const updateStartHarvestDate = async (config) => {
-    const { production, organization, container } = config
+    const { production, organization, container, tz } = config
     let executeAt = "";
 
     switch (production.ProductionStatus) {
@@ -33,7 +33,7 @@ export const updateStartHarvestDate = async (config) => {
             break;
         case "growing":
             if ((organization !== undefined) && (container !== undefined)) {
-                executeAt = await getEstimatedHarvestDate(new Date(), production.ProductID, organization, container)
+                executeAt = await getEstimatedHarvestDate(new Date(), production.ProductID, organization, container, tz)
             }
             break;
     }
@@ -709,7 +709,7 @@ export const buildProductionDataFromOrder = async (order, dbproducts, overHeadPa
     return productionData
 }
 //*Estimate date to harvest the product if it is seeded today.
-export const getEstimatedHarvestDate = async (startDate, product, orgId, container) => {
+export const getEstimatedHarvestDate = async (startDate, product, orgId, container, tz) => {
     try {
         const productRef = mongoose.isObjectIdOrHexString(product)
             ? await getProductById(orgId, container, product)
@@ -718,8 +718,7 @@ export const getEstimatedHarvestDate = async (startDate, product, orgId, contain
         const { day: lightTime, night: darkTime } = productRef.parameters;
 
         const estimatedTime = startDate.getTime() + ((lightTime + darkTime) * 24 * 60 * 60 * 1000);
-        const estimatedDate = new Date(estimatedTime);
-        estimatedDate.setUTCHours(0, 0, 0, 0);
+        const estimatedDate = moment.tz(estimatedTime, tz).startOf('day');
        
         return estimatedDate
     } catch (err) {
