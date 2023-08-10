@@ -146,12 +146,35 @@ export const getProductionInContainerByCurrentDate = async (orgId, containerId, 
                     return
                 }
 
-                resolve(productionForToday)
-
+                const maturedGrowths = filterMaturedGrowthsProdModelsIds(productionForToday, tz)
+                if (maturedGrowths.length) {
+                    console.log("Actualizando de GROWING a HARVESTREADY...");
+                    updateManyProductionModels(orgId, containerId, maturedGrowths, 'growing', tz)
+                        .then((result) => {
+                            resolve(productionForToday)
+                        })
+                        .catch(err => {
+                            reject(err)
+                        })
+                }else{
+                    resolve(productionForToday)
+                }
             })
             .catch((err) => reject(err))
     })
 }
+
+const filterMaturedGrowthsProdModelsIds = (productionModels, tz) => {
+    const currentDateTime = moment().tz(tz);
+
+    return productionModels.filter((model) => {
+        if (model.ProductionStatus !== 'growing') return false;
+        if (!model.startHarvestDate || !moment(model.startHarvestDate).isValid()) return false;
+        const startHarvestDate = moment(model.startHarvestDate).tz(tz);
+
+        return currentDateTime >= startHarvestDate;
+    }).map((model) => model._id);
+};
 
 export const insertWorkDayProductionModel = (orgId, container, productionModel) => {
     return new Promise(async (resolve, reject) => {
@@ -284,7 +307,6 @@ export const updateProduction = async (orgId, container, id, modifiedModels, sta
                 "arrayFilters": [{ "prod._id": mongoose.Types.ObjectId(newmodel._id) }]
             }
         )
-
 
         if (productionCycleObject[productionStatus]?.affectsCapacity.affect) {
             let trays = newmodel.trays

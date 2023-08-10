@@ -459,22 +459,23 @@ export const getProductionWorkByContainerId = (req, res, criteria) => {
 
             const productionInContainer = await getProductionInContainerByCurrentDate(res.locals.organization, req.query.containerId, req.query.tz)
 
-            // Crea un modelo de produccion para cada status posible por producto 
+            // Create a production model for each possible status per product
             const productionStatuses = getPosibleStatusesForProduction()
             let productionInAllStatuses = []
 
             productionInContainer.forEach(productionModel => {
-                // Si tiene status delivered ya no deberia de estar en el workday
-                if (productionModel.ProductionStatus === "delivered") return;
+                // If it has delivered status, it should no longer be in the workday
+                if (productionModel.ProductionStatus === "delivered" ) return;
 
                 const dbProduct = products.find(dbProd => dbProd._id.toString() === productionModel.ProductID.toString())
                 const isLongCycle = dbProduct && (dbProduct.parameters.day + dbProduct.parameters.night) > 10;
 
-                if (productionModel.ProductionStatus === "seeding" || productionModel.ProductionStatus === "preSoaking") {
+                // If it is passive status, it is only shown once, if it is active status, the production model is shown in all active statuses
+                if (productionModel.ProductionStatus === "seeding" || productionModel.ProductionStatus === "preSoaking" || productionModel.ProductionStatus === "growing") {
                     productionInAllStatuses.push(productionModel)
                 } else {
                     productionStatuses.forEach(status => {
-                        // Validacion para productos que requieran PreSoaking
+                        // Validation for products that require PreSoaking
                         if (!isLongCycle && status === 'preSoaking') return;
                         if (status === 'seeding' || status === 'preSoaking') return;
                         let newProductionModel = JSON.parse(JSON.stringify(productionModel));
