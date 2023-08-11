@@ -22,49 +22,22 @@ import { getContainerById, updateContainerById } from "../container/store.js"
 import moment from "moment"
 
 
-export const getTaskByStatus = async (production, orgId = undefined, container = undefined) => {
-    let task = () => console.log("No task assigned")
-    let executeAt = new Date()
+export const updateStartHarvestDate = async (config) => {
+    const { production, organization, container, tz } = config
+    let executeAt = "";
+
     switch (production.ProductionStatus) {
         case "soaking1":
-            executeAt = new Date(Date.now() + (6 * 60 * 60 * 1000))
-            break;
         case "soaking2":
             executeAt = new Date(Date.now() + (6 * 60 * 60 * 1000))
             break;
         case "growing":
-            if ((orgId !== undefined) && (container !== undefined)) {
-                executeAt = await getEstimatedHarvestDate(new Date(), production.ProductID, orgId, container)
+            if ((organization !== undefined) && (container !== undefined)) {
+                executeAt = await getEstimatedHarvestDate(new Date(), production.ProductID, organization, container, tz)
             }
             break;
     }
-    task = updateManyProductionModels
-    return { task, executeAt }
-}
-
-export const scheduleTask = async (config) => {
-    const { task, executeAt } = await getTaskByStatus(config.production, config.organization, config.container)
-
-    config.task = task
-
-    if (process.env.NODE_ENV === "localhost") {
-        config.scheduleInDate = new Date(new Date().getTime() + (1 * 60 * 1000))
-    } else {
-        config.scheduleInDate = executeAt
-    }
-
-
-    nodeschedule.scheduleJob(config.scheduleInDate, async function () {
-        let result = ""
-        try {
-            result = await config.task(config.organization, config.container, [config.production._id], config.production.ProductionStatus, moment().tz.guess())
-        } catch (err) {
-            Promise.reject(err)
-        }
-
-        return result
-    })
-    console.log("A scheduled task must be executed at:" + config.scheduleInDate)
+    return executeAt
 }
 
 // export const setupGrowing = (workData) => {
@@ -486,22 +459,23 @@ export const getProductionWorkByContainerId = (req, res, criteria) => {
 
             const productionInContainer = await getProductionInContainerByCurrentDate(res.locals.organization, req.query.containerId, req.query.tz)
 
-            // Crea un modelo de produccion para cada status posible por producto 
+            // Create a production model for each possible status per product
             const productionStatuses = getPosibleStatusesForProduction()
             let productionInAllStatuses = []
 
             productionInContainer.forEach(productionModel => {
-                // Si tiene status delivered ya no deberia de estar en el workday
-                if (productionModel.ProductionStatus === "delivered") return;
+                // If it has delivered status, it should no longer be in the workday
+                if (productionModel.ProductionStatus === "delivered" ) return;
 
                 const dbProduct = products.find(dbProd => dbProd._id.toString() === productionModel.ProductID.toString())
                 const isLongCycle = dbProduct && (dbProduct.parameters.day + dbProduct.parameters.night) > 10;
 
-                if (productionModel.ProductionStatus === "seeding" || productionModel.ProductionStatus === "preSoaking") {
+                // If it is passive status, it is only shown once, if it is active status, the production model is shown in all active statuses
+                if (productionModel.ProductionStatus === "seeding" || productionModel.ProductionStatus === "preSoaking" || productionModel.ProductionStatus === "growing") {
                     productionInAllStatuses.push(productionModel)
                 } else {
                     productionStatuses.forEach(status => {
-                        // Validacion para productos que requieran PreSoaking
+                        // Validation for products that require PreSoaking
                         if (!isLongCycle && status === 'preSoaking') return;
                         if (status === 'seeding' || status === 'preSoaking') return;
                         let newProductionModel = JSON.parse(JSON.stringify(productionModel));
@@ -736,26 +710,20 @@ export const buildProductionDataFromOrder = async (order, dbproducts, overHeadPa
     return productionData
 }
 //*Estimate date to harvest the product if it is seeded today.
-export const getEstimatedHarvestDate = async (startDate, product, orgId, container) => {
+export const getEstimatedHarvestDate = async (startDate, product, orgId, container, tz) => {
     try {
-        let productRef = product
+        const productRef = mongoose.isObjectIdOrHexString(product)
+            ? await getProductById(orgId, container, product)
+            : product;
+        
+        const { day: lightTime, night: darkTime } = productRef.parameters;
 
-        if (mongoose.isObjectIdOrHexString(product)) {
-            const org = await getProductById(orgId, container, product)
-            productRef = org
-        }
-        const lightTime = productRef.parameters.day
-        const darkTime = productRef.parameters.night
-        // const estimatedProductionStartDate = new Date(orderDate).getTime() - (((((lightTime*24)*60)*60)*1000) + ((((darkTime*24)*60)*60)*1000))
-        // const estimatedTime = startDate.getTime() + (((((lightTime*24)*60)*60)*1000) + ((((darkTime*24)*60)*60)*1000))
-        const estimatedTime = startDate.getTime() + (24 * 60 * 60 * 1000)
-        const estimatedDate = new Date(estimatedTime)
-
-        estimatedDate.setHours(4, 0, 0)
-
+        const estimatedTime = startDate.getTime() + ((lightTime + darkTime) * 24 * 60 * 60 * 1000);
+        const estimatedDate = moment.tz(estimatedTime, tz).startOf('day');
+       
         return estimatedDate
     } catch (err) {
-        Promise.reject(err)
+        return Promise.reject(err)
     }
 }
 

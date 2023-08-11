@@ -435,10 +435,8 @@ export const insertOrderAndProduction = async (organization, order, allProducts,
   }
 }
 
-export const createNewOrder = async (orgId, containerId, order, query) => {
+export const createNewOrder = async (orgId, containerId, order, tz) => {
   try {
-    const interationsToProjectOrder = 3;
-    
     // Generate a new ID for the order
     const id = new ObjectId();
 
@@ -458,7 +456,7 @@ export const createNewOrder = async (orgId, containerId, order, query) => {
     }
     
     // Convert the order date to a moment object in the user's timezone
-    const deliveryDate = moment.utc(order.date).tz(query.tz);
+    const deliveryDate = moment(order.date).tz(tz).startOf('day');
 
     // Find parameters of the product
     const productParams = (allProducts, actualProduct) => {
@@ -559,7 +557,7 @@ export const createNewOrder = async (orgId, containerId, order, query) => {
     );
     
       if(!order.cyclic){
-        await insertOrderAndProduction(organization, orderMapped, allProducts, query.tz)
+        await insertOrderAndProduction(organization, orderMapped, allProducts, tz)
 
         return getFeedbackOfProduction(orgId, containerId, orderMapped._id)
       }
@@ -577,12 +575,12 @@ export const createNewOrder = async (orgId, containerId, order, query) => {
           products: secondProducts,
           cyclic: order.cyclic,
           status: orderStatuses.length === 1 ? orderStatuses[0] : 'production',
-          date: orderMapped.date.clone().date(orderMapped.date.date() + 7),
+          date: orderMapped.date.clone().date(orderMapped.date.date() + 7).tz(tz),
         };
 
         orderMapped.next = tempId
-        await insertOrderAndProduction(organization, orderMapped, cloneArray(allProducts), query.tz)
-        await insertOrderAndProduction(organization, tempOrder, allProducts, query.tz)
+        await insertOrderAndProduction(organization, orderMapped, cloneArray(allProducts), tz)
+        await insertOrderAndProduction(organization, tempOrder, allProducts, tz)
 
         return getFeedbackOfProduction(orgId, containerId, orderMapped._id)
       }
@@ -598,7 +596,6 @@ export const createNewOrder = async (orgId, containerId, order, query) => {
 const cloneArray = (arrayData) => {
   return arrayData.map((data) => {
     if (typeof(data) === 'object'){
-      console.log("Es objeto", data);
       const newData = JSON.parse(JSON.stringify(data))
       if(data._id){
         newData._id = new ObjectId(data._id)
@@ -606,10 +603,8 @@ const cloneArray = (arrayData) => {
       return newData
     }
     if (Array.isArray(data)) {
-      console.log("Es array",data);
       return cloneArray(data)
     }
-    console.log("Ninguno", data);
     return data
   });
 }
@@ -617,7 +612,9 @@ const cloneArray = (arrayData) => {
 const getFeedbackOfProduction = async (orgId, containerId, orderId) => {
   try {
     const productionModels = await getProductionByOrderId(orgId, containerId, orderId);
-    const productionData = productionModels.map((prodMod) => {
+    console.log("[PRODUCTION SCHEDULED]")
+    const productionData = productionModels.map((prodMod,index) => {
+      console.log(`[${index}] -> "${prodMod.ProductName}" to "${prodMod.startProductionDate.toISOString()}" on status: "${prodMod.ProductionStatus}"`)
       return {
         name: prodMod.ProductName,
         startDate: prodMod.startProductionDate,

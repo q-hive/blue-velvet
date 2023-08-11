@@ -128,7 +128,7 @@ export const calculateTimeEstimation = async (totalProduction, isGroupped = fals
             const productFind = dbProducts.find(dbProd => dbProd._id.toString() === productionModel.ProductID.toString())
             const isLongCycle = productFind && (productFind.parameters.day + productFind.parameters.night) > 10;
 
-            if (productionModel.ProductionStatus === "seeding" || productionModel.ProductionStatus === "preSoaking") {
+            if (productionModel.ProductionStatus === "seeding" || productionModel.ProductionStatus === "preSoaking" || productionModel.ProductionStatus === "growing") {
                 productionInAllStatuses.push(productionModel)
             } else {
                 productionStatuses.forEach(status => {
@@ -205,7 +205,6 @@ export const getWorkTimeByEmployee = (req, res) => {
         getProductionInContainerByCurrentDate(res.locals.organization, req.query.containerId, req.query.tz)
             .then(async (production) => {
                 const totalEstimations = calculateTimeEstimation(production, false, true, res.locals.organization)
-
                 resolve(totalEstimations)
             })
             .catch((err) => {
