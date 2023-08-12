@@ -1,4 +1,4 @@
-import moment from "moment"
+import moment from "moment-timezone"
 
 export const transformTo = (inputFormat, outputFormat, number) => {
     if(inputFormat === "ms"){
@@ -107,32 +107,11 @@ export const normalizeDate = (date) => {
 export const formattedDate = (date) => {
     //*WD, DD MM YYYY
     if (moment.isMoment(date) || typeof date === 'string') {
-        return moment.utc(date).format('ddd, DD MMM YYYY');
+        return moment(date).format('ddd, DD MMM YYYY');
     } else if (date instanceof Date) {
-        return `${days[date.getUTCDay()].short}, ${addZero(date.getUTCDate())} ${months[date.getUTCMonth()].short} ${date.getUTCFullYear()}`;
+        return `${days[date.getDay()].short}, ${addZero(date.getDate())} ${months[date.getMonth()].short} ${date.getFullYear()}`;
     }
     return date;
-}
-
-function isTodayOrFutureDate(dbDate) {
-    const currentDate = new Date();
-    currentDate.setUTCHours(0, 0, 0, 0);
-
-    let databaseDate;
-
-    if (typeof dbDate === 'string') {
-        databaseDate = new Date(dbDate);
-    } else if (dbDate instanceof Date) {
-        databaseDate = dbDate;
-    } else if (moment.isMoment(dbDate)) {
-        databaseDate = dbDate.toDate();
-    } else {
-        throw new Error('Invalid date input');
-    }
-
-    databaseDate.setUTCHours(0, 0, 0, 0);
-
-    return currentDate >= databaseDate;
 }
 
 console.log("[CLIENT TIMEZONE]",Intl.DateTimeFormat().resolvedOptions().timeZone)

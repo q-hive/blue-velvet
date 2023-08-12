@@ -7,7 +7,7 @@ import { getOrderById, insertNewOrderWithProduction, updateOrder, insertOrderAnd
 import { getAllProducts } from '../products/store.js'
 import { buildProductionDataFromOrder, grouPProductionForWorkDay, updateStartHarvestDate } from './controller.js'
 import { getOrganizationById } from '../organization/store.js'
-import moment from 'moment'
+import moment from 'moment-timezone'
 import { getInitialStatus } from './controller.js'
 let { ObjectId } = mongoose.Types
 
@@ -90,7 +90,7 @@ export const productionCycleObject = {
 
 
 export const getProductionInContainerByCurrentDate = async (orgId, containerId, tz) => {
-    const currentDate = moment().tz(tz).startOf('day').format('YYYY-MM-DD');
+    const currentDate = moment().tz(tz).format('YYYY-MM-DD');
 
     return new Promise((resolve, reject) => {
         orgModel.aggregate([
@@ -170,7 +170,7 @@ const filterMaturedGrowthsProdModelsIds = (productionModels, tz) => {
     return productionModels.filter((model) => {
         if (model.ProductionStatus !== 'growing') return false;
         if (!model.startHarvestDate || !moment(model.startHarvestDate).isValid()) return false;
-        const startHarvestDate = moment(model.startHarvestDate).tz(tz);
+        const startHarvestDate = moment.tz(model.startHarvestDate,tz);
 
         return currentDateTime >= startHarvestDate;
     }).map((model) => model._id);

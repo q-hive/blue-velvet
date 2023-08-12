@@ -24,7 +24,7 @@ import {
 } from './controller.js';
 import { getProductionByOrderId } from '../production/store.js';
 import { getContainerById, getContainers } from '../container/store.js';
-import moment from 'moment';
+import moment from 'moment-timezone';
 
 const orgModel = organizationModel;
 
@@ -456,7 +456,7 @@ export const createNewOrder = async (orgId, containerId, order, tz) => {
     }
     
     // Convert the order date to a moment object in the user's timezone
-    const deliveryDate = moment(order.date).tz(tz).startOf('day');
+    const deliveryDate = moment.tz(order.date, tz);
 
     // Find parameters of the product
     const productParams = (allProducts, actualProduct) => {
