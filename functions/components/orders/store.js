@@ -550,6 +550,7 @@ export const createNewOrder = async (orgId, containerId, order, tz) => {
       products: mappedProducts,
       status: order.status,
       cyclic: order.cyclic,
+      created: moment.tz(tz)
     };
 
     const orderStatuses = Array.from(
@@ -567,15 +568,16 @@ export const createNewOrder = async (orgId, containerId, order, tz) => {
         let tempOrder = {
           _id: tempId,
           organization: orgId,
-          customer: order.customer._id,
           next:null,
           deliveredBy:null,
+          customer: order.customer._id,
           price: price,
+          date: orderMapped.date.clone().date(orderMapped.date.date() + 7).tz(tz),
           address: order.address,
           products: secondProducts,
-          cyclic: order.cyclic,
           status: orderStatuses.length === 1 ? orderStatuses[0] : 'production',
-          date: orderMapped.date.clone().date(orderMapped.date.date() + 7).tz(tz),
+          cyclic: order.cyclic,
+          created: orderMapped.created
         };
 
         orderMapped.next = tempId
