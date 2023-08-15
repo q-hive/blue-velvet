@@ -168,7 +168,7 @@ export const SalesIndex = () => {
                         label:`${t('sales_table_modal_action_delete', {ns:'sales_management_module'})}`,
                         type:"dangerous",
                         btn_color:"warning",
-                        disabled: params.row.status === 'delivered',
+                        // disabled: params.row.status === 'delivered',
                         execute:() => {
                             setModal({
                                 ...modal,
