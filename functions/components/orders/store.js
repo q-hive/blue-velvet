@@ -253,107 +253,109 @@ export const getMonthlyOrdersByCustomer = (orgId, customerId) => {
 };
 
 export const deleteOrdersDirect = async (req, res) => {
-  return new Promise(async (resolve, reject) => {
-    const values = {
-      _id: mongoose.Types.ObjectId(req.query.value),
-    };
+  try {
+    const orderId = mongoose.Types.ObjectId(req.query.value);
 
-    let traysToReduce;
-    try {
-      traysToReduce = await organizationModel.aggregate([
-        {
-          $match: {
-            _id: new ObjectId('636ae6a18453ae9796473eae'),
+    const traysToReduce = await calculateTraysToReduce(orderId, res.locals.organization);
+    console.log("[traysToReduce]", traysToReduce);
+
+    const deletionOp = await updateOrganizationForOrderDeletion(orderId, res.locals.organization);
+
+    await adjustAvailableTrays(res.locals.organization, traysToReduce);
+
+    return deletionOp;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const calculateTraysToReduce = async (orderId, organizationId) => {
+  try {
+    const traysToReduce = await organizationModel.aggregate([
+      {
+        $match: {
+          _id: new ObjectId(organizationId),
+        },
+      },
+      {
+        $unwind: {
+          path: '$containers',
+          preserveNullAndEmptyArrays: false,
+        },
+      },
+      {
+        $project: {
+          containers: {
+            production: true,
           },
         },
-        {
-          $unwind: {
-            path: '$containers',
-            preserveNullAndEmptyArrays: false,
-          },
+      },
+      {
+        $unwind: {
+          path: '$containers.production',
+          preserveNullAndEmptyArrays: false,
         },
-        {
-          $project: {
-            containers: {
-              production: true,
+      },
+      {
+        $match: {
+          $and: [
+            {
+              $or: [
+                { 'containers.production.ProductionStatus': 'growing' },
+                { 'containers.production.ProductionStatus': 'harvestReady' },
+              ],
+              'containers.production.RelatedOrder': new ObjectId(orderId),
             },
+          ],
+        },
+      },
+      {
+        $group: {
+          _id: 'trays',
+          totalTrays: {
+            $sum: '$containers.production.trays',
           },
         },
-        {
-          $unwind: {
-            path: '$containers.production',
-            preserveNullAndEmptyArrays: false,
-          },
-        },
-        {
-          $match: {
-            $and: [
-              {
-                $or: [
-                  {
-                    'containers.production.ProductionStatus': 'growing',
-                  },
-                  {
-                    'containers.production.ProductionStatus': 'harvestReady',
-                  },
-                ],
-                'containers.production.RelatedOrder': new ObjectId(
-                  '63f0b112f9ba9d5c7d916af1'
-                ),
-              },
-            ],
-          },
-        },
-        {
-          $group: {
-            _id: 'trays',
-            totalTrays: {
-              $sum: '$containers.production.trays',
-            },
-          },
-        },
-      ]);
+      },
+    ]);
 
-      traysToReduce = traysToReduce.reduce(
-        (acum, actual) => acum + actual.totalTrays,
-        0
-      );
+    return traysToReduce.reduce((acum, actual) => acum + actual.totalTrays, 0);
+  } catch (error) {
+    throw error;
+  }
+};
 
-      console.log(traysToReduce);
-    } catch (err) {
-      reject(err);
-    }
-
-    const deletionOp = await organizationModel.updateOne(
-      { _id: res.locals.organization },
+const updateOrganizationForOrderDeletion = async (orderId, organizationId) => {
+  try {
+    return organizationModel.updateOne(
+      { _id: organizationId },
       {
         $pull: {
-          'containers.$[].production': {
-            RelatedOrder: values[req.query.key],
-          },
-          orders: {
-            [req.query.key]: values[req.query.key],
-          },
+          'containers.$[].production': { RelatedOrder: orderId },
+          orders: { _id: orderId },
         },
       }
     );
-
-    console.log('Deletion op');
-    console.log(deletionOp);
-
-    organizationModel
-      .updateOne(
-        { _id: res.locals.organization },
-        {
-          $inc: {
-            'containers.$[].available': traysToReduce,
-          },
-        }
-      )
-      .then((result) => resolve(result))
-      .catch((err) => reject(err));
-  });
+  } catch (error) {
+    throw error;
+  }
 };
+
+const adjustAvailableTrays = async (organizationId, traysToReduce) => {
+  try {
+    return organizationModel.updateOne(
+      { _id: organizationId },
+      {
+        $inc: {
+          'containers.$[].available': traysToReduce,
+        },
+      }
+    );
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const deleteOrders = (orgId, orders) => {
   return new Promise(async (resolve, reject) => {
     const org = await getOrganizationById(orgId);
