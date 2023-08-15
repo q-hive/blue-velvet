@@ -1,3 +1,4 @@
+import moment from "moment-timezone"
 import { buildTaskFromProductionAccumulated, calculateTimeEstimation } from "../work/controller.js"
 import {
     getPosibleStatusesForProduction,
@@ -12,14 +13,12 @@ import {
     updateSingleProductionModelProduct,
     deleteSingleProductionModelProduct
 } from "./store.js"
-import nodeschedule from 'node-schedule'
 import { getAllProducts, getProductById } from "../products/store.js"
 import mongoose from "mongoose"
 import { getOrderById } from "../orders/store.js"
 import { buildPackagesFromOrders } from "../delivery/controller.js"
 import { isLargeCicle } from "../products/controller.js"
 import { getContainerById, updateContainerById } from "../container/store.js"
-import moment from "moment"
 
 
 export const updateStartHarvestDate = async (config) => {
@@ -33,7 +32,7 @@ export const updateStartHarvestDate = async (config) => {
             break;
         case "growing":
             if ((organization !== undefined) && (container !== undefined)) {
-                executeAt = await getEstimatedHarvestDate(new Date(), production.ProductID, organization, container, tz)
+                executeAt = await getEstimatedHarvestDate(moment.tz(tz), production.ProductID, organization, container, tz)
             }
             break;
     }
@@ -718,9 +717,8 @@ export const getEstimatedHarvestDate = async (startDate, product, orgId, contain
         
         const { day: lightTime, night: darkTime } = productRef.parameters;
 
-        const estimatedTime = startDate.getTime() + ((lightTime + darkTime) * 24 * 60 * 60 * 1000);
-        const estimatedDate = moment.tz(estimatedTime, tz).startOf('day');
-       
+        const estimatedDate = moment.tz(startDate, tz).clone().add(lightTime + darkTime,'days');
+
         return estimatedDate
     } catch (err) {
         return Promise.reject(err)
