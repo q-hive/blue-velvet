@@ -1,3 +1,5 @@
+import moment from "moment-timezone"
+
 export const transformTo = (inputFormat, outputFormat, number) => {
     if(inputFormat === "ms"){
         if(outputFormat == "minutes")
@@ -103,6 +105,13 @@ export const normalizeDate = (date) => {
 }
 
 export const formattedDate = (date) => {
-    //*WD, MONTH-DD-YYYY
-    return `${days[date.getDay()].short}, ${months[date.getMonth()].complete}-${addZero(date.getDate())}-${date.getFullYear()}`;
+    //*WD, DD MM YYYY
+    if (moment.isMoment(date) || typeof date === 'string') {
+        return moment(date).format('ddd, DD MMM YYYY');
+    } else if (date instanceof Date) {
+        return `${days[date.getDay()].short}, ${addZero(date.getDate())} ${months[date.getMonth()].short} ${date.getFullYear()}`;
+    }
+    return date;
 }
+
+console.log("[CLIENT TIMEZONE]",Intl.DateTimeFormat().resolvedOptions().timeZone)

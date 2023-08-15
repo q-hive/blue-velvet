@@ -489,13 +489,17 @@ export const isWorkingDay = (date) => {
   return (day === 2 || day === 5)
 };
 
-const scheduler = async (todayDate, scheduleDate, orgId, productionData, orderData) => {
+const scheduler = async (todayDate, scheduleDate, orgId, productionData, orderData, tz) => {
   console.log("Scheduling production...");
   if (scheduleDate.isBefore(todayDate) && !isToday(scheduleDate, todayDate)) {
     throw new Error("Cannot schedule production for a date in the past.");
   }
 
-  productionData.startProductionDate = scheduleDate.startOf('day').toDate();
+  const startDate = scheduleDate.clone().tz(tz).toDate();
+  productionData.startProductionDate = startDate
+  const activeStatus = ['harvestReady', 'packing', 'ready']
+  productionData.startHarvestDate = activeStatus.includes(productionData.ProductionStatus) ? startDate : null;
+
   await insertProduction(orgId, productionData);
   await modifyOrder(orgId, orderData);
 }
@@ -613,20 +617,22 @@ const scheduleIndividualProduction = async (orgId, production, order, products, 
     // console.log("Product found:", product);
 
     // Convert delivery date to Date object for comparison (COMES IN THE USER TIMEZONE)
-    const today = moment(); //moment("2023-07-18T13:04:09-06:00")
-    const deliveryDate = order.date.clone()
-    const serverTz = moment.tz.guess();
-    const closestDateToDeliveryDadte = getClosestWorkableDay(deliveryDate, today).startOf("day")
-    const startProductionDate = closestDateToDeliveryDadte.clone().subtract(product.parameters.day + product.parameters.night, "days").startOf("day");
+    const todayUTC = moment().utc();
+    const today = moment.tz(todayUTC, tz)
+    const deliveryDate = moment.tz(order.date.clone(), tz)
+    const closestDateToDeliveryDadte = getClosestWorkableDay(deliveryDate, today)
+    const startProductionDate = closestDateToDeliveryDadte.clone().subtract(product.parameters.day + product.parameters.night, "days")
 
     // If the product is not a mix
     if (!product.mix.isMix) {
       // Calculate the start production date
       console.log("/////////////");
-      console.log("🚀 [today]:", moment(today).format("ddd, DD-MM-YYYY"))
-      console.log("🚀 [deliveryDate]:", moment(deliveryDate).format("ddd, DD-MM-YYYY"))
-      console.log("🚀 [closestDateToDeliveryDadte]:", moment(closestDateToDeliveryDadte).format("ddd, DD-MM-YYYY"))
-      console.log("🚀 [startProductionDate]:", moment(startProductionDate).format("ddd, DD-MM-YYYY"))
+      console.log("🚀 [timezone]:", tz)
+      console.log("🚀 [today UTC]:", todayUTC.format('ddd, DD/MM/YYYY hh:mm:ss A (z)'))
+      console.log("🚀 [today TZ]:", today.format('ddd, DD/MM/YYYY hh:mm:ss A (z)'))
+      console.log("🚀 [deliveryDate]:", deliveryDate.format('ddd, DD/MM/YYYY hh:mm:ss A (z)'))
+      console.log("🚀 [closestDateToDeliveryDadte]:", closestDateToDeliveryDadte.format('ddd, DD/MM/YYYY hh:mm:ss A (z)'))
+      console.log("🚀 [startProductionDate]:", startProductionDate.format('ddd, DD/MM/YYYY hh:mm:ss A (z)'))
       console.log("/////////////");
 
 
@@ -634,15 +640,11 @@ const scheduleIndividualProduction = async (orgId, production, order, products, 
       if (!["seeding", "preSoaking"].includes(production.ProductionStatus) && !isToday(deliveryDate, today)) {
         // Schedule a job to insert the production on the closest working day based on delivery date
         try {
-          console.log("🎈 OP 1");
-          // const scheduledDate =  getClosestWorkableDay(startProductionDate, today).startOf("day").tz(serverTz)
-          console.log("🚀[scheduledDate]", moment(closestDateToDeliveryDadte).format("ddd, DD-MM-YYYY"));
-          scheduler(today, closestDateToDeliveryDadte, orgId, production, order)
-          console.log(`Scheduled production for ${closestDateToDeliveryDadte} for order ${order._id} and product ${product.name}.`);
+          scheduler(today, closestDateToDeliveryDadte, orgId, production, order, tz)
+          console.log(`(🎈 OP.1) [Order: ...${order._id.toHexString().slice(-8)}] Scheduled ${product.name} for ${closestDateToDeliveryDadte} (${tz})`);
           return;
         } catch (error) {
-          console.log("Error creating production");
-          console.log(error);
+          console.log("1) Error creating production");
           throw error;
         }
       }
@@ -650,65 +652,66 @@ const scheduleIndividualProduction = async (orgId, production, order, products, 
       // If the delivery date is today and it's a working day, will set the production to harvestReady, if not, to ready
       if (isToday(deliveryDate, today)) {
         try {
-          console.log("🎈🎈 OP 2");
           const activeStatus = isToday(getClosestWorkableDay(deliveryDate, today), today) ? "harvestReady" : "ready";
           setToActiveStatus(production, order, activeStatus);
-          scheduler(today, deliveryDate, orgId, production, order)
-          console.log("Production has been added to the database.");
+          scheduler(today, deliveryDate, orgId, production, order, tz)
+          console.log(`(🎈🎈 OP.2) [Order: ...${order._id.toHexString().slice(-8)}] Scheduled ${product.name} for ${deliveryDate} (${tz})`);
           return;
         } catch (error) {
-          throw new Error("Error creating production.");
+          throw new Error("2) Error creating production.");
         }
       }
 
       if (isToday(startProductionDate, today)) {
         try {
-          console.log("🎈🎈🎈 OP 3");
-          scheduler(today, startProductionDate, orgId, production, order)
-          console.log("Production has been added to the database.");
+          scheduler(today, startProductionDate, orgId, production, order, tz)
+          console.log(`(🎈🎈🎈 OP.3) [Order: ...${order._id.toHexString().slice(-8)}] Scheduled ${product.name} for ${startProductionDate} (${tz})`);
           return;
         } catch (error) {
-          throw new Error("Error creating production.");
+          throw new Error("3) Error creating production.");
         }
       }
 
       // If the start production date is not a working day, schedule a job to insert the production on the closest working day
       if (!isWorkingDay(startProductionDate) && !moment(startProductionDate).isBefore(today)) {
-        console.log("🎈🎈🎈🎈 OP 4");
-        const schedule = getClosestWorkableDay(startProductionDate, today).startOf("day")
+        const schedule = getClosestWorkableDay(startProductionDate, today)
         if (isToday(schedule, today)) {
           try {
-            scheduler(today, schedule, orgId, production, order)
-            console.log("Production has been added to the database.");
+            scheduler(today, schedule, orgId, production, order, tz)
+            console.log(`(🎈🎈🎈🎈 OP.4.1) [Order: ...${order._id.toHexString().slice(-8)}] Scheduled ${product.name} for ${schedule} (${tz})`);
             return;
           } catch (error) {
-            throw new Error("Error creating production.");
+            throw new Error("4) Error creating production.");
           }
         }
-        console.log("🚀 [schedule]", moment(schedule).format("ddd, DD-MM-YYYY"));
-        scheduler(today, schedule, orgId, production, order)
-        console.log(`Scheduled production for ${schedule} (${serverTz}) for order ${order._id} and product ${product.name}. USER TIMEZONE: ${tz}`);
+        scheduler(today, schedule, orgId, production, order, tz)
+        console.log(`(🎈🎈🎈🎈 OP.4.2) [Order: ...${order._id.toHexString().slice(-8)}] Scheduled ${product.name} for ${schedule} (${tz})`);
         return;
       }
 
       // If the start production date is a working day, schedule a job to insert the production
       console.log("🎈🎈🎈🎈🎈 OP 5");
-      const scheduleDate = closestDateToDeliveryDadte.startOf("day")
-      console.log("🚀 [scheduleDate]:", scheduleDate)
+      const scheduleDate = closestDateToDeliveryDadte
       const isafter = scheduleDate.isAfter(today)
-      // const diffDays = moment.duration(today.diff(scheduleDate)).asDays()
       const diffDays = moment.duration(scheduleDate.diff(today)).asDays()
-
+      console.log("🚀 [new closestDateToDeliveryDate]:", scheduleDate.format('ddd, DD/MM/YYYY hh:mm:ss A (z)'))
       console.log("isafter---", isafter)
       console.log("diffDates---", diffDays)
+
       if ((isafter || isToday(scheduleDate, today)) && diffDays < (product.parameters.day + product.parameters.night)) {
         setToActiveStatus(production, order, "harvestReady")
-        scheduler(today, scheduleDate, orgId, production, order)
-        console.log(`Scheduled production for ${scheduleDate} (${serverTz}) for order ${order._id} and product ${product.name}. USER TIMEZONE: ${tz}`);
+        scheduler(today, scheduleDate, orgId, production, order, tz)
+        console.log(`(🎈🎈🎈🎈🎈 OP.5.1) [Order: ...${order._id.toHexString().slice(-8)}] Scheduled ${product.name} for ${scheduleDate} (${tz})`);
         return
       }
-      scheduler(today, startProductionDate, orgId, production, order)
-      console.log(`Scheduled production for ${startProductionDate} (${serverTz}) for order ${order._id} and product ${product.name}. USER TIMEZONE: ${tz}`);
+
+      const validScheduleDate = startProductionDate.isBefore(today)
+        ? (setToActiveStatus(production, order, "ready"), deliveryDate)
+        : startProductionDate;
+
+      console.log("🚀 [validScheduleDate]:", validScheduleDate.format('ddd, DD/MM/YYYY hh:mm:ss A (z)'))
+      scheduler(today, validScheduleDate, orgId, production, order, tz)
+      console.log(`(🎈🎈🎈🎈🎈 OP.5.2) [Order: ...${order._id.toHexString().slice(-8)}] Scheduled ${product.name} for ${validScheduleDate} (${tz})`);
       return;
     }
   } catch (error) {

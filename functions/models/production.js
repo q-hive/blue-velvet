@@ -17,6 +17,7 @@ const Production = new Schema({
     EstimatedStartDate:     Date,
     EstimatedHarvestDate:   Date,
     startProductionDate:    Date,
+    startHarvestDate:       Date,
     seeds:                  Number,
     harvest:                Number,
     trays:                  Number,

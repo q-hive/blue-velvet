@@ -5,9 +5,9 @@ import { getContainers, updateContainerById } from '../container/store.js'
 import { buildOrderFromExistingOrder } from '../orders/controller.js'
 import { getOrderById, insertNewOrderWithProduction, updateOrder, insertOrderAndProduction } from '../orders/store.js'
 import { getAllProducts } from '../products/store.js'
-import { buildProductionDataFromOrder, grouPProductionForWorkDay, scheduleTask } from './controller.js'
+import { buildProductionDataFromOrder, grouPProductionForWorkDay, updateStartHarvestDate } from './controller.js'
 import { getOrganizationById } from '../organization/store.js'
-import moment from 'moment'
+import moment from 'moment-timezone'
 import { getInitialStatus } from './controller.js'
 let { ObjectId } = mongoose.Types
 
@@ -55,7 +55,7 @@ export const productionCycleObject = {
         "hasBackgroundTask": false,
         "requireNewDoc": true,
         "affectsCapacity": {
-            "affect": true,
+            "affect": false,
             "how": "inc"
         }
     },
@@ -82,7 +82,7 @@ export const productionCycleObject = {
         "hasBackGroundTask": true,
         "requireNewDoc": true,
         "affectsCapacity": {
-            "affect": true,
+            "affect": false,
             "how": "dec"
         }
     },
@@ -118,13 +118,21 @@ export const getProductionInContainerByCurrentDate = async (orgId, containerId, 
                     'date': '$containers.production.startProductionDate', 
                     'timezone': tz
                   }
+                },
+                'startHarvestDateString': {
+                  '$dateToString': {
+                    'format': '%Y-%m-%d', 
+                    'date': '$containers.production.startHarvestDate', 
+                    'timezone': tz
+                  }
                 }
               }
             }, {
               '$match': {
-                'startProductionDateString': {
-                  '$eq': currentDate
-                }
+                '$or': [
+                  { 'startProductionDateString': { '$eq': currentDate } },
+                  { 'startHarvestDateString': { '$eq': currentDate } }
+                ]
               }
             }, {
               '$replaceRoot': {
@@ -138,12 +146,35 @@ export const getProductionInContainerByCurrentDate = async (orgId, containerId, 
                     return
                 }
 
-                resolve(productionForToday)
-
+                const maturedGrowths = filterMaturedGrowthsProdModelsIds(productionForToday, tz)
+                if (maturedGrowths.length) {
+                    console.log("Actualizando de GROWING a HARVESTREADY...");
+                    updateManyProductionModels(orgId, containerId, maturedGrowths, 'growing', tz)
+                        .then((result) => {
+                            resolve(productionForToday)
+                        })
+                        .catch(err => {
+                            reject(err)
+                        })
+                }else{
+                    resolve(productionForToday)
+                }
             })
             .catch((err) => reject(err))
     })
 }
+
+const filterMaturedGrowthsProdModelsIds = (productionModels, tz) => {
+    const currentDateTime = moment().tz(tz);
+
+    return productionModels.filter((model) => {
+        if (model.ProductionStatus !== 'growing') return false;
+        if (!model.startHarvestDate || !moment(model.startHarvestDate).isValid()) return false;
+        const startHarvestDate = moment.tz(model.startHarvestDate,tz);
+
+        return currentDateTime >= startHarvestDate;
+    }).map((model) => model._id);
+};
 
 export const insertWorkDayProductionModel = (orgId, container, productionModel) => {
     return new Promise(async (resolve, reject) => {
@@ -165,7 +196,7 @@ export const insertWorkDayProductionModel = (orgId, container, productionModel) 
 }
 
 export const startBackGroundTask = (config) => {
-    scheduleTask(config)
+    updateStartHarvestDate(config)
     return
 }
 
@@ -238,13 +269,20 @@ export const updateOrdersInModels = async (updatedModels, orgId, container) => {
 
 }
 
-export const updateProduction = async (orgId, container, id, modifiedModels, statuses, userUID) => {
+export const updateProduction = async (orgId, container, id, modifiedModels, statuses, userUID, tz) => {
     //*CHANGED TO FOR OF LOOP TO MANAGE SCOP OF ORDERUPDATED VARIABLE (BUT ITS BLOCKING THE MAIN THREAD)
     const updateOperation = modifiedModels.map(async (newmodel) => {
         console.log("Updating production model")
         console.log(newmodel)
         const productionStatus = newmodel.ProductionStatus
         console.log("Production model updating to ->", productionStatus)
+
+        if (productionCycleObject[productionStatus]?.hasBackGroundTask) {
+            console.log("The production status " + productionStatus + " has a background task")
+            const startHarvestDate = await updateStartHarvestDate({ organization: orgId, container, production: newmodel, name: "updateForProduction", userUID, tz })
+            newmodel.startHarvestDate = startHarvestDate
+            console.log(`The estimated harvest day for product "${newmodel.ProductName}" is ${startHarvestDate.toISOString()}` )
+        }
 
         const op = await orgModel.updateOne(
             {
@@ -270,28 +308,12 @@ export const updateProduction = async (orgId, container, id, modifiedModels, sta
             }
         )
 
-        if (productionCycleObject[productionStatus]?.hasBackGroundTask) {
-            console.log("The production status " + productionStatus + " has a background task")
-            await scheduleTask({ organization: orgId, container, production: newmodel, name: "updateForProduction" })
-        }
-
-        if (productionCycleObject[productionStatus]?.affectsCapacity.affect) {
-            let trays = newmodel.trays
+        if (productionStatus === 'delivered') {
             console.log("El container must be updated")
-            if (productionCycleObject[productionStatus]?.affectsCapacity.how === "dec") {
-                trays = trays
-            }
-
-            if (productionCycleObject[productionStatus]?.affectsCapacity.how === "inc") {
-                trays = -trays
-            }
-
-            await updateContainerById(orgId, container, { query: "add", key: "available", value: -trays })
+            await updateContainerById(orgId, container, { query: "add", key: "available", value: newmodel.trays })
         }
-
 
         console.log("Production status of the order " + newmodel.RelatedOrder + " in DB is:  " + statuses)
-
 
         const query = {
             orders: {
@@ -426,7 +448,7 @@ export const updateManyProductionModels = (orgId, container, productionModelsIds
         ])
         let allStatuses = allProductionStatus.length > 0 ? Array.from(new Set(allProductionStatus[0].productionStatus)).filter((element) => element != undefined) : allProductionStatus
         try {
-            const updateProd = await updateProduction(orgId, container, null, modifiedModels, allStatuses, userUID)
+            const updateProd = await updateProduction(orgId, container, null, modifiedModels, allStatuses, userUID, tz)
 
             if (modifiedModels.length > 0 && allStatuses.length === 1 && allStatuses[0] === "ready") {
                 console.log("Creating new order if its cyclic")

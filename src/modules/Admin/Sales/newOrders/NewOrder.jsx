@@ -505,7 +505,7 @@ export const NewOrder = (props) => {
               {data.map((item, index) => (
                 <li key={index}>
                   <p>{`${item.name} for ${formattedDate(
-                    new Date(item.startDate)
+                    item.startDate
                   )} on status ${item.status}`}</p>
                 </li>
               ))}
