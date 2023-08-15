@@ -601,11 +601,6 @@ export const buildProductionProductData = async (prod, order, dbproducts, overHe
                     dryracks: dryracks,
                 }
 
-                if (["harvestReady", "growing"].includes(mixStrainStatus)) {
-                    console.log("El container must be updated")
-                    await updateContainerById(order.organization, container._id, { query: "add", key: "available", value: -trays })
-                }
-
                 return { ...mprod, ...mixFound, mix: true }
             })
 
@@ -648,11 +643,6 @@ export const buildProductionProductData = async (prod, order, dbproducts, overHe
                 trays: totalTrays,
                 dryracks: dryracks
             }]
-
-            if (["harvestReady", "growing"].includes(prod.status)) {
-                console.log("El container must be updated")
-                await updateContainerById(order.organization, container._id, { query: "add", key: "available", value: -totalTrays })
-            }
         }
     }
     return prod

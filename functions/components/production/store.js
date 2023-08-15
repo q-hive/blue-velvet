@@ -55,7 +55,7 @@ export const productionCycleObject = {
         "hasBackgroundTask": false,
         "requireNewDoc": true,
         "affectsCapacity": {
-            "affect": true,
+            "affect": false,
             "how": "inc"
         }
     },
@@ -82,7 +82,7 @@ export const productionCycleObject = {
         "hasBackGroundTask": true,
         "requireNewDoc": true,
         "affectsCapacity": {
-            "affect": true,
+            "affect": false,
             "how": "dec"
         }
     },
@@ -308,23 +308,12 @@ export const updateProduction = async (orgId, container, id, modifiedModels, sta
             }
         )
 
-        if (productionCycleObject[productionStatus]?.affectsCapacity.affect) {
-            let trays = newmodel.trays
+        if (productionStatus === 'delivered') {
             console.log("El container must be updated")
-            if (productionCycleObject[productionStatus]?.affectsCapacity.how === "dec") {
-                trays = trays
-            }
-
-            if (productionCycleObject[productionStatus]?.affectsCapacity.how === "inc") {
-                trays = -trays
-            }
-
-            await updateContainerById(orgId, container, { query: "add", key: "available", value: -trays })
+            await updateContainerById(orgId, container, { query: "add", key: "available", value: newmodel.trays })
         }
 
-
         console.log("Production status of the order " + newmodel.RelatedOrder + " in DB is:  " + statuses)
-
 
         const query = {
             orders: {

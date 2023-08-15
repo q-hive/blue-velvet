@@ -298,15 +298,10 @@ const calculateTraysToReduce = async (orderId, organizationId) => {
       },
       {
         $match: {
-          $and: [
-            {
-              $or: [
-                { 'containers.production.ProductionStatus': 'growing' },
-                { 'containers.production.ProductionStatus': 'harvestReady' },
-              ],
-              'containers.production.RelatedOrder': new ObjectId(orderId),
-            },
-          ],
+          'containers.production.RelatedOrder': new ObjectId(orderId),
+          "containers.production.ProductionStatus": {
+            $ne: "delivered",
+          },
         },
       },
       {
@@ -405,6 +400,7 @@ export const insertOrderAndProduction = async (organization, order, allProducts,
 
     // Calculate the total number of trays to use
     const totalTraysToUse = production.reduce((acc, prod) => acc + prod.trays, 0);
+    console.log("[totalTraysToUse]:", totalTraysToUse)
 
     // Schedule the production
     await scheduleProduction(organization._id, production, order, allProducts, timezone);
