@@ -253,107 +253,104 @@ export const getMonthlyOrdersByCustomer = (orgId, customerId) => {
 };
 
 export const deleteOrdersDirect = async (req, res) => {
-  return new Promise(async (resolve, reject) => {
-    const values = {
-      _id: mongoose.Types.ObjectId(req.query.value),
-    };
+  try {
+    const orderId = mongoose.Types.ObjectId(req.query.value);
 
-    let traysToReduce;
-    try {
-      traysToReduce = await organizationModel.aggregate([
-        {
-          $match: {
-            _id: new ObjectId('636ae6a18453ae9796473eae'),
-          },
-        },
-        {
-          $unwind: {
-            path: '$containers',
-            preserveNullAndEmptyArrays: false,
-          },
-        },
-        {
-          $project: {
-            containers: {
-              production: true,
-            },
-          },
-        },
-        {
-          $unwind: {
-            path: '$containers.production',
-            preserveNullAndEmptyArrays: false,
-          },
-        },
-        {
-          $match: {
-            $and: [
-              {
-                $or: [
-                  {
-                    'containers.production.ProductionStatus': 'growing',
-                  },
-                  {
-                    'containers.production.ProductionStatus': 'harvestReady',
-                  },
-                ],
-                'containers.production.RelatedOrder': new ObjectId(
-                  '63f0b112f9ba9d5c7d916af1'
-                ),
-              },
-            ],
-          },
-        },
-        {
-          $group: {
-            _id: 'trays',
-            totalTrays: {
-              $sum: '$containers.production.trays',
-            },
-          },
-        },
-      ]);
+    const traysToReduce = await calculateTraysToReduce(orderId, res.locals.organization);
+    console.log("[traysToReduce]", traysToReduce);
 
-      traysToReduce = traysToReduce.reduce(
-        (acum, actual) => acum + actual.totalTrays,
-        0
-      );
+    const deletionOp = await updateOrganizationForOrderDeletion(orderId, res.locals.organization);
 
-      console.log(traysToReduce);
-    } catch (err) {
-      reject(err);
-    }
+    await adjustAvailableTrays(res.locals.organization, traysToReduce);
 
-    const deletionOp = await organizationModel.updateOne(
-      { _id: res.locals.organization },
+    return deletionOp;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const calculateTraysToReduce = async (orderId, organizationId) => {
+  try {
+    const traysToReduce = await organizationModel.aggregate([
+      {
+        $match: {
+          _id: new ObjectId(organizationId),
+        },
+      },
+      {
+        $unwind: {
+          path: '$containers',
+          preserveNullAndEmptyArrays: false,
+        },
+      },
+      {
+        $project: {
+          containers: {
+            production: true,
+          },
+        },
+      },
+      {
+        $unwind: {
+          path: '$containers.production',
+          preserveNullAndEmptyArrays: false,
+        },
+      },
+      {
+        $match: {
+          'containers.production.RelatedOrder': new ObjectId(orderId),
+          "containers.production.ProductionStatus": {
+            $ne: "delivered",
+          },
+        },
+      },
+      {
+        $group: {
+          _id: 'trays',
+          totalTrays: {
+            $sum: '$containers.production.trays',
+          },
+        },
+      },
+    ]);
+
+    return traysToReduce.reduce((acum, actual) => acum + actual.totalTrays, 0);
+  } catch (error) {
+    throw error;
+  }
+};
+
+const updateOrganizationForOrderDeletion = async (orderId, organizationId) => {
+  try {
+    return organizationModel.updateOne(
+      { _id: organizationId },
       {
         $pull: {
-          'containers.$[].production': {
-            RelatedOrder: values[req.query.key],
-          },
-          orders: {
-            [req.query.key]: values[req.query.key],
-          },
+          'containers.$[].production': { RelatedOrder: orderId },
+          orders: { _id: orderId },
         },
       }
     );
-
-    console.log('Deletion op');
-    console.log(deletionOp);
-
-    organizationModel
-      .updateOne(
-        { _id: res.locals.organization },
-        {
-          $inc: {
-            'containers.$[].available': traysToReduce,
-          },
-        }
-      )
-      .then((result) => resolve(result))
-      .catch((err) => reject(err));
-  });
+  } catch (error) {
+    throw error;
+  }
 };
+
+const adjustAvailableTrays = async (organizationId, traysToReduce) => {
+  try {
+    return organizationModel.updateOne(
+      { _id: organizationId },
+      {
+        $inc: {
+          'containers.$[].available': traysToReduce,
+        },
+      }
+    );
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const deleteOrders = (orgId, orders) => {
   return new Promise(async (resolve, reject) => {
     const org = await getOrganizationById(orgId);
@@ -395,41 +392,27 @@ export const deleteOrders = (orgId, orders) => {
 
 export const insertOrderAndProduction = async (organization, order, allProducts, timezone) => {
   try {
-      // Calculate the overhead
-      const overhead = organization.containers[0].config.overhead / 100;
-    
-      // Build the production data for the order
-      const production = await buildProductionDataFromOrder(
-        order,
-        allProducts,
-        overhead,
-        organization.containers[0]
-      );
+    // Calculate the overhead
+    const overhead = organization.containers[0].config.overhead / 100;
 
-      // Calculate the total number of trays to use
-      const totalTraysToUse = production.reduce(
-        (acc, prod) => acc + prod.trays,
-        0
-      );
+    // Build the production data for the order
+    const production = await buildProductionDataFromOrder(order, allProducts, overhead, organization.containers[0]);
 
-      // Schedule the production
-      await scheduleProduction(
-        organization._id,
-        production,
-        order,
-        allProducts,
-        timezone
-      );
+    // Calculate the total number of trays to use
+    const totalTraysToUse = production.reduce((acc, prod) => acc + prod.trays, 0);
+    console.log("[totalTraysToUse]:", totalTraysToUse)
 
-      // Update the organization's orders and available trays
-      organization.orders.push(order);
-      const available = organization.containers[0].available;
-      organization.containers[0].available = available - totalTraysToUse;
+    // Schedule the production
+    await scheduleProduction(organization._id, production, order, allProducts, timezone);
 
-      // Save the organization
-      await organization.save();
-      
-  } catch(err) {
+    // Update the organization's orders and available trays
+    organization.orders.push(order);
+    organization.containers[0].available -= totalTraysToUse;
+
+    // Save the organization
+    await organization.save();
+
+  } catch (err) {
     console.log(err)
     throw new Error('Error creating order and production');
   }
@@ -454,7 +437,7 @@ export const createNewOrder = async (orgId, containerId, order, tz) => {
     if (price === undefined || price === null) {
       throw new Error('There was an error calculating the price');
     }
-    
+
     // Convert the order date to a moment object in the user's timezone
     const deliveryDate = moment.tz(order.date, tz);
 
@@ -542,7 +525,7 @@ export const createNewOrder = async (orgId, containerId, order, tz) => {
       _id: id,
       organization: orgId,
       next: null,
-      deliveredBy:null,
+      deliveredBy: null,
       customer: order.customer._id,
       price: price,
       date: deliveryDate,
@@ -556,39 +539,39 @@ export const createNewOrder = async (orgId, containerId, order, tz) => {
     const orderStatuses = Array.from(
       new Set(orderMapped.products.map((prod) => prod.status))
     );
-    
-      if(!order.cyclic){
-        await insertOrderAndProduction(organization, orderMapped, allProducts, tz)
 
-        return getFeedbackOfProduction(orgId, containerId, orderMapped._id)
-      }
+    if (!order.cyclic) {
+      await insertOrderAndProduction(organization, orderMapped, allProducts, tz)
 
-      if(order.cyclic){
-        let tempId = new ObjectId();
-        let tempOrder = {
-          _id: tempId,
-          organization: orgId,
-          next:null,
-          deliveredBy:null,
-          customer: order.customer._id,
-          price: price,
-          date: orderMapped.date.clone().date(orderMapped.date.date() + 7).tz(tz),
-          address: order.address,
-          products: secondProducts,
-          status: orderStatuses.length === 1 ? orderStatuses[0] : 'production',
-          cyclic: order.cyclic,
-          created: orderMapped.created
-        };
+      return getFeedbackOfProduction(orgId, containerId, orderMapped._id)
+    }
 
-        orderMapped.next = tempId
-        await insertOrderAndProduction(organization, orderMapped, cloneArray(allProducts), tz)
-        await insertOrderAndProduction(organization, tempOrder, allProducts, tz)
+    if (order.cyclic) {
+      let tempId = new ObjectId();
+      let tempOrder = {
+        _id: tempId,
+        organization: orgId,
+        next: null,
+        deliveredBy: null,
+        customer: order.customer._id,
+        price: price,
+        date: orderMapped.date.clone().date(orderMapped.date.date() + 7).tz(tz),
+        address: order.address,
+        products: secondProducts,
+        status: orderStatuses.length === 1 ? orderStatuses[0] : 'production',
+        cyclic: order.cyclic,
+        created: orderMapped.created
+      };
 
-        return getFeedbackOfProduction(orgId, containerId, orderMapped._id)
-      }
-      
-      throw new Error("Unrecognized configuration of order");
-    
+      orderMapped.next = tempId
+      await insertOrderAndProduction(organization, orderMapped, cloneArray(allProducts), tz)
+      await insertOrderAndProduction(organization, tempOrder, allProducts, tz)
+
+      return getFeedbackOfProduction(orgId, containerId, orderMapped._id)
+    }
+
+    throw new Error("Unrecognized configuration of order");
+
   } catch (err) {
     console.error(err);
     throw err;
@@ -597,9 +580,9 @@ export const createNewOrder = async (orgId, containerId, order, tz) => {
 
 const cloneArray = (arrayData) => {
   return arrayData.map((data) => {
-    if (typeof(data) === 'object'){
+    if (typeof (data) === 'object') {
       const newData = JSON.parse(JSON.stringify(data))
-      if(data._id){
+      if (data._id) {
         newData._id = new ObjectId(data._id)
       }
       return newData
@@ -615,7 +598,7 @@ const getFeedbackOfProduction = async (orgId, containerId, orderId) => {
   try {
     const productionModels = await getProductionByOrderId(orgId, containerId, orderId);
     console.log("[PRODUCTION SCHEDULED]")
-    const productionData = productionModels.map((prodMod,index) => {
+    const productionData = productionModels.map((prodMod, index) => {
       console.log(`[${index}] -> "${prodMod.ProductName}" to "${prodMod.startProductionDate.toISOString()}" on status: "${prodMod.ProductionStatus}"`)
       return {
         name: prodMod.ProductName,
