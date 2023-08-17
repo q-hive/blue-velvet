@@ -43,6 +43,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
+import AssignmentTurnedInOutlinedIcon from '@mui/icons-material/AssignmentTurnedInOutlined';
 
 //*APP Components
 import { UserDialog } from '../../../CoreComponents/UserFeedback/Dialog';
@@ -1132,24 +1133,25 @@ export const ProductionMain = () => {
       },
     ];
 
-    const productionDataTest = [
-      {
-        startWorkDate: 'Fri, 18 Ago 2023',
-        expectedGrs: '10',
-      },
-      {
-        startWorkDate: 'Sat, 19 Ago 2023',
-        expectedGrs: '1.55',
-      },
-      {
-        startWorkDate: 'Sun, 20 Ago 2023',
-        expectedGrs: '14.5',
-      },
-      {
-        startWorkDate: 'Mon, 21 Ago 2023',
-        expectedGrs: '0',
-      },
-    ];
+    const productionDataTest = [];
+    // const productionDataTest = [
+    //   {
+    //     startWorkDate: 'Fri, 18 Ago 2023',
+    //     expectedGrs: '10',
+    //   },
+    //   {
+    //     startWorkDate: 'Sat, 19 Ago 2023',
+    //     expectedGrs: '1.55',
+    //   },
+    //   {
+    //     startWorkDate: 'Sun, 20 Ago 2023',
+    //     expectedGrs: '14.5',
+    //   },
+    //   {
+    //     startWorkDate: 'Mon, 21 Ago 2023',
+    //     expectedGrs: '0',
+    //   },
+    // ];
 
     return (
       <Box
@@ -1167,14 +1169,32 @@ export const ProductionMain = () => {
         <Typography variant='h6' color='secondary' textAlign={'center'} mb={1}>
           All production {steps[activeProductionStep].name}
         </Typography>
-        <DataGrid
-          columns={productionColumns}
-          rows={productionDataTest}
-          getRowId={(row) => {
-            return row.startWorkDate;
-          }}
-          sx={{ marginY: '1vh', maxWidth: '100%' }}
-        />
+        {productionDataTest.length ? (
+          <DataGrid
+            columns={productionColumns}
+            rows={productionDataTest}
+            getRowId={(row) => {
+              return row.startWorkDate;
+            }}
+            sx={{ marginY: '1vh', maxWidth: '100%' }}
+          />
+        ) : (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'column',
+              flexGrow:1,
+            }}
+          >
+            <AssignmentTurnedInOutlinedIcon sx={{ fontSize: 80, mb: 2 }} />
+            <Typography variant='subtitle1' sx={{ textAlign: 'center' }}>
+              Product in this status has no production
+            </Typography>
+          </Box>
+        )}
+
         <MobileStepper
           sx={{ width: '100%' }}
           steps={maxSteps}
