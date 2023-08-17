@@ -28,6 +28,7 @@ import {
   TextField,
   Typography,
   useTheme,
+  MobileStepper,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 //*THEME
@@ -40,6 +41,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
+import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
+import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 
 //*APP Components
 import { UserDialog } from '../../../CoreComponents/UserFeedback/Dialog';
@@ -108,6 +111,8 @@ export const ProductionMain = () => {
     actions: [],
   });
   const [containerConfig, setContainerConfig] = useState(containerConfigModel);
+  // STEPPER
+  const [activeProductionStep, setActiveProductionStep] = useState(0);
 
   //*Network, routing and api
   const navigate = useNavigate();
@@ -488,57 +493,6 @@ export const ProductionMain = () => {
       </>
     );
   };
-  const renderCellProductName = (params) => {
-    return <>{params.value}</>;
-  };
-
-  const renderHeaderProductPrice = () => {
-    return (
-      <>
-        {t('table_header_products_price', {
-          ns: 'production_management_module',
-        })}
-      </>
-    );
-  };
-  const renderCellProductPrice = (params) => {
-    return (
-      <Accordion sx={{ width: '100%', marginY: '1vh' }}>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls='panel1a-content'
-          id='panel1a-header'
-        >
-          <Typography>
-            {t('price_cell_dropdown_header_production_table', {
-              ns: 'production_management_module',
-            })}
-          </Typography>
-        </AccordionSummary>
-
-        <AccordionDetails>
-          {params.formattedValue.map((obj, idx) => {
-            return (
-              <React.Fragment key={'frag' + idx}>
-                <Typography align='justify'>
-                  {t('price_size_cell_dropdown_header_production_table', {
-                    ns: 'production_management_module',
-                    grams: obj.packageSize,
-                    price: new Intl.NumberFormat(i18n.language, {
-                      style: 'currency',
-                      currency: currencyByLang[i18n.language],
-                    }).format(obj.amount),
-                  })}
-                </Typography>
-                <Divider sx={{ maxWidth: '100%' }} />
-              </React.Fragment>
-            );
-          })}
-        </AccordionDetails>
-      </Accordion>
-    );
-  };
-
   const renderHeaderProductActions = () => {
     return (
       <>
@@ -603,18 +557,8 @@ export const ProductionMain = () => {
       renderHeader: renderHeaderName,
       align: 'center',
       flex: 1,
-      renderCell: renderCellProductName,
+      renderCell: (params) => <>{params.value}</>,
     },
-    // {
-    //     field:"price",
-    //     headerClassName:"header-products-table",
-    //     headerAlign:"center",
-    //     headerName:"Prod. Price",
-    //     renderHeader:renderHeaderProductPrice,
-    //     minWidth:120,
-    //     flex:1,
-    //     renderCell:renderCellProductPrice
-    // },
     {
       field: 'actions',
       headerClassName: 'header-products-table',
@@ -1117,6 +1061,158 @@ export const ProductionMain = () => {
     );
   };
 
+  function ProductionStepper() {
+    const steps = [
+      { name: 'to be soaked', step: 'preSoaking' },
+      { name: 'to be sedded', step: 'seeding' },
+      { name: 'on growing', step: 'growing' },
+      { name: 'ready to harvest', step: 'harvestReady' },
+      { name: 'ready to packing', step: 'packing' },
+      { name: 'ready to delivery', step: 'ready' },
+      { name: 'delivered', step: 'delivered' },
+    ];
+    const maxSteps = steps.length;
+
+    const handleNext = () =>
+      setActiveProductionStep((prevActiveStep) =>
+        Math.min(prevActiveStep + 1, maxSteps - 1)
+      );
+    const handleBack = () =>
+      setActiveProductionStep((prevActiveStep) =>
+        Math.max(prevActiveStep - 1, 0)
+      );
+
+    const renderProductionActionsCell = (params) => {
+      const handleClick = () => {
+        console.log(params.row);
+      };
+
+      return (
+        <div>
+          <Button
+            variant='contained'
+            onClick={handleClick}
+            disabled={loading}
+            sx={{ ...BV_THEME.button.table, maxWidth: '48%' }}
+          >
+            {' '}
+            {loading
+              ? 'Loading...'
+              : `${t('button_view_word', { ns: 'buttons' })}`}{' '}
+          </Button>
+        </div>
+      );
+    };
+
+    const productionColumns = [
+      {
+        field: 'startWorkDate',
+        headerName: 'Work date',
+        headerClassName: 'header-products-table',
+        flex: 2,
+        headerAlign: 'center',
+        align: 'center',
+      },
+      {
+        field: 'expectedGrs',
+        headerName: 'Expected grs',
+        headerClassName: 'header-products-table',
+        flex: 2,
+        headerAlign: 'center',
+        align: 'center',
+      },
+      {
+        field: 'actions',
+        headerName: 'Actions',
+        headerClassName: 'header-products-table',
+        flex: 1,
+        headerAlign: 'center',
+        align: 'center',
+        renderCell: renderProductionActionsCell,
+      },
+    ];
+
+    const productionDataTest = [
+      {
+        startWorkDate: 'Fri, 18 Ago 2023',
+        expectedGrs: '10',
+      },
+      {
+        startWorkDate: 'Sat, 19 Ago 2023',
+        expectedGrs: '1.55',
+      },
+      {
+        startWorkDate: 'Sun, 20 Ago 2023',
+        expectedGrs: '14.5',
+      },
+      {
+        startWorkDate: 'Mon, 21 Ago 2023',
+        expectedGrs: '0',
+      },
+    ];
+
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          px: 1,
+          flexGrow: 1,
+          width: '100',
+          height: '100%',
+        }}
+      >
+        <Typography variant='h6' color='secondary' textAlign={'center'} mb={1}>
+          All production {steps[activeProductionStep].name}
+        </Typography>
+        <DataGrid
+          columns={productionColumns}
+          rows={productionDataTest}
+          getRowId={(row) => {
+            return row.startWorkDate;
+          }}
+          sx={{ marginY: '1vh', maxWidth: '100%' }}
+        />
+        <MobileStepper
+          sx={{ width: '100%' }}
+          steps={maxSteps}
+          position='static'
+          activeStep={activeProductionStep}
+          nextButton={
+            <Button
+              size='small'
+              onClick={handleNext}
+              disabled={activeProductionStep === maxSteps - 1}
+            >
+              Next
+              {theme.direction === 'rtl' ? (
+                <KeyboardArrowLeft />
+              ) : (
+                <KeyboardArrowRight />
+              )}
+            </Button>
+          }
+          backButton={
+            <Button
+              size='small'
+              onClick={handleBack}
+              disabled={activeProductionStep === 0}
+            >
+              {theme.direction === 'rtl' ? (
+                <KeyboardArrowRight />
+              ) : (
+                <KeyboardArrowLeft />
+              )}
+              Back
+            </Button>
+          }
+        />
+      </Box>
+    );
+  }
+
   return (
     <>
       {/*PRODUCTION MAIN BEGINS*/}
@@ -1545,6 +1641,27 @@ export const ProductionMain = () => {
                 null}
               </Grid>
 
+              {/* PRODUCTION DASHBOARD */}
+              <Grid item maxWidth={'xl'} xs={12} md={6} lg={6}>
+                <Paper
+                  elevation={4}
+                  sx={{
+                    padding: BV_THEME.spacing(2),
+                    display: 'flex',
+                    overflow: 'auto',
+                    flexDirection: 'column',
+                    minHeight: 508,
+                    height: '95%',
+                    marginY: 3,
+                  }}
+                >
+                  {loading ? (
+                    <LinearProgress color='primary' sx={{ marginY: '2vh' }} />
+                  ) : (
+                    ProductionStepper()
+                  )}
+                </Paper>
+              </Grid>
             </Box>
           </Container>
         </Box>
