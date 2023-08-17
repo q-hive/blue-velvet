@@ -114,6 +114,30 @@ export const ProductionMain = () => {
   const [containerConfig, setContainerConfig] = useState(containerConfigModel);
   // STEPPER
   const [activeProductionStep, setActiveProductionStep] = useState(0);
+  const [productionData, setProductionData] = useState([
+    {
+      startWorkDate: 'Fri, 18 Ago 2023',
+      expectedGrs: '10',
+      productionModelsIds: [1, 2, 3],
+    },
+    {
+      startWorkDate: 'Sat, 19 Ago 2023',
+      expectedGrs: '1.55',
+      productionModelsIds: [],
+    },
+    {
+      startWorkDate: 'Sun, 20 Ago 2023',
+      expectedGrs: '14.5',
+      productionModelsIds: [],
+    },
+    {
+      startWorkDate: 'Mon, 21 Ago 2023',
+      expectedGrs: '0',
+      productionModelsIds: [],
+    },
+  ]);
+  const [selectedProductionModelsData, setSelectedProductionModelsData] =
+    useState(null);
 
   //*Network, routing and api
   const navigate = useNavigate();
@@ -1062,6 +1086,138 @@ export const ProductionMain = () => {
     );
   };
 
+  function ProductionModelsCard({ startWorkDate, productionModels }) {
+    console.log(startWorkDate);
+    console.log(productionModels);
+
+    const renderProductionModelsActionsCell = (params) => {
+      const handleClick = () => {
+        console.log('Selected order data: ', params.row);
+      };
+
+      return (
+        <div>
+          <Button
+            variant='contained'
+            onClick={handleClick}
+            disabled={loading}
+            sx={{ ...BV_THEME.button.table, maxWidth: '48%' }}
+          >
+            {' '}
+            {loading
+              ? 'Loading...'
+              : `${t('button_view_word', { ns: 'buttons' })}`}{' '}
+          </Button>
+        </div>
+      );
+    };
+
+    const productionModelsColumns = [
+      {
+        field: 'RelatedOrder',
+        headerName: 'Order id',
+        headerClassName: 'header-products-table',
+        flex: 1,
+        headerAlign: 'center',
+        align: 'center',
+      },
+      {
+        field: 'ProductID',
+        headerName: 'Product',
+        headerClassName: 'header-products-table',
+        flex: 2,
+        headerAlign: 'center',
+        align: 'center',
+      },
+      {
+        field: 'seeds',
+        headerName: 'Seeds',
+        headerClassName: 'header-products-table',
+        flex: 1,
+        headerAlign: 'center',
+        align: 'center',
+      },
+      {
+        field: 'harvest',
+        headerName: 'Harvest',
+        headerClassName: 'header-products-table',
+        flex: 1,
+        headerAlign: 'center',
+        align: 'center',
+      },
+      {
+        field: 'trays',
+        headerName: 'Trays',
+        headerClassName: 'header-products-table',
+        flex: 1,
+        headerAlign: 'center',
+        align: 'center',
+      },
+      {
+        field: 'dryracks',
+        headerName: 'Dry',
+        headerClassName: 'header-products-table',
+        flex: 1,
+        headerAlign: 'center',
+        align: 'center',
+      },
+      {
+        field: 'actions',
+        headerName: 'Actions',
+        headerClassName: 'header-products-table',
+        flex: 1,
+        headerAlign: 'center',
+        align: 'center',
+        renderCell: renderProductionModelsActionsCell,
+      },
+    ];
+
+    return (
+      <Grid container spacing={2}>
+        <Grow
+          in={true}
+          mountOnEnter
+          unmountOnExit
+          sx={{ transfromOrigin: '0 0 0' }}
+        >
+          <Grid item xs={12}>
+            <Paper
+              elevation={4}
+              sx={{
+                padding: BV_THEME.spacing(2),
+                display: 'flex',
+                overflow: 'auto',
+                flexDirection: 'column',
+                minHeight: 350,
+                mb: 3,
+              }}
+            >
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Typography variant='h6' color='secondary.main'>
+                  {'startWorkDate'}
+                </Typography>
+                <IconButton
+                  onClick={() => setSelectedProductionModelsData(null)}
+                  sx={{ width: '3vh', height: '3vh', align: 'right' }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </Box>
+              <DataGrid
+                columns={productionModelsColumns}
+                rows={selectedProductionModelsData}
+                getRowId={(row) => {
+                  return row._id;
+                }}
+                sx={{ marginY: '1vh', maxWidth: '100%' }}
+              />
+            </Paper>
+          </Grid>
+        </Grow>
+      </Grid>
+    );
+  }
+
   function ProductionStepper() {
     const steps = [
       { name: 'to be soaked', step: 'preSoaking' },
@@ -1074,18 +1230,60 @@ export const ProductionMain = () => {
     ];
     const maxSteps = steps.length;
 
-    const handleNext = () =>
+    const handleNext = () => {
+      setSelectedProductionModelsData(null);
       setActiveProductionStep((prevActiveStep) =>
         Math.min(prevActiveStep + 1, maxSteps - 1)
       );
-    const handleBack = () =>
+    };
+    const handleBack = () => {
+      setSelectedProductionModelsData(null);
       setActiveProductionStep((prevActiveStep) =>
         Math.max(prevActiveStep - 1, 0)
       );
+    };
 
     const renderProductionActionsCell = (params) => {
       const handleClick = () => {
-        console.log(params.row);
+        console.log('Selected date data: ', params.row);
+        setSelectedProductionModelsData([
+          {
+            ProductName: 'Daykon Radish',
+            RelatedMix: {
+              isForMix: false,
+            },
+            ProductID: '64de375c287a3f7ba10282fb',
+            ProductionStatus: 'ready',
+            RelatedOrder: '64de3c10287a3f7ba1028abe',
+            EstimatedStartDate: '2023-08-10T05:00:00.000Z',
+            EstimatedHarvestDate: '2023-08-17T05:00:00.000Z',
+            startProductionDate: '2023-08-17T15:25:42.000Z',
+            startHarvestDate: '2023-08-17T15:25:42.000Z',
+            seeds: 3.5,
+            harvest: 25,
+            trays: 1,
+            dryracks: 1,
+            _id: '64de3c11287a3f7ba1021111',
+          },
+          {
+            ProductName: 'Daykon Radish',
+            RelatedMix: {
+              isForMix: false,
+            },
+            ProductID: '1111375c287a3f7ba1021111',
+            ProductionStatus: 'ready',
+            RelatedOrder: '64de3c10287a3f7ba1028abe',
+            EstimatedStartDate: '2023-08-10T05:00:00.000Z',
+            EstimatedHarvestDate: '2023-08-17T05:00:00.000Z',
+            startProductionDate: '2023-08-17T15:25:42.000Z',
+            startHarvestDate: '2023-08-17T15:25:42.000Z',
+            seeds: 3.5,
+            harvest: 25,
+            trays: 1,
+            dryracks: 1,
+            _id: '64de3c11287a3f7ba1022222',
+          },
+        ]);
       };
 
       return (
@@ -1133,26 +1331,6 @@ export const ProductionMain = () => {
       },
     ];
 
-    const productionDataTest = [];
-    // const productionDataTest = [
-    //   {
-    //     startWorkDate: 'Fri, 18 Ago 2023',
-    //     expectedGrs: '10',
-    //   },
-    //   {
-    //     startWorkDate: 'Sat, 19 Ago 2023',
-    //     expectedGrs: '1.55',
-    //   },
-    //   {
-    //     startWorkDate: 'Sun, 20 Ago 2023',
-    //     expectedGrs: '14.5',
-    //   },
-    //   {
-    //     startWorkDate: 'Mon, 21 Ago 2023',
-    //     expectedGrs: '0',
-    //   },
-    // ];
-
     return (
       <Box
         sx={{
@@ -1169,10 +1347,10 @@ export const ProductionMain = () => {
         <Typography variant='h6' color='secondary' textAlign={'center'} mb={1}>
           All production {steps[activeProductionStep].name}
         </Typography>
-        {productionDataTest.length ? (
+        {productionData.length ? (
           <DataGrid
             columns={productionColumns}
-            rows={productionDataTest}
+            rows={productionData}
             getRowId={(row) => {
               return row.startWorkDate;
             }}
@@ -1185,7 +1363,7 @@ export const ProductionMain = () => {
               alignItems: 'center',
               justifyContent: 'center',
               flexDirection: 'column',
-              flexGrow:1,
+              flexGrow: 1,
             }}
           >
             <AssignmentTurnedInOutlinedIcon sx={{ fontSize: 80, mb: 2 }} />
@@ -1662,25 +1840,37 @@ export const ProductionMain = () => {
               </Grid>
 
               {/* PRODUCTION DASHBOARD */}
-              <Grid item maxWidth={'xl'} xs={12} md={6} lg={6}>
-                <Paper
-                  elevation={4}
-                  sx={{
-                    padding: BV_THEME.spacing(2),
-                    display: 'flex',
-                    overflow: 'auto',
-                    flexDirection: 'column',
-                    minHeight: 508,
-                    height: '95%',
-                    marginY: 3,
-                  }}
-                >
-                  {loading ? (
-                    <LinearProgress color='primary' sx={{ marginY: '2vh' }} />
-                  ) : (
-                    ProductionStepper()
-                  )}
-                </Paper>
+              <Grid container spacing={2} my={1} mb={3}>
+                {/* PRODUCTION DASHBOARD */}
+                <Grid item sm={12} lg={5}>
+                  <Paper
+                    elevation={4}
+                    sx={{
+                      padding: BV_THEME.spacing(2),
+                      display: 'flex',
+                      overflow: 'auto',
+                      flexDirection: 'column',
+                      minHeight: 508,
+                      height: '95%',
+                    }}
+                  >
+                    {loading ? (
+                      <LinearProgress color='primary' sx={{ marginY: '2vh' }} />
+                    ) : (
+                      <ProductionStepper />
+                    )}
+                  </Paper>
+                </Grid>
+
+                {/* PRODUCTION MODELS BY DATE */}
+                {!!selectedProductionModelsData ? (
+                  <Grid item sm={12} lg={7}>
+                    <ProductionModelsCard
+                      startWorkDate={'startWorkDate here'}
+                      productionModels={selectedProductionModelsData}
+                    />
+                  </Grid>
+                ) : null}
               </Grid>
             </Box>
           </Container>
