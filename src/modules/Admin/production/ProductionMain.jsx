@@ -2,19 +2,9 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 //*MUI Components
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
   Box,
   Button,
-  CircularProgress,
   Container,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Divider,
   Fade,
   Grid,
   Grow,
@@ -24,11 +14,17 @@ import {
   Menu,
   MenuItem,
   Paper,
-  Slide,
   TextField,
   Typography,
   useTheme,
   MobileStepper,
+  Modal,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Chip,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
@@ -37,7 +33,6 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { BV_THEME } from '../../../theme/BV-theme';
 //*ICONS
 import Add from '@mui/icons-material/Add';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -46,6 +41,8 @@ import SaveIcon from '@mui/icons-material/Save';
 import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 import AssignmentTurnedInOutlinedIcon from '@mui/icons-material/AssignmentTurnedInOutlined';
+import LoopIcon from '@mui/icons-material/Loop';
+import NextPlanOutlinedIcon from '@mui/icons-material/NextPlanOutlined';
 
 //*APP Components
 import { UserDialog } from '../../../CoreComponents/UserFeedback/Dialog';
@@ -144,6 +141,8 @@ export const ProductionMain = () => {
     startDate: undefined,
     finishDate: undefined,
   });
+  const [orderModalOpen, setOrderModalOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   //*Network, routing and api
   const navigate = useNavigate();
@@ -1096,9 +1095,21 @@ export const ProductionMain = () => {
     console.log(startWorkDate);
     console.log(productionModels);
 
+    const handleProductsModalOpen = (order) => {
+      setSelectedOrder(order);
+      setOrderModalOpen(true);
+    };
+
+    const handleOrderModalClose = () => {
+      setSelectedOrder(null);
+      setOrderModalOpen(false);
+    };
+
     const renderProductionModelsActionsCell = (params) => {
       const handleClick = () => {
         console.log('Selected order data: ', params.row);
+        // TODO: Buscar orden con RelatedOrder y mandar data
+        handleProductsModalOpen('123');
       };
 
       return (
@@ -1180,6 +1191,7 @@ export const ProductionMain = () => {
 
     return (
       <Grid container spacing={2}>
+        {/* PRODUCTION CARD */}
         <Grow
           in={true}
           mountOnEnter
@@ -1220,6 +1232,89 @@ export const ProductionMain = () => {
             </Paper>
           </Grid>
         </Grow>
+        {/* ORDER MODAL */}
+        <Modal open={orderModalOpen} onClose={handleOrderModalClose}>
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              bgcolor: 'white',
+              borderRadius: 8,
+              p: 4,
+              boxShadow: 4,
+            }}
+          >
+            {selectedOrder && (
+              <>
+                <Typography variant='h6' align='center' gutterBottom>
+                  <b>Order #{'selectedOrder._id'}</b>
+                </Typography>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mb: 3,
+                  }}
+                >
+                  {selectedOrder.cyclic && (
+                    <Chip
+                      label='Cyclic'
+                      color='primary'
+                      variant='filled'
+                      size='medium'
+                      icon={<LoopIcon />}
+                    />
+                  )}
+                  {selectedOrder.next && (
+                    <Chip
+                      label={'selectedOrder.next'}
+                      color='primary'
+                      variant='filled'
+                      size='medium'
+                      icon={<NextPlanOutlinedIcon />}
+                    />
+                  )}
+                </Box>
+                <Typography variant='body1' gutterBottom>
+                  <b>Created:</b>{' '}
+                  {new Date(selectedOrder.created).toLocaleString()}
+                </Typography>
+                <Typography variant='body1' gutterBottom>
+                  <b>Delivery Date:</b>{' '}
+                  {new Date(selectedOrder.date).toLocaleString()}
+                </Typography>
+                <Typography variant='body1' gutterBottom>
+                  <b>Customer:</b> {'selectedOrder.customer'}
+                </Typography>
+                <Box mt={3} sx={{ textAlign: 'center' }}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Product</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>25gr</TableCell>
+                        <TableCell>80gr</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {/* {selectedOrder.products.map((product) => ( */}
+                        <TableRow key={'product._id'}>
+                          <TableCell>{'product.name'}</TableCell>
+                          <TableCell>{'product.status'}</TableCell>
+                          <TableCell>{'product.packages[0].number'}</TableCell>
+                          <TableCell>{'product.packages[1].number'}</TableCell>
+                        </TableRow>
+                      {/* ))} */}
+                    </TableBody>
+                  </Table>
+                </Box>
+              </>
+            )}
+          </Box>
+        </Modal>
       </Grid>
     );
   }
@@ -1237,7 +1332,7 @@ export const ProductionMain = () => {
     const maxSteps = steps.length;
 
     const handleChangeDate = (date, type) => {
-      console.log(`🚀 ${type}: `, date)
+      console.log(`🚀 ${type}: `, date);
       setSelectedDates({
         ...selectedDates,
         [type]: date,
@@ -1359,12 +1454,7 @@ export const ProductionMain = () => {
         }}
       >
         {/* CALENDARS */}
-        <Box
-          display='flex'
-          justifyContent='center'
-          alignItems='center'
-          gap={1}
-        >
+        <Box display='flex' justifyContent='center' alignItems='center' gap={1}>
           <LocalizationProvider dateAdapter={AdapterDateFns}>
             <DatePicker
               label='Start date'
