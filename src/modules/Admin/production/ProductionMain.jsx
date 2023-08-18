@@ -31,6 +31,8 @@ import {
   MobileStepper,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 //*THEME
 import { BV_THEME } from '../../../theme/BV-theme';
 //*ICONS
@@ -138,6 +140,10 @@ export const ProductionMain = () => {
   ]);
   const [selectedProductionModelsData, setSelectedProductionModelsData] =
     useState(null);
+  const [selectedDates, setSelectedDates] = useState({
+    startDate: undefined,
+    finishDate: undefined,
+  });
 
   //*Network, routing and api
   const navigate = useNavigate();
@@ -1230,6 +1236,14 @@ export const ProductionMain = () => {
     ];
     const maxSteps = steps.length;
 
+    const handleChangeDate = (date, type) => {
+      console.log(`🚀 ${type}: `, date)
+      setSelectedDates({
+        ...selectedDates,
+        [type]: date,
+      });
+    };
+
     const handleNext = () => {
       setSelectedProductionModelsData(null);
       setActiveProductionStep((prevActiveStep) =>
@@ -1344,6 +1358,29 @@ export const ProductionMain = () => {
           height: '100%',
         }}
       >
+        {/* CALENDARS */}
+        <Box
+          display='flex'
+          justifyContent='center'
+          alignItems='center'
+          gap={1}
+        >
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <DatePicker
+              label='Start date'
+              onChange={(date) => handleChangeDate(date, 'startDate')}
+              value={selectedDates.startDate}
+              renderInput={(params) => <TextField {...params} />}
+            />
+            <DatePicker
+              label='Finish date'
+              onChange={(date) => handleChangeDate(date, 'finishDate')}
+              value={selectedDates.finishDate}
+              renderInput={(params) => <TextField {...params} />}
+            />
+          </LocalizationProvider>
+        </Box>
+
         <Typography variant='h6' color='secondary' textAlign={'center'} mb={1}>
           All production {steps[activeProductionStep].name}
         </Typography>
