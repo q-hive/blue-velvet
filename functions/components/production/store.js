@@ -570,6 +570,108 @@ export const getProductionByStatus = (orgId, container, status) => {
     })
 }
 
+export const getAllProductionByFilters = (orgId, containerId, status, startDateTZFormatted, finishDateTZFormatted, tz) => {
+    // Dates must have only 'YYYY-MM-DD' string format
+    console.log(`Get production for status ${status} from ${startDateTZFormatted} to ${finishDateTZFormatted} on timezone ${tz}`);
+    return new Promise((resolve, reject) => {
+
+        const passiveStatus = ["preSoaking", "seeding"]
+        const activeStatus = ["growing", "harvestReady", "ready", "delivered"]
+
+        orgModel.aggregate([
+            {
+              $match: { _id: mongoose.Types.ObjectId(orgId) },
+            },
+            {
+              $unwind: "$containers",
+            },
+            {
+              $match: { "containers._id": mongoose.Types.ObjectId(containerId) },
+            },
+            {
+              $unwind: "$containers.production",
+            },
+            {
+              $match: { "containers.production.ProductionStatus": status },
+            },
+            {
+              $addFields: {
+                productionDate: {
+                  $dateToString: {
+                    format: "%Y-%m-%d",
+                    date: "$containers.production.startProductionDate",
+                    timezone: tz,
+                  },
+                },
+                harvestDate: {
+                  $dateToString: {
+                    format: "%Y-%m-%d",
+                    date: "$containers.production.startHarvestDate",
+                    timezone: tz,
+                  },
+                },
+              },
+            },
+            {
+              $match: {
+                $or: [
+                  {
+                    $and: [
+                      { productionDate: { $gte: startDateTZFormatted, $lte: finishDateTZFormatted } },
+                      { "containers.production.ProductionStatus": { $in: passiveStatus } },
+                    ],
+                  },
+                  {
+                    $and: [
+                      { harvestDate: { $gte: startDateTZFormatted, $lte: finishDateTZFormatted } },
+                      { "containers.production.ProductionStatus": { $in: activeStatus } }
+                    ],
+                  },
+                ],
+              },
+            },
+            {
+              $group: {
+                _id: {
+                  $dateToString: {
+                    format: "%d/%m/%Y",
+                    date: "$containers.production.startProductionDate",
+                    timezone: tz,
+                  },
+                },
+                totalSeeds: { $sum: "$containers.production.seeds" },
+                totalHarvest: { $sum: "$containers.production.harvest" },
+                productionModels: { $push: "$containers.production" },
+              },
+            },
+            {
+              $project: {
+                _id: 0,
+                workDate: "$_id",
+                expectedGrs: {
+                  $cond: {
+                    if: { $in: [status, passiveStatus] },
+                    then: "$totalSeeds",
+                    else: {
+                      $cond: {
+                        if: {
+                          $in: [status, activeStatus]
+                        },
+                        then: "$totalHarvest",
+                        else: null
+                      }
+                    }
+                  }
+                },
+                productionModels: 1,
+              },
+            },
+          ])
+          .then(result => resolve(result))
+          .catch(err => reject(err))
+    })
+}
+
 export const getProductionByOrderId = (orgId, container, orderId) => {
     return new Promise((resolve, reject) => {
         orgModel.aggregate(
