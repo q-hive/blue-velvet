@@ -71,6 +71,7 @@ import { currencyByLang } from '../../../utils/currencyByLanguage';
 
 // CUSTOM HOOKS
 import useProducts from '../../../hooks/useProducts';
+import useProduction from '../../../hooks/useProduction';
 
 export const ProductionMain = () => {
   const theme = useTheme(BV_THEME);
@@ -81,6 +82,7 @@ export const ProductionMain = () => {
     user: user,
   };
   const { deleteProduct, getProductsCompleteData } = useProducts(headers);
+  const { getAllProductionByStatus } = useProduction(headers);
   const { t, i18n } = useTranslation([
     'production_management_module',
     'buttons',
@@ -112,34 +114,22 @@ export const ProductionMain = () => {
   });
   const [containerConfig, setContainerConfig] = useState(containerConfigModel);
   // STEPPER
-  const [activeProductionStep, setActiveProductionStep] = useState(0);
-  const [productionData, setProductionData] = useState([
-    {
-      startWorkDate: 'Fri, 18 Ago 2023',
-      expectedGrs: '10',
-      productionModelsIds: [1, 2, 3],
-    },
-    {
-      startWorkDate: 'Sat, 19 Ago 2023',
-      expectedGrs: '1.55',
-      productionModelsIds: [],
-    },
-    {
-      startWorkDate: 'Sun, 20 Ago 2023',
-      expectedGrs: '14.5',
-      productionModelsIds: [],
-    },
-    {
-      startWorkDate: 'Mon, 21 Ago 2023',
-      expectedGrs: '0',
-      productionModelsIds: [],
-    },
+  const [steps, setSteps] = useState([
+    { name: 'to be soaked', status: 'preSoaking' },
+    { name: 'to be sedded', status: 'seeding' },
+    { name: 'on growing', status: 'growing' },
+    { name: 'ready to harvest', status: 'harvestReady' },
+    { name: 'ready to packing', status: 'packing' },
+    { name: 'ready to delivery', status: 'ready' },
+    { name: 'delivered', status: 'delivered' },
   ]);
+  const [activeProductionStep, setActiveProductionStep] = useState(0);
+  const [productionData, setProductionData] = useState([]);
   const [selectedProductionModelsData, setSelectedProductionModelsData] =
     useState(null);
   const [selectedDates, setSelectedDates] = useState({
-    startDate: undefined,
-    finishDate: undefined,
+    startDate: new Date(),
+    finishDate: new Date(),
   });
   const [orderModalOpen, setOrderModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -1022,6 +1012,22 @@ export const ProductionMain = () => {
       });
   }, []);
 
+  // Use effect for dashboard
+  useEffect(() => {
+    getAllProductionByStatus(
+      steps[activeProductionStep].status,
+      selectedDates.startDate,
+      selectedDates.finishDate
+    )
+      .then((res) => {
+        console.log(`ALL PRODUCTION ON ${steps[activeProductionStep].status}`, res.data.data);
+        setProductionData(res.data.data)
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, [selectedDates, activeProductionStep]);
+
   // useEffect(()=>{
   // getGrowingProducts({
   //     user:user,
@@ -1320,15 +1326,6 @@ export const ProductionMain = () => {
   }
 
   function ProductionStepper() {
-    const steps = [
-      { name: 'to be soaked', step: 'preSoaking' },
-      { name: 'to be sedded', step: 'seeding' },
-      { name: 'on growing', step: 'growing' },
-      { name: 'ready to harvest', step: 'harvestReady' },
-      { name: 'ready to packing', step: 'packing' },
-      { name: 'ready to delivery', step: 'ready' },
-      { name: 'delivered', step: 'delivered' },
-    ];
     const maxSteps = steps.length;
 
     const handleChangeDate = (date, type) => {
@@ -1354,45 +1351,8 @@ export const ProductionMain = () => {
 
     const renderProductionActionsCell = (params) => {
       const handleClick = () => {
-        console.log('Selected date data: ', params.row);
-        setSelectedProductionModelsData([
-          {
-            ProductName: 'Daykon Radish',
-            RelatedMix: {
-              isForMix: false,
-            },
-            ProductID: '64de375c287a3f7ba10282fb',
-            ProductionStatus: 'ready',
-            RelatedOrder: '64de3c10287a3f7ba1028abe',
-            EstimatedStartDate: '2023-08-10T05:00:00.000Z',
-            EstimatedHarvestDate: '2023-08-17T05:00:00.000Z',
-            startProductionDate: '2023-08-17T15:25:42.000Z',
-            startHarvestDate: '2023-08-17T15:25:42.000Z',
-            seeds: 3.5,
-            harvest: 25,
-            trays: 1,
-            dryracks: 1,
-            _id: '64de3c11287a3f7ba1021111',
-          },
-          {
-            ProductName: 'Daykon Radish',
-            RelatedMix: {
-              isForMix: false,
-            },
-            ProductID: '1111375c287a3f7ba1021111',
-            ProductionStatus: 'ready',
-            RelatedOrder: '64de3c10287a3f7ba1028abe',
-            EstimatedStartDate: '2023-08-10T05:00:00.000Z',
-            EstimatedHarvestDate: '2023-08-17T05:00:00.000Z',
-            startProductionDate: '2023-08-17T15:25:42.000Z',
-            startHarvestDate: '2023-08-17T15:25:42.000Z',
-            seeds: 3.5,
-            harvest: 25,
-            trays: 1,
-            dryracks: 1,
-            _id: '64de3c11287a3f7ba1022222',
-          },
-        ]);
+        console.log('Selected date data: ', params.row.productionModels);
+        setSelectedProductionModelsData(params.row.productionModels);
       };
 
       return (
@@ -1414,7 +1374,7 @@ export const ProductionMain = () => {
 
     const productionColumns = [
       {
-        field: 'startWorkDate',
+        field: 'workDate',
         headerName: 'Work date',
         headerClassName: 'header-products-table',
         flex: 2,
@@ -1479,7 +1439,7 @@ export const ProductionMain = () => {
             columns={productionColumns}
             rows={productionData}
             getRowId={(row) => {
-              return row.startWorkDate;
+              return row.workDate;
             }}
             sx={{ marginY: '1vh', maxWidth: '100%' }}
           />
