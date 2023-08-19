@@ -53,6 +53,7 @@ import {
   productsColumns,
   DisplayViewButton /*productsColumnsMobile*/,
 } from '../../../utils/TableStates';
+import { formattedDate } from '../../../utils/times';
 
 //*network AND API
 import { useNavigate } from 'react-router-dom';
@@ -72,6 +73,8 @@ import { currencyByLang } from '../../../utils/currencyByLanguage';
 // CUSTOM HOOKS
 import useProducts from '../../../hooks/useProducts';
 import useProduction from '../../../hooks/useProduction';
+import useOrders from '../../../hooks/useOrders';
+import useCustomers from '../../../hooks/useCustomers';
 
 export const ProductionMain = () => {
   const theme = useTheme(BV_THEME);
@@ -83,6 +86,8 @@ export const ProductionMain = () => {
   };
   const { deleteProduct, getProductsCompleteData } = useProducts(headers);
   const { getAllProductionByStatus } = useProduction(headers);
+  const { getOrders } = useOrders(headers);
+  const { getCustomers } = useCustomers(headers);
   const { t, i18n } = useTranslation([
     'production_management_module',
     'buttons',
@@ -90,7 +95,7 @@ export const ProductionMain = () => {
 
   //*Render states
   const [rows, setRows] = useState(
-    JSON.parse(window.localStorage.getItem('products')) || []
+    JSON.parse(window.localStorage.getItem('allProducts')) || []
   );
   const [showProduct, setShowProduct] = useState(false);
 
@@ -970,10 +975,59 @@ export const ProductionMain = () => {
     };
 
     setLoading(true);
+
+    getCustomers()
+      .then((res) => {
+        console.log('All CUSTOMERS', res.data.data);
+        window.localStorage.setItem(
+          'allCustomers',
+          JSON.stringify(res.data.data)
+        );
+      })
+      .catch((err) => {
+        setDialog({
+          ...dialog,
+          open: true,
+          title: 'Error getting customers',
+          message:
+            'Sorry, we are having trouble to get the products. Try again.',
+          actions: [
+            {
+              label: 'Reload page',
+              execute: () => window.location.reload(),
+            },
+          ],
+        });
+      });
+
+    getOrders()
+      .then((res) => {
+        console.log('All ORDERS', res.data.data);
+        window.localStorage.setItem('allOrders', JSON.stringify(res.data.data));
+      })
+      .catch((err) => {
+        setDialog({
+          ...dialog,
+          open: true,
+          title: 'Error getting orders',
+          message:
+            'Sorry, we are having trouble to get the products. Try again.',
+          actions: [
+            {
+              label: 'Reload page',
+              execute: () => window.location.reload(),
+            },
+          ],
+        });
+      });
+
     requests()
       .then((products) => {
         let test = 0;
-        window.localStorage.setItem('products', JSON.stringify(products.data));
+        window.localStorage.setItem(
+          'allProducts',
+          JSON.stringify(products.data)
+        );
         if (products.data.length === 0) {
           return setDialog((...dialog) => {
             return {
@@ -1020,8 +1074,11 @@ export const ProductionMain = () => {
       selectedDates.finishDate
     )
       .then((res) => {
-        console.log(`ALL PRODUCTION ON ${steps[activeProductionStep].status}`, res.data.data);
-        setProductionData(res.data.data)
+        console.log(
+          `ALL PRODUCTION ON ${steps[activeProductionStep].status}`,
+          res.data.data
+        );
+        setProductionData(res.data.data);
       })
       .catch((err) => {
         console.log(err);
@@ -1097,10 +1154,7 @@ export const ProductionMain = () => {
     );
   };
 
-  function ProductionModelsCard({ startWorkDate, productionModels }) {
-    console.log(startWorkDate);
-    console.log(productionModels);
-
+  function ProductionModelsCard() {
     const handleProductsModalOpen = (order) => {
       setSelectedOrder(order);
       setOrderModalOpen(true);
@@ -1113,9 +1167,11 @@ export const ProductionMain = () => {
 
     const renderProductionModelsActionsCell = (params) => {
       const handleClick = () => {
-        console.log('Selected order data: ', params.row);
-        // TODO: Buscar orden con RelatedOrder y mandar data
-        handleProductsModalOpen('123');
+        const filteredOrder = JSON.parse(
+          window.localStorage.getItem('allOrders')
+        ).filter((order) => order._id === params.row.RelatedOrder)[0];
+        handleProductsModalOpen(filteredOrder);
+        console.log('Order related', filteredOrder);
       };
 
       return (
@@ -1143,6 +1199,7 @@ export const ProductionMain = () => {
         flex: 1,
         headerAlign: 'center',
         align: 'center',
+        renderCell: (params) => `...${params.value.slice(-5)}`,
       },
       {
         field: 'ProductID',
@@ -1151,6 +1208,17 @@ export const ProductionMain = () => {
         flex: 2,
         headerAlign: 'center',
         align: 'center',
+        renderCell: (params) => {
+          return (
+            <>
+              {
+                JSON.parse(window.localStorage.getItem('allProducts')).find(
+                  (product) => product._id === params.value
+                ).name
+              }
+            </>
+          );
+        },
       },
       {
         field: 'seeds',
@@ -1212,13 +1280,12 @@ export const ProductionMain = () => {
                 display: 'flex',
                 overflow: 'auto',
                 flexDirection: 'column',
-                minHeight: 350,
-                mb: 3,
+                minHeight: 508,
               }}
             >
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Typography variant='h6' color='secondary.main'>
-                  {'startWorkDate'}
+                  Work for day: {selectedProductionModelsData.workDate}
                 </Typography>
                 <IconButton
                   onClick={() => setSelectedProductionModelsData(null)}
@@ -1229,7 +1296,7 @@ export const ProductionMain = () => {
               </Box>
               <DataGrid
                 columns={productionModelsColumns}
-                rows={selectedProductionModelsData}
+                rows={selectedProductionModelsData.productionModels}
                 getRowId={(row) => {
                   return row._id;
                 }}
@@ -1255,7 +1322,7 @@ export const ProductionMain = () => {
             {selectedOrder && (
               <>
                 <Typography variant='h6' align='center' gutterBottom>
-                  <b>Order #{'selectedOrder._id'}</b>
+                  <b>Order #{selectedOrder._id}</b>
                 </Typography>
                 <Box
                   sx={{
@@ -1276,7 +1343,7 @@ export const ProductionMain = () => {
                   )}
                   {selectedOrder.next && (
                     <Chip
-                      label={'selectedOrder.next'}
+                      label={selectedOrder.next}
                       color='primary'
                       variant='filled'
                       size='medium'
@@ -1285,15 +1352,20 @@ export const ProductionMain = () => {
                   )}
                 </Box>
                 <Typography variant='body1' gutterBottom>
-                  <b>Created:</b>{' '}
-                  {new Date(selectedOrder.created).toLocaleString()}
+                  <b>Created:</b> {formattedDate(selectedOrder.created)}
                 </Typography>
                 <Typography variant='body1' gutterBottom>
-                  <b>Delivery Date:</b>{' '}
-                  {new Date(selectedOrder.date).toLocaleString()}
+                  <b>Delivery Date:</b> {formattedDate(selectedOrder.date)}
                 </Typography>
                 <Typography variant='body1' gutterBottom>
-                  <b>Customer:</b> {'selectedOrder.customer'}
+                  <b>Customer:</b>{' '}
+                  {
+                    JSON.parse(
+                      window.localStorage.getItem('allCustomers')
+                    ).find(
+                      (customer) => customer._id === selectedOrder.customer
+                    ).name
+                  }
                 </Typography>
                 <Box mt={3} sx={{ textAlign: 'center' }}>
                   <Table>
@@ -1306,14 +1378,14 @@ export const ProductionMain = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {/* {selectedOrder.products.map((product) => ( */}
-                        <TableRow key={'product._id'}>
-                          <TableCell>{'product.name'}</TableCell>
-                          <TableCell>{'product.status'}</TableCell>
-                          <TableCell>{'product.packages[0].number'}</TableCell>
-                          <TableCell>{'product.packages[1].number'}</TableCell>
+                      {selectedOrder.products.map((product) => (
+                        <TableRow key={product._id}>
+                          <TableCell>{product.name}</TableCell>
+                          <TableCell>{product.status}</TableCell>
+                          <TableCell>{product.packages[0].number}</TableCell>
+                          <TableCell>{product.packages[1].number}</TableCell>
                         </TableRow>
-                      {/* ))} */}
+                      ))}
                     </TableBody>
                   </Table>
                 </Box>
@@ -1351,8 +1423,8 @@ export const ProductionMain = () => {
 
     const renderProductionActionsCell = (params) => {
       const handleClick = () => {
-        console.log('Selected date data: ', params.row.productionModels);
-        setSelectedProductionModelsData(params.row.productionModels);
+        console.log('Selected date data: ', params.row);
+        setSelectedProductionModelsData(params.row);
       };
 
       return (
@@ -1952,10 +2024,7 @@ export const ProductionMain = () => {
                 {/* PRODUCTION MODELS BY DATE */}
                 {!!selectedProductionModelsData ? (
                   <Grid item sm={12} lg={7}>
-                    <ProductionModelsCard
-                      startWorkDate={'startWorkDate here'}
-                      productionModels={selectedProductionModelsData}
-                    />
+                    <ProductionModelsCard />
                   </Grid>
                 ) : null}
               </Grid>
