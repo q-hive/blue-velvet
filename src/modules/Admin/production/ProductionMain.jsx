@@ -576,6 +576,7 @@ export const ProductionMain = () => {
   const productsColumnsMobile = [
     {
       field: 'name',
+      sortable: false,
       headerClassName: 'header-products-table',
       headerAlign: 'center',
       headerName: 'Microgreen',
@@ -586,6 +587,7 @@ export const ProductionMain = () => {
     },
     {
       field: 'actions',
+      sortable: false,
       headerClassName: 'header-products-table',
       headerAlign: 'center',
       headerName: 'Actions',
@@ -1194,19 +1196,21 @@ export const ProductionMain = () => {
     const productionModelsColumns = [
       {
         field: 'RelatedOrder',
+        sortable: false,
         headerName: 'Order id',
         headerClassName: 'header-products-table',
-        flex: 1,
         headerAlign: 'center',
+        minWidth: 90,
         align: 'center',
         renderCell: (params) => `...${params.value.slice(-5)}`,
       },
       {
         field: 'ProductID',
+        sortable: false,
         headerName: 'Product',
         headerClassName: 'header-products-table',
-        flex: 2,
         headerAlign: 'center',
+        minWidth: 150,
         align: 'center',
         renderCell: (params) => {
           return (
@@ -1222,42 +1226,47 @@ export const ProductionMain = () => {
       },
       {
         field: 'seeds',
+        sortable: false,
         headerName: 'Seeds',
         headerClassName: 'header-products-table',
-        flex: 1,
         headerAlign: 'center',
+        minWidth: 80,
         align: 'center',
       },
       {
         field: 'harvest',
+        sortable: false,
         headerName: 'Harvest',
         headerClassName: 'header-products-table',
-        flex: 1,
         headerAlign: 'center',
+        minWidth: 90,
         align: 'center',
       },
       {
         field: 'trays',
+        sortable: false,
         headerName: 'Trays',
         headerClassName: 'header-products-table',
-        flex: 1,
         headerAlign: 'center',
+        minWidth: 70,
         align: 'center',
       },
       {
         field: 'dryracks',
+        sortable: false,
         headerName: 'Dry',
         headerClassName: 'header-products-table',
-        flex: 1,
         headerAlign: 'center',
+        minWidth: 60,
         align: 'center',
       },
       {
         field: 'actions',
+        sortable: false,
         headerName: 'Actions',
         headerClassName: 'header-products-table',
-        flex: 1,
         headerAlign: 'center',
+        minWidth: 80,
         align: 'center',
         renderCell: renderProductionModelsActionsCell,
       },
@@ -1300,7 +1309,11 @@ export const ProductionMain = () => {
                 getRowId={(row) => {
                   return row._id;
                 }}
-                sx={{ marginY: '1vh', maxWidth: '100%' }}
+                sx={{ marginY: '1vh', width: '100%' }}
+                disableSelectionOnClick
+                disableColumnMenu
+                pageSize={10}
+                rowsPerPageOptions={[10]}
               />
             </Paper>
           </Grid>
@@ -1447,6 +1460,7 @@ export const ProductionMain = () => {
     const productionColumns = [
       {
         field: 'workDate',
+        sortable: false,
         headerName: 'Work date',
         headerClassName: 'header-products-table',
         flex: 2,
@@ -1455,6 +1469,7 @@ export const ProductionMain = () => {
       },
       {
         field: 'expectedGrs',
+        sortable: false,
         headerName: 'Expected grs',
         headerClassName: 'header-products-table',
         flex: 2,
@@ -1463,6 +1478,7 @@ export const ProductionMain = () => {
       },
       {
         field: 'actions',
+        sortable: false,
         headerName: 'Actions',
         headerClassName: 'header-products-table',
         flex: 1,
@@ -1513,7 +1529,11 @@ export const ProductionMain = () => {
             getRowId={(row) => {
               return row.workDate;
             }}
-            sx={{ marginY: '1vh', maxWidth: '100%' }}
+            sx={{ marginY: '1vh', width: '100%' }}
+            disableSelectionOnClick
+            disableColumnMenu
+            pageSize={10}
+            rowsPerPageOptions={[10]}
           />
         ) : (
           <Box
@@ -1668,7 +1688,8 @@ export const ProductionMain = () => {
                     sx={{
                       padding: BV_THEME.spacing(2),
                       display: 'flex',
-                      overflow: 'auto',
+                      overflowX: 'hidden',
+                      overflowY: 'auto',
                       flexDirection: 'column',
                       minHeight: 508,
                       height: '95%',
@@ -1697,6 +1718,10 @@ export const ProductionMain = () => {
                             // console.log(d);
                           }}
                           sx={{ marginY: '2vh', maxWidth: '100%' }}
+                          disableSelectionOnClick
+                          disableColumnMenu
+                          pageSize={10}
+                          rowsPerPageOptions={[10]}
                         />
                       </>
                     )}
