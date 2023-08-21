@@ -116,7 +116,7 @@ export const MixProductsForm = ({editing, product}) => {
 
     const getProductName=(strain)=>{
         console.log("id a buscar",strain)
-        let testName = JSON.parse(localStorage.getItem('products')).find((prod) => prod._id === strain)
+        let testName = JSON.parse(localStorage.getItem('allProducts')).find((prod) => prod._id === strain)
         console.log("testName",testName)
         if(testName !== undefined )
         return testName.name
