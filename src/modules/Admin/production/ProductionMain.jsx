@@ -1202,6 +1202,7 @@ export const ProductionMain = () => {
         headerClassName: 'header-products-table',
         headerAlign: 'center',
         minWidth: 90,
+        flex: 1,
         align: 'center',
         renderCell: (params) => `...${params.value.slice(-5)}`,
       },
@@ -1212,6 +1213,7 @@ export const ProductionMain = () => {
         headerClassName: 'header-products-table',
         headerAlign: 'center',
         minWidth: 150,
+        flex: 1,
         align: 'center',
         renderCell: (params) => {
           return (
@@ -1232,6 +1234,7 @@ export const ProductionMain = () => {
         headerClassName: 'header-products-table',
         headerAlign: 'center',
         minWidth: 80,
+        flex: 1,
         align: 'center',
       },
       {
@@ -1241,6 +1244,7 @@ export const ProductionMain = () => {
         headerClassName: 'header-products-table',
         headerAlign: 'center',
         minWidth: 90,
+        flex: 1,
         align: 'center',
       },
       {
@@ -1250,6 +1254,7 @@ export const ProductionMain = () => {
         headerClassName: 'header-products-table',
         headerAlign: 'center',
         minWidth: 70,
+        flex: 1,
         align: 'center',
       },
       {
@@ -1259,6 +1264,7 @@ export const ProductionMain = () => {
         headerClassName: 'header-products-table',
         headerAlign: 'center',
         minWidth: 60,
+        flex: 1,
         align: 'center',
       },
       {
@@ -1268,6 +1274,7 @@ export const ProductionMain = () => {
         headerClassName: 'header-products-table',
         headerAlign: 'center',
         minWidth: 80,
+        flex: 2,
         align: 'center',
         renderCell: renderProductionModelsActionsCell,
       },
