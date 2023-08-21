@@ -25,6 +25,7 @@ import {
   TableCell,
   TableBody,
   Chip,
+  Tooltip,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
@@ -1334,9 +1335,22 @@ export const ProductionMain = () => {
           >
             {selectedOrder && (
               <>
-                <Typography variant='h6' align='center' gutterBottom>
-                  <b>Order #{selectedOrder._id}</b>
-                </Typography>
+                <Button
+                  variant='text'
+                  color='inherit'
+                  onClick={() => {
+                    navigate(`/${user.uid}/admin/sales/${selectedOrder._id}`, {
+                      state: { orderId: selectedOrder._id },
+                    });
+                  }}
+                >
+                  <Tooltip title='View order' placement='top'>
+                    <Typography variant='h6' align='center' gutterBottom>
+                      <b>Order #{selectedOrder._id}</b>
+                    </Typography>
+                  </Tooltip>
+                </Button>
+
                 <Box
                   sx={{
                     display: 'flex',
@@ -1355,13 +1369,23 @@ export const ProductionMain = () => {
                     />
                   )}
                   {selectedOrder.next && (
-                    <Chip
-                      label={selectedOrder.next}
-                      color='primary'
-                      variant='filled'
-                      size='medium'
-                      icon={<NextPlanOutlinedIcon />}
-                    />
+                    <Tooltip title='View next order' placement='bottom-end'>
+                      <Chip
+                        label={selectedOrder.next}
+                        color='primary'
+                        variant='filled'
+                        size='medium'
+                        icon={<NextPlanOutlinedIcon />}
+                        onClick={() => {
+                          navigate(
+                            `/${user.uid}/admin/sales/${selectedOrder.next}`,
+                            {
+                              state: { orderId: selectedOrder.next },
+                            }
+                          );
+                        }}
+                      />
+                    </Tooltip>
                   )}
                 </Box>
                 <Typography variant='body1' gutterBottom>
