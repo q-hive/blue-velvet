@@ -16,6 +16,8 @@ import {
 
 //*THEME
 import { BV_THEME } from '../../../../theme/BV-theme';
+import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog';
+
 //*NETWORK AND API
 import { json, useLocation, useNavigate } from 'react-router-dom';
 import useAuth from '../../../../contextHooks/useAuthContext';
@@ -73,6 +75,12 @@ export const TaskContainer = (props) => {
 
   //* STEPPER
   const [activeStep, setActiveStep] = useState(0);
+  const [dialog, setDialog] = useState({
+    open: false,
+    title: '',
+    message: '',
+    actions: [],
+  });
 
   let type, orders, products, packs, disabledSteps;
 
@@ -360,6 +368,13 @@ export const TaskContainer = (props) => {
 
   //Finish Task
   const handleCompleteTask = () => {
+    setDialog({
+      ...dialog,
+      open: true,
+      title: `Finishing ${type}" task`,
+      message: `Please wait... Task is finishing`,
+    });
+
     let finished = Date.now();
     let achieved =
       finished -
@@ -478,6 +493,7 @@ export const TaskContainer = (props) => {
           status: 'success',
         });
         props.setFinished({ value: true, counter: props.counter + 1 });
+        setDialog({ ...dialog, open: false });
       })
       .catch((err) => {
         console.log(err);
@@ -699,6 +715,15 @@ export const TaskContainer = (props) => {
           </Box>
         </Box>
       </Box>
+      {/* DIALOG */}
+      <UserDialog
+        title={dialog.title}
+        content={dialog.message}
+        dialog={dialog}
+        setDialog={setDialog}
+        actions={dialog.actions}
+        open={dialog.open}
+      />
     </div>
   );
 };
