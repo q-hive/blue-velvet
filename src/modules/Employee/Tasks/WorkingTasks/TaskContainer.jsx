@@ -371,8 +371,8 @@ export const TaskContainer = (props) => {
     setDialog({
       ...dialog,
       open: true,
-      title: `Finishing ${type}" task`,
-      message: `Please wait... Task is finishing`,
+      title: `Finishing task`,
+      message: `Please wait until task "${type}" has been finished`,
     });
 
     let finished = Date.now();
