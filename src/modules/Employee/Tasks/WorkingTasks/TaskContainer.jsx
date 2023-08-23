@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { 
      Box, Button, 
      Typography, useTheme,
-    Stepper, Step, StepLabel, StepContent, Paper, 
+    Stepper, Step, StepLabel, StepContent, Paper, Alert
 } from '@mui/material'
 
 //*THEME
@@ -403,6 +403,11 @@ export const TaskContainer = (props) => {
         const isDisabledStep = disabledSteps.includes(type)
         return isDisabledStep || (!isOnTime && isLastStep(index))
     }
+
+    const isTaskFinishedToday = () => {
+        const isStepFinished = TrackWorkModel.tasks.some(task => task.type === type)
+        return isStepFinished
+    }
     
     // Stepper Navigation buttons
     const getStepContent = (step,index) => {
@@ -416,7 +421,7 @@ export const TaskContainer = (props) => {
                         variant="contained"
                         onClick={isLastStep(index) ? handleCompleteTask : handleNext}
                         sx={()=>({...BV_THEME.button.standard,mt: 1, mr: 1,})}
-                        disabled={isDisabledStepButton(index) || type === "growing"}
+                        disabled={isDisabledStepButton(index) || type === "growing" || isTaskFinishedToday()}
                         
                     >
                         {isLastStep(index) ? 'Finish Task' :'Continue'}
@@ -431,6 +436,15 @@ export const TaskContainer = (props) => {
                     </Button>
                 </div>
             </Box>
+            <Box sx={{ mb: 2 }}>
+                {isTaskFinishedToday() && (
+                    <Alert severity="success" variant='outlined'>
+                        This step has already been completed successfully today.<br />
+                        <b>Check the logs in "Today's Completed Tasks".</b>
+                    </Alert>
+                )}
+            </Box>
+
             </>
         )
     }
@@ -453,7 +467,7 @@ export const TaskContainer = (props) => {
                         variant="contained"
                         onClick={isLastStep(index) ? handleCompleteTask : handleNext}
                         sx={()=>({...BV_THEME.button.standard})}
-                        disabled={isDisabledStepButton(index)  }
+                        disabled={isDisabledStepButton(index)  || isTaskFinishedToday() }
                         
                     >
                         {isLastStep(index) ? 'Finish Task' : 'Continue'}

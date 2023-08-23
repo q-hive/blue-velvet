@@ -9,6 +9,7 @@ export const globalTimeModel = {
 
 const taskPerformanceModel = {
     "name": "",
+    "type": "",
     "started":undefined,
     "stopped": undefined,
     "expected": undefined,
@@ -19,13 +20,13 @@ const taskPerformanceModel = {
 }
 export const tasksCicleObj = {
     "cicle": {
-        "preSoaking": {...taskPerformanceModel, name:"PreSoaking"},
-        "harvestReady": {...taskPerformanceModel, name:"Harvest"},
-        "packing": {...taskPerformanceModel, name:"Packing"},
-        "ready": {...taskPerformanceModel, name:"Delivery"},
-        "seeding": {...taskPerformanceModel, name:"Waste and control"},
-        "cleaning": {...taskPerformanceModel, name:"Cleaning"},
-        "growing": {...taskPerformanceModel, name:"Waste and control"},
+        "preSoaking": {...taskPerformanceModel, name:"PreSoaking", type: "preSoaking"},
+        "harvestReady": {...taskPerformanceModel, name:"Harvest", type: "harvestReady"},
+        "packing": {...taskPerformanceModel, name:"Packing", type: "packing"},
+        "ready": {...taskPerformanceModel, name:"Delivery", type: "ready"},
+        "seeding": {...taskPerformanceModel, name:"Waste and control", type: "seeding"},
+        "cleaning": {...taskPerformanceModel, name:"Cleaning", type: "cleaning"},
+        "growing": {...taskPerformanceModel, name:"Waste and control", type: "growing"},
         // "pre-soaking": {
         //     "name": "TaskName",
         //     "elapsed":null,
