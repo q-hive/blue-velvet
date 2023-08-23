@@ -11,7 +11,8 @@ import {
     upsertProduction,
     createSingleProductionModelProduct,
     updateSingleProductionModelProduct,
-    deleteSingleProductionModelProduct
+    deleteSingleProductionModelProduct,
+    getAllProductionByFilters
 } from "./store.js"
 import { getAllProducts, getProductById } from "../products/store.js"
 import mongoose from "mongoose"
@@ -754,4 +755,20 @@ export const updateProductionBasedOnProductUpdate = async (updateConfigModel, pr
         .catch((err) => {
             throw new Error(err)
         })
+}
+
+export const getAllProductionByStatus = (orgId, containerId, status, startDate, finishDate, tz) => {
+    return new Promise(async (resolve, reject) => {
+        // Date conversion from string to TZ to UTC
+        const startDateTZ = moment.tz(startDate, 'ddd MMM DD YYYY HH:mm:ss [GMT] ZZ (z)', tz);
+        const finishDateTZ = moment.tz(finishDate, 'ddd MMM DD YYYY HH:mm:ss [GMT] ZZ (z)', tz);
+        
+        getAllProductionByFilters(orgId, containerId, status, startDateTZ.format('YYYY-MM-DD'), finishDateTZ.format('YYYY-MM-DD'), tz)
+            .then((result) => {
+                resolve(result)
+            })
+            .catch((err) => {
+                reject(err)
+            })
+    })
 }

@@ -9,7 +9,7 @@ export const NewProduct = (props) => {
 
   if(props.edit){
     let id = new URLSearchParams(window.location.search).get("id")
-    productToEdit = JSON.parse(window.localStorage.getItem('products')).find((prod) => prod._id === id)
+    productToEdit = JSON.parse(window.localStorage.getItem('allProducts')).find((prod) => prod._id === id)
   }
   return (
     <div>

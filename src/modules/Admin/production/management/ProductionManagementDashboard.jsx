@@ -31,7 +31,7 @@ export const ProductionManagementDashboard = () => {
     
     //*Render states
     const [columnsState, setColumnsState] = useState(productsColumns)
-    const [rows, setRows] = useState(JSON.parse(window.localStorage.getItem('products')) || [])
+    const [rows, setRows] = useState(JSON.parse(window.localStorage.getItem('allProducts')) || [])
     const [loading, setLoading] = useState(false)
     const [growingProducts, setGrowingProducts] = useState(null)
     const [dialog, setDialog] = useState({

@@ -2,6 +2,7 @@ import express from "express"
 import { error, success } from "../../network/response.js"
 import { getProductionWorkByContainerId, saveProductionForWorkDay, getAllProductionByOrderId, createProductionProduct, updateProductionProduct, deleteProductionProduct } from "./controller.js"
 import { getProductionByStatus } from "./store.js"
+import { getAllProductionByStatus } from "./controller.js"
 
 const router = express.Router()
 
@@ -15,6 +16,21 @@ router.get('/workday', (req, res) => {
     })
     .catch((err) => {
         error(req, res, 500, "Error getting production work - GNERIC ERROR", err, err)
+    })
+})
+
+router.get('/:status', (req, res) => {
+    const { organization: orgId } = res.locals;
+    const { _id: containerId } = res.locals.containers.containers[0];
+    const { status } = req.params;
+    const { startDate, finishDate, tz } = req.query;
+
+    getAllProductionByStatus(orgId, containerId, status, startDate, finishDate, tz)
+    .then(result => {
+        success(req, res, 200, "Production obtained successfully", result)
+    })
+    .catch(err => {
+        error(req, res, 500, "Error getting production", err, err)
     })
 })
 
