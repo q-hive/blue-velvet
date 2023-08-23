@@ -393,7 +393,7 @@ export const TaskContainer = (props) => {
             Object.keys(WorkContext.cicle)[WorkContext.currentRender]
           ].time,
         achievedTime: achieved,
-        orders: state.orders.map((order) => order._id),
+        orders: state.orders,
         taskType: Object.keys(WorkContext.cicle)[WorkContext.currentRender],
         workDay: TrackWorkModel.workDay,
       };
