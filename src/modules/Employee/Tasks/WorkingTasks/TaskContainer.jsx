@@ -400,89 +400,60 @@ export const TaskContainer = (props) => {
         };
 
         let productionModelsIds = [];
-        wd[Object.keys(WorkContext.cicle)[WorkContext.currentRender]].forEach(
-          (model) => {
-            if (model.modelsId) {
-              model.modelsId.forEach((productionModelsId) =>
-                productionModelsIds.push(productionModelsId)
-              );
+        // Block production update, only make the task history
+        if (type !== 'cleaning' && type !== 'ready') {
+          wd[Object.keys(WorkContext.cicle)[WorkContext.currentRender]].forEach(
+            (model) => {
+              if (model.modelsId) {
+                model.modelsId.forEach((productionModelsId) =>
+                  productionModelsIds.push(productionModelsId)
+                );
+              }
             }
-          }
-        );
+          );
+        }
 
         let refreshedToken = await getRefreshedToken();
         await updateTaskHistory(
           { ...taskHistoryModel },
           { authorization: refreshedToken, user: user }
         );
-        await updateProduction(
-          user.assignedContainer,
-          productionModelsIds,
-          type,
-          { authorization: refreshedToken, user: user }
-        );
+
+        // Block production update, only make the task history
+        if (type !== 'cleaning' && type !== 'ready') {
+          await updateProduction(
+            user.assignedContainer,
+            productionModelsIds,
+            type,
+            { authorization: refreshedToken, user: user }
+          );
+        }
       };
-
-      if (type === 'cleaning') {
-        console.log(
-          'The production cannot be updated as the same way of a productin model based task'
-        );
-        WorkContext.cicle[
-          Object.keys(WorkContext.cicle)[WorkContext.currentRender]
-        ].finished = finished;
-        // WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.currentRender+1]].started = finished+1
-        WorkContext.cicle[
-          Object.keys(WorkContext.cicle)[WorkContext.currentRender]
-        ].achieved = achieved;
-        TrackWorkModel.tasks.push(
-          WorkContext.cicle[
-            Object.keys(WorkContext.cicle)[WorkContext.currentRender]
-          ]
-        );
-        setTrackWorkModel({ ...TrackWorkModel, tasks: TrackWorkModel.tasks });
-
-        // WorkContext.currentRender = WorkContext.currentRender + 1
-        setWorkContext({
-          ...WorkContext,
-          current: WorkContext.current,
-          currentRender: WorkContext.currentRender,
-        });
-        localStorage.setItem('WorkContext', JSON.stringify(WorkContext));
-
-        props.setSnack({
-          ...props.snack,
-          open: true,
-          message: 'Production updated succesfully',
-          status: 'success',
-        });
-        props.setFinished({ value: true, counter: props.counter + 1 });
-        navigate(`/${user.uid}/${user.role}/dashboard`);
-        return;
-      }
 
       updateProductionData()
         .then((result) => {
           // hooks
-          WorkContext.cicle[
-            Object.keys(WorkContext.cicle)[WorkContext.currentRender]
-          ].finished = finished;
-          WorkContext.cicle[
-            Object.keys(WorkContext.cicle)[WorkContext.currentRender + 1]
-          ].started = finished + 1;
-          WorkContext.cicle[
-            Object.keys(WorkContext.cicle)[WorkContext.currentRender]
-          ].achieved = achieved;
-          TrackWorkModel.tasks.push(
-            WorkContext.cicle[
-              Object.keys(WorkContext.cicle)[WorkContext.currentRender]
-            ]
-          );
+          const currentRenderKey = Object.keys(WorkContext.cicle)[
+            WorkContext.currentRender
+          ];
+          const nextRenderKey = Object.keys(WorkContext.cicle)[
+            WorkContext.currentRender + 1
+          ];
+
+          WorkContext.cicle[currentRenderKey].finished = finished;
+          if (type !== 'cleaning') {
+            WorkContext.cicle[nextRenderKey].started = finished + 1;
+          }
+          WorkContext.cicle[currentRenderKey].achieved = achieved;
+          TrackWorkModel.tasks.push(WorkContext.cicle[currentRenderKey]);
           setTrackWorkModel({ ...TrackWorkModel, tasks: TrackWorkModel.tasks });
 
-          WorkContext.currentRender = WorkContext.currentRender + 1;
+          if (type !== 'cleaning') {
+            WorkContext.currentRender = WorkContext.currentRender + 1;
+          }
+
           setWorkContext({
             ...WorkContext,
-            current: WorkContext.current,
             currentRender: WorkContext.currentRender,
           });
           localStorage.setItem('WorkContext', JSON.stringify(WorkContext));
@@ -494,6 +465,11 @@ export const TaskContainer = (props) => {
             status: 'success',
           });
           props.setFinished({ value: true, counter: props.counter + 1 });
+
+          if (type === 'cleaning') {
+            navigate(`/${user.uid}/${user.role}/dashboard`);
+            return;
+          }
           setDialog({ ...dialog, open: false });
         })
         .catch((err) => {
