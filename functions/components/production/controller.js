@@ -555,6 +555,7 @@ export const buildProductionProductData = async (prod, order, dbproducts, overHe
         return fprod._id == prod._id
     })
 
+    console.log("🎃 prod.packages:", prod.packages)
     prod.packages.forEach((pkg, idx) => {
         const packageSizeIndex = {
             "medium": 1,
@@ -562,10 +563,12 @@ export const buildProductionProductData = async (prod, order, dbproducts, overHe
         }[pkg.size] || 0; // "small" default
 
         prod.packages[idx] = {
-            ...pkg,
+            size: pkg.size,
+            number: pkg.number,
             grams: prodFound.price[packageSizeIndex].packageSize * pkg.number,
         };
     });
+    console.log("🎃🎃 prod.packages:", prod.packages)
 
     //*Total grams will define number of trays based on seedingRate and add overhead config from global overhead
     const harvest = prod.packages.reduce((prev, curr) => prev + curr.grams, 0) * (1 + overHeadParam);

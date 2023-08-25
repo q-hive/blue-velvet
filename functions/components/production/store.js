@@ -419,56 +419,63 @@ const createCyclicOrderAfterDelivery = async (orgId, modifiedModels, orderId, ne
     if (modifiedModels.length && nextStatus === "delivered") {
         console.log(`Cheking if order ${orderId} its cyclic`)
         const orders = await getOrderById(orgId, orderId)
-        console.log(orders)
-        
-        if (orders[0] && orders[0].cyclic) {
-            let baseOrder = orders[0]
-            const relatedOrder = await getOrderById(orgId, baseOrder.next)
+        const baseOrder = orders[0]
+        console.log("🚀 baseOrder:", baseOrder)
 
-            if (relatedOrder[0] && relatedOrder[0]) {
+        if (baseOrder && baseOrder.cyclic) {
+            const nextOrder = await getOrderById(orgId, baseOrder.next)
+            const relatedOrder = nextOrder[0]
+            console.log("🚀 relatedOrder:", relatedOrder)
+
+            if (relatedOrder) {
                 const allProducts = await getAllProducts(orgId);
-                const relatedOrderStatuses = Array.from(
-                    new Set(relatedOrder[0].products.map((prod) => prod.status))
-                );
-
+                console.log("🚀 allProducts:", allProducts[0])
 
                 let org = await getOrganizationById(orgId);
                 let tempId = new ObjectId();
+                console.log("🚀 tempId:", tempId)
 
-                const relOrderIndex = org.orders.findIndex(order => order._id.equals(relatedOrder[0]._id))
+                const relOrderIndex = org.orders.findIndex(order => order._id.equals(relatedOrder._id))
 
                 if (relOrderIndex !== -1) {
                     org.orders[relOrderIndex].next = tempId
                 }
 
-                const newProducts = relatedOrder[0].products.map((prod) => {
-                    const product = allProducts.find((fprod) => {
-                        if (typeof fprod._id === "object") {
-                            return fprod._id.equals(prod._id)
-                        }
-
-                        if (typeof prod._id === "object") {
-                            return prod._id.equals(fprod._id)
-                        }
-
+                const newProducts = relatedOrder.products.map((prod) => {
+                    const prodFound = allProducts.find((fprod) => {
+                        if (typeof fprod._id === "object") return fprod._id.equals(prod._id)
+                        if (typeof prod._id === "object") return prod._id.equals(fprod._id)
                         return fprod._id == prod._id
                     })
-                    prod.status = getInitialStatus(product)
+                    console.log("🚀 product:", prodFound)
+                    prod.status = getInitialStatus(prodFound)
+                    console.log("🚀 prod:", prod)
                     return prod
                 })
+                console.log("🚀 newProducts:", JSON.stringify(newProducts,null,2))
+
+                console.log("🚀 relatedOrder[0].products:", JSON.stringify(relatedOrder.products,null,2))
+
+                const relatedOrderStatuses = Array.from(
+                    new Set(relatedOrder.products.map((prod) => prod.status))
+                );
+                console.log("🚀 relatedOrderStatuses:", relatedOrderStatuses)
 
                 let tempOrder = {
                     _id: tempId,
                     organization: orgId,
-                    customer: relatedOrder[0].customer,
                     next: null,
-                    price: relatedOrder[0].price,
-                    address: relatedOrder[0].address,
+                    deliveredBy: null,
+                    customer: relatedOrder.customer,
+                    price: relatedOrder.price,
+                    date: moment(relatedOrder.date).add(7, "days"),
+                    address: relatedOrder.address,
                     products: newProducts,
-                    cyclic: relatedOrder[0].cyclic,
-                    status: relatedOrderStatuses.length === 1 ? 'seeding' : 'production',
-                    date: moment(relatedOrder[0].date).add(7, "days")
+                    status: relatedOrderStatuses.length === 1 ? relatedOrderStatuses[0] : 'production',
+                    cyclic: relatedOrder.cyclic,
+                    created: baseOrder.date,
                 };
+                console.log("🚀 tempOrder:", tempOrder)
 
                 await insertOrderAndProduction(org, tempOrder, allProducts, tz)
 
