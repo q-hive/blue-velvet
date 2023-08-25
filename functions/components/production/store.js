@@ -420,23 +420,20 @@ const createCyclicOrderAfterDelivery = async (orgId, modifiedModels, orderId, ne
         console.log(`Cheking if order ${orderId} its cyclic`)
         const orders = await getOrderById(orgId, orderId)
         const baseOrder = orders[0]
-        console.log("🚀 baseOrder:", baseOrder)
+        console.log("[baseOrder]:", baseOrder)
 
         if (baseOrder && baseOrder.cyclic) {
             const nextOrder = await getOrderById(orgId, baseOrder.next)
             const relatedOrder = nextOrder[0]
-            console.log("🚀 relatedOrder:", relatedOrder)
+            console.log("[relatedOrder]:", relatedOrder)
 
             if (relatedOrder) {
                 const allProducts = await getAllProducts(orgId);
-                console.log("🚀 allProducts:", allProducts[0])
 
                 let org = await getOrganizationById(orgId);
                 let tempId = new ObjectId();
-                console.log("🚀 tempId:", tempId)
 
                 const relOrderIndex = org.orders.findIndex(order => order._id.equals(relatedOrder._id))
-
                 if (relOrderIndex !== -1) {
                     org.orders[relOrderIndex].next = tempId
                 }
@@ -447,19 +444,27 @@ const createCyclicOrderAfterDelivery = async (orgId, modifiedModels, orderId, ne
                         if (typeof prod._id === "object") return prod._id.equals(fprod._id)
                         return fprod._id == prod._id
                     })
-                    console.log("🚀 product:", prodFound)
-                    prod.status = getInitialStatus(prodFound)
-                    console.log("🚀 prod:", prod)
+                    if (prodFound.mix.isMix) {
+                        const mixStatuses = prodFound.mix.products.map((mixProd) => {
+                            const strainProduct = allProducts.find((product) => product._id.equals(mixProd.strain));
+                            return {
+                                product: strainProduct.name,
+                                status: getInitialStatus(strainProduct),
+                            };
+                        });
+
+                        prod.mixStatuses = mixStatuses
+                        const orderStatuses = Array.from(new Set(mixStatuses.map((prod) => prod.status)));
+                        prod.status = orderStatuses.length === 1 ? orderStatuses[0] : 'mixed'
+                    } else {
+                        prod.status = getInitialStatus(prodFound)
+                    }
                     return prod
                 })
-                console.log("🚀 newProducts:", JSON.stringify(newProducts,null,2))
-
-                console.log("🚀 relatedOrder[0].products:", JSON.stringify(relatedOrder.products,null,2))
 
                 const relatedOrderStatuses = Array.from(
                     new Set(relatedOrder.products.map((prod) => prod.status))
                 );
-                console.log("🚀 relatedOrderStatuses:", relatedOrderStatuses)
 
                 let tempOrder = {
                     _id: tempId,
@@ -475,7 +480,6 @@ const createCyclicOrderAfterDelivery = async (orgId, modifiedModels, orderId, ne
                     cyclic: relatedOrder.cyclic,
                     created: baseOrder.date,
                 };
-                console.log("🚀 tempOrder:", tempOrder)
 
                 await insertOrderAndProduction(org, tempOrder, allProducts, tz)
 
