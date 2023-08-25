@@ -562,7 +562,8 @@ export const buildProductionProductData = async (prod, order, dbproducts, overHe
         }[pkg.size] || 0; // "small" default
 
         prod.packages[idx] = {
-            ...pkg,
+            size: pkg.size,
+            number: pkg.number,
             grams: prodFound.price[packageSizeIndex].packageSize * pkg.number,
         };
     });

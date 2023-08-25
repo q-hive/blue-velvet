@@ -269,13 +269,12 @@ export const updateOrdersInModels = async (updatedModels, orgId, container) => {
 
 }
 
-export const updateProduction = async (orgId, container, id, modifiedModels, statuses, userUID, tz) => {
+export const updateProduction = async (orgId, container, modifiedModels, userUID, tz) => {
     //*CHANGED TO FOR OF LOOP TO MANAGE SCOP OF ORDERUPDATED VARIABLE (BUT ITS BLOCKING THE MAIN THREAD)
     const updateOperation = modifiedModels.map(async (newmodel) => {
-        console.log("Updating production model")
-        console.log(newmodel)
         const productionStatus = newmodel.ProductionStatus
-        console.log("Production model updating to ->", productionStatus)
+        console.log("Updating production model to ->", productionStatus)
+        console.log("newmodel:", newmodel)
 
         if (productionCycleObject[productionStatus]?.hasBackGroundTask) {
             console.log("The production status " + productionStatus + " has a background task")
@@ -308,12 +307,12 @@ export const updateProduction = async (orgId, container, id, modifiedModels, sta
             }
         )
 
+        // AJUST TRAYS CAPACITY
         if (productionStatus === 'delivered') {
             console.log("El container must be updated")
             await updateContainerById(orgId, container, { query: "add", key: "available", value: newmodel.trays })
         }
 
-        console.log("Production status of the order " + newmodel.RelatedOrder + " in DB is:  " + statuses)
 
         const query = {
             orders: {
@@ -340,43 +339,8 @@ export const updateProduction = async (orgId, container, id, modifiedModels, sta
 
         await updateOrder(orgId, newmodel.RelatedOrder, query.orders[newmodel.RelatedOrder.toString()], newmodel.ProductID)
 
-        try {
-            // if (newmodel.ProductionStatus === "delivered"){
-            //     console.log("Creating new order if its cyclic")
-            //     console.log("Order updated: " + orderUpdated)
-            //     const orders = await getOrderById(orgId, newmodel.RelatedOrder)
-            //     if(orders[0] && orders[0].cyclic && !orderUpdated){
-            //         let order = orders[0]
-            //         let org = await getContainers({organization:orgId})
-
-            //         const isValidContainerResponse = org !== null && org !== undefined && org.containers.length === 1
-            //         let overhead = 0;
-            //         if (isValidContainerResponse){
-            //             overhead = (org.containers[0].config.overhead)/100
-            //         } 
-            //         const allProducts = await getAllProducts(orgId)
-            //         //*SET ORDERS PRODUCTS AND ORDER STATUSES TO INITIAL STATE 
-            //         const newOrder = buildOrderFromExistingOrder(order,order,allProducts)
-            //         console.log(newOrder.products)
-            //         //*This is to avoid modifying the original order to be saved
-            //         const orderToBuildProduction = JSON.parse(JSON.stringify(newOrder))
-            //         const newProduction = await buildProductionDataFromOrder(orderToBuildProduction,allProducts, overhead)
-
-
-            //         await insertNewOrderWithProduction(orgId, newOrder, newProduction)
-            //         orderUpdated = true
-
-            //     }
-            //     console.log("No order found or its not cyclic")
-            // }
-        } catch (err) {
-            console.log("Error creating new order from cyclic order")
-            console.log(err)
-        }
-
         return op
     })
-
     const up = await Promise.all(updateOperation)
 
     return up
@@ -387,6 +351,7 @@ export const updateManyProductionModels = (orgId, container, productionModelsIds
         console.log("Updating production models in " + container + " container" + "by uid:" + userUID)
         console.log("***************");
 
+        // GET PRODUCTION MODELS FROM DB
         let filteredProductionModels = []
         const getProduction = productionModelsIds.map(async (id) => {
             const productionModel = await orgModel.findOne({
@@ -408,115 +373,121 @@ export const updateManyProductionModels = (orgId, container, productionModelsIds
             )
 
             productionModel.containers.forEach((container) => {
-                const productionModelFound = container.production.find((production) => production._id.equals(id))
-
-                console.log("Production model found")
-                filteredProductionModels.push(productionModelFound)
+                console.log(`Production model ${id} found`)
+                filteredProductionModels.push(container.production.find((production) => production._id.equals(id)))
             })
         })
-
         await Promise.all(getProduction)
+
+        // MODIFY PRODUCTION MODELS TO NEXT STATUS
         const modifiedModels = nextStatusForProduction(filteredProductionModels, actualStatus)
-        const allProductionStatus = await orgModel.aggregate([
-            {
-                "$match": {
-                    "_id": mongoose.Types.ObjectId(orgId)
-                }
-            },
-            {
-                "$unwind": "$containers"
-            },
-            {
-                "$unwind": "$containers.production"
-            },
-            {
-                "$match": {
-                    "containers.production.RelatedOrder": {
-                        "$in": modifiedModels.map((model) => model.RelatedOrder)
-                    }
-                }
-            },
-            {
-                "$group": {
-                    "_id": "$containers.production.RelatedOrder",
-                    "productionStatus": {
-                        "$push": "$containers.production.ProductionStatus"
-                    }
 
-                }
-            }
-        ])
-        let allStatuses = allProductionStatus.length > 0 ? Array.from(new Set(allProductionStatus[0].productionStatus)).filter((element) => element != undefined) : allProductionStatus
         try {
-            const updateProd = await updateProduction(orgId, container, null, modifiedModels, allStatuses, userUID, tz)
+            // UPDATE PRODUCTION MODELS
+            const updateProd = await updateProduction(orgId, container, modifiedModels, userUID, tz)
 
-            if (modifiedModels.length > 0 && allStatuses.length === 1 && allStatuses[0] === "ready") {
-                console.log("Creating new order if its cyclic")
-                const orders = await getOrderById(orgId, modifiedModels[0].RelatedOrder)
-                console.log(orders)
-                if (orders[0] && orders[0].cyclic) {
-                    let baseOrder = orders[0]
-                    const relatedOrder = await getOrderById(orgId, baseOrder.next)
-
-                    if (relatedOrder[0] && relatedOrder[0]) {
-                        const allProducts = await getAllProducts(orgId);
-                        const relatedOrderStatuses = Array.from(
-                            new Set(relatedOrder[0].products.map((prod) => prod.status))
-                        );
-
-
-                        let org = await getOrganizationById(orgId);
-                        let tempId = new ObjectId();
-
-                        const relOrderIndex = org.orders.findIndex(order => order._id.equals(relatedOrder[0]._id))
-
-                        if (relOrderIndex !== -1) {
-                            org.orders[relOrderIndex].next = tempId
-                        }
-
-                        const newProducts = relatedOrder[0].products.map((prod) => {
-                            const product = allProducts.find((fprod) => {
-                                if (typeof fprod._id === "object") {
-                                    return fprod._id.equals(prod._id)
-                                }
-
-                                if (typeof prod._id === "object") {
-                                    return prod._id.equals(fprod._id)
-                                }
-
-                                return fprod._id == prod._id
-                            })
-                            prod.status = getInitialStatus(product)
-                            return prod
-                        })
-
-                        let tempOrder = {
-                            _id: tempId,
-                            organization: orgId,
-                            customer: relatedOrder[0].customer,
-                            next: null,
-                            price: relatedOrder[0].price,
-                            address: relatedOrder[0].address,
-                            products: newProducts,
-                            cyclic: relatedOrder[0].cyclic,
-                            status: relatedOrderStatuses.length === 1 ? 'seeding' : 'production',
-                            date: moment(relatedOrder[0].date).add(7, "days")
-                        };
-
-                        await insertOrderAndProduction(org, tempOrder, allProducts, tz)
-
-                    }
-                }
-                console.log("No order found or its not cyclic")
+            // GROUP ORDERS BY ID WITH ALL PRODUCTION STATUS
+            const groupedOrders = {};
+            modifiedModels.map(({ RelatedOrder, ProductionStatus }) => {
+                if (!groupedOrders[RelatedOrder]) groupedOrders[RelatedOrder] = [];
+                groupedOrders[RelatedOrder].push(ProductionStatus);
+            });
+            // ARRAY OF ORDERS WITH THE PRODUCTION STATUS TO UPDATE (NEXT STATUS)
+            const ordersWithStatus  = Object.keys(groupedOrders).map(RelatedOrder => ({
+                orderId: RelatedOrder,
+                nextStatus: [...new Set(groupedOrders[RelatedOrder])][0]
+            }));
+            console.log("ordersWithStatus:", ordersWithStatus)
+            // CREATION OF CYCLIC ORDER
+            try {
+                ordersWithStatus.map(({orderId, nextStatus})=>{
+                    createCyclicOrderAfterDelivery(orgId, modifiedModels, orderId, nextStatus, tz)
+                })
+            } catch (err) {
+                console.log("Error creating new order from cyclic order")
+                console.log(err)
             }
 
             resolve(updateProd)
         } catch (err) {
             reject(err)
         }
-
-
     })
+}
+
+const createCyclicOrderAfterDelivery = async (orgId, modifiedModels, orderId, nextStatus, tz) => {
+    if (modifiedModels.length && nextStatus === "delivered") {
+        console.log(`Cheking if order ${orderId} its cyclic`)
+        const orders = await getOrderById(orgId, orderId)
+        const baseOrder = orders[0]
+        console.log("[baseOrder]:", baseOrder)
+
+        if (baseOrder && baseOrder.cyclic) {
+            const nextOrder = await getOrderById(orgId, baseOrder.next)
+            const relatedOrder = nextOrder[0]
+            console.log("[relatedOrder]:", relatedOrder)
+
+            if (relatedOrder) {
+                const allProducts = await getAllProducts(orgId);
+
+                let org = await getOrganizationById(orgId);
+                let tempId = new ObjectId();
+
+                const relOrderIndex = org.orders.findIndex(order => order._id.equals(relatedOrder._id))
+                if (relOrderIndex !== -1) {
+                    org.orders[relOrderIndex].next = tempId
+                }
+
+                const newProducts = relatedOrder.products.map((prod) => {
+                    const prodFound = allProducts.find((fprod) => {
+                        if (typeof fprod._id === "object") return fprod._id.equals(prod._id)
+                        if (typeof prod._id === "object") return prod._id.equals(fprod._id)
+                        return fprod._id == prod._id
+                    })
+                    if (prodFound.mix.isMix) {
+                        const mixStatuses = prodFound.mix.products.map((mixProd) => {
+                            const strainProduct = allProducts.find((product) => product._id.equals(mixProd.strain));
+                            return {
+                                product: strainProduct.name,
+                                status: getInitialStatus(strainProduct),
+                            };
+                        });
+
+                        prod.mixStatuses = mixStatuses
+                        const orderStatuses = Array.from(new Set(mixStatuses.map((prod) => prod.status)));
+                        prod.status = orderStatuses.length === 1 ? orderStatuses[0] : 'mixed'
+                    } else {
+                        prod.status = getInitialStatus(prodFound)
+                    }
+                    return prod
+                })
+
+                const relatedOrderStatuses = Array.from(
+                    new Set(relatedOrder.products.map((prod) => prod.status))
+                );
+
+                let tempOrder = {
+                    _id: tempId,
+                    organization: orgId,
+                    next: null,
+                    deliveredBy: null,
+                    customer: relatedOrder.customer,
+                    price: relatedOrder.price,
+                    date: moment(relatedOrder.date).add(7, "days"),
+                    address: relatedOrder.address,
+                    products: newProducts,
+                    status: relatedOrderStatuses.length === 1 ? relatedOrderStatuses[0] : 'production',
+                    cyclic: relatedOrder.cyclic,
+                    created: baseOrder.date,
+                };
+
+                await insertOrderAndProduction(org, tempOrder, allProducts, tz)
+
+            }
+        } else{
+            console.log("No order found or its not cyclic")
+        }
+    }
 }
 
 export const getProductionByStatus = (orgId, container, status) => {
