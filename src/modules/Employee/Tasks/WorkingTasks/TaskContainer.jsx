@@ -368,106 +368,69 @@ export const TaskContainer = (props) => {
 
   //Finish Task
   const handleCompleteTask = () => {
-    setDialog({
-      ...dialog,
-      open: true,
-      title: `Finishing task`,
-      message: `Please wait until task "${type}" has been finished`,
-    });
+    const finishTask = () => {
+      setDialog({
+        ...dialog,
+        open: true,
+        title: `Finishing task`,
+        message: `Please wait until task "${type}" has been finished`,
+      });
 
-    let finished = Date.now();
-    let achieved =
-      finished -
-      WorkContext.cicle[
-        Object.keys(WorkContext.cicle)[WorkContext.currentRender]
-      ].started;
-
-    const updateProductionData = async () => {
-      let wd = JSON.parse(window.localStorage.getItem('workData'));
-
-      //*When this model is sent also updates the performance of the employee on the allocationRatio key.
-      const taskHistoryModel = {
-        executedBy: user._id,
-        expectedTime:
-          TrackWorkModel.expected.times[
-            Object.keys(WorkContext.cicle)[WorkContext.currentRender]
-          ].time,
-        achievedTime: achieved,
-        orders: state.orders,
-        taskType: Object.keys(WorkContext.cicle)[WorkContext.currentRender],
-        workDay: TrackWorkModel.workDay,
-      };
-
-      let productionModelsIds = [];
-      wd[Object.keys(WorkContext.cicle)[WorkContext.currentRender]].forEach(
-        (model) => {
-          if (model.modelsId) {
-            model.modelsId.forEach((productionModelsId) =>
-              productionModelsIds.push(productionModelsId)
-            );
-          }
-        }
-      );
-
-      let refreshedToken = await getRefreshedToken();
-      await updateTaskHistory(
-        { ...taskHistoryModel },
-        { authorization: refreshedToken, user: user }
-      );
-      await updateProduction(
-        user.assignedContainer,
-        productionModelsIds,
-        type,
-        { authorization: refreshedToken, user: user }
-      );
-    };
-
-    if (type === 'cleaning') {
-      console.log(
-        'The production cannot be updated as the same way of a productin model based task'
-      );
-      WorkContext.cicle[
-        Object.keys(WorkContext.cicle)[WorkContext.currentRender]
-      ].finished = finished;
-      // WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.currentRender+1]].started = finished+1
-      WorkContext.cicle[
-        Object.keys(WorkContext.cicle)[WorkContext.currentRender]
-      ].achieved = achieved;
-      TrackWorkModel.tasks.push(
+      let finished = Date.now();
+      let achieved =
+        finished -
         WorkContext.cicle[
           Object.keys(WorkContext.cicle)[WorkContext.currentRender]
-        ]
-      );
-      setTrackWorkModel({ ...TrackWorkModel, tasks: TrackWorkModel.tasks });
+        ].started;
 
-      // WorkContext.currentRender = WorkContext.currentRender + 1
-      setWorkContext({
-        ...WorkContext,
-        current: WorkContext.current,
-        currentRender: WorkContext.currentRender,
-      });
-      localStorage.setItem('WorkContext', JSON.stringify(WorkContext));
+      const updateProductionData = async () => {
+        let wd = JSON.parse(window.localStorage.getItem('workData'));
 
-      props.setSnack({
-        ...props.snack,
-        open: true,
-        message: 'Production updated succesfully',
-        status: 'success',
-      });
-      props.setFinished({ value: true, counter: props.counter + 1 });
-      navigate(`/${user.uid}/${user.role}/dashboard`);
-      return;
-    }
+        //*When this model is sent also updates the performance of the employee on the allocationRatio key.
+        const taskHistoryModel = {
+          executedBy: user._id,
+          expectedTime:
+            TrackWorkModel.expected.times[
+              Object.keys(WorkContext.cicle)[WorkContext.currentRender]
+            ].time,
+          achievedTime: achieved,
+          orders: state.orders,
+          taskType: Object.keys(WorkContext.cicle)[WorkContext.currentRender],
+          workDay: TrackWorkModel.workDay,
+        };
 
-    updateProductionData()
-      .then((result) => {
-        // hooks
+        let productionModelsIds = [];
+        wd[Object.keys(WorkContext.cicle)[WorkContext.currentRender]].forEach(
+          (model) => {
+            if (model.modelsId) {
+              model.modelsId.forEach((productionModelsId) =>
+                productionModelsIds.push(productionModelsId)
+              );
+            }
+          }
+        );
+
+        let refreshedToken = await getRefreshedToken();
+        await updateTaskHistory(
+          { ...taskHistoryModel },
+          { authorization: refreshedToken, user: user }
+        );
+        await updateProduction(
+          user.assignedContainer,
+          productionModelsIds,
+          type,
+          { authorization: refreshedToken, user: user }
+        );
+      };
+
+      if (type === 'cleaning') {
+        console.log(
+          'The production cannot be updated as the same way of a productin model based task'
+        );
         WorkContext.cicle[
           Object.keys(WorkContext.cicle)[WorkContext.currentRender]
         ].finished = finished;
-        WorkContext.cicle[
-          Object.keys(WorkContext.cicle)[WorkContext.currentRender + 1]
-        ].started = finished + 1;
+        // WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.currentRender+1]].started = finished+1
         WorkContext.cicle[
           Object.keys(WorkContext.cicle)[WorkContext.currentRender]
         ].achieved = achieved;
@@ -478,7 +441,7 @@ export const TaskContainer = (props) => {
         );
         setTrackWorkModel({ ...TrackWorkModel, tasks: TrackWorkModel.tasks });
 
-        WorkContext.currentRender = WorkContext.currentRender + 1;
+        // WorkContext.currentRender = WorkContext.currentRender + 1
         setWorkContext({
           ...WorkContext,
           current: WorkContext.current,
@@ -493,17 +456,90 @@ export const TaskContainer = (props) => {
           status: 'success',
         });
         props.setFinished({ value: true, counter: props.counter + 1 });
-        setDialog({ ...dialog, open: false });
-      })
-      .catch((err) => {
-        console.log(err);
-        props.setSnack({
-          ...props.snack,
-          open: true,
-          message: 'Error updating production, please finish the task again.',
-          status: 'error',
+        navigate(`/${user.uid}/${user.role}/dashboard`);
+        return;
+      }
+
+      updateProductionData()
+        .then((result) => {
+          // hooks
+          WorkContext.cicle[
+            Object.keys(WorkContext.cicle)[WorkContext.currentRender]
+          ].finished = finished;
+          WorkContext.cicle[
+            Object.keys(WorkContext.cicle)[WorkContext.currentRender + 1]
+          ].started = finished + 1;
+          WorkContext.cicle[
+            Object.keys(WorkContext.cicle)[WorkContext.currentRender]
+          ].achieved = achieved;
+          TrackWorkModel.tasks.push(
+            WorkContext.cicle[
+              Object.keys(WorkContext.cicle)[WorkContext.currentRender]
+            ]
+          );
+          setTrackWorkModel({ ...TrackWorkModel, tasks: TrackWorkModel.tasks });
+
+          WorkContext.currentRender = WorkContext.currentRender + 1;
+          setWorkContext({
+            ...WorkContext,
+            current: WorkContext.current,
+            currentRender: WorkContext.currentRender,
+          });
+          localStorage.setItem('WorkContext', JSON.stringify(WorkContext));
+
+          props.setSnack({
+            ...props.snack,
+            open: true,
+            message: 'Production updated succesfully',
+            status: 'success',
+          });
+          props.setFinished({ value: true, counter: props.counter + 1 });
+          setDialog({ ...dialog, open: false });
+        })
+        .catch((err) => {
+          console.log(err);
+          props.setSnack({
+            ...props.snack,
+            open: true,
+            message: 'Error updating production, please finish the task again.',
+            status: 'error',
+          });
         });
+    };
+
+    if (type === 'ready') {
+      setDialog({
+        ...dialog,
+        open: true,
+        title: 'Confirm task completion',
+        message: (
+          <>
+            Individual order deliveries should be completed in 'Go to
+            Deliveries'. <br />
+            Are you sure you want to finish this task?
+          </>
+        ),
+        actions: [
+          {
+            label: 'Yes, finish task',
+            btn_color: 'primary',
+            execute: () => {
+              setDialog({ ...dialog, open: false });
+              finishTask();
+            },
+          },
+          {
+            label: 'No',
+            btn_color: 'secondary',
+            execute: () => {
+              setDialog({ ...dialog, open: false });
+            },
+          },
+        ],
       });
+    } else {
+      finishTask();
+    }
   };
 
   //*********** STEPPER Functionality
