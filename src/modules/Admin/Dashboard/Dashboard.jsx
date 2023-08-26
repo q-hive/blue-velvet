@@ -240,8 +240,8 @@ export const Dashboard = () => {
     }
 
     const getTimeEstimate = async () => {
-        const request = await getWorkTimeByContainer(user._id, user.assignedContainer);
-        
+        const { data: { data: { totals, deliveredOrdersIds } } } = await getWorkTimeByContainer(user._id, user.assignedContainer);
+
         let result = {
             times: {
                 preSoaking: {
@@ -271,7 +271,7 @@ export const Dashboard = () => {
         
         const sumTimes = () => {
             let arr = []
-            request.data.data.forEach((item,id)=>{
+            totals.forEach((item,id)=>{
                 let status = Object.keys(item)[0]
                 arr.push(item[status].minutes)
             })
@@ -282,11 +282,11 @@ export const Dashboard = () => {
 
         let totalTime = sumTimes()
 
-        if (request.data.data){
+        if (totals){
             result = {
                 times: {
                     preSoaking: {
-                        time:request.data.data[0].preSoaking.minutes
+                        time:totals[0].preSoaking.minutes
                     }, 
                     // soaking1: {
                     //     time:request.data.data[1].soaking1.minutes
@@ -295,22 +295,22 @@ export const Dashboard = () => {
                     //     time:request.data.data[2].soaking2.minutes
                     // }, 
                     harvestReady: {
-                        time:request.data.data[1].harvestReady.minutes
+                        time:totals[1].harvestReady.minutes
                     }, 
                     packing: {
-                        time:request.data.data[2].packing.minutes
+                        time:totals[2].packing.minutes
                     },
                     ready: {
-                        time:request.data.data[3].ready.minutes
+                        time:totals[3].ready.minutes
                     },
                     seeding: {
-                        time:request.data.data[4].seeding.minutes
+                        time:totals[4].seeding.minutes
                     }, 
                     cleaning: {
                         time:30*60*1000
                     }, 
                     growing: {
-                        time:request.data.data[5].growing.minutes
+                        time:totals[5].growing.minutes
                     },
                 }, 
                 total:totalTime

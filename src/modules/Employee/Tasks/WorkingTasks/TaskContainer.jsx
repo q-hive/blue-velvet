@@ -82,7 +82,7 @@ export const TaskContainer = (props) => {
     actions: [],
   });
 
-  let type, orders, products, packs, disabledSteps;
+  let type, orders, products, packs, disabledSteps, deliveredOrders;
 
   if (props != null) {
     type = props.type;
@@ -90,6 +90,7 @@ export const TaskContainer = (props) => {
     products = props.products;
     packs = state.packs;
     disabledSteps = props.disabledSteps;
+    deliveredOrders = props.deliveredOrders;
   }
 
   if (state != null) {
@@ -387,6 +388,12 @@ export const TaskContainer = (props) => {
         let wd = JSON.parse(window.localStorage.getItem('workData'));
 
         //*When this model is sent also updates the performance of the employee on the allocationRatio key.
+        let ordersIds;
+        if (type !== 'ready') {
+          ordersIds = state.orders;
+        } else {
+          ordersIds = deliveredOrders;
+        }
         const taskHistoryModel = {
           executedBy: user._id,
           expectedTime:
@@ -394,7 +401,7 @@ export const TaskContainer = (props) => {
               Object.keys(WorkContext.cicle)[WorkContext.currentRender]
             ].time,
           achievedTime: achieved,
-          orders: state.orders,
+          orders: ordersIds,
           taskType: Object.keys(WorkContext.cicle)[WorkContext.currentRender],
           workDay: TrackWorkModel.workDay,
         };
@@ -544,6 +551,19 @@ export const TaskContainer = (props) => {
     return isStepFinished;
   };
 
+  const disableButtonFn = (index) => {
+    const op1 = isDisabledStepButton(index);
+    const op2 = type === 'growing';
+    const op3 = isTaskFinishedToday();
+    const op4 = !deliveredOrders.length;
+
+    if (type === 'ready') {
+      return op3 ? true : !op4 ? false : op1;
+    } else {
+      return op1 || op2 || op3;
+    }
+  };
+
   // Stepper Navigation buttons
   const getStepContent = (step, index) => {
     return (
@@ -557,11 +577,7 @@ export const TaskContainer = (props) => {
               variant='contained'
               onClick={isLastStep(index) ? handleCompleteTask : handleNext}
               sx={() => ({ ...BV_THEME.button.standard, mt: 1, mr: 1 })}
-              disabled={
-                isDisabledStepButton(index) ||
-                type === 'growing' ||
-                isTaskFinishedToday()
-              }
+              disabled={disableButtonFn(index)}
             >
               {isLastStep(index) ? 'Finish Task' : 'Continue'}
             </Button>
@@ -611,7 +627,7 @@ export const TaskContainer = (props) => {
           variant='contained'
           onClick={isLastStep(index) ? handleCompleteTask : handleNext}
           sx={() => ({ ...BV_THEME.button.standard })}
-          disabled={isDisabledStepButton(index) || isTaskFinishedToday()}
+          disabled={disableButtonFn(index)}
         >
           {isLastStep(index) ? 'Finish Task' : 'Continue'}
         </Button>

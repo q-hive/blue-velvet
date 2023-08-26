@@ -94,6 +94,7 @@ export const EntryPoint = () => {
 
   //*DATA STATES
   const [orders, setOrders] = useState([]);
+  const [deliveredOrders, setDeliveredOrders] = useState([]);
   const [estimatedTime, setEstimatedTime] = useState({
     times: {
       preSoaking: {
@@ -193,7 +194,7 @@ export const EntryPoint = () => {
     return ordersData.data;
   };
   const getTimeEstimate = async () => {
-    const request = await getWorkTimeByContainer(user._id,user.assignedContainer)
+    const { data: { data: { totals, deliveredOrdersIds } } } = await getWorkTimeByContainer(user._id,user.assignedContainer)
 
     let result = {
       times: {
@@ -224,7 +225,7 @@ export const EntryPoint = () => {
 
     const sumTimes = () => {
       let arr = [];
-      request.data.data.forEach((item, id) => {
+      totals.forEach((item, id) => {
         let status = Object.keys(item)[0];
         arr.push(item[status].minutes);
       });
@@ -235,42 +236,42 @@ export const EntryPoint = () => {
 
     let totalTime = sumTimes();
 
-    if (request.data.data) {
+    if (totals) {
       result = {
         times: {
           preSoaking: {
-            time: request.data.data[0].preSoaking.minutes,
+            time: totals[0].preSoaking.minutes,
           },
           // soaking1: {
-          //     time:request.data.data[1].soaking1.minutes
+          //     time:totals[1].soaking1.minutes
           // },
           // soaking1: {
-          //     time:request.data.data[2].soaking2.minutes
+          //     time:totals[2].soaking2.minutes
           // },
           harvestReady: {
-            time: request.data.data[1].harvestReady.minutes,
+            time: totals[1].harvestReady.minutes,
           },
           packing: {
-            time: request.data.data[2].packing.minutes,
+            time: totals[2].packing.minutes,
           },
           ready: {
-            time: request.data.data[3].ready.minutes,
+            time: totals[3].ready.minutes,
           },
           seeding: {
-            time: request.data.data[4].seeding.minutes,
+            time: totals[4].seeding.minutes,
           },
           cleaning: {
             time: 30 * 60 * 1000,
           },
           growing: {
-            time: request.data.data[5].growing.minutes,
+            time: totals[5].growing.minutes,
           },
         },
         total: totalTime,
       };
     }
     /*
-            const reduced = request.data.data.reduce((prev, curr) => {
+            const reduced = totals.reduce((prev, curr) => {
                 const prevseedTime = prev.times.seeding.time
                 const prevharvestTime = prev.times.harvest.time
 
@@ -312,7 +313,7 @@ export const EntryPoint = () => {
             })
         */
 
-    return result;
+    return {result, deliveredOrdersIds};
   };
   const getWorkData = async () => {
     const production = await getContainerWorkDayProduction(user.assignedContainer)
@@ -463,6 +464,7 @@ export const EntryPoint = () => {
                 packs: packs,
                 cycleKeys: statusesArr,
                 time: estimatedTime,
+                deliveredOrders: deliveredOrders,
               })
               navigate("./../tasks/work");
             })
@@ -543,6 +545,7 @@ export const EntryPoint = () => {
                 packs: packs,
                 cycleKeys: statusesArr,
                 time: estimatedTime,
+                deliveredOrders: deliveredOrders
               })
               navigate("./../tasks/work", {
                 state: {
@@ -551,6 +554,7 @@ export const EntryPoint = () => {
                   packs: packs,
                   cycleKeys: statusesArr,
                   time: estimatedTime,
+                  deliveredOrders: deliveredOrders
                 },
               });
             })
@@ -602,8 +606,8 @@ export const EntryPoint = () => {
     const getData = async () => {
       try {
         // const orders = await getOrders()
-        const time = await getTimeEstimate();
-        return { time };
+        const {result: time, deliveredOrdersIds} = await getTimeEstimate();
+        return {time, deliveredOrdersIds};
       } catch (err) {
         setSnackState({
           open: true,
@@ -616,9 +620,10 @@ export const EntryPoint = () => {
     };
 
     getData()
-      .then(({ time }) => {
+      .then(({time, deliveredOrdersIds}) => {
         console.log(time);
         setEstimatedTime(time);
+        setDeliveredOrders(deliveredOrdersIds);
       })
       .catch((err) => {
         console.log(err);
