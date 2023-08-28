@@ -606,7 +606,13 @@ export const getAllProductionByFilters = (orgId, containerId, status, startDateT
                 _id: {
                   $dateToString: {
                     format: "%d/%m/%Y",
-                    date: "$containers.production.startProductionDate",
+                    date: {
+                        $cond:{
+                            if: { $in: [status, passiveStatus] },
+                            then: "$containers.production.startProductionDate",
+                            else: "$containers.production.startHarvestDate",
+                        }
+                    },
                     timezone: tz,
                   },
                 },
@@ -638,7 +644,10 @@ export const getAllProductionByFilters = (orgId, containerId, status, startDateT
               },
             },
           ])
-          .then(result => resolve(result))
+          .then(result => {
+            console.log(result);
+            resolve(result)
+        })
           .catch(err => reject(err))
     })
 }
