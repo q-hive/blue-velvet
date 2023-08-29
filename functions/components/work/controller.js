@@ -123,12 +123,12 @@ export const calculateTimeEstimation = async (totalProduction, isGroupped = fals
         let productionInAllStatuses = []
         productionModels.forEach(productionModel => {
 
-            if (productionModel.ProductionStatus === "delivered") return;
 
             const productFind = dbProducts.find(dbProd => dbProd._id.toString() === productionModel.ProductID.toString())
             const isLongCycle = productFind && (productFind.parameters.day + productFind.parameters.night) > 10;
 
-            if (productionModel.ProductionStatus === "seeding" || productionModel.ProductionStatus === "preSoaking" || productionModel.ProductionStatus === "growing") {
+            const singleModel = ['preSoaking', 'seeding', 'growing', 'delivered']
+            if (singleModel.includes(productionModel.ProductionStatus)) {
                 productionInAllStatuses.push(productionModel)
             } else {
                 productionStatuses.forEach(status => {
@@ -156,11 +156,13 @@ export const calculateTimeEstimation = async (totalProduction, isGroupped = fals
         "delivery": 3
     }
 
+    const allProductionInAllStatuses = getAllProductionInAllStatuses(totalProduction)
+
     let productionGroupedByStatus
     if (isGroupped) {
         productionGroupedByStatus = totalProduction
     } else {
-        productionGroupedByStatus = grouPProductionForWorkDay("status", allData ? getAllProductionInAllStatuses(totalProduction) : totalProduction, "array", false, false)
+        productionGroupedByStatus = grouPProductionForWorkDay("status", allData ? allProductionInAllStatuses : totalProduction, "array", false, false)
     }
 
     const parametersByStatus = statusRequiredParameters()
@@ -181,8 +183,14 @@ export const calculateTimeEstimation = async (totalProduction, isGroupped = fals
         return { [`${Object.keys(productionModel)[0]}`]: { "minutes": Number((((total[parametersByStatus[Object.keys(productionModel)[0]]] * estimatedTimes[Object.keys(productionModel)[0]]) * 60) * 1000).toFixed(2)) } }
     })
 
+    const deliveredProductionModels = allProductionInAllStatuses.filter(prodModel => prodModel.ProductionStatus === 'delivered')
+    const uniqueRelatedOrders = {};
+    deliveredProductionModels.forEach(item => {
+        uniqueRelatedOrders[item.RelatedOrder] = true;
+    });
+    const deliveredOrdersIds = Object.keys(uniqueRelatedOrders);
 
-    return totals
+    return { totals, deliveredOrdersIds }
 }
 
 
@@ -204,8 +212,8 @@ export const getWorkTimeByEmployee = (req, res) => {
     return new Promise((resolve, reject) => {
         getProductionInContainerByCurrentDate(res.locals.organization, req.query.containerId, req.query.tz)
             .then(async (production) => {
-                const totalEstimations = calculateTimeEstimation(production, false, true, res.locals.organization)
-                resolve(totalEstimations)
+                const {totals, deliveredOrdersIds} = await calculateTimeEstimation(production, false, true, res.locals.organization)
+                resolve({totals, deliveredOrdersIds})
             })
             .catch((err) => {
                 reject(err)
@@ -261,10 +269,10 @@ export const parseProduction = (req, res, work) => {
     })
 }
 
-export const buildTaskFromProductionAccumulated = (taskName, production) => {
+export const buildTaskFromProductionAccumulated = async (taskName, production) => {
     console.log("Building " + taskName + " task for production data")
 
-    let time = calculateTimeEstimation(production, false)
+    let {totals: time, deliveredOrdersIds} = await calculateTimeEstimation(production, false)
 
     time = time.find((taskTimeObj) => {
         return Object.keys(taskTimeObj)[0] === taskName

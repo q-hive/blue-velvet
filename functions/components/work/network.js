@@ -88,8 +88,8 @@ router.patch('/taskHistory', (req, res) => {
 //*Response with an object containing estimated times for all tasks, calculated from the total production that needs to be executed
 router.get('/time/:id', (req, res) => {
     getWorkTimeByEmployee(req, res)
-    .then(data => {
-        success(req, res, 200, "Estimation calculated succesfully", data)
+    .then(({totals, deliveredOrdersIds}) => {
+        success(req, res, 200, "Estimation calculated succesfully", {totals, deliveredOrdersIds})
     })
     .catch(err => {
         error(req, res, 500, "An error ocurred calculating times -  GENERIC ERROR", err, err)

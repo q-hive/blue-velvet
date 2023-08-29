@@ -82,7 +82,7 @@ export const TaskContainer = (props) => {
     actions: [],
   });
 
-  let type, orders, products, packs, disabledSteps;
+  let type, orders, products, packs, disabledSteps, deliveredOrders;
 
   if (props != null) {
     type = props.type;
@@ -90,6 +90,7 @@ export const TaskContainer = (props) => {
     products = props.products;
     packs = state.packs;
     disabledSteps = props.disabledSteps;
+    deliveredOrders = props.deliveredOrders;
   }
 
   if (state != null) {
@@ -368,142 +369,160 @@ export const TaskContainer = (props) => {
 
   //Finish Task
   const handleCompleteTask = () => {
-    setDialog({
-      ...dialog,
-      open: true,
-      title: `Finishing task`,
-      message: `Please wait until task "${type}" has been finished`,
-    });
+    const finishTask = () => {
+      setDialog({
+        ...dialog,
+        open: true,
+        title: `Finishing task`,
+        message: `Please wait until task "${type}" has been finished`,
+      });
 
-    let finished = Date.now();
-    let achieved =
-      finished -
-      WorkContext.cicle[
-        Object.keys(WorkContext.cicle)[WorkContext.currentRender]
-      ].started;
+      let finished = Date.now();
+      let achieved =
+        finished -
+        WorkContext.cicle[
+          Object.keys(WorkContext.cicle)[WorkContext.currentRender]
+        ].started;
 
-    const updateProductionData = async () => {
-      let wd = JSON.parse(window.localStorage.getItem('workData'));
+      const updateProductionData = async () => {
+        let wd = JSON.parse(window.localStorage.getItem('workData'));
 
-      //*When this model is sent also updates the performance of the employee on the allocationRatio key.
-      const taskHistoryModel = {
-        executedBy: user._id,
-        expectedTime:
-          TrackWorkModel.expected.times[
-            Object.keys(WorkContext.cicle)[WorkContext.currentRender]
-          ].time,
-        achievedTime: achieved,
-        orders: state.orders,
-        taskType: Object.keys(WorkContext.cicle)[WorkContext.currentRender],
-        workDay: TrackWorkModel.workDay,
+        //*When this model is sent also updates the performance of the employee on the allocationRatio key.
+        let ordersIds;
+        if (type !== 'ready') {
+          ordersIds = state.orders;
+        } else {
+          ordersIds = deliveredOrders;
+        }
+        const taskHistoryModel = {
+          executedBy: user._id,
+          expectedTime:
+            TrackWorkModel.expected.times[
+              Object.keys(WorkContext.cicle)[WorkContext.currentRender]
+            ].time,
+          achievedTime: achieved,
+          orders: ordersIds,
+          taskType: Object.keys(WorkContext.cicle)[WorkContext.currentRender],
+          workDay: TrackWorkModel.workDay,
+        };
+
+        let productionModelsIds = [];
+        // Block production update, only make the task history
+        if (type !== 'cleaning' && type !== 'ready') {
+          wd[Object.keys(WorkContext.cicle)[WorkContext.currentRender]].forEach(
+            (model) => {
+              if (model.modelsId) {
+                model.modelsId.forEach((productionModelsId) =>
+                  productionModelsIds.push(productionModelsId)
+                );
+              }
+            }
+          );
+        }
+
+        let refreshedToken = await getRefreshedToken();
+        await updateTaskHistory(
+          { ...taskHistoryModel },
+          { authorization: refreshedToken, user: user }
+        );
+
+        // Block production update, only make the task history
+        if (type !== 'cleaning' && type !== 'ready') {
+          await updateProduction(
+            user.assignedContainer,
+            productionModelsIds,
+            type,
+            { authorization: refreshedToken, user: user }
+          );
+        }
       };
 
-      let productionModelsIds = [];
-      wd[Object.keys(WorkContext.cicle)[WorkContext.currentRender]].forEach(
-        (model) => {
-          if (model.modelsId) {
-            model.modelsId.forEach((productionModelsId) =>
-              productionModelsIds.push(productionModelsId)
-            );
-          }
-        }
-      );
+      updateProductionData()
+        .then((result) => {
+          // hooks
+          const currentRenderKey = Object.keys(WorkContext.cicle)[
+            WorkContext.currentRender
+          ];
+          const nextRenderKey = Object.keys(WorkContext.cicle)[
+            WorkContext.currentRender + 1
+          ];
 
-      let refreshedToken = await getRefreshedToken();
-      await updateTaskHistory(
-        { ...taskHistoryModel },
-        { authorization: refreshedToken, user: user }
-      );
-      await updateProduction(
-        user.assignedContainer,
-        productionModelsIds,
-        type,
-        { authorization: refreshedToken, user: user }
-      );
+          WorkContext.cicle[currentRenderKey].finished = finished;
+          if (type !== 'cleaning') {
+            WorkContext.cicle[nextRenderKey].started = finished + 1;
+          }
+          WorkContext.cicle[currentRenderKey].achieved = achieved;
+          TrackWorkModel.tasks.push(WorkContext.cicle[currentRenderKey]);
+          setTrackWorkModel({ ...TrackWorkModel, tasks: TrackWorkModel.tasks });
+
+          if (type !== 'cleaning') {
+            WorkContext.currentRender = WorkContext.currentRender + 1;
+          }
+
+          setWorkContext({
+            ...WorkContext,
+            currentRender: WorkContext.currentRender,
+          });
+          localStorage.setItem('WorkContext', JSON.stringify(WorkContext));
+
+          props.setSnack({
+            ...props.snack,
+            open: true,
+            message: 'Production updated succesfully',
+            status: 'success',
+          });
+          props.setFinished({ value: true, counter: props.counter + 1 });
+
+          if (type === 'cleaning') {
+            navigate(`/${user.uid}/${user.role}/dashboard`);
+            return;
+          }
+          setDialog({ ...dialog, open: false });
+        })
+        .catch((err) => {
+          console.log(err);
+          props.setSnack({
+            ...props.snack,
+            open: true,
+            message: 'Error updating production, please finish the task again.',
+            status: 'error',
+          });
+        });
     };
 
-    if (type === 'cleaning') {
-      console.log(
-        'The production cannot be updated as the same way of a productin model based task'
-      );
-      WorkContext.cicle[
-        Object.keys(WorkContext.cicle)[WorkContext.currentRender]
-      ].finished = finished;
-      // WorkContext.cicle[Object.keys(WorkContext.cicle)[WorkContext.currentRender+1]].started = finished+1
-      WorkContext.cicle[
-        Object.keys(WorkContext.cicle)[WorkContext.currentRender]
-      ].achieved = achieved;
-      TrackWorkModel.tasks.push(
-        WorkContext.cicle[
-          Object.keys(WorkContext.cicle)[WorkContext.currentRender]
-        ]
-      );
-      setTrackWorkModel({ ...TrackWorkModel, tasks: TrackWorkModel.tasks });
-
-      // WorkContext.currentRender = WorkContext.currentRender + 1
-      setWorkContext({
-        ...WorkContext,
-        current: WorkContext.current,
-        currentRender: WorkContext.currentRender,
-      });
-      localStorage.setItem('WorkContext', JSON.stringify(WorkContext));
-
-      props.setSnack({
-        ...props.snack,
+    if (type === 'ready') {
+      setDialog({
+        ...dialog,
         open: true,
-        message: 'Production updated succesfully',
-        status: 'success',
+        title: 'Confirm task completion',
+        message: (
+          <>
+            Individual order deliveries should be completed in 'Go to
+            Deliveries'. <br />
+            Are you sure you want to finish this task?
+          </>
+        ),
+        actions: [
+          {
+            label: 'Yes, finish task',
+            btn_color: 'primary',
+            execute: () => {
+              setDialog({ ...dialog, open: false });
+              finishTask();
+            },
+          },
+          {
+            label: 'No',
+            btn_color: 'secondary',
+            execute: () => {
+              setDialog({ ...dialog, open: false });
+            },
+          },
+        ],
       });
-      props.setFinished({ value: true, counter: props.counter + 1 });
-      navigate(`/${user.uid}/${user.role}/dashboard`);
-      return;
+    } else {
+      finishTask();
     }
-
-    updateProductionData()
-      .then((result) => {
-        // hooks
-        WorkContext.cicle[
-          Object.keys(WorkContext.cicle)[WorkContext.currentRender]
-        ].finished = finished;
-        WorkContext.cicle[
-          Object.keys(WorkContext.cicle)[WorkContext.currentRender + 1]
-        ].started = finished + 1;
-        WorkContext.cicle[
-          Object.keys(WorkContext.cicle)[WorkContext.currentRender]
-        ].achieved = achieved;
-        TrackWorkModel.tasks.push(
-          WorkContext.cicle[
-            Object.keys(WorkContext.cicle)[WorkContext.currentRender]
-          ]
-        );
-        setTrackWorkModel({ ...TrackWorkModel, tasks: TrackWorkModel.tasks });
-
-        WorkContext.currentRender = WorkContext.currentRender + 1;
-        setWorkContext({
-          ...WorkContext,
-          current: WorkContext.current,
-          currentRender: WorkContext.currentRender,
-        });
-        localStorage.setItem('WorkContext', JSON.stringify(WorkContext));
-
-        props.setSnack({
-          ...props.snack,
-          open: true,
-          message: 'Production updated succesfully',
-          status: 'success',
-        });
-        props.setFinished({ value: true, counter: props.counter + 1 });
-        setDialog({ ...dialog, open: false });
-      })
-      .catch((err) => {
-        console.log(err);
-        props.setSnack({
-          ...props.snack,
-          open: true,
-          message: 'Error updating production, please finish the task again.',
-          status: 'error',
-        });
-      });
   };
 
   //*********** STEPPER Functionality
@@ -532,6 +551,19 @@ export const TaskContainer = (props) => {
     return isStepFinished;
   };
 
+  const disableButtonFn = (index) => {
+    const op1 = isDisabledStepButton(index);
+    const op2 = type === 'growing';
+    const op3 = isTaskFinishedToday();
+    const op4 = !deliveredOrders.length;
+
+    if (type === 'ready') {
+      return op3 ? true : !op4 ? false : op1;
+    } else {
+      return op1 || op2 || op3;
+    }
+  };
+
   // Stepper Navigation buttons
   const getStepContent = (step, index) => {
     return (
@@ -545,11 +577,7 @@ export const TaskContainer = (props) => {
               variant='contained'
               onClick={isLastStep(index) ? handleCompleteTask : handleNext}
               sx={() => ({ ...BV_THEME.button.standard, mt: 1, mr: 1 })}
-              disabled={
-                isDisabledStepButton(index) ||
-                type === 'growing' ||
-                isTaskFinishedToday()
-              }
+              disabled={disableButtonFn(index)}
             >
               {isLastStep(index) ? 'Finish Task' : 'Continue'}
             </Button>
@@ -599,7 +627,7 @@ export const TaskContainer = (props) => {
           variant='contained'
           onClick={isLastStep(index) ? handleCompleteTask : handleNext}
           sx={() => ({ ...BV_THEME.button.standard })}
-          disabled={isDisabledStepButton(index) || isTaskFinishedToday()}
+          disabled={disableButtonFn(index)}
         >
           {isLastStep(index) ? 'Finish Task' : 'Continue'}
         </Button>
