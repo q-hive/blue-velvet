@@ -113,37 +113,37 @@ export const statusRequiredParameters = () => {
         "packing": "trays"
     }
 }
+
+// Obtencion de todos los tiempos para produccion
+export const getAllProductionInAllStatuses = (productionModels, dbProducts, singleModel) => {
+    const productionStatuses = ['preSoaking', 'harvestReady', 'packing', 'ready', 'seeding', 'growing']
+    let productionInAllStatuses = []
+    productionModels.forEach(productionModel => {
+
+        const productFind = dbProducts.find(dbProd => dbProd._id.toString() === productionModel.ProductID.toString())
+        const isLongCycle = productFind && (productFind.parameters.day + productFind.parameters.night) > 10;
+
+        if (singleModel.includes(productionModel.ProductionStatus)) {
+            productionInAllStatuses.push(productionModel)
+        } else {
+            productionStatuses.forEach(status => {
+                if (!isLongCycle && status === 'preSoaking') return;
+                if (status === 'seeding' || status === 'preSoaking') return;
+                let newProductionModel = JSON.parse(JSON.stringify(productionModel));
+                newProductionModel.ProductionStatus = status;
+                productionInAllStatuses.push(newProductionModel);
+            });
+        }
+
+    })
+
+    return productionInAllStatuses
+}
+
+
 export const calculateTimeEstimation = async (totalProduction, isGroupped = false, allData = false, orgId = undefined) => {
 
     const dbProducts = await getAllProducts(orgId)
-
-    // Obtencion de todos los tiempos para produccion
-    const getAllProductionInAllStatuses = (productionModels) => {
-        const productionStatuses = ['preSoaking', 'harvestReady', 'packing', 'ready', 'seeding', 'growing']
-        let productionInAllStatuses = []
-        productionModels.forEach(productionModel => {
-
-
-            const productFind = dbProducts.find(dbProd => dbProd._id.toString() === productionModel.ProductID.toString())
-            const isLongCycle = productFind && (productFind.parameters.day + productFind.parameters.night) > 10;
-
-            const singleModel = ['preSoaking', 'seeding', 'growing', 'delivered']
-            if (singleModel.includes(productionModel.ProductionStatus)) {
-                productionInAllStatuses.push(productionModel)
-            } else {
-                productionStatuses.forEach(status => {
-                    if (!isLongCycle && status === 'preSoaking') return;
-                    if (status === 'seeding' || status === 'preSoaking') return;
-                    let newProductionModel = JSON.parse(JSON.stringify(productionModel));
-                    newProductionModel.ProductionStatus = status;
-                    productionInAllStatuses.push(newProductionModel);
-                });
-            }
-
-        })
-
-        return productionInAllStatuses
-    }
 
     //*TIMES PER TRAY in minutes
     const estimatedTimes = {
@@ -156,7 +156,7 @@ export const calculateTimeEstimation = async (totalProduction, isGroupped = fals
         "delivery": 3
     }
 
-    const allProductionInAllStatuses = getAllProductionInAllStatuses(totalProduction)
+    const allProductionInAllStatuses = getAllProductionInAllStatuses(totalProduction, dbProducts, ['preSoaking', 'seeding', 'growing', 'delivered'])
 
     let productionGroupedByStatus
     if (isGroupped) {

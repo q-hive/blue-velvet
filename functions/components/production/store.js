@@ -563,9 +563,6 @@ export const getAllProductionByFilters = (orgId, containerId, status, startDateT
               $unwind: "$containers.production",
             },
             {
-              $match: { "containers.production.ProductionStatus": status },
-            },
-            {
               $addFields: {
                 productionDate: {
                   $dateToString: {
@@ -602,41 +599,10 @@ export const getAllProductionByFilters = (orgId, containerId, status, startDateT
               },
             },
             {
-              $group: {
-                _id: {
-                  $dateToString: {
-                    format: "%d/%m/%Y",
-                    date: "$containers.production.startProductionDate",
-                    timezone: tz,
-                  },
-                },
-                totalSeeds: { $sum: "$containers.production.seeds" },
-                totalHarvest: { $sum: "$containers.production.harvest" },
-                productionModels: { $push: "$containers.production" },
+              $replaceRoot: {
+                newRoot: "$containers.production",
               },
-            },
-            {
-              $project: {
-                _id: 0,
-                workDate: "$_id",
-                expectedGrs: {
-                  $cond: {
-                    if: { $in: [status, passiveStatus] },
-                    then: "$totalSeeds",
-                    else: {
-                      $cond: {
-                        if: {
-                          $in: [status, activeStatus]
-                        },
-                        then: "$totalHarvest",
-                        else: null
-                      }
-                    }
-                  }
-                },
-                productionModels: 1,
-              },
-            },
+            }
           ])
           .then(result => resolve(result))
           .catch(err => reject(err))

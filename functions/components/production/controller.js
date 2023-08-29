@@ -1,5 +1,5 @@
 import moment from "moment-timezone"
-import { buildTaskFromProductionAccumulated, calculateTimeEstimation } from "../work/controller.js"
+import { buildTaskFromProductionAccumulated, calculateTimeEstimation, getAllProductionInAllStatuses } from "../work/controller.js"
 import {
     getPosibleStatusesForProduction,
     getProductionByProduct,
@@ -760,16 +760,64 @@ export const updateProductionBasedOnProductUpdate = async (updateConfigModel, pr
 
 export const getAllProductionByStatus = (orgId, containerId, status, startDate, finishDate, tz) => {
     return new Promise(async (resolve, reject) => {
-        // Date conversion from string to TZ to UTC
-        const startDateTZ = moment.tz(startDate, 'ddd MMM DD YYYY HH:mm:ss [GMT] ZZ (z)', tz);
-        const finishDateTZ = moment.tz(finishDate, 'ddd MMM DD YYYY HH:mm:ss [GMT] ZZ (z)', tz);
-        
-        getAllProductionByFilters(orgId, containerId, status, startDateTZ.format('YYYY-MM-DD'), finishDateTZ.format('YYYY-MM-DD'), tz)
-            .then((result) => {
-                resolve(result)
-            })
-            .catch((err) => {
-                reject(err)
-            })
-    })
+        try {
+            // Date conversion from string to TZ to UTC
+            const startDateTZ = moment.tz(startDate, 'ddd MMM DD YYYY HH:mm:ss [GMT] ZZ (z)', tz);
+            const finishDateTZ = moment.tz(finishDate, 'ddd MMM DD YYYY HH:mm:ss [GMT] ZZ (z)', tz);
+
+            const productionFiltered = await getAllProductionByFilters(orgId, containerId, status, startDateTZ.format('YYYY-MM-DD'), finishDateTZ.format('YYYY-MM-DD'), tz);
+            const dbProducts = await getAllProducts(orgId);
+            const grouppedProductionModels = groupProductionDashboard(productionFiltered, dbProducts, status, tz);
+
+            resolve(grouppedProductionModels);
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+
+const groupProductionDashboard = (productionModels, dbProducts, status, tz) => {
+    const passiveStatus = ["preSoaking", "seeding"];
+    // const activeStatus = ["growing", "harvestReady", "ready", "delivered"];
+    const isPassive = passiveStatus.includes(status)
+
+
+    // Get all production in all posible status
+    const allProductionInAllStatuses = getAllProductionInAllStatuses(productionModels, dbProducts, ['preSoaking', 'seeding', 'delivered']);
+
+    // Group by status
+    const groupedModelsByStatus = {};
+    allProductionInAllStatuses.forEach(item => {
+        const status = item.ProductionStatus;
+        if (!groupedModelsByStatus[status]) groupedModelsByStatus[status] = [];
+        groupedModelsByStatus[status].push(item);
+    });
+    // Select production by status
+    const allProductionInStatus = groupedModelsByStatus[status] || [];
+
+    // Group status by date
+    const groupedModelsByDate = {};
+    allProductionInStatus.forEach(item => {
+        const startActionDate = isPassive ? 'startProductionDate' : 'startHarvestDate';
+        const formattedDate = moment.tz(item[startActionDate], tz).format('ddd, DD MMM YYYY');
+        if (!groupedModelsByDate[formattedDate]) groupedModelsByDate[formattedDate] = [];
+        groupedModelsByDate[formattedDate].push(item);
+    });
+
+    // Group to give final structure
+    const finalGroupedData = Object.keys(groupedModelsByDate).map(dateActionDate => {
+        const prodModels = groupedModelsByDate[dateActionDate];
+        const expectedGrs = prodModels.reduce((total, item) => {
+            return total + (isPassive ? item.seeds : item.harvest)
+        }, 0);
+        const workDate = dateActionDate
+
+        return {
+            productionModels: prodModels,
+            expectedGrs,
+            workDate
+        };
+    });
+
+    return finalGroupedData;
 }
