@@ -82,7 +82,18 @@ export const TaskContainer = (props) => {
     actions: [],
   });
 
-  let type, orders, products, packs, disabledSteps, deliveredOrders;
+  let type, orders, products, packs, disabledSteps, deliveredOrders, packsOrderIds;
+
+  const extractUniqueOrderIds = (packs) => {
+    const allOrderIds = new Set();
+    packs.forEach((productData) => {
+      const orderIdArray = productData[Object.keys(productData)[0]].orderId;
+      orderIdArray.forEach((orderId) => {
+        allOrderIds.add(orderId);
+      });
+    });
+    return Array.from(allOrderIds);
+  };
 
   if (props != null) {
     type = props.type;
@@ -91,6 +102,7 @@ export const TaskContainer = (props) => {
     packs = state.packs;
     disabledSteps = props.disabledSteps;
     deliveredOrders = props.deliveredOrders;
+    packsOrderIds = extractUniqueOrderIds(packs)
   }
 
   if (state != null) {
@@ -388,12 +400,12 @@ export const TaskContainer = (props) => {
         let wd = JSON.parse(window.localStorage.getItem('workData'));
 
         //*When this model is sent also updates the performance of the employee on the allocationRatio key.
-        let ordersIds;
-        if (type !== 'ready') {
-          ordersIds = state.orders;
-        } else {
-          ordersIds = deliveredOrders;
-        }
+        const ordersMap = {
+          'ready': deliveredOrders,
+          'packing': packsOrderIds
+        };
+        const ordersIds = ordersMap[type] || state.orders;
+        
         const taskHistoryModel = {
           executedBy: user._id,
           expectedTime:
