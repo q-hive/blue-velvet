@@ -1,3 +1,4 @@
+import moment from 'moment-timezone'
 import Organization from '../../models/organization.js'
 import {mongoose} from '../../mongo.js'
 import { groupOrders, groupOrdersForDelivery, groupOrdersForPackaging } from '../orders/controller.js'
@@ -18,11 +19,11 @@ export const buildDeliveryFromOrders = async (orders) => {
     return ordersGroupped
 }
 
-export const getPackagingForDay = (date, orgId, container = undefined) => {
+export const getPackagingForDay = (date, orgId, tz) => {
     return new Promise(async (resolve, reject) => {
         if(date === "statusReady"){
             try {
-                const packaging = await getPackagingByOrders(orgId)
+                const packaging = await getPackagingByOrders(orgId, tz)
                 return resolve(packaging)
             } catch (err) {
                 return reject(err)
@@ -126,17 +127,26 @@ export const getDeliveryByDate = (date, orgId, container = undefined) => {
 }
 
 // Obtener los packages y deliveries de las ordenes pendientes (no delivered status)
-const getPendingOrders = async (orgId, buildFn) => {
+const getPendingOrders = async (orgId, buildFn, tz=null) => {
     const filteredOrders = await getFilteredOrders(orgId, undefined, false, null)
-
+    
     if (filteredOrders.length) {
-        const pendingOrders = filteredOrders.filter((dbOrder) => dbOrder.status !== "delivered" && dbOrder.status !== "seeding" && dbOrder.status !== "preSoaking");
+        const passiveStatus = ["delivered", "seeding", "preSoaking"] 
+        const pendingOrders = filteredOrders.filter((dbOrder) => !passiveStatus.includes(dbOrder.status));
+
+        if (tz !== null) {
+            const currentDate = moment().tz(tz).format('YYYY-MM-DD');
+            const totalOrders = pendingOrders.filter((order)=> {
+                const tzDate = moment.tz(order.date, tz).format('YYYY-MM-DD')
+                return tzDate === currentDate
+            })
+            return totalOrders.length ? await buildFn(totalOrders) : []
+        }
         return pendingOrders.length ? await buildFn(pendingOrders) : []
     }
-
     return []
 }
 
-export const getPackagingByOrders = async (orgId) => getPendingOrders(orgId, buildPackagesFromOrders);
+export const getPackagingByOrders = async (orgId, tz) => getPendingOrders(orgId, buildPackagesFromOrders, tz);
 
-export const getDeliveryByOrders = async (orgId) => getPendingOrders(orgId, buildDeliveryFromOrders);
+export const getDeliveryByOrders = async (orgId) => getPendingOrders(orgId, buildDeliveryFromOrders, null);
