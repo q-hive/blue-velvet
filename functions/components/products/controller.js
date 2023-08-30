@@ -1,7 +1,7 @@
 import Product from '../../models/product.js'
 import { getOrdersByProd } from '../orders/store.js'
 import { getTaskByProdId } from '../tasks/store.js'
-import { getAllProducts, updateProduct } from './store.js'
+import { getAllProducts, updateProduct, distributeMixAmount } from './store.js'
 
 const hasEveryKey = (valid, current) => {
      //*Verificar que el objeto tenga todas las llaves del modelo
@@ -110,3 +110,40 @@ export const relateOrdersAndTasks = (orgId) => {
 export const isLargeCicle = (totalProductionTime) => {
     return totalProductionTime > 7
 }
+
+export const adjustMixesPercentages = async (orgId, productId, productRelations) => {
+    try {
+        const adjustPercentages = (mixProductComposition, productIdToRemove) => {
+            const strainProductToRemove = mixProductComposition.find(strainProduct => strainProduct.strain.toString() === productIdToRemove.toString());
+            const percentageToDistribute = strainProductToRemove.amount;
+            const remainingStrains = mixProductComposition.filter(strainProduct => strainProduct.strain.toString() !== productIdToRemove.toString());
+
+            return remainingStrains.map(strain => ({
+                ...strain,
+                amount: strain.amount + (percentageToDistribute / remainingStrains.length)
+            }));
+        };
+
+        productRelations.forEach(mixProduct => {
+            const mixProductComposition = mixProduct.mix.products;
+            const adjustedProducts = adjustPercentages(mixProductComposition, productId);
+            mixProduct.mix.products = adjustedProducts;
+        });
+
+        const updatedMixProducts = await Promise.all(
+            productRelations.map(async newMixProduct => {
+                try {
+                    const res = await distributeMixAmount(orgId, newMixProduct);
+                    return res;
+                } catch (err) {
+                    console.log(err);
+                    throw err;
+                }
+            })
+        );
+        return updatedMixProducts;
+    } catch (err) {
+        console.log(err);
+        throw err;
+    }
+};

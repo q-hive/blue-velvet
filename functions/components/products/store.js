@@ -384,3 +384,21 @@ export const getProductRelation = (orgId, containerId, productId) => {
         }
     })
 }
+
+export const distributeMixAmount = (orgId, newMixProduct) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            newMixProduct._id = mongoose.Types.ObjectId(newMixProduct._id)
+            
+            const operation = await orgModel.updateOne(
+                { "_id":mongoose.Types.ObjectId(orgId) },
+                { "$set": {"containers.$[].products.$[product]": newMixProduct } },
+                { "arrayFilters": [ {"product._id":mongoose.Types.ObjectId(newMixProduct._id)} ] }    
+            )
+            resolve(operation) 
+        } catch (err) {
+            reject(err)
+        }
+    })
+}
+

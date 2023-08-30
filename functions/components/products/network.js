@@ -6,7 +6,7 @@ import {error, success} from '../../network/response.js'
 import { hasQueryString } from '../../utils/hasQuery.js'
 
 //*Controllers
-import {isValidProductObject, relateOrdersAndTasks} from './controller.js'
+import {isValidProductObject, relateOrdersAndTasks, adjustMixesPercentages} from './controller.js'
 
 //*Store
 import {
@@ -211,18 +211,23 @@ router.patch('/productionParams/:id', async (req, res) => {
     }
 })
 
-router.delete('/', (req, res) => {
-    if(req.query.id !== undefined && req.query.id !== ""){
-        const orgId = res.locals.organization
-        const id = req.query.id
-        deleteProduct(orgId, id)
-        .then((msg) => {
-            success(req, res, 200, msg)
-        })
-        .catch(err => {
-            error(req, res, 500, "Error deleting product", err)
-        })
+router.delete('/', async (req, res) => {
+    if (req.query.id !== undefined && req.query.id !== "") {
+        const orgId = res.locals.organization;
+        const productId = req.query.id;
+        const productRelations = req.body;
+
+        try {
+            if (productRelations.length) {
+                await adjustMixesPercentages(orgId, productId, productRelations);
+            }
+
+            await deleteProduct(orgId, productId);
+            success(req, res, 200, "Product deleted successfully");
+        } catch (err) {
+            error(req, res, 500, "Error deleting product", err);
+        }
     }
-})
+});
 
 export default router

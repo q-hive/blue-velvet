@@ -141,7 +141,6 @@ export const ProductionMain = () => {
   });
   const [orderModalOpen, setOrderModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [productRelations, setProductRelations] = useState([]);
 
   //*Network, routing and api
   const navigate = useNavigate();
@@ -154,8 +153,8 @@ export const ProductionMain = () => {
     });
     getProductRelation(params._id)
       .then((res) => {
-        setProductRelations(res.data.data);
-        console.log('Product with relations? ', res.data.data);
+        const productRelations = res.data.data;
+        console.log('Product with relations? ', productRelations);
 
         setDialog({
           ...dialog,
@@ -164,7 +163,7 @@ export const ProductionMain = () => {
           message: (
             <>
               The product and related orders will be deleted. <br />
-              {res.data.data.length ? (
+              {productRelations.length ? (
                 <Alert severity='info'>
                   This product is part of other mixed products,
                   <br /> their compositions will be adjusted.
@@ -182,7 +181,7 @@ export const ProductionMain = () => {
                   open: false,
                 });
                 setLoading(true);
-                deleteProduct(params._id)
+                deleteProduct(params._id, productRelations)
                   .then(() => {
                     console.log(params);
                     setSelectedProduct(null);
