@@ -164,12 +164,12 @@ export const ProductionMain = () => {
           message: (
             <>
               The product and related orders will be deleted. <br />
-              {res.data.data.length && (
+              {res.data.data.length ? (
                 <Alert severity='info'>
                   This product is part of other mixed products,
                   <br /> their compositions will be adjusted.
                 </Alert>
-              )}
+              ) : null}
             </>
           ),
           actions: [
