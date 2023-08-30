@@ -22,6 +22,10 @@ const useProducts =  (headers) => {
     return await request('DELETE',`products/?id=${id}`, headers);
   };
 
+  const getProductRelation = async (id) => {
+    return await request('GET', `products/${id}/relations`, headers);
+  };
+
   const getProducts = async () => {
     return await request('GET',`products/`, headers);
   };
@@ -38,6 +42,7 @@ const useProducts =  (headers) => {
     updateProductConfigById,
     addMixProduct,
     deleteProduct,
+    getProductRelation,
     getProducts,
     getProductsCompleteData,
   }

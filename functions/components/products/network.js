@@ -17,7 +17,8 @@ import {
     deleteProduct,
     createNewMix,
     getProductById,
-    updateManyProducts
+    updateManyProducts,
+    getProductRelation
 } from './store.js'
 import { getContainerById, updateContainerById } from '../container/store.js'
 import { updateProductionBasedOnProductUpdate } from '../production/controller.js'
@@ -63,6 +64,16 @@ router.get('/:id', (req, res) => {
     })
     .catch((err) => {
         error(req, res, 500, "Error getting product", err, err)
+    })
+})
+
+router.get('/:id/relations', (req, res) => {
+    getProductRelation(res.locals.organization, res.locals.containers.containers[0]._id, req.params.id)
+    .then((result) => {
+        success(req, res, 200, "Product relations obtained succesfully", result)
+    })
+    .catch((err) => {
+        error(req, res, 500, "Error getting product relations", err, err)
     })
 })
 

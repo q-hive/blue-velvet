@@ -306,3 +306,81 @@ export const getProductById = (orgId, containerId,prodId) => {
         }
     })
 }
+
+export const getProductRelation = (orgId, containerId, productId) => {
+    return new Promise(async(resolve, reject) => {
+        try {
+            const found = await orgModel.aggregate([
+                {
+                    $match: { _id: mongoose.Types.ObjectId(orgId) }
+                },
+                {
+                    $unwind: "$containers",
+                },
+                {
+                    $match: { "containers._id": mongoose.Types.ObjectId(containerId) }
+                },
+                {
+                    $addFields: {
+                        targetProduct: {
+                            $arrayElemAt: [{
+                                $filter: {
+                                    input: "$containers.products",
+                                    as: "product",
+                                    cond: {
+                                        $eq: [ "$$product._id", mongoose.Types.ObjectId(productId) ]
+                                    }
+                                }
+                            }, 0
+                            ]
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        targetProduct: 1,
+                        mixesProducts: {
+                            $cond: {
+                                if: "$targetProduct.mix.isMix",
+                                then: [],
+                                else: {
+                                    $filter: {
+                                        input: "$containers.products",
+                                        as: "product",
+                                        cond: {
+                                            $and: [
+                                                {
+                                                    $eq: [ "$$product.mix.isMix", true ]
+                                                },
+                                                {
+                                                    $anyElementTrue: {
+                                                        $map: {
+                                                            input: "$$product.mix.products",
+                                                            as: "productStrain",
+                                                            in: {
+                                                                $eq: [ "$$productStrain.strain", "$targetProduct._id" ]
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        mixesProducts: 1
+                    }
+                }
+            ])
+            resolve(found[0].mixesProducts)
+        } catch (err){
+            reject(err)
+        }
+    })
+}
