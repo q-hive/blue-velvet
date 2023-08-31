@@ -42,6 +42,7 @@ import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog';
 
 // CUSTOM HOOKS
 import useOrders from '../../../../hooks/useOrders';
+import useFiles from '../../../../hooks/useFiles';
 import useCustomers from '../../../../hooks/useCustomers';
 import useProducts from '../../../../hooks/useProducts';
 import DateRangePicker from '../../../../CoreComponents/Dates/DateRangePicker';
@@ -86,7 +87,8 @@ export const NewOrder = (props) => {
     authorization: credential._tokenResponse.idToken,
     user: user,
   };
-  const { getOrderInvoiceById, addOrder } = useOrders(headers);
+  const { addOrder } = useOrders(headers);
+  const { getOrderInvoiceById } = useFiles(headers);
   const { getCustomers } = useCustomers(headers);
   const { getProducts } = useProducts(headers);
 
