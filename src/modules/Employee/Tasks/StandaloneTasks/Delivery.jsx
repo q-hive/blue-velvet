@@ -25,12 +25,14 @@ import useOrganizations from '../../../../hooks/useOrganizations';
 import useCustomers from '../../../../hooks/useCustomers';
 import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog';
 import { BV_THEME } from '../../../../theme/BV-theme';
+import moment from 'moment-timezone';
 
 const DetailedOrders = ({
   orders,
   customers,
   allUsers,
   handleMarkAsDelivered,
+  tz,
 }) => {
   return (
     <Container maxWidth='xl' sx={{ paddingY: BV_THEME.spacing(2) }}>
@@ -62,7 +64,7 @@ const DetailedOrders = ({
                   </Typography>
                   <Typography variant='subtitle1'>
                     <b>Delivery date: </b>
-                    {new Date(order.date).toLocaleDateString()}
+                    {formattedDate(moment.tz(order.date, tz))}
                   </Typography>
                 </Grid>
                 <Grid item xs={12} sx={{ textAlign: 'center' }}>
@@ -207,6 +209,7 @@ const SimpleOrders = ({
   customers,
   allUsers,
   handleMarkAsDelivered,
+  tz,
 }) => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [productsModalOpen, setProductsModalOpen] = useState(false);
@@ -313,7 +316,7 @@ const SimpleOrders = ({
   ];
   const formattedOrders = orders.map((order) => ({
     id: order._id,
-    date: formattedDate(new Date(order.date)),
+    date: formattedDate(moment.tz(order.date, tz)),
     customer: customers.find((c) => c._id === order.customer)?.name,
     price: order.price,
     status: order.status,
@@ -541,6 +544,7 @@ export const DeliveryComponent = () => {
     message: '',
     actions: [],
   });
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   useEffect(() => {
     getOrders()
@@ -626,7 +630,7 @@ export const DeliveryComponent = () => {
     orders.forEach((order) => {
       const groupKey =
         orderBy === 'Delivery Date'
-          ? new Date(order.date).toLocaleDateString()
+          ? formattedDate(moment.tz(order.date, tz).format())
           : customers.find((c) => c._id === order.customer)?.name;
       if (!groupedOrders[groupKey]) {
         groupedOrders[groupKey] = [];
@@ -798,6 +802,7 @@ export const DeliveryComponent = () => {
                         customers={customers}
                         allUsers={allUsers}
                         handleMarkAsDelivered={handleMarkAsDelivered}
+                        tz={tz}
                       />
                     ) : (
                       <SimpleOrders
@@ -805,6 +810,7 @@ export const DeliveryComponent = () => {
                         customers={customers}
                         allUsers={allUsers}
                         handleMarkAsDelivered={handleMarkAsDelivered}
+                        tz={tz}
                       />
                     )}
                   </div>
