@@ -586,58 +586,28 @@ export const createConfigObjectFromOrder = async (order) => {
 
 const buildTableForInvoiceFromManyOrders = (orders, totalAmount) => {
     let mappedTable
-    let rows
-
     const headers = [
         { name: "Product name" },
         { name: "Product price" },
         { name: "Quantity" },
         { name: "Total" },
     ]
-
     const hashProducts = {}
 
     orders.map((order) => {
-        const mappedProducts = order.products.map((product) => {
-            let productData
-
-            if (hashProducts[product.name]) {
-
-            } else {
-                hashProducts[product.name] = {
-                    "small": {
-                        "number": 0,
-                        "price": 0,
-                        "totalPrice": 0
-                    },
-                    "medium": {
-                        "number": 0,
-                        "price": 0,
-                        "totalPrice": 0
-                    },
-                    "large": {
-                        "number": 0,
-                        "price": 0,
-                        "totalPrice": 0
-                    },
-                    "total": 0
-                }
-            }
-
+        order.products.map((product) => {
+            hashProducts[product.name] = hashProducts[product.name] || {
+                small: { number: 0, price: 0, totalPrice: 0 },
+                medium: { number: 0, price: 0, totalPrice: 0 },
+                total: 0,
+            };
             const mapProd = product.packages.map((pack) => {
-                let indexSize;
-
-                switch (pack.size) {
-                    case "small":
-                        indexSize = 0;
-                        break;
-                    case "medium":
-                        indexSize = 1;
-                        break;
-                    case "large":
-                        indexSize = 2;
-                        break;
-                }
+                const sizeToIndex = {
+                    small: 0,
+                    medium: 1,
+                    large: 2,
+                };
+                const indexSize = sizeToIndex[pack.size];
 
                 hashProducts[product.name][pack.size]["number"] = hashProducts[product.name][pack.size]["number"] + pack["number"];
                 hashProducts[product.name][pack.size]["price"] = product.price[indexSize].amount;
@@ -649,49 +619,39 @@ const buildTableForInvoiceFromManyOrders = (orders, totalAmount) => {
                     total: product.price[indexSize].amount * pack.number
                 }
             })
-
-            const total = mapProd.reduce((prev, curr) => {
-                return prev + curr.total
-            }, 0)
-
+            const total = mapProd.reduce((prev, curr) => prev + curr.total, 0);
             hashProducts[product.name]["total"] += + total;
         })
-
     })
 
-    rows = Object.keys(hashProducts).map((name) => {
+    const rows = Object.keys(hashProducts).map((name) => {
+        const product = hashProducts[name]
         const data = [
-            {
-                value: name,
-            },
-            {
-                value: `${Object.keys(hashProducts[name]).map((size) => {
-                    return `${size}: ${hashProducts[name][size]["price"]}`
-                })}`
-            },
-            {
-                value: `${Object.keys(hashProducts[name]).map((size) => {
-                    return `${size}: ${hashProducts[name][size]["number"]}`
-                })}`
-            },
-            {
-                value: hashProducts[name]["total"]
-            },
-        ]
+            { value: name },
+            { value: Object.values(product).map((size) => size.price).join(", ") },
+            { value: Object.values(product).map((size) => size.number).join(", ") },
+            { value: product.total.toString() },
+        ];
 
-        return { data: data }
+        data[1].value = data[1].value.replace(/, $/, '');
+        data[2].value = data[2].value.replace(/, $/, '');
+
+        return { data }
     })
 
+    const footer = `
+        <tr>
+            <td colspan="5" class="total-txt">Total:</td>
+            <td class="total-price">${totalAmount}</td>
+        </tr>`
 
-    const footer = ['<th id="total" class="right, endTable"><b>Total :</b><th/>', `<td class="endTable">${totalAmount}</td>`]
     mappedTable = { headers, rows, footer }
 
     return mappedTable
-
 }
 
-export const createConfigObjectFromManyOrders = (shapedOrgData) => {
-    let table = buildTableForInvoiceFromManyOrders(shapedOrgData[0].orders, shapedOrgData[0].totalIncome)
+export const createConfigObjectFromManyOrders = (shapedOrgData, date, invoiceId) => {
+    let mappedTable = buildTableForInvoiceFromManyOrders(shapedOrgData[0].orders, shapedOrgData[0].totalIncome)
 
     return {
         header: {
@@ -805,12 +765,17 @@ export const createConfigObjectFromManyOrders = (shapedOrgData) => {
             `,
             textLines: {
                 pdfType: "Invoice",
+                image: shapedOrgData[0].image,
                 businessName: shapedOrgData[0].name,
-                businessAddress: shapedOrgData[0].address.street,
+                containerName: shapedOrgData[0].containerName,
                 addressContainer: {
-                    city: shapedOrgData[0].address.country,
-                    state: shapedOrgData[0].address.state,
-                    cp: shapedOrgData[0].address.zip,
+                    street: shapedOrgData[0]?.address?.street,
+                    stNumber: shapedOrgData[0]?.address?.stNumber,
+                    cp: shapedOrgData[0]?.address?.zip,
+                    city: shapedOrgData[0]?.address?.city,
+                    state: shapedOrgData[0]?.address?.state,
+                    country: shapedOrgData[0]?.address?.country,
+                    references: shapedOrgData[0]?.address?.references,
                 },
                 phone: shapedOrgData[0].owner[0].phone,
                 email: shapedOrgData[0].owner[0].email,
@@ -818,18 +783,31 @@ export const createConfigObjectFromManyOrders = (shapedOrgData) => {
         },
         customerData: {
             clientName: shapedOrgData[0].customer[0].name,
-            clientAddress: shapedOrgData[0].customer[0].address.street,
-            addressContainer: {
-                city: shapedOrgData[0].customer[0].address.city,
-                state: shapedOrgData[0].customer[0].address.state,
-                cp: shapedOrgData[0].customer[0].address.zip,
+            clientEmail: shapedOrgData[0].customer[0].email,
+            address: {
+                street: shapedOrgData[0].customer[0]?.address?.street,
+                stNumber: shapedOrgData[0].customer[0]?.address?.stNumber,
+                cp: shapedOrgData[0].customer[0]?.address?.zip,
+                city: shapedOrgData[0].customer[0]?.address?.city,
+                state: shapedOrgData[0].customer[0]?.address?.state,
+                country: shapedOrgData[0].customer[0]?.address?.country,
+                references: shapedOrgData[0].customer[0]?.address?.references,
             },
         },
         invoiceData: {
-            price: shapedOrgData[0].totalIncome,
-            date: shapedOrgData[0].invoice.date,
-            invoiceNumber: shapedOrgData[0].invoice._id
+            date: moment(date).format('ddd, MMM DD, YYYY h:mm A'),
+            invoiceNumber: invoiceId,
+            Total: shapedOrgData[0].totalIncome,
+            deliveryAddress: {
+                street: shapedOrgData[0].customer[0]?.address?.street,
+                stNumber: shapedOrgData[0].customer[0]?.address?.stNumber,
+                cp: shapedOrgData[0].customer[0]?.address?.zip,
+                city: shapedOrgData[0].customer[0]?.address?.city,
+                state: shapedOrgData[0].customer[0]?.address?.state,
+                country: shapedOrgData[0].customer[0]?.address?.country,
+                references: shapedOrgData[0].customer[0]?.address?.references,
+            }
         },
-        table: table,
+        table: mappedTable,
     }
 }

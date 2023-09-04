@@ -79,90 +79,93 @@ router.get('/orders/invoice/bydate/month/:_id', async (req, res) => {
     let shapedOrgData
     try{
         console.log("Executing aggregation to build monthly invoice")
-        shapedOrgData = await organizationModel.aggregate(
-            [
-                {
-                    "$match": {
-                        "_id": mongoose.Types.ObjectId(orgId)
-                    },
+        shapedOrgData = await organizationModel.aggregate([
+            {
+                "$match": {
+                    "_id": mongoose.Types.ObjectId(orgId)
                 },
-                {
-                    "$addFields": {
-                        "orders": {
-                            "$map": {
-                                "input": "$orders",
-                                "as": "order",
-                                "in": {
-                                    "$mergeObjects": [
-                                        "$$order",
-                                        {
-                                            "createdDate": {
-                                                "$dateToString": {
-                                                    "format": "%Y-%m-%d",
-                                                    "date": "$$order.created",
-                                                    "timezone": tz,
-                                                },
+            },
+            {
+                "$addFields": {
+                    "orders": {
+                        "$map": {
+                            "input": "$orders",
+                            "as": "order",
+                            "in": {
+                                "$mergeObjects": [
+                                    "$$order",
+                                    {
+                                        "createdDate": {
+                                            "$dateToString": {
+                                                "format": "%Y-%m-%d",
+                                                "date": "$$order.created",
+                                                "timezone": tz,
                                             },
                                         },
-                                    ],
-                                },
+                                    },
+                                ],
                             },
                         },
                     },
+                    "containerName": {
+                        "$arrayElemAt": ["$containers.name", 0],
+                    }
                 },
-                {
-                    "$project": {
-                        "orders": {
-                            "$filter": {
-                                "input": "$orders",
-                                "as": "order",
-                                "cond": {
-                                    "$and": [
-                                        {
-                                            "$eq": ["$$order.customer", mongoose.Types.ObjectId(customerId)]
-                                        },
-                                        {
-                                            "$gte": ["$$order.createdDate", startOfMonth],
-                                        },
-                                        {
-                                            "$lte": ["$$order.createdDate", endOfMonth],
-                                        },
-                                    ],
-                                },
+            },
+            {
+                "$project": {
+                    "orders": {
+                        "$filter": {
+                            "input": "$orders",
+                            "as": "order",
+                            "cond": {
+                                "$and": [
+                                    {
+                                        "$eq": ["$$order.customer", mongoose.Types.ObjectId(customerId)]
+                                    },
+                                    {
+                                        "$gte": ["$$order.createdDate", startOfMonth],
+                                    },
+                                    {
+                                        "$lte": ["$$order.createdDate", endOfMonth],
+                                    },
+                                ],
                             },
                         },
-                        "customer": {
-                            "$filter": {
-                                "input": "$customers",
-                                "as": "customer",
-                                "cond": {
-                                    "$eq": ["$$customer._id", mongoose.Types.ObjectId(customerId)],
-                                },
+                    },
+                    "customer": {
+                        "$filter": {
+                            "input": "$customers",
+                            "as": "customer",
+                            "cond": {
+                                "$eq": ["$$customer._id", mongoose.Types.ObjectId(customerId)],
                             },
                         },
-                        "name": true,
-                        "address": true,
-                        "owner": true,
                     },
-                },
-                {
-                    "$addFields": {
-                        "totalIncome": {
-                            "$sum": "$orders.price",
-                        },
-                        "ordersId": "$orders._id",
+                    "name": true,
+                    "image": true,
+                    "containerName": true,
+                    "address": true,
+                    "owner": true,
+                }
+            },
+            {
+                "$addFields": {
+                    "totalIncome": {
+                        "$sum": "$orders.price",
                     },
+                    "ordersId": "$orders._id",
                 },
-                {
-                    "$lookup": {
-                        "from": "clients",
-                        "localField": "owner",
-                        "foreignField": "_id",
-                        "as": "owner",
-                    },
+            },
+            {
+                "$lookup": {
+                    "from": "clients",
+                    "localField": "owner",
+                    "foreignField": "_id",
+                    "as": "owner",
                 },
-            ]
-        )
+            }
+        ])
     } catch (err) {
         error(req, res, 500, "Error getting data for monthly invoice", err, err)
         return
@@ -173,7 +176,7 @@ router.get('/orders/invoice/bydate/month/:_id', async (req, res) => {
     
     if(shapedOrgData[0].orders.length > 0) {
         let invoiceId = mongoose.Types.ObjectId();
-        let date = new Date();
+        let date = moment.tz(tz).toDate();
 
         try {
             shapedOrgData[0].invoice = {
@@ -182,24 +185,38 @@ router.get('/orders/invoice/bydate/month/:_id', async (req, res) => {
                 "totalIncome":shapedOrgData[0].totalIncome,
                 "customer":shapedOrgData[0].customer[0]._id,
                 "orders":shapedOrgData[0].ordersId,
-                "issuerOrganization": res.locals.organization,
+                "issuerOrganization": orgId,
                 "payed":false
             }
             await mongoose.connection.collection("invoices").insertOne(shapedOrgData[0].invoice)
-            await organizationModel.updateOne({"_id":mongoose.Types.ObjectId(res.locals.organization)},{"$push":{"invoices":{"date":date, "_id":invoiceId, "payed":false}}},{upsert:true})
+            await organizationModel.updateOne(
+                {
+                    "_id": mongoose.Types.ObjectId(orgId)
+                },
+                {
+                    "$push": {
+                        "invoices": {
+                            "_id": invoiceId,
+                            "date": date,
+                            "payed": false
+                        }
+                    }
+                },
+                {
+                    upsert: true
+                }
+            )
             console.log("INVOICE METADATA ADDED TO THE ORGANIZATION")
         } catch (err) {
             error(req, res, 500, "There was an error updating the organization", err, err)
             return
         }
-            
-        
 
         console.log("PDF build start...")
         let config
         try {
             console.log("Building PDF config object")
-            config = createConfigObjectFromManyOrders(shapedOrgData)
+            config = createConfigObjectFromManyOrders(shapedOrgData, date, invoiceId)
         } catch(err){
             error(req, res, 500, "Error building config object to build PDF from orders.", err, err)
             return
