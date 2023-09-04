@@ -8,7 +8,7 @@ const useFiles = (headers) => {
   };
 
   const getMonthlyInvoicesByCustomerId = async (id) => {
-    return await request('GET', `files/orders/invoice/bydate/month/${id}`, headers);
+    return await request('GET', `files/orders/invoice/bydate/month/${id}?tz=${userTimeZone}`, headers);
   };
 
 

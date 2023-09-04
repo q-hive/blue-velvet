@@ -1,4 +1,5 @@
 import express from 'express';
+import moment from 'moment-timezone';
 import { organizationModel } from '../../models/organization.js';
 import { error, success } from '../../network/response.js';
 import { actualMonthInitialDate } from '../../utils/time.js';
@@ -68,6 +69,13 @@ router.get('/order/invoice/:_id', async (req, res) => {
 })
 
 router.get('/orders/invoice/bydate/month/:_id', async (req, res) => {
+    const tz = req.query.tz
+    const orgId = res.locals.organization
+    const customerId = req.params._id
+    const actualDate = moment.tz(tz);
+    const startOfMonth = actualDate.clone().startOf('month').format('YYYY-MM-DD');
+    const endOfMonth = actualDate.clone().endOf('month').format('YYYY-MM-DD');
+
     let shapedOrgData
     try{
         console.log("Executing aggregation to build monthly invoice")
@@ -75,51 +83,84 @@ router.get('/orders/invoice/bydate/month/:_id', async (req, res) => {
             [
                 {
                     "$match": {
-                        "_id":mongoose.Types.ObjectId(res.locals.organization)
-                    }
+                        "_id": mongoose.Types.ObjectId(orgId)
+                    },
+                },
+                {
+                    "$addFields": {
+                        "orders": {
+                            "$map": {
+                                "input": "$orders",
+                                "as": "order",
+                                "in": {
+                                    "$mergeObjects": [
+                                        "$$order",
+                                        {
+                                            "createdDate": {
+                                                "$dateToString": {
+                                                    "format": "%Y-%m-%d",
+                                                    "date": "$$order.created",
+                                                    "timezone": tz,
+                                                },
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    },
                 },
                 {
                     "$project": {
-                        "orders":{
-                            "$filter":{
-                                "input":"$orders",
-                                "as":"order",
+                        "orders": {
+                            "$filter": {
+                                "input": "$orders",
+                                "as": "order",
                                 "cond": {
                                     "$and": [
-                                        { "$gte":["$$order.created", new Date(actualMonthInitialDate())] },
-                                        { "$lt":["$$order.created", new Date(new Date().getUTCFullYear(),new Date().getUTCMonth()+1,1)] },
-                                        { "$eq":["$$order.customer", mongoose.Types.ObjectId(req.params._id)] }
-                                    ]
-                                }
-                            }
+                                        {
+                                            "$eq": ["$$order.customer", mongoose.Types.ObjectId(customerId)]
+                                        },
+                                        {
+                                            "$gte": ["$$order.createdDate", startOfMonth],
+                                        },
+                                        {
+                                            "$lte": ["$$order.createdDate", endOfMonth],
+                                        },
+                                    ],
+                                },
+                            },
                         },
                         "customer": {
-                            "$filter":{
-                                "input":"$customers",
-                                "as":"customer",
-                                "cond": { "$eq":["$$customer._id", mongoose.Types.ObjectId(req.params._id)] },
-                            }
+                            "$filter": {
+                                "input": "$customers",
+                                "as": "customer",
+                                "cond": {
+                                    "$eq": ["$$customer._id", mongoose.Types.ObjectId(customerId)],
+                                },
+                            },
                         },
-                        "name":true,
-                        "address":true,
-                        "owner":true
-                    }
+                        "name": true,
+                        "address": true,
+                        "owner": true,
+                    },
                 },
                 {
-                    "$addFields":{
-                        "totalIncome":{"$sum":"$orders.price"},
-                        "ordersId":"$orders._id"
-                    }
+                    "$addFields": {
+                        "totalIncome": {
+                            "$sum": "$orders.price",
+                        },
+                        "ordersId": "$orders._id",
+                    },
                 },
                 {
-                    "$lookup":{
-                        "from":"clients",
-                        "localField":"owner",
-                        "foreignField":"_id",
-                        "as":"owner"
-                    }
-                }
-    
+                    "$lookup": {
+                        "from": "clients",
+                        "localField": "owner",
+                        "foreignField": "_id",
+                        "as": "owner",
+                    },
+                },
             ]
         )
     } catch (err) {
