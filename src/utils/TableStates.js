@@ -17,6 +17,8 @@ import { t } from "i18next"
 import { currencyByLang } from "./currencyByLanguage"
 import { ProductCard } from "../modules/Admin/production/ProductionMain"
 
+import useFiles from "../hooks/useFiles"
+
 export function DisplayViewButton ({params,setShowProduct}) {
     console.log("params",params)
     const [modal,setModal] = useState({
@@ -886,6 +888,11 @@ export const CustomerColumns = [
             const [loading, setLoading] = useState(false)
 
             const {user, credential} = useAuth()
+            let headers = {
+                authorization: credential._tokenResponse.idToken,
+                user: user,
+            };
+            const { getMonthlyInvoicesByCustomerId } = useFiles(headers)
             const navigate = useNavigate()
             
             const editCustomer = () => navigate(`/${user.uid}/admin/edition?type=customer`, {state:{ edition: {customer: params.row}}})
@@ -902,12 +909,7 @@ export const CustomerColumns = [
             }
             const monthlyInvoice = async () => {
                 setLoading(true)
-                const orderPDF = await api.api.get(`${api.apiVersion}/files/orders/invoice/bydate/month/${params.id}`, {
-                    headers: {
-                        authorization: credential._tokenResponse.idToken,
-                        user:user
-                    }
-                })
+                const orderPDF = await getMonthlyInvoicesByCustomerId(params.id)
                 return orderPDF
             }
             

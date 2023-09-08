@@ -369,7 +369,7 @@ export const MixProductsForm = ({editing, product}) => {
     useEffect(() => {
         getProducts()
         .then((response) => {
-            setStrains(response.data.data)
+            setStrains(response.data.data.filter((product)=> !product.mix.isMix))
         })
         .catch(err => {
             console.log(err)

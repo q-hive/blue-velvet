@@ -23,10 +23,6 @@ const useOrders =  (headers) => {
     return await request('DELETE',`orders/custom/?key=_id&&value=${id}`, headers);
   };
 
-  const getOrderInvoiceById = async (id) => {
-    return await request('GET',`files/order/invoice/${id}`, headers);
-  };
-
   const getCustomerOrderInvoices = async (customerId) => {
     return await request('GET',`orders/invoices/${customerId}`, headers);
   };
@@ -40,7 +36,6 @@ const useOrders =  (headers) => {
     updateOrder,
     getOrders,
     getUncompletedOrders,
-    getOrderInvoiceById,
     deleteOrder,
     getCustomerOrderInvoices,
     updateInvoicePay,

@@ -253,23 +253,26 @@ export const groupOrdersByDate = (
 };
 
 export const groupOrdersForPackaging = (orders, date = undefined) => {
-  const hash = {},
-    result = [];
+  const hash = {}, result = []
   orders.forEach((order) => {
+    const ordersIds = []
     // Quitar todos los productos que esten en produccion pasiva (preSoaking, seeding, growing)
     const passiveProduction = ['preSoaking', 'seeding', 'growing']
     order.products.forEach((product) => {
       if (passiveProduction.includes(product.status)) return
       if (!hash[product.name]) {
+        ordersIds.push(order._id)
         hash[product.name] = {
           packages: {
             small: 0,
             medium: 0,
             large: 0,
           },
+          orderId: []
         };
         result.push({ [product.name]: hash[product.name] });
       }
+      hash[product.name].orderId.push(order._id);
 
       product.packages.forEach((pkg) => {
         hash[product.name].packages[pkg.size] += +pkg.number;

@@ -26,6 +26,7 @@ import {
   TableBody,
   Chip,
   Tooltip,
+  Alert,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
@@ -85,7 +86,8 @@ export const ProductionMain = () => {
     authorization: credential._tokenResponse.idToken,
     user: user,
   };
-  const { deleteProduct, getProductsCompleteData } = useProducts(headers);
+  const { deleteProduct, getProductsCompleteData, getProductRelation } =
+    useProducts(headers);
   const { getAllProductionByStatus } = useProduction(headers);
   const { getOrders } = useOrders(headers);
   const { getCustomers } = useCustomers(headers);
@@ -149,80 +151,99 @@ export const ProductionMain = () => {
       ...modal,
       open: false,
     });
-    setDialog({
-      ...dialog,
-      open: true,
-      title: 'Are you sure you want to delete this product?',
-      message: 'The product, and all orders related to it will be deleted.',
-      actions: [
-        {
-          label: 'Yes',
-          btn_color: 'error',
-          execute: () => {
-            setDialog({
-              ...dialog,
-              open: false,
-            });
-            setLoading(true);
-            deleteProduct(params._id)
-              .then(() => {
-                console.log(params);
-                setSelectedProduct(null);
+    getProductRelation(params._id)
+      .then((res) => {
+        const productRelations = res.data.data;
+        console.log('Product with relations? ', productRelations);
+
+        setDialog({
+          ...dialog,
+          open: true,
+          title: 'Are you sure you want to delete this product?',
+          message: (
+            <>
+              The product and related orders will be deleted. <br />
+              {productRelations.length ? (
+                <Alert severity='info'>
+                  This product is part of other mixed products,
+                  <br /> their compositions will be adjusted.
+                </Alert>
+              ) : null}
+            </>
+          ),
+          actions: [
+            {
+              label: 'Yes',
+              btn_color: 'error',
+              execute: () => {
                 setDialog({
                   ...dialog,
-                  open: true,
-                  title: 'Product deleted succesfully',
-                  message: '',
-                  actions: [
-                    {
-                      label: 'Ok',
-                      btn_color: 'primary',
-                      execute: () => {
-                        setDialog({
-                          ...dialog,
-                          open: false,
-                        });
-                        location.reload();
-                      },
-                    },
-                  ],
+                  open: false,
                 });
-              })
-              .catch((err) => {
-                console.log('error', err);
+                setLoading(true);
+                deleteProduct(params._id, productRelations)
+                  .then(() => {
+                    console.log(params);
+                    setSelectedProduct(null);
+                    setDialog({
+                      ...dialog,
+                      open: true,
+                      title: 'Product deleted succesfully',
+                      message: '',
+                      actions: [
+                        {
+                          label: 'Ok',
+                          btn_color: 'primary',
+                          execute: () => {
+                            setDialog({
+                              ...dialog,
+                              open: false,
+                            });
+                            location.reload();
+                          },
+                        },
+                      ],
+                    });
+                  })
+                  .catch((err) => {
+                    console.log('error', err);
+                    setDialog({
+                      ...dialog,
+                      open: true,
+                      title: 'Error deleting product',
+                      message: '',
+                      actions: [
+                        {
+                          label: 'Ok',
+                          btn_color: 'primary',
+                          execute: () => {
+                            setDialog({
+                              ...dialog,
+                              open: false,
+                            });
+                          },
+                        },
+                      ],
+                    });
+                  });
+              },
+            },
+            {
+              label: 'No',
+              btn_color: 'primary',
+              execute: () => {
                 setDialog({
                   ...dialog,
-                  open: true,
-                  title: 'Error deleting product',
-                  message: '',
-                  actions: [
-                    {
-                      label: 'Ok',
-                      btn_color: 'primary',
-                      execute: () => {
-                        setDialog({
-                          ...dialog,
-                          open: false,
-                        });
-                      },
-                    },
-                  ],
+                  open: false,
                 });
-              });
-          },
-        },
-        {
-          label: 'No',
-          btn_color: 'primary',
-          execute: () => {
-            setDialog({
-              ...dialog,
-              open: false,
-            });
-          },
-        },
-      ],
-    });
+              },
+            },
+          ],
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   function ProductCard(product) {

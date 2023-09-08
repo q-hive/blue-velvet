@@ -18,8 +18,12 @@ const useProducts =  (headers) => {
     return await request('POST',`products?mix=true`, headers, {data: mixData});
   };
   
-  const deleteProduct = async (id) => {
-    return await request('DELETE',`products/?id=${id}`, headers);
+  const deleteProduct = async (id, productRelations) => {
+    return await request('DELETE',`products/?id=${id}`, headers, { data: productRelations });
+  };
+
+  const getProductRelation = async (id) => {
+    return await request('GET', `products/${id}/relations`, headers);
   };
 
   const getProducts = async () => {
@@ -38,6 +42,7 @@ const useProducts =  (headers) => {
     updateProductConfigById,
     addMixProduct,
     deleteProduct,
+    getProductRelation,
     getProducts,
     getProductsCompleteData,
   }

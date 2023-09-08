@@ -42,6 +42,7 @@ import { UserDialog } from '../../../../CoreComponents/UserFeedback/Dialog';
 
 // CUSTOM HOOKS
 import useOrders from '../../../../hooks/useOrders';
+import useFiles from '../../../../hooks/useFiles';
 import useCustomers from '../../../../hooks/useCustomers';
 import useProducts from '../../../../hooks/useProducts';
 import DateRangePicker from '../../../../CoreComponents/Dates/DateRangePicker';
@@ -86,7 +87,8 @@ export const NewOrder = (props) => {
     authorization: credential._tokenResponse.idToken,
     user: user,
   };
-  const { getOrderInvoiceById, addOrder } = useOrders(headers);
+  const { addOrder } = useOrders(headers);
+  const { getOrderInvoiceById } = useFiles(headers);
   const { getCustomers } = useCustomers(headers);
   const { getProducts } = useProducts(headers);
 
@@ -202,9 +204,9 @@ export const NewOrder = (props) => {
   };
 
   //Get invoice
-  const getOrderInvoice = async (params) => {
+  const getOrderInvoice = async (orderId) => {
     setLoading(true);
-    const orderPDF = await getOrderInvoiceById(params._id);
+    const orderPDF = await getOrderInvoiceById(orderId);
     return orderPDF;
   };
 
@@ -519,7 +521,7 @@ export const NewOrder = (props) => {
           ...dialog,
           open: true,
           title: 'Order created succesfully',
-          message: formatDataToList(response.data.data),
+          message: formatDataToList(response.data.data.feedback),
           actions: [
             {
               label: 'Continue',
@@ -533,7 +535,7 @@ export const NewOrder = (props) => {
               btn_color: 'secondary',
               execute: () => {
                 setLoading(true);
-                getOrderInvoice(response.data.data)
+                getOrderInvoice(response.data.data.orderId)
                   .then((result) => {
                     const url = window.URL.createObjectURL(
                       new Blob([new Uint8Array(result.data.data.data).buffer])
@@ -543,7 +545,7 @@ export const NewOrder = (props) => {
 
                     link.setAttribute(
                       'download',
-                      `Invoice ${response.data.data._id}.pdf`
+                      `Invoice ${response.data.data.orderId}.pdf`
                     );
 
                     document.body.appendChild(link);

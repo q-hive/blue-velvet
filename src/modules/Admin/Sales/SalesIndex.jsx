@@ -25,6 +25,7 @@ import { currencyByLang } from '../../../utils/currencyByLanguage'
 
 // CUSTOM HOOKS
 import useOrders from '../../../hooks/useOrders'
+import useFiles from '../../../hooks/useFiles'
 
 
 export const SalesIndex = () => {
@@ -34,7 +35,8 @@ export const SalesIndex = () => {
         authorization: credential._tokenResponse.idToken,
         user:          user
     }
-    const { deleteOrder, getOrderInvoiceById } = useOrders(headers)
+    const { deleteOrder } = useOrders(headers)
+    const { getOrderInvoiceById } = useFiles(headers)
     
     //*DATA STATES
     const [orders, setOrders] = useState({all:[], delivered:[], cancelled:[], recent:[]})
